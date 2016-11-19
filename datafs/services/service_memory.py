@@ -7,7 +7,7 @@ from fs.memoryfs import MemoryFS
 
 class MemoryService(DataService):
     '''
-    Access files & directories stored in memory (non-permanent but very fast)
+    Service providing an interface to files & directories stored in memory (non-permanent but very fast)
     '''
     
     FileConstructor = MemoryDataFile
@@ -21,7 +21,7 @@ class MemoryService(DataService):
 
 class MemoryDataFile(DataFile, MemoryFS):
     '''
-    MemoryFS access files & directories stored in memory (non-permanent but very fast)
+    Access files & directories stored in memory (non-permanent but very fast)
     '''
     def __init__(self, api, archive, *args, **kwargs):
         DataFile.__init__(self, api, archive)

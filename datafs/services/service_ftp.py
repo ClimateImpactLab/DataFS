@@ -5,9 +5,9 @@ from .datafs.core.data_file import DataFile
 from fs.ftpfs import FTPFS
 
 
-class FTPService(Service):
+class FTPService(DataService):
     '''
-    Access files & directories on an FTP server
+    Service providing an interface to files & directories on an FTP server
     '''
     
     FileConstructor = FTPDataFile
@@ -21,7 +21,7 @@ class FTPService(Service):
 
 class FTPDataFile(DataFile, FTPFS):
     '''
-    FTPFS access files & directories on an FTP server
+    Access files & directories on an FTP server
     '''
     def __init__(self, api, archive, *args, **kwargs):
         DataFile.__init__(self, api, archive)

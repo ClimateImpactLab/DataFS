@@ -5,9 +5,9 @@ from .datafs.core.data_file import DataFile
 from fs.multifs import MultiFS
 
 
-class MultiService(Service):
+class MultiService(DataService):
     '''
-    A virtual filesystem that combines a list of filesystems into one, and checks them in order when opening files
+    Service providing an interface to a virtual filesystem that combines a list of filesystems into one, and checks them in order when opening files
     '''
     
     FileConstructor = MultiDataFile

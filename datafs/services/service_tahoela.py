@@ -5,9 +5,9 @@ from .datafs.core.data_file import DataFile
 from fs.tahoelafs import TahoeLAFS
 
 
-class TahoeLAService(Service):
+class TahoeLAService(DataService):
     '''
-    Access files & directories stored on a Tahoe distributed filesystem
+    Service providing an interface to files & directories stored on a Tahoe distributed filesystem
     '''
     
     FileConstructor = TahoeLADataFile
@@ -21,7 +21,7 @@ class TahoeLAService(Service):
 
 class TahoeLADataFile(DataFile, TahoeLAFS):
     '''
-    TahoeLAFS access files & directories stored on a Tahoe distributed filesystem
+    Access files & directories stored on a Tahoe distributed filesystem
     '''
     def __init__(self, api, archive, *args, **kwargs):
         DataFile.__init__(self, api, archive)

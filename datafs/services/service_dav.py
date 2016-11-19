@@ -5,9 +5,9 @@ from .datafs.core.data_file import DataFile
 from fs.davfs import DavFS
 
 
-class DavService(Service):
+class DavService(DataService):
     '''
-    Access files & directories on a WebDAV server
+    Service providing an interface to files & directories on a WebDAV server
     '''
     
     FileConstructor = DavDataFile
@@ -21,7 +21,7 @@ class DavService(Service):
 
 class DavDataFile(DataFile, DavFS):
     '''
-    DavFS access files & directories on a WebDAV server
+    Access files & directories on a WebDAV server
     '''
     def __init__(self, api, archive, *args, **kwargs):
         DataFile.__init__(self, api, archive)

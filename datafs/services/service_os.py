@@ -7,7 +7,7 @@ from fs.osfs import OSFS
 
 class OSService(DataService):
     '''
-    The native filesystem
+    Service providing an interface to the native filesystem
     '''
     
     FileConstructor = OSDataFile

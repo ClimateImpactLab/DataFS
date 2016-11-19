@@ -5,9 +5,9 @@ from .datafs.core.data_file import DataFile
 from fs.sftpfs import SFTPFS
 
 
-class SFTPService(Service):
+class SFTPService(DataService):
     '''
-    Access files & directories stored on a Secure FTP server
+    Service providing an interface to files & directories stored on a Secure FTP server
     '''
     
     FileConstructor = SFTPDataFile
@@ -21,7 +21,7 @@ class SFTPService(Service):
 
 class SFTPDataFile(DataFile, SFTPFS):
     '''
-    SFTPFS access files & directories stored on a Secure FTP server
+    Access files & directories stored on a Secure FTP server
     '''
     def __init__(self, api, archive, *args, **kwargs):
         DataFile.__init__(self, api, archive)

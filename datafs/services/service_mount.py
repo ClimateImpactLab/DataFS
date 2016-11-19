@@ -7,7 +7,7 @@ from fs.mountfs import MountFS
 
 class MountService(DataService):
     '''
-    Creates a virtual directory structure built from other filesystems
+    Service providing an interface to a virtual directory structure built from other filesystems
     '''
     
     FileConstructor = MountDataFile

@@ -1,6 +1,6 @@
 
 
-from .datafs.managers.manager import BaseDataManager
+from datafs.managers.manager import BaseDataManager
 from pymongo import MongoClient
 
 class MongoDBManager(BaseDataManager):

@@ -33,7 +33,7 @@ class DataService(object):
         self._get_datafile(self, archive_name, version_id)
 
 
-    def self._get_datafile(self, archive_name, version_id):
+    def _get_datafile(self, archive_name, version_id):
         raise NotImplementedError('BaseService cannot be used directly. Use a subclass, such as OSService')
 
 

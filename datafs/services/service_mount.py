@@ -1,8 +1,18 @@
+from __future__ import absolute_import
 
-
-from .datafs.services.service import DataService
-from .datafs.core.data_file import DataFile
+from datafs.services.service import DataService
+from datafs.core.data_file import DataFile
 from fs.mountfs import MountFS
+
+
+class MountDataFile(DataFile, MountFS):
+    '''
+    MountFS creates a virtual directory structure built from other filesystems
+    '''
+    def __init__(self, api, archive, *args, **kwargs):
+        DataFile.__init__(self, api, archive)
+        MountFS.__init__(self, *args, **kwargs)
+
 
 
 class MountService(DataService):
@@ -15,14 +25,5 @@ class MountService(DataService):
     def __init__(self, api, archive, *args, **kwargs):
         DataService.__init__(self, api, archive, *args, **kwargs)
 
-    def self._get_datafile(self, archive_name, version_id):
+    def _get_datafile(self, archive_name, version_id):
         raise NotImplementedError
-
-
-class MountDataFile(DataFile, MountFS):
-    '''
-    MountFS creates a virtual directory structure built from other filesystems
-    '''
-    def __init__(self, api, archive, *args, **kwargs):
-        DataFile.__init__(self, api, archive)
-        MountFS.__init__(self, *args, **kwargs)

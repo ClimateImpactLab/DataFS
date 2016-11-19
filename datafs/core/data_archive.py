@@ -6,6 +6,7 @@ class DataArchive(object):
        self.api = api
        self.achive_name = achive_name
 
+
     @property
     def latest(self):
         raise NotImplementedError
@@ -13,6 +14,7 @@ class DataArchive(object):
     @latest.setter
     def latest(self, value):
         raise AttributeError('latest attribute cannot be set')
+
 
     @property
     def version_ids(self):
@@ -27,6 +29,7 @@ class DataArchive(object):
     def version_ids(self, value):
         raise AttributeError('version_ids attribute cannot be set')
 
+
     @property
     def versions(self):
         '''
@@ -37,6 +40,7 @@ class DataArchive(object):
     @versions.setter
     def versions(self, value):
         raise AttributeError('versions attribute cannot be set')
+
 
     def get_version(self, version_id):
         '''
@@ -55,6 +59,7 @@ class DataArchive(object):
 
         self.api._manager.get_version(self.archive_name, version_id)
 
+
     def update(self, file, **kwargs):
 
         # loop through upload services
@@ -62,10 +67,11 @@ class DataArchive(object):
         
         # also update records in self.api._manager
         
-        raise NotImplementedError
+        self.api._manager.update(self.archive_name, file, **kwargs)
+
 
     def update_metadata(self, **kwargs):
         
         # just update records in self.api._manager
         
-        raise NotImplementedError
+        self.api._manager.update(self.archive_name, **kwargs)

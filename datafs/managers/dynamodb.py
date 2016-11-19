@@ -3,9 +3,9 @@
 from manager import BaseDataManager
 
 
-class MongoDB(BaseDataManager):
+class DynamoDB(BaseDataManager):
     def __init__(self, *args, **kwargs):
-        super(MongoDB, self).__init__(*args, **kwargs)
+        super(DynamoDB, self).__init__(*args, **kwargs)
 
 
     # Private methods (to be implemented!)

@@ -1,11 +1,19 @@
-
+from .datafs.managers import BaseDataManager
 
 class DataApi(object):
 
     Services = {
     }
 
-    Manager = None
+    Manager = BaseDataManager
+    '''
+    Data Manager
+
+    When subclassing, replace with a specific manager, such as MongoDBManager
+    '''
+
+    DatabaseName = 'MyDatabase'
+    DataTableName = 'DataFiles'
 
     def __init__(self):
         self._start_manager()
@@ -21,11 +29,11 @@ class DataApi(object):
         for servname, serv_class in self.Services.items():
             self.services[servname] = serv_class(self, **config)
 
-    def new_archive(self, archive_name, **metadata):
-        self.manager.create_archive()
+    def create_archive(self, archive_name, **metadata):
+        self.manager.create_archive(archive_name, **metadata)
 
     def get_archive(self, archive_name):
-        self.manager.get_archive()
+        self.manager.get_archive(archive_name)
 
     @property
     def archives(self):

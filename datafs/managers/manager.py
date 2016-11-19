@@ -126,24 +126,24 @@ class BaseDataManager(object):
     # Private methods (to be implemented by subclasses of DataManager)
     
     def _update(self, archive_name, file, **kwargs):
-        raise NotImplementedError
+        raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
 
     def _update_metadata(self, archive_name, **kwargs):
-        raise NotImplementedError
+        raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
 
     def _get_services_for_version(self, archive_name, version_id):
-        raise NotImplementedError
+        raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
 
     def _get_datafile_from_service(self, archive_name, version_id, service):
-        raise NotImplementedError
+        raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
 
-    def _get_all_version_ids(self):
-        raise NotImplementedError
+    def _get_all_version_ids(self, archive_name):
+        raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
 
     def _create_archvie(self, archive_name):
-        raise NotImplementedError
+        raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
 
     def _get_archvie(self, archive_name):
-        raise NotImplementedError
+        raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
 
 

@@ -1,11 +1,11 @@
 
 
-from manager import BaseDataManager
+from .datafs.managers.manager import BaseDataManager
 
 
-class DynamoDB(BaseDataManager):
+class DynamoDBManager(BaseDataManager):
     def __init__(self, *args, **kwargs):
-        super(DynamoDB, self).__init__(*args, **kwargs)
+        super(DynamoDBManager, self).__init__(*args, **kwargs)
 
 
     # Private methods (to be implemented!)
@@ -22,7 +22,7 @@ class DynamoDB(BaseDataManager):
     def _get_datafile_from_service(self, archive_name, version_id, service):
         raise NotImplementedError
 
-    def _get_all_version_ids(self):
+    def _get_all_version_ids(self, archive_name):
         raise NotImplementedError
 
     def _create_archvie(self, archive_name):

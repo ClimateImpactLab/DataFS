@@ -4,13 +4,13 @@ from datafs.managers.manager import BaseDataManager
 
 
 class DynamoDBManager(BaseDataManager):
-    def __init__(self, *args, **kwargs):
-        super(DynamoDBManager, self).__init__(*args, **kwargs)
+    def __init__(self, api, *args, **kwargs):
+        super(DynamoDBManager, self).__init__(api)
 
 
     # Private methods (to be implemented!)
     
-    def _update(self, archive_name, file, **kwargs):
+    def _update(self, archive_name, version_id, version_data):
         raise NotImplementedError
 
     def _update_metadata(self, archive_name, **kwargs):
@@ -25,7 +25,10 @@ class DynamoDBManager(BaseDataManager):
     def _get_all_version_ids(self, archive_name):
         raise NotImplementedError
 
-    def _create_archvie(self, archive_name):
+    def _create_archive(self, archive_name):
+        raise NotImplementedError
+
+    def _create_if_not_exists(self, archive_name, **metadata):
         raise NotImplementedError
 
     def _get_archvie(self, archive_name):

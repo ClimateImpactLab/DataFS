@@ -1,49 +1,88 @@
 from __future__ import absolute_import
 
 from datafs.managers.manager import BaseDataManager
+from datafs.services.service import DataService
+
+import time
 
 class DataAPI(object):
-
-    Services = {
-    }
-
-    Manager = BaseDataManager
-    '''
-    Data Manager
-
-    When subclassing, replace with a specific manager, such as MongoDBManager
-    '''
 
     DatabaseName = 'MyDatabase'
     DataTableName = 'DataFiles'
 
-    def __init__(self, username, contact):
+    TimestampFormat = '%Y%m%d-%H%M%S'
+
+    def __init__(self, username, contact, manager=None, services={}, download_priority=None, upload_services=None):
         self.username = username
         self.contact = contact
 
-        self._start_manager()
-        self._start_services()
+        self.manager = manager
+        self.services = services
 
-    def _start_manager(self, **config):
-        self._manager = self.Manager(self, **config)
+        self._download_priority = download_priority
+        self._upload_services = upload_services
 
-    def _start_services(self, **config):
-        self.services = {}
+    @property
+    def download_priority(self):
+        if self._download_priority is None:
+            return self.services.keys()
+        else:
+            return self._download_priority
 
-        # make py3k compatible!!
-        for servname, serv_class in self.Services.items():
-            self.services[servname] = serv_class(self, **config)
+    @download_priority.setter
+    def download_priority(self, value):
+        self.download_priority = value
 
-    def create_archive(self, archive_name, **metadata):
-        self._manager.create_archive(archive_name, **metadata)
+    @property
+    def upload_services(self):
+        if self._upload_services is None:
+            return self.services.keys()
+        else:
+            return self._upload_services
+
+    @upload_services.setter
+    def upload_services(self, value):
+        self.upload_services = value
+
+    def attach_service(self, service_name, service):
+        service.api = self
+        self.services[service_name] = DataService(service)
+
+    def attach_manager(self, manager):
+        manager.api = self
+        self.manager = manager
+
+    def create_archive(self, archive_name, raise_if_exists=True, **metadata):
+        self.manager.create_archive(archive_name, raise_if_exists=raise_if_exists, **metadata)
 
     def get_archive(self, archive_name):
-        return self._manager.get_archive(archive_name)
+        return self.manager.get_archive(archive_name)
 
     @property
     def archives(self):
-        self._manager.get_archives()
+        self.manager.get_archives()
 
     @archives.setter
     def archives(self):
         raise AttributeError('archives attribute cannot be set')
+
+    @classmethod
+    def create_timestamp(cls):
+        '''
+        Utility function for formatting timestamps
+
+        Overload this function to change timestamp formats
+        '''
+
+        return time.strftime(cls.TimestampFormat, time.gmtime())
+
+    @classmethod
+    def create_version_id(cls, archive_name, filepath):
+        '''
+        Utility function for creating version IDs
+
+        Overload this function to change version naming scheme
+        '''
+
+        return cls.create_timestamp()
+

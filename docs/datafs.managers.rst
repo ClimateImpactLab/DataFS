@@ -4,14 +4,6 @@ datafs.managers package
 Submodules
 ----------
 
-datafs.managers.dynamo module
------------------------------
-
-.. automodule:: datafs.managers.dynamo
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 datafs.managers.manager module
 ------------------------------
 
@@ -20,10 +12,18 @@ datafs.managers.manager module
     :undoc-members:
     :show-inheritance:
 
-datafs.managers.mongo module
-----------------------------
+datafs.managers.manager_dynamo module
+-------------------------------------
 
-.. automodule:: datafs.managers.mongo
+.. automodule:: datafs.managers.manager_dynamo
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+datafs.managers.manager_mongo module
+------------------------------------
+
+.. automodule:: datafs.managers.manager_mongo
     :members:
     :undoc-members:
     :show-inheritance:

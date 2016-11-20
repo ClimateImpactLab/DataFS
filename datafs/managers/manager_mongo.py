@@ -5,7 +5,7 @@ from datafs.managers.manager import BaseDataManager
 from datafs.core.data_archive import DataArchive
 
 from pymongo import MongoClient
-from pymongo.errors import ServerSelectionTimeoutError
+from pymongo.errors import ServerSelectionTimeoutError, DuplicateKeyError
 
 import logging
 
@@ -26,8 +26,9 @@ class MongoDBManager(BaseDataManager):
 
     # Private methods (to be implemented!)
     
-    def _update(self, archive_name, file, **kwargs):
-        raise NotImplementedError
+    def _update(self, archive_name, version_id, version_data):
+        
+        self.coll.update({"_id":archive_name}, {"$push":{"versions": version_data}}); 
 
     def _update_metadata(self, archive_name, **kwargs):
         raise NotImplementedError
@@ -41,19 +42,22 @@ class MongoDBManager(BaseDataManager):
     def _get_all_version_ids(self, archive_name):
         raise NotImplementedError
 
-    def _create_archvie(self, archive_name, **metadata):
-        '''
-        .. todo ::
-            This should raise an error if exists!!
-        '''
+    def _create_archive(self, archive_name, **metadata):
 
         doc = {'_id': archive_name, 'versions': []}
         doc.update(**metadata)
 
         try:
-            self.coll.find_one_and_replace({'_id': archive_name}, doc, upsert=True)
+            self.coll.insert_one(doc)
         except ServerSelectionTimeoutError as e:
             raise MongoDBConnectionError(MongoDBConnectionError.message)
+
+    def _create_if_not_exists(self, archive_name, **metadata):
+
+        try:
+            self._create_archive(archive_name, **metadata)
+        except DuplicateKeyError as e:
+            pass
 
     def _get_archive_metadata(self, archive_name):
         try:

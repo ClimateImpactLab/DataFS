@@ -24,28 +24,27 @@ To run this example:
 from __future__ import absolute_import
 
 from datafs import DataAPI
-from datafs.managers.mongo import MongoDBManager
-from datafs.services.service_os import OSService
+from datafs.managers.manager_mongo import MongoDBManager
 
+from fs.osfs import OSFS
 
-class MyLocalDataAPI(DataAPI):
-    '''
-    Subclass of DataAPI preconfigured for your users
-    '''
+import os
 
-    Manager = MongoDBManager
-    Services = {
-        'local': OSService
-        }
-
-def get_api():
+def get_api(local_dir):
     '''
     Create an api instance with your personal information
     '''
 
-    api = MyLocalDataAPI(
+
+    api = DataAPI(
         username='My Name',
         contact = 'my.email@example.com')
+    
+    manager = MongoDBManager(api=api)
+    local = OSFS(local_dir)
+
+    api.attach_manager(manager)
+    api.attach_service('local', local)
 
     return api
 
@@ -57,7 +56,9 @@ def create_archive(api, archive_name):
     archive_name = 'myproject.myteam.var1.type1'
     api.create_archive(
         archive_name, 
-        description='My test data archive')
+        description='My test data archive',
+        raise_if_exists=False)
+
     print('created archive "{}"'.format(archive_name))
 
 def retrieve_archive(api, archive_name):
@@ -74,8 +75,12 @@ def main():
     '''
     Create a connection to the API and create an archive
     '''
+    local_dir = '~/datafs/'
+    
+    if not os.path.isdir(local_dir):
+        os.makedirs(local_dir)
 
-    api = get_api()
+    api = get_api(local_dir)
 
     archive_name = 'myproject.myteam.var1.type1'
     create_archive(api, archive_name)
@@ -83,6 +88,14 @@ def main():
     
     print('retrieved archive "{}"'.format(var.archive_name))
     print(var.metadata)
+
+    with open('test.txt', 'w+') as test:
+        test.write('this is a test')
+
+    var.update('test.txt')
+
+    os.remove('test.txt')
+
 
 
 

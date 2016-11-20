@@ -2,9 +2,8 @@
 
 
 class DataService(object):
-    def __init__(self, api, archive, *args, **kwargs):
+    def __init__(self, api, *args, **kwargs):
         self.api = api
-        self.archive = archive
         
         self.service_config = {
             'args': args,

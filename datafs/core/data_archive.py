@@ -1,10 +1,11 @@
 
 import logging
 
+
 class DataArchive(object):
-	def __init__(self, api, achive_name):
+    def __init__(self, api, archive_name):
        self.api = api
-       self.achive_name = achive_name
+       self.archive_name = archive_name
 
 
     @property
@@ -40,6 +41,11 @@ class DataArchive(object):
     @versions.setter
     def versions(self, value):
         raise AttributeError('versions attribute cannot be set')
+
+    
+    @property
+    def metadata(self):
+        return self.api._manager.get_metadata(self.archive_name)
 
 
     def get_version(self, version_id):

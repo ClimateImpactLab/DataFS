@@ -22,8 +22,8 @@ class SFTPService(DataService):
     
     FileConstructor = SFTPDataFile
 
-    def __init__(self, api, archive, *args, **kwargs):
-        Service.__init__(self, api, archive, *args, **kwargs)
+    def __init__(self, api, *args, **kwargs):
+        Service.__init__(self, api, *args, **kwargs)
 
     def _get_datafile(self, archive_name, version_id):
         raise NotImplementedError

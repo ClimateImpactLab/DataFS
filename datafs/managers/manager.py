@@ -1,4 +1,8 @@
 
+from __future__ import absolute_import
+import time
+
+
 
 class BaseDataManager(object):
     '''
@@ -94,7 +98,7 @@ class BaseDataManager(object):
                 pass
 
 
-    def create_archive(self, archive_name):
+    def create_archive(self, archive_name, **metadata):
         '''
         Create a new data archive
 
@@ -105,7 +109,11 @@ class BaseDataManager(object):
 
         '''
 
-        self._create_archvie(archive_name)
+        metadata['creator'] = metadata.get('creator', self.api.username)
+        metadata['contact'] = metadata.get('contact', self.api.contact)
+        metadata['creation_date'] = metadata.get('creation_date', time.strftime('%Y%m%d-%H%M%S', time.gmtime()))
+
+        self._create_archvie(archive_name, **metadata)
 
 
     def get_archive(self, archive_name):
@@ -114,13 +122,30 @@ class BaseDataManager(object):
 
         Returns
         -------
-        archive : object
-            :py:class:`~datafs.core.data_archive.DataArchive` object
+        archive_name : str
+            name of the archive to be retrieved
 
         '''
 
-        self._get_archvie(archive_name)
+        return self._get_archvie(archive_name)
 
+
+    def get_metadata(self, archive_name):
+        '''
+        Retrieve the metadata for a given archive
+
+        Parameters
+        ----------
+        archive_name : str
+            name of the archive to be retrieved
+        
+        Returns
+        -------
+        metadata : dict
+            current archive metadata
+        '''
+
+        return self._get_archive_metadata(archive_name)
 
 
     # Private methods (to be implemented by subclasses of DataManager)
@@ -146,4 +171,5 @@ class BaseDataManager(object):
     def _get_archvie(self, archive_name):
         raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
 
-
+    def _get_archive_metadata(self, archive_name):
+        raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')

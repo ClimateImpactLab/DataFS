@@ -1,5 +1,5 @@
 Welcome to DataFS Distributed Data Management System's documentation!
-======================================
+======================================================================
 
 Contents:
 

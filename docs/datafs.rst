@@ -1,4 +1,4 @@
-datafs package
+DataFS API
 ==============
 
 Subpackages
@@ -6,6 +6,7 @@ Subpackages
 
 .. toctree::
 
+    datafs.core
     datafs.managers
     datafs.services
 

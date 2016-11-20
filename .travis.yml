@@ -30,3 +30,6 @@ deploy:
     tags: true
     repo: ClimateImpactLab/datafs
     condition: $TOXENV == py27
+
+services: 
+  - mongodb

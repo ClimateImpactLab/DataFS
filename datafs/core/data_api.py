@@ -4,8 +4,9 @@ from datafs.managers.manager import BaseDataManager
 from datafs.services.service import DataService
 
 from fs.multifs import MultiFS
+import fs.path
 
-import time, hashlib, os
+import time, hashlib
 
 class DataAPI(object):
 
@@ -105,7 +106,7 @@ class DataAPI(object):
         Overload this function to change internal service path format
         '''
 
-        return os.path.join(*tuple(archive_name.split('.') + [version_id + os.path.splitext(filepath)[1]]))
+        return fs.path.join(*tuple(archive_name.split('.') + [version_id + fs.path.splitext(filepath)[1]]))
 
     @staticmethod
     def hash_file(filepath):

@@ -19,7 +19,7 @@ DataFS Distributed Data Management System
         :alt: Documentation Status
 
 .. image:: https://pyup.io/repos/github/climateimpactlab/datafs/shield.svg
-     :target: https://pyup.io/repos/github/ClimateImpactLab/datafs/
+     :target: https://pyup.io/repos/github/climateimpactlab/datafs/
      :alt: Updates
 
 

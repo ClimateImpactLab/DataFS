@@ -13,7 +13,7 @@ DataFS Distributed Data Management System
         :target: https://datafs.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://pyup.io/repos/github/ClimateImpactLab/datafs/shield.svg
+.. image:: https://pyup.io/repos/github/climateimpactlab/datafs/shield.svg
      :target: https://pyup.io/repos/github/ClimateImpactLab/datafs/
      :alt: Updates
 

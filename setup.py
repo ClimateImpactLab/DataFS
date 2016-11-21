@@ -10,11 +10,12 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    # TODO: put package requirements here
+    'fs==0.5.4'
 ]
 
 test_requirements = [
-    # TODO: put package test requirements here
+    'fs>=0.5.4',
+    'pymongo>=3.3.0'
 ]
 
 setup(

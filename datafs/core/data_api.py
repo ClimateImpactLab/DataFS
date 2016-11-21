@@ -3,7 +3,9 @@ from __future__ import absolute_import
 from datafs.managers.manager import BaseDataManager
 from datafs.services.service import DataService
 
-import time
+from fs.multifs import MultiFS
+
+import time, hashlib, os
 
 class DataAPI(object):
 
@@ -45,8 +47,17 @@ class DataAPI(object):
         self.upload_services = value
 
     def attach_service(self, service_name, service):
-        service.api = self
         self.services[service_name] = DataService(service)
+        self.services[service_name].api = self
+
+    @property
+    def download_service(self):
+        _download_service = MultiFS()
+
+        for service_name in reversed(self.download_priority):
+            _download_service.addfs(service_name, self.services[service_name].fs)
+
+        return DataService(_download_service)
 
     def attach_manager(self, manager):
         manager.api = self
@@ -85,4 +96,38 @@ class DataAPI(object):
         '''
 
         return cls.create_timestamp()
+
+    @classmethod
+    def create_service_path(cls, filepath, archive_name, version_id):
+        '''
+        Utility function for creating internal service paths
+
+        Overload this function to change internal service path format
+        '''
+
+        return os.path.join(*tuple(archive_name.split('.') + [version_id + os.path.splitext(filepath)[1]]))
+
+    @staticmethod
+    def hash_file(filepath):
+        '''
+        Utility function for hashing file contents
+
+        Overload this function to change the file equality checking algorithm
+    
+        Parameters
+
+
+        Returns
+        -------
+        algorithm : str
+            Name/description of the algorithm being used.
+
+        value : str
+            Hash digest value
+        '''
+
+        with open(filepath, 'rb') as f:
+            hashval = hashlib.sha256(f.read())
+
+        return 'sha256', hashval.hexdigest()
 

@@ -1,10 +1,4 @@
 
-import logging
-import os
-
-import fs.utils
-from fs.opener import opener
-from fs.osfs import OSFS
 
 class DataArchive(object):
     def __init__(self, api, archive_name):
@@ -14,7 +8,7 @@ class DataArchive(object):
 
     @property
     def latest(self):
-        raise NotImplementedError
+        return self.get_version(sorted(self.version_ids)[-1])
 
     @latest.setter
     def latest(self, value):
@@ -27,7 +21,7 @@ class DataArchive(object):
         Version ID history for an archive
         '''
 
-        return self.api.manager.get_all_version_ids(self.archve_name)
+        return self.api.manager.get_all_version_ids(self.archive_name)
 
 
     @version_ids.setter
@@ -67,42 +61,59 @@ class DataArchive(object):
 
         '''
 
-        self.api.manager.get_version(self.archive_name, version_id)
+        return self.api.manager.get_version(self.archive_name, version_id)
 
 
-    def update(self, file, **kwargs):
+    def update(self, filepath, **kwargs):
         '''
         Enter a new version to a DataArchive
 
         Parameters
         ----------
 
-        file : str
+        filepath : str
             The path to the file on your local file system
 
 
+        .. todo::
 
+            implement a way to prevent multiple uploads of the same file
         '''
+
+        # Get hash value for file
+
+        algorithm, hashval = self.api.hash_file(filepath)
+        hashsummary = {"algorithm": algorithm, "value": hashval}
+
+
+        # TODO: check for archive/version/hashval with manager
+        #       Not sure what the best way to implement this is
+        # services_with_hashval = self.api.manager.search_by_hashval() ??
+
 
         # loop through upload services
         #   and put file to each
 
-        version_id = self.api.create_version_id(self.archive_name, file)
+        version_id = self.api.create_version_id(self.archive_name, filepath)
 
-        file_fs = OSFS(fs.path.dirname(os.path.abspath(file)))
-        file_path = fs.path.basename(file)
+        services = []
 
-        services = {}
+        service_path = self.api.create_service_path(filepath, self.archive_name, version_id)
 
         for service_name in self.api.upload_services:
             
             service = self.api.services[service_name]
             
-            res = service.upload(file, self.archive_name, version_id)
-            services[service_name] = res
+            service.upload(filepath, service_path)
+            services.append(service_name)
 
-        # also update records in self.api.manager
-        self.api.manager.update(self.archive_name, version_id, services)
+        # update records in self.api.manager
+        self.api.manager.update(
+            archive_name = self.archive_name, 
+            version_id = version_id, 
+            service_path = service_path,
+            service_data = services, 
+            checksum = hashsummary)
 
 
     def update_metadata(self, **kwargs):

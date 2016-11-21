@@ -44,7 +44,8 @@ extensions = [
     'sphinx.ext.autodoc', 
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon']
+    'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx']
 
 napoleon_numpy_docstring = True
 
@@ -284,3 +285,8 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/2.7', None),
+    'fs': ('http://docs.pyfilesystem.org/en/latest/', None)
+    }

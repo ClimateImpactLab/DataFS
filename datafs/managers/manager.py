@@ -11,7 +11,7 @@ class BaseDataManager(object):
     Should be subclassed. Not intended to be used directly.
     '''
 
-    def __init__(self, api):
+    def __init__(self, api=None):
         self.api = api
 
 
@@ -68,7 +68,7 @@ class BaseDataManager(object):
         Return a DataFile object from a specific service
         '''
 
-        self._get_datafile_from_service(archive_name, version_id, service)
+        return self._get_datafile_from_service(archive_name, version_id, service)
 
 
     def get_all_version_ids(self, archive_name):
@@ -81,7 +81,7 @@ class BaseDataManager(object):
 
         '''
 
-        self._get_all_version_ids(archive_name)
+        return self._get_all_version_ids(archive_name)
 
 
     def get_version(self, archive_name, version_id):
@@ -103,13 +103,8 @@ class BaseDataManager(object):
 
         '''
 
-        for service in self.api.manager.get_services_for_version(archive_name, version_id):
-            try:
-                self.api.manager.get_datafile_from_service(archive_name, version_id, serice)
-            except ServiceNotAvailableError as e:
-                logging.warn('service "{}" not available when retrieving "{}" version "{}"'.format(service.name, archive_name, version_id))
-            except VersionNotAvailableError as e:
-                pass
+        service_path = self._get_service_path(archive_name, version_id)
+        return self.api.download_service.get_datafile(archive_name, version_id, service_path)
 
 
     def create_archive(self, archive_name, raise_if_exists=True, **metadata):
@@ -192,4 +187,7 @@ class BaseDataManager(object):
         raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
 
     def _get_archive_metadata(self, archive_name):
+        raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
+
+    def _get_service_path(self, archive_name, version_id):
         raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')

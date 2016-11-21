@@ -1,25 +1,27 @@
 
+from __future__ import absolute_import
+
 import os
 import fs.utils
 from fs.osfs import OSFS
 from fs.base import FS
 
+from datafs.core.data_file import DataFile
+
 class DataService(object):
 
-    def __init__(self, fs):
+    def __init__(self, fs, api=None):
         self.fs = fs
+        self.api = api
 
-    def get_datafile(self, archive_name, version_id):
+    def get_datafile(self, archive_name, version_id, path):
         '''
         Retrieve a :py:class:`~datafs.core.data_file.DataFile` object
 
         Parameters
         ----------
-        archive_name : str
-            archive name for requested file
-
-        version_id : str
-            version ID of requested file
+        path : str
+            path to the requested file, relative to the service root
 
         Returns
         -------
@@ -28,11 +30,9 @@ class DataService(object):
         
         '''
 
-        target_name = fs.path.join(*tuple(archive_name.split('.') + [version_id + os.path.splitext()[1]]))
+        return DataFile(self.api, archive_name, version_id, self.fs, path)
 
-        self._get_datafile(self, archive_name, version_id)
-
-    def upload(self, file, archive_name, version_id):
+    def upload(self, filepath, path):
         '''
 
         Returns
@@ -42,18 +42,11 @@ class DataService(object):
 
         '''
 
-        current_fs = OSFS(os.path.dirname(file))
-        current_path = os.path.basename(file)
+        current_fs = OSFS(os.path.dirname(filepath))
+        current_path = os.path.basename(filepath)
 
-        target_name = fs.path.join(*tuple(archive_name.split('.') + [version_id + os.path.splitext(file)[1]]))
+        target_name = path
 
         self.fs.makedir(fs.path.dirname(target_name), recursive=True, allow_recreate=True)
         fs.utils.copyfile(current_fs, current_path, self.fs, target_name)
-
-        return {'path': target_name}
-
-    # private methods to be implemented by subclasses
-
-    def _get_datafile(self, archive_name, version_id):
-        raise NotImplementedError('BaseService cannot be used directly. Use a subclass, such as OSService')
 

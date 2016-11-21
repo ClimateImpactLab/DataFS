@@ -11,7 +11,8 @@ Contents:
    usage
    contributing
    history
-   modules
+   datafs
+   examples
 
 Indices and tables
 ==================

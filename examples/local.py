@@ -11,7 +11,7 @@ To run this example:
    `MongoDB's Tutorial <https://docs.mongodb.com/manual/tutorial/>`_ 
    installation and startup instructions. 
 
-2. Start the MongoDB server (e.g. `mongodb  --dbpath . --nojournal`)
+2. Start the MongoDB server (e.g. `mongod  --dbpath . --nojournal`)
 
 3. Run ``local.py`` with DataFS installed, or as a module from the repo root:
 
@@ -30,64 +30,77 @@ from fs.osfs import OSFS
 
 import os
 
-def get_api(local_dir):
+def get_api():
     '''
     Create an api instance with your personal information
     '''
 
-
     api = DataAPI(
         username='My Name',
         contact = 'my.email@example.com')
-    
-    manager = MongoDBManager(api=api)
-    local = OSFS(local_dir)
-
-    api.attach_manager(manager)
-    api.attach_service('local', local)
 
     return api
 
-def create_archive(api, archive_name):
+def create_and_attach_services(api):
+    
+    # Create manager
+    manager = MongoDBManager()
+    
+
+    # Set up local archive service in ~/datafs
+    local_dir = '~/datafs/'
+    
+    if not os.path.exists(os.path.expanduser(local_dir)):
+        os.makedirs(os.path.expanduser(local_dir))
+        
+    local = OSFS(local_dir)
+
+
+    # Attach manager and service to API
+    api.attach_manager(manager)
+    api.attach_service('local', local)
+
+
+def create_archive(api):
     '''
     Create an archive
     '''
 
-    archive_name = 'myproject.myteam.var1.type1'
+    archive_name = 'my_first_archive'
+    description = 'My test data archive'
+
     api.create_archive(
         archive_name, 
-        description='My test data archive',
+        description=description,
         raise_if_exists=False)
 
-    print('created archive "{}"'.format(archive_name))
+    # add some other archives for testing
 
-def retrieve_archive(api, archive_name):
+    api.create_archive('archive_2', raise_if_exists=False)
+
+    api.create_archive('archive_3', raise_if_exists=False)
+
+
+def retrieve_archive(api):
     '''
     Retrieve and use archive
     '''
 
+    archive_name = 'my_first_archive'
+    
     # Retrieve the archive
     var = api.get_archive(archive_name)
+
     return var
 
-
-def main():
+def add_to_archive(api):
     '''
-    Create a connection to the API and create an archive
+    Add file to archive
     '''
-    local_dir = '~/datafs/'
-    
-    if not os.path.isdir(local_dir):
-        os.makedirs(local_dir)
 
-    api = get_api(local_dir)
+    archive_name = 'my_first_archive'
 
-    archive_name = 'myproject.myteam.var1.type1'
-    create_archive(api, archive_name)
-    var = retrieve_archive(api, archive_name)
-    
-    print('retrieved archive "{}"'.format(var.archive_name))
-    print(var.metadata)
+    var = api.get_archive(archive_name)
 
     with open('test.txt', 'w+') as test:
         test.write('this is a test')
@@ -96,8 +109,61 @@ def main():
 
     os.remove('test.txt')
 
+    print('Archive "{}" versions:\n{}'.format(var.archive_name, var.versions))
 
 
+def retrieve_file(api):
+
+    archive_name = 'my_first_archive'
+
+    var = api.get_archive(archive_name)
+
+    file_object = var.latest
+
+    with file_object.open() as fp:
+        print('Archive "{}" latest version contents:\n{}'.format(archive_name, fp.read()))
+
+def update_file(api):
+
+    archive_name = 'my_first_archive'
+
+    var = api.get_archive(archive_name)
+
+    with open('newversion.txt', 'w+') as test:
+        test.write('this is the next test')
+
+    var.update('newversion.txt')
+    os.remove('newversion.txt')
+
+    print('Archive "{}" versions:\n{}'.format(var.archive_name, var.versions))
+
+    with var.latest.open() as f:
+        print(f.read())
+
+def main():
+    '''
+    Create a connection to the API and create an archive
+    '''
+
+    api = get_api()
+    create_and_attach_services(api)
+
+    create_archive(api)
+
+    print('\n')
+    var = retrieve_archive(api)
+    print('Retrieved archive "{}"'.format(var.archive_name))
+    print(var.metadata)
+
+
+    print('\n')
+    add_to_archive(api)
+
+    print('\n')
+    retrieve_file(api)
+
+    print('\n')
+    update_file(api)
 
 if __name__ == '__main__':
     main()

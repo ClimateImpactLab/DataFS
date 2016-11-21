@@ -42,6 +42,7 @@ Next, we'll choose an archive manager. DataFS currently supports MongoDB and Dyn
 
 .. code-block:: python
 
+    >>> from datafs.managers.manager_mongo import MongoDBManager
     >>> manager = MongoDBManager()
     >>> api.attach_manager(manager)
 
@@ -59,6 +60,7 @@ Now we'll create a local file service using the fs package:
 
 .. code-block:: python
 
+    >>> from fs.osfs import OSFS
     >>> local = OSFS(local_dir)
     >>> api.attach_service('local', local)
 

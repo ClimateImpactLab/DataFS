@@ -10,3 +10,4 @@ cryptography==1.5.3
 PyYAML==3.12
 pytest==3.0.4
 fs==0.5.4
+pymongo==3.3.1

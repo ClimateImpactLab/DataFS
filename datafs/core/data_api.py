@@ -14,12 +14,12 @@ class DataAPI(object):
 
     TimestampFormat = '%Y%m%d-%H%M%S'
 
-    def __init__(self, username, contact, manager=None, services={}, download_priority=None, upload_services=None):
+    def __init__(self, username, contact, download_priority=None, upload_services=None):
         self.username = username
         self.contact = contact
 
-        self.manager = manager
-        self.services = services
+        self.manager = None
+        self.services = {}
 
         self._download_priority = download_priority
         self._upload_services = upload_services
@@ -60,8 +60,8 @@ class DataAPI(object):
         return DataService(_download_service)
 
     def attach_manager(self, manager):
-        manager.api = self
         self.manager = manager
+        self.manager.api = self
 
     def create_archive(self, archive_name, raise_if_exists=True, **metadata):
         self.manager.create_archive(archive_name, raise_if_exists=raise_if_exists, **metadata)

@@ -4,8 +4,9 @@ from datafs.managers.manager import BaseDataManager
 from datafs.services.service import DataService
 
 from fs.multifs import MultiFS
+import fs.path
 
-import time, hashlib, os
+import time, hashlib
 
 class DataAPI(object):
 
@@ -14,12 +15,12 @@ class DataAPI(object):
 
     TimestampFormat = '%Y%m%d-%H%M%S'
 
-    def __init__(self, username, contact, manager=None, services={}, download_priority=None, upload_services=None):
+    def __init__(self, username, contact, download_priority=None, upload_services=None):
         self.username = username
         self.contact = contact
 
-        self.manager = manager
-        self.services = services
+        self.manager = None
+        self.services = {}
 
         self._download_priority = download_priority
         self._upload_services = upload_services
@@ -60,8 +61,8 @@ class DataAPI(object):
         return DataService(_download_service)
 
     def attach_manager(self, manager):
-        manager.api = self
         self.manager = manager
+        self.manager.api = self
 
     def create_archive(self, archive_name, raise_if_exists=True, **metadata):
         self.manager.create_archive(archive_name, raise_if_exists=raise_if_exists, **metadata)
@@ -105,7 +106,7 @@ class DataAPI(object):
         Overload this function to change internal service path format
         '''
 
-        return os.path.join(*tuple(archive_name.split('.') + [version_id + os.path.splitext(filepath)[1]]))
+        return fs.path.join(*tuple(archive_name.split('.') + [version_id + fs.path.splitext(filepath)[1]]))
 
     @staticmethod
     def hash_file(filepath):

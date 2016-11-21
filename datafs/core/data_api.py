@@ -54,7 +54,7 @@ class DataAPI(object):
     def download_service(self):
         _download_service = MultiFS()
 
-        for service_name in reversed(self.download_priority):
+        for service_name in reversed(list(self.download_priority)):
             _download_service.addfs(service_name, self.services[service_name].fs)
 
         return DataService(_download_service)

@@ -9,14 +9,11 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    'fs==0.5.4'
-]
+with open('requirements.txt') as req_dev_file:
+    requirements = req_dev_file.read().splitlines()
 
-test_requirements = [
-    'fs>=0.5.4',
-    'pymongo>=3.3.0'
-]
+with open('requirements_dev.txt') as req_dev_file:
+    test_requirements = req_dev_file.read().splitlines()
 
 setup(
     name='datafs',

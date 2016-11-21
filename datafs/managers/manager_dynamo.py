@@ -31,5 +31,5 @@ class DynamoDBManager(BaseDataManager):
     def _create_if_not_exists(self, archive_name, **metadata):
         raise NotImplementedError
 
-    def _get_archvie(self, archive_name):
+    def _get_archive(self, archive_name):
         raise NotImplementedError

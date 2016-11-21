@@ -9,11 +9,22 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-with open('requirements.txt') as req_dev_file:
-    requirements = req_dev_file.read().splitlines()
+requirements = [
+    'fs==0.5.4'
+]
 
-with open('requirements_dev.txt') as req_dev_file:
-    test_requirements = req_dev_file.read().splitlines()
+test_requirements = [
+    'pip==9.0.1',
+    'watchdog==0.8.3',
+    'flake8==3.2.0',
+    'tox==2.5.0',
+    'coverage==4.2',
+    'cryptography==1.5.3',
+    'PyYAML==3.12',
+    'pytest==3.0.4',
+    'fs==0.5.4',
+    'pymongo==3.3.1'
+]
 
 setup(
     name='datafs',

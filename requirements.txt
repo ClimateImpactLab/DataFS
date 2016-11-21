@@ -1,2 +1,2 @@
 fs==0.5.4
-pymongo>=3.3.0
+pymongo==3.3.1

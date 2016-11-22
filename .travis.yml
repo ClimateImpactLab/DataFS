@@ -9,15 +9,15 @@ env:
   - TOXENV=py34
   - TOXENV=py33
   - TOXENV=py27
-  
-  - TOXENV=pypy3        # Python 3.2.5 (b2091e973da6, Oct 19 2014, 18:29:55)
-                        # [PyPy 2.4.0 with GCC 4.6.3]
-  - TOXENV=pypy-5.3.1   # Python 2.7.10 (7e8df3df9641, Jun 14 2016, 13:58:02)
-                        # [PyPy 5.3.1 with GCC 4.8.2]
-  - TOXENV=pypy-5.4'    # Python 2.7.10 (77392ad26350, Aug 28 2016, 06:54:48)
-                        # [PyPy 5.4.0 with GCC 4.8.2]
-  - TOXENV=pypy-5.4.1   # Python 2.7.10 (c95650101a99, Sep 06 2016, 11:10:29)
-                        # [PyPy 5.4.1 with GCC 4.8.2]
+
+  - 'pypy3'      # Python 3.2.5 (b2091e973da6, Oct 19 2014, 18:29:55)
+                 # [PyPy 2.4.0 with GCC 4.6.3]
+  - 'pypy-5.3.1' # Python 2.7.10 (7e8df3df9641, Jun 14 2016, 13:58:02)
+                 # [PyPy 5.3.1 with GCC 4.8.2]
+  - 'pypy-5.4'   # Python 2.7.10 (77392ad26350, Aug 28 2016, 06:54:48)
+                 # [PyPy 5.4.0 with GCC 4.8.2]
+  - 'pypy-5.4.1' # Python 2.7.10 (c95650101a99, Sep 06 2016, 11:10:29)
+                 # [PyPy 5.4.1 with GCC 4.8.2]
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 

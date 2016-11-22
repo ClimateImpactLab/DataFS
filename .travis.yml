@@ -19,7 +19,8 @@ install:
   - pip install -r requirements.txt
   - pip install -r requirements_test.txt
 # command to run tests
-script: pytest
+script: 
+  - pytest --doctest-modules --pep8 datafs,examples -v --cov datafs,examples --cov-report term-missing
 
 # After you create the Github repo and add it to Travis, run the
 # travis_pypi_setup.py script to finish PyPI deployment setup

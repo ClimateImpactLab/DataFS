@@ -38,6 +38,11 @@ deploy:
 services: 
   - mongodb
 
+notifications:
+  email:
+    on_success: never
+    on_failure: never
+
 
 after_success:
   - coveralls

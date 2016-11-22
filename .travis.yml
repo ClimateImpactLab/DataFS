@@ -25,7 +25,11 @@ install:
 # For testing coverage locally, use:
 # pytest datafs --cov=datafs --cov-report term-missing;
 script: 
-  - py.test
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then
+      py.test datafs;
+    else
+      py.test datafs --cov=datafs --cov-report term-missing;
+    fi
 
 
 # After you create the Github repo and add it to Travis, run the

@@ -160,7 +160,7 @@ If you write to the file objects in the archive, you'll overwrite the old versio
     ... 
     >>> var.update('newversion.txt')
     >>> os.remove('newversion.txt')
-    >>> var.versions
+    >>> var.version_ids
     [u'20161122-175114', u'20161122-175114']
 
 Now let's make sure we're getting the latest version. This time, we'll use the ``latest`` property:

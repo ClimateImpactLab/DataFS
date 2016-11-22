@@ -9,6 +9,8 @@ from pymongo.errors import ServerSelectionTimeoutError, DuplicateKeyError
 
 import logging
 
+class ConnectionError(IOError):
+    pass
 
 def catch_timeout(func):
     '''

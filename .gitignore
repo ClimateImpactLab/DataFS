@@ -63,3 +63,8 @@ target/
 
 # mac OS files
 .DS_Store
+
+
+#.IPython
+.ipynb
+.ipynb_checkpoints

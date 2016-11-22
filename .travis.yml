@@ -26,9 +26,9 @@ install:
 # pytest datafs --cov=datafs --cov-report term-missing;
 script: 
   - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then
-      py.test datafs;
+      py.test;
     else
-      py.test datafs --cov=datafs --cov-report term-missing;
+      py.test --cov=datafs --cov-report term-missing;
     fi
 
 

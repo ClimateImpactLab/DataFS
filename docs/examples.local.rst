@@ -76,7 +76,7 @@ metadata. To suppress errors on re-creation, use the
 
 .. code-block:: python
     
-    >>> create_archive(
+    >>> api.create_archive(
     ...     api, 
     ...     'my_first_archive',
     ...     description = 'My test data archive')

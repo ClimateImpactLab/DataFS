@@ -34,7 +34,7 @@ Begin by creating an API instance:
     >>> api = DataAPI(
     ...     username='My Name',
     ...     contact = 'my.email@example.com')
-    
+
 Attach services
 ~~~~~~~~~~~~~~~
 
@@ -48,13 +48,13 @@ Next, we'll choose an archive manager. DataFS currently supports MongoDB and Dyn
 
 Now we need a storage service. DataFS is designed to be used with remote storage (S3, FTP, etc), but it can also be run on your local filesystem. In this tutorial we'll use a local service:
 
-To do this, pick a directory to use as a local store:
+To do this, pick a directory to use as a local store. We'll use a temporary directory:
 
 .. code-block:: python
 
-    >>> local_dir = '~/datafs/'
-    >>> if not os.path.exists(os.path.expanduser(local_dir)):
-    ...     os.makedirs(os.path.expanduser(local_dir))
+    >>> import tempfile
+    >>> local_dir = tempfile.mkdtemp()
+
 
 Now we'll create a local file service using the fs package:
 
@@ -63,6 +63,7 @@ Now we'll create a local file service using the fs package:
     >>> from fs.osfs import OSFS
     >>> local = OSFS(local_dir)
     >>> api.attach_service('local', local)
+
 
 Create archives
 ~~~~~~~~~~~~~~~
@@ -76,8 +77,7 @@ metadata. To suppress errors on re-creation, use the
 
 .. code-block:: python
     
-    >>> create_archive(
-    ...     api, 
+    >>> api.create_archive(
     ...     'my_first_archive',
     ...     description = 'My test data archive')
 
@@ -93,10 +93,9 @@ metadata that was created when it was initialized.
 .. code-block:: python
     
     >>> var = api.get_archive('my_first_archive')
-    >>> print(var.archive_name)
-    my_first_archive
-    >>> print(var.metadata)
-    {u'creation_date': u'20161121-002048', u'contact': u'my.email@example.com', u'description': u'My test data archive', u'creator': u'My Name'}
+    >>> var.metadata
+    {u'creation_date': u'20161122-175114', u'contact': u'my.email@example.com', u'description': u'My test data archive', u'creator': u'My Name'}
+
 
 Add a file to the archive
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -129,9 +128,7 @@ Let's make sure it's still in the archive:
 .. code-block:: python
 
     >>> var.version_ids
-    [u'20161121-002139']
-    >>> var.versions
-    [<datafs.core.data_file.DataFile object at 0x1030fa550>]
+    [u'20161122-175114']
 
 
 Reading from the archive
@@ -143,7 +140,7 @@ Next we'll read from the archive. That file object returned by ``var.versions`` 
 
     >>> with var.versions[0].open() as f:
     ...     print(f.read())
-    ...
+    ... 
     this is a test
 
 
@@ -160,24 +157,34 @@ If you write to the file objects in the archive, you'll overwrite the old versio
 
     >>> with open('newversion.txt', 'w+') as f:
     ...     f.write('this is the next test')
-    ...
+    ... 
     >>> var.update('newversion.txt')
+    >>> os.remove('newversion.txt')
     >>> var.versions
-    [<datafs.core.data_file.DataFile object at 0x1030fa410>, <datafs.core.data_file.DataFile object at 0x1030fa690>]
+    [u'20161122-175114', u'20161122-175114']
 
 Now let's make sure we're getting the latest version. This time, we'll use the ``latest`` property:
 
 .. code-block:: python
 
+
     >>> with var.latest.open() as f:
     ...     print(f.read())
-    ...
+    ... 
     this is the next test
+
 
 Cleanup
 ~~~~~~~
 
-You might want to delete the test files in ``~/datafs/``
+You might want to delete the local directory:
+
+.. code-block:: python
+
+
+    >>> import shutil
+    >>> shutil.rmtree(local_dir)
+
 
 Next steps
 ~~~~~~~~~~

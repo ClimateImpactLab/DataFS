@@ -18,8 +18,15 @@ install:
   - pip install .
   - pip install -r requirements.txt
   - pip install -r requirements_test.txt
+  - pip install coveralls
+  - pip install pytest-cov
+
 # command to run tests
-script: pytest
+# For testing coverage locally, use:
+# pytest datafs --cov=datafs --cov-report term-missing;
+script: 
+  - py.test
+
 
 # After you create the Github repo and add it to Travis, run the
 # travis_pypi_setup.py script to finish PyPI deployment setup
@@ -36,6 +43,11 @@ deploy:
 
 services: 
   - mongodb
+
+notifications:
+  email:
+    on_success: never
+    on_failure: never
 
 
 after_success:

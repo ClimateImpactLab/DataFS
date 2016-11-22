@@ -1,24 +1,25 @@
 # Config file for automatic testing at travis-ci.org
 # This file will be regenerated if you run travis_pypi_setup.py
 
+
 language: python
-python: 3.5
-
-env:
-  - TOXENV=py35
-  - TOXENV=py34
-  - TOXENV=py33
-  - TOXENV=py27
-  - TOXENV=pypy
-
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: 
-  - pip install -U tox
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  # PyPy versions
+  - "pypy"
+  - "pypy"  # PyPy2 2.5.0
+  - "pypy3" # Pypy3 2.4.0
+  - "pypy-5.3.1"
+# command to install dependencies
+install:
+  - pip install .
   - pip install -r requirements.txt
-  - pip install -r requirements_dev.txt
-
-# command to run tests, e.g. python setup.py test
-script: tox -e ${TOXENV}
+  - pip install -r requirements_test.txt
+# command to run tests
+script: pytest
 
 # After you create the Github repo and add it to Travis, run the
 # travis_pypi_setup.py script to finish PyPI deployment setup

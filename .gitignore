@@ -23,6 +23,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+*_deploy_key*
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -63,3 +64,8 @@ target/
 
 # mac OS files
 .DS_Store
+
+
+#.IPython
+.ipynb
+.ipynb_checkpoints

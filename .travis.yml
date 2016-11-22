@@ -18,12 +18,14 @@ install:
   - pip install .
   - pip install -r requirements.txt
   - pip install -r requirements_test.txt
+  - pip install coveralls
+  - pip install pytest-cov
 
 # command to run tests
 # For testing coverage locally, use:
 # pytest datafs --cov=datafs --cov-report term-missing;
 script: 
-  - pytest
+  - py.test
 
 
 # After you create the Github repo and add it to Travis, run the

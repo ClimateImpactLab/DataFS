@@ -139,7 +139,7 @@ class BaseDataManager(object):
 
         '''
 
-        return self._get_archvie(archive_name)
+        return self._get_archive(archive_name)
 
 
     def get_metadata(self, archive_name):
@@ -183,7 +183,7 @@ class BaseDataManager(object):
     def _create_if_not_exists(self, archive_name, **metadata):
         raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
 
-    def _get_archvie(self, archive_name):
+    def _get_archive(self, archive_name):
         raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
 
     def _get_archive_metadata(self, archive_name):

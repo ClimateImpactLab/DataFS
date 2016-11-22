@@ -132,7 +132,7 @@ class MongoDBManager(BaseDataManager):
         return {k: v for k, v in res.items() if k not in ['_id', 'versions']}
         
     @catch_timeout
-    def _get_archvie(self, archive_name):
+    def _get_archive(self, archive_name):
 
         res = self.collection.find_one({'_id': archive_name})
         

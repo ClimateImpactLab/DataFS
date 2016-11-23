@@ -4,6 +4,7 @@ from datafs.managers.manager import BaseDataManager
 from datafs.services.service import DataService
 
 from fs.multifs import MultiFS
+from collections import OrderedDict
 import fs.path
 
 import time, hashlib
@@ -20,7 +21,7 @@ class DataAPI(object):
         self.contact = contact
 
         self.manager = None
-        self.services = {}
+        self.services = OrderedDict()
 
         self._download_priority = download_priority
         self._upload_services = upload_services
@@ -34,7 +35,7 @@ class DataAPI(object):
 
     @download_priority.setter
     def download_priority(self, value):
-        self.download_priority = value
+        self._download_priority = value
 
     @property
     def upload_services(self):
@@ -45,7 +46,7 @@ class DataAPI(object):
 
     @upload_services.setter
     def upload_services(self, value):
-        self.upload_services = value
+        self._upload_services = value
 
     def attach_service(self, service_name, service):
         self.services[service_name] = DataService(service)

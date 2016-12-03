@@ -6,13 +6,11 @@ DataFS Distributed Data Management System
 .. image:: https://img.shields.io/pypi/v/datafs.svg
         :target: https://pypi.python.org/pypi/datafs
 
-.. image:: https://img.shields.io/travis/ClimateImpactLab/DataFS.svg
-        :target: https://travis-ci.org/ClimateImpactLab/DataFS
+.. image:: https://travis-ci.org/ClimateImpactLab/DataFS.svg?branch=master
+        :target: https://travis-ci.org/ClimateImpactLab/DataFS?branch=master
 
 .. image:: https://coveralls.io/repos/github/ClimateImpactLab/DataFS/badge.svg?branch=master
         :target: https://coveralls.io/github/ClimateImpactLab/DataFS?branch=master
-
-
 
 .. image:: https://readthedocs.org/projects/datafs/badge/?version=latest
         :target: https://datafs.readthedocs.io/en/latest/?badge=latest

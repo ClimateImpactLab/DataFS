@@ -50,10 +50,6 @@ class DataAPI(object):
     def archives(self):
         self.manager.get_archives()
 
-    @archives.setter
-    def archives(self):
-        raise AttributeError('archives attribute cannot be set')
-
     @classmethod
     def create_timestamp(cls):
         '''

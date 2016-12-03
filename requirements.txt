@@ -1,1 +1,1 @@
-fs==0.5.4
+git+https://github.com/PyFilesystem/pyfilesystem/blob/master/fs/s3fs.py

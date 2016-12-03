@@ -1,18 +1,19 @@
 
 
 class DataArchive(object):
-    def __init__(self, api, archive_name):
+    def __init__(self, api, archive_name, authority):
        self.api = api
        self.archive_name = archive_name
 
+       self._authority_name = authority
+
+    @property
+    def authority(self):
+        return self.api.authorities[self._authority_name]
 
     @property
     def latest(self):
         return self.get_version(sorted(self.version_ids)[-1])
-
-    @latest.setter
-    def latest(self, value):
-        raise AttributeError('latest attribute cannot be set')
 
 
     @property
@@ -24,21 +25,12 @@ class DataArchive(object):
         return self.api.manager.get_all_version_ids(self.archive_name)
 
 
-    @version_ids.setter
-    def version_ids(self, value):
-        raise AttributeError('version_ids attribute cannot be set')
-
-
     @property
     def versions(self):
         '''
         File history for an archive
         '''
         return [self.get_version(v) for v in self.version_ids]
-
-    @versions.setter
-    def versions(self, value):
-        raise AttributeError('versions attribute cannot be set')
 
     
     @property

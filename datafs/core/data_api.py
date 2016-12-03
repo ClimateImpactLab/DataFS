@@ -4,6 +4,7 @@ from datafs.managers.manager import BaseDataManager
 from datafs.services.service import DataService, CachingService
 
 from fs.multifs import MultiFS
+from collections import OrderedDict
 import fs.path
 
 import os

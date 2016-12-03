@@ -1,5 +1,5 @@
 import boto3
-import botocore.exceptions.ClientError
+#import botocore.exceptions.ClientError
 
 from datafs.managers.manager import BaseDataManager
 from datafs.core.data_archive import DataArchive
@@ -31,9 +31,12 @@ class DynamoDBManager(BaseDataManager):
     def _get_archives(self):
         """
         Returns a list of Archives in the table on Dynamo
+
+        "This creates "
         """
 
-        return [archive['GCP_ID'] for archive in self.table.scan(AttributesToGet=['GCP_ID'])['Items']]
+
+        return [DataArchive(self.api, str(archive['GCP_ID'])) for archive in self.table.scan(AttributesToGet=['GCP_ID'])['Items']]
 
     def _update(self, archive_name, version_id, version_data):
         raise NotImplementedError

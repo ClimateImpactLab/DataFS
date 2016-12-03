@@ -4,12 +4,12 @@ from datafs.managers.manager import BaseDataManager
 
 
 class DynamoDBManager(BaseDataManager):
+
     def __init__(self, api, *args, **kwargs):
         super(DynamoDBManager, self).__init__(api)
 
-
     # Private methods (to be implemented!)
-    
+
     def _update(self, archive_name, version_id, version_data):
         raise NotImplementedError
 

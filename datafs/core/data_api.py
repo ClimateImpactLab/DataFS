@@ -11,6 +11,7 @@ import os
 import time
 import hashlib
 
+
 class DataAPI(object):
 
     TimestampFormat = '%Y%m%d-%H%M%S'
@@ -32,7 +33,7 @@ class DataAPI(object):
     def attach_cache(self, service):
         self._cache = CachingService(service)
         self._cache.api = self
-    
+
     @property
     def manager(self):
         return self._manager
@@ -48,13 +49,14 @@ class DataAPI(object):
             return self.DefaultAuthorityName
 
         if len(self._authorities) == 0:
-            raise ValueError('No authorities have been attached. Use DataApi.attach_authority to attach a data service.')
+            raise ValueError(
+                'No authorities have been attached. Use DataApi.attach_authority to attach a data service.')
 
         if len(self._authorities) > 1:
-            raise ValueError('Default authority ambiguous. Specify an authority or set the DefaultAuthorityName attribute.')
+            raise ValueError(
+                'Default authority ambiguous. Specify an authority or set the DefaultAuthorityName attribute.')
 
         return list(self._authorities.keys())[0]
-
 
     @property
     def default_authority(self):
@@ -64,14 +66,25 @@ class DataAPI(object):
         self._manager = manager
         self.manager.api = self
 
-    def create_archive(self, archive_name, authority_name=None, service_path=None, raise_if_exists=True, **metadata):
+    def create_archive(
+            self,
+            archive_name,
+            authority_name=None,
+            service_path=None,
+            raise_if_exists=True,
+            **metadata):
         if authority_name is None:
             authority_name = self.default_authority_name
 
         if service_path is None:
             service_path = self.create_service_path(archive_name)
 
-        self.manager.create_archive(archive_name, authority_name, service_path=service_path, raise_if_exists=raise_if_exists, **metadata)
+        self.manager.create_archive(
+            archive_name,
+            authority_name,
+            service_path=service_path,
+            raise_if_exists=raise_if_exists,
+            **metadata)
 
     def get_archive(self, archive_name):
         return self.manager.get_archive(archive_name)
@@ -120,9 +133,9 @@ class DataAPI(object):
         Overloading
         -----------
 
-        Overload this function to change default internal service path format 
+        Overload this function to change default internal service path format
         and to enforce certain requirements on paths:
-    
+
         .. code-block:: python
 
             >>> class MyAPI(DataAPI):
@@ -131,7 +144,7 @@ class DataAPI(object):
             ...         if '_' in archive_name:
             ...             raise ValueError('No underscores allowed!')
             ...         return archive_name
-            ... 
+            ...
             >>> api = MyAPI
             >>> api.create_service_path('pictures_2016_may_vegas_wedding.png')   # doctest: +ELLIPSIS
             Traceback (most recent call last):
@@ -143,14 +156,13 @@ class DataAPI(object):
 
         return fs.path.join(*tuple(archive_name.split('_')))
 
-
     @staticmethod
     def hash_file(filepath):
         '''
         Utility function for hashing file contents
 
         Overload this function to change the file equality checking algorithm
-    
+
         Parameters
 
 
@@ -167,6 +179,4 @@ class DataAPI(object):
             with open(filepath, 'rb') as f:
                 hashval = hashlib.md5(f.read())
 
-
         return 'md5', hashval.hexdigest()
-

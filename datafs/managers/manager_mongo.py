@@ -9,8 +9,10 @@ from pymongo.errors import ServerSelectionTimeoutError, DuplicateKeyError
 
 import logging
 
+
 class ConnectionError(IOError):
     pass
+
 
 def catch_timeout(func):
     '''
@@ -38,7 +40,7 @@ class MongoDBManager(BaseDataManager):
 
     def __init__(self, database_name, table_name, api=None, *args, **kwargs):
         super(MongoDBManager, self).__init__(api)
-        
+
         # setup MongoClient
         # Arguments can be passed to the client
         self._client = MongoClient(*args, **kwargs)
@@ -63,34 +65,54 @@ class MongoDBManager(BaseDataManager):
             self._connect()
 
         return self._coll
-    
+
     def _connect(self):
 
         self._db = self._client[self.database_name]
         self._coll = self._db[self.table_name]
 
     # Private methods (to be implemented!)
-    
+
     @catch_timeout
     def _update(self, archive_name, archive_data):
-        self.collection.update({"_id":archive_name}, {"$push":{"versions": archive_data}})
+        self.collection.update({"_id": archive_name},
+                               {"$push": {"versions": archive_data}})
 
     def _update_metadata(self, archive_name, metadata):
         for key, val in metadata.items():
-            self.collection.update({"_id":archive_name}, {"$set":{"metadata.{}".format(key): val}})
+            self.collection.update({"_id": archive_name},
+                                   {"$set": {"metadata.{}".format(key): val}})
 
     @catch_timeout
-    def _create_archive(self, archive_name, authority_name, service_path, metadata):
+    def _create_archive(
+            self,
+            archive_name,
+            authority_name,
+            service_path,
+            metadata):
 
-        doc = {'_id': archive_name, 'authority_name': authority_name, 'service_path': service_path, 'versions': []}
+        doc = {
+            '_id': archive_name,
+            'authority_name': authority_name,
+            'service_path': service_path,
+            'versions': []}
         doc['metadata'] = metadata
 
         self.collection.insert_one(doc)
 
-    def _create_if_not_exists(self, archive_name, authority_name, service_path, metadata):
+    def _create_if_not_exists(
+            self,
+            archive_name,
+            authority_name,
+            service_path,
+            metadata):
 
         try:
-            self._create_archive(archive_name, authority_name, service_path, metadata)
+            self._create_archive(
+                archive_name,
+                authority_name,
+                service_path,
+                metadata)
         except DuplicateKeyError:
             pass
 
@@ -105,18 +127,20 @@ class MongoDBManager(BaseDataManager):
         '''
 
         return self.collection.find_one({'_id': archive_name})
-        
+
     @catch_timeout
     def _get_archive(self, archive_name):
 
         res = self.collection.find_one({'_id': archive_name})
-        
-        return DataArchive(api = self.api, archive_name=res['_id'], authority=res['authority_name'], service_path=res['service_path'])
+
+        return DataArchive(
+            api=self.api,
+            archive_name=res['_id'],
+            authority=res['authority_name'],
+            service_path=res['service_path'])
 
     def _get_archive_metadata(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
-        
-        return res['metadata']
 
-        
+        return res['metadata']

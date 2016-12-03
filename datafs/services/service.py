@@ -9,6 +9,7 @@ from fs.base import FS
 
 from datafs.core.data_file import DataFile
 
+
 class DataService(object):
 
     def __init__(self, fs, api=None):
@@ -17,11 +18,22 @@ class DataService(object):
 
     def upload(self, filepath, service_path):
         local = OSFS(os.path.dirname(filepath))
-        self.fs.makedir(fs.path.dirname(service_path), recursive=True, allow_recreate=True)
-        fs.utils.copyfile(local, os.path.basename(filepath), self.fs, service_path)
-
+        self.fs.makedir(
+            fs.path.dirname(service_path),
+            recursive=True,
+            allow_recreate=True)
+        fs.utils.copyfile(
+            local,
+            os.path.basename(filepath),
+            self.fs,
+            service_path)
 
 
 def CachingService(DataService):
     def cache(self, authority, service_path):
-        fs.utils.copyfile(authority.fs, service_path, self.fs, service_path, overwrite=True)
+        fs.utils.copyfile(
+            authority.fs,
+            service_path,
+            self.fs,
+            service_path,
+            overwrite=True)

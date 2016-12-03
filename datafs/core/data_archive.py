@@ -4,12 +4,13 @@ from datafs.core.data_file import DataFile
 
 
 class DataArchive(object):
-    def __init__(self, api, archive_name, authority, service_path):
-       self.api = api
-       self.archive_name = archive_name
 
-       self._authority_name = authority
-       self._service_path = service_path
+    def __init__(self, api, archive_name, authority, service_path):
+        self.api = api
+        self.archive_name = archive_name
+
+        self._authority_name = authority
+        self._service_path = service_path
 
     @property
     def authority_name(self):
@@ -22,7 +23,7 @@ class DataArchive(object):
     @property
     def service_path(self):
         return self._service_path
-    
+
     @property
     def metadata(self):
         return self.api.manager.get_metadata(self.archive_name)
@@ -30,7 +31,6 @@ class DataArchive(object):
     @property
     def latest_hash(self):
         pass
-
 
     def update(self, filepath, cache=False, **kwargs):
         '''
@@ -46,7 +46,7 @@ class DataArchive(object):
             Save file to cache before upload (default False)
 
         **kwargs stored as update to metadata.
-        
+
 
         .. todo::
 
@@ -61,9 +61,7 @@ class DataArchive(object):
             self.update_metadata(kwargs)
             return
 
-
         checksum = {"algorithm": algorithm, "value": hashval}
-
 
         # loop through upload services
         #   and put file to each
@@ -74,22 +72,18 @@ class DataArchive(object):
 
         if cache and self.api.cache:
             self.api.cache.upload(filepath, self.service_path)
-        
 
         # update records in self.api.manager
         self.api.manager.update(
-            archive_name = self.archive_name, 
-            checksum = checksum,
-            metadata = kwargs)
-
+            archive_name=self.archive_name,
+            checksum=checksum,
+            metadata=kwargs)
 
     def update_metadata(self, **kwargs):
-        
+
         # just update records in self.api.manager
-        
+
         self.api.manager.update(self.archive_name, kwargs)
-
-
 
     # File I/O methods
 
@@ -109,20 +103,17 @@ class DataArchive(object):
 
         return lambda *args, **kwargs: LocalFile(self, *args, **kwargs)
 
-
     def isfile(self, *args, **kwargs):
         '''
         Check whether the path exists and is a file
         '''
         self.fs.isfile(self.path, *args, **kwargs)
 
-
     def getinfo(self, *args, **kwargs):
         '''
         Return information about the path e.g. size, mtime
         '''
         self.fs.getinfo(self.path, *args, **kwargs)
-
 
     def desc(self, *args, **kwargs):
         '''
@@ -131,7 +122,6 @@ class DataArchive(object):
 
         self.fs.desc(self.path, *args, **kwargs)
 
-
     def exists(self, *args, **kwargs):
         '''
         Check whether a path exists as file or directory
@@ -139,14 +129,12 @@ class DataArchive(object):
 
         self.fs.exists(self.path, *args, **kwargs)
 
-
     def getmeta(self, *args, **kwargs):
         '''
         Get the value of a filesystem meta value, if it exists
         '''
 
         self.fs.getmeta(self.path, *args, **kwargs)
-
 
     def hasmeta(self, *args, **kwargs):
         '''

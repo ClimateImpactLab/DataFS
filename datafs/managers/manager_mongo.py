@@ -36,20 +36,26 @@ class MongoDBManager(BaseDataManager):
     *args, **kwargs passed to :py:class:`pymongo.MongoClient`
     '''
 
-    def __init__(self, api=None, *args, **kwargs):
+    def __init__(self, database_name, table_name, api=None, *args, **kwargs):
         super(MongoDBManager, self).__init__(api)
         
         # setup MongoClient
         # Arguments can be passed to the client
         self._client = MongoClient(*args, **kwargs)
 
+        self._database_name = database_name
+        self._table_name = table_name
+
         self._db = None
         self._coll = None
 
-    def _connect(self):
+    @property
+    def database_name(self):
+        return self._database_name
 
-        self._db = self._client[self.api.DatabaseName]
-        self._coll = self._db[self.api.DataTableName]
+    @property
+    def table_name(self):
+        return self._table_name
 
     @property
     def collection(self):
@@ -57,43 +63,33 @@ class MongoDBManager(BaseDataManager):
             self._connect()
 
         return self._coll
+    
+    def _connect(self):
+
+        self._db = self._client[self.database_name]
+        self._coll = self._db[self.table_name]
 
     # Private methods (to be implemented!)
     
     @catch_timeout
-    def _update(self, archive_name, version_id, version_data):
-        self.collection.update({"_id":archive_name}, {"$push":{"versions": version_data}})
+    def _update(self, archive_name, archive_data):
+        self.collection.update({"_id":archive_name}, {"$push":{"versions": archive_data}})
 
-    def _update_metadata(self, archive_name, **kwargs):
-        raise NotImplementedError
-
-    def _get_services_for_version(self, archive_name, version_id):
-        raise NotImplementedError
-
-    def _get_datafile_from_service(self, archive_name, version_id, service):
-        raise NotImplementedError
+    def _update_metadata(self, archive_name, metadata):
+        self.collection.update({"_id":archive_name}, {"$push":{"metadata": metadata}})
 
     @catch_timeout
-    def _get_all_version_ids(self, archive_name):
-        version_doc = self.collection.find_one(
-            {"_id":archive_name}, 
-            projection={"versions.version_id": 1})
+    def _create_archive(self, archive_name, authority_name, service_path, metadata):
 
-        return [ver["version_id"] for ver in version_doc["versions"]]
-
-
-    @catch_timeout
-    def _create_archive(self, archive_name, **metadata):
-
-        doc = {'_id': archive_name, 'versions': []}
-        doc.update(**metadata)
+        doc = {'_id': archive_name, 'authority_name': authority_name, 'service_path': service_path, 'versions': []}
+        doc['metadata'] = metadata
 
         self.collection.insert_one(doc)
 
-    def _create_if_not_exists(self, archive_name, **metadata):
+    def _create_if_not_exists(self, archive_name, authority_name, service_path, metadata):
 
         try:
-            self._create_archive(archive_name, **metadata)
+            self._create_archive(archive_name, authority_name, service_path, metadata)
         except DuplicateKeyError:
             pass
 
@@ -108,34 +104,18 @@ class MongoDBManager(BaseDataManager):
         '''
 
         return self.collection.find_one({'_id': archive_name})
-
-
-    @catch_timeout
-    def _get_all_service_paths(self, archive_name):
-        
-        version_doc = self.collection.find_one(
-            {"_id":archive_name}, 
-            projection={"versions": 1})
-
-        return {ver['version_id']: ver['service_path'] for ver in version_doc["versions"]}
-
-
-    def _get_service_path(self, archive_name, version_id):
-
-        return self._get_all_service_paths(archive_name)[version_id]
-
-
-    def _get_archive_metadata(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-        
-        return {k: v for k, v in res.items() if k not in ['_id', 'versions']}
         
     @catch_timeout
     def _get_archive(self, archive_name):
 
         res = self.collection.find_one({'_id': archive_name})
         
-        return DataArchive(api = self.api, archive_name=res['_id'])
+        return DataArchive(api = self.api, archive_name=res['_id'], authority=res['authority_name'], service_path=res['service_path'])
+
+    def _get_archive_metadata(self, archive_name):
+
+        res = self._get_archive_listing(archive_name)
+        
+        return res['metadata']
 
         

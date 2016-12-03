@@ -170,7 +170,7 @@ class BaseDataManager(object):
 
     def _get_services_for_version(self, archive_name, version_id):
         raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
-
+    
     def _get_datafile_from_service(self, archive_name, version_id, service):
         raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
 

@@ -129,7 +129,7 @@ class DataAPI(object):
         '''
 
         with open(filepath, 'rb') as f:
-            hashval = hashlib.sha256(f.read())
+            hashval = hashlib.md5(f.read())
 
-        return 'sha256', hashval.hexdigest()
+        return 'md5', hashval.hexdigest()
 

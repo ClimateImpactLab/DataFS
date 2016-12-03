@@ -5,6 +5,7 @@ flake8==3.2.1
 tox==2.5.0
 coverage==4.2
 Sphinx==1.4.9
+sphinx_rtd_theme=0.1.10a0
 PyYAML==3.12
 pytest==3.0.4
 pymongo==3.4.0

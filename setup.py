@@ -20,6 +20,7 @@ test_requirements = [
     'tox==2.5.0',
     'coverage==4.2',
     'cryptography==1.5.3',
+    'sphinx_rtd_theme=0.1.10a0',
     'PyYAML==3.12',
     'pytest==3.0.4',
     'fs==0.5.4',

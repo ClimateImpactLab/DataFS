@@ -33,7 +33,8 @@ class BaseDataManager(object):
 
         archive_data = metadata
 
-        self._update(archive_name, archive_data, version_metadata)
+        self.update_metadata(archive_name, archive_data)
+        self._update(archive_name, version_metadata)
 
     def update_metadata(self, archive_name, metadata):
         '''

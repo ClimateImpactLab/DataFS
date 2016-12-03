@@ -180,8 +180,6 @@ def retrieve_from_archive(api):
     with var.open() as f:
          print(f.read())
 
-
-@expect.stdout(test=lambda x: len(literal_eval(x)) == 2)
 def update_archive(api):
     '''
     Updating the archive
@@ -219,7 +217,7 @@ def retrieving_the_latest_version(api):
 
     var = api.get_archive('my_first_archive')
 
-    with var.latest.open() as f:
+    with var.open() as f:
          print(f.read())
 
     # Looks good!

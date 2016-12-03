@@ -76,7 +76,8 @@ class MongoDBManager(BaseDataManager):
         self.collection.update({"_id":archive_name}, {"$push":{"versions": archive_data}})
 
     def _update_metadata(self, archive_name, metadata):
-        self.collection.update({"_id":archive_name}, {"$push":{"metadata": metadata}})
+        for key, val in metadata.items():
+            self.collection.update({"_id":archive_name}, {"$set":{"metadata.{}".format(key): val}})
 
     @catch_timeout
     def _create_archive(self, archive_name, authority_name, service_path, metadata):

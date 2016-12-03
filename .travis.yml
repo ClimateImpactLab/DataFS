@@ -6,8 +6,8 @@ language: python
 python:
   - "2.7"
   - "3.3"
-  - "3.4"
-  - "3.5"
+  # - "3.4"
+  # - "3.5"
   # PyPy versions
   - "pypy"
   - "pypy"  # PyPy2 2.5.0
@@ -28,7 +28,7 @@ script:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then
       py.test;
     else
-      py.test --cov=datafs --cov-report term-missing;
+      py.test --cov=datafs --doctest-modules --cov-report term-missing;
     fi
 
 

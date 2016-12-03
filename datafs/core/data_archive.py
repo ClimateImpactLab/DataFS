@@ -99,7 +99,7 @@ class DataArchive(object):
         Opens a file for read/write
         '''
 
-        return DataFile
+        return lambda *args, **kwargs: DataFile(self, *args, **kwargs)
 
     @property
     def get_local_path(self):
@@ -107,7 +107,7 @@ class DataArchive(object):
         Returns a local path for read/write
         '''
 
-        return LocalFile
+        return lambda *args, **kwargs: LocalFile(self, *args, **kwargs)
 
 
     def isfile(self, *args, **kwargs):

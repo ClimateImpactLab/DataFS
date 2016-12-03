@@ -70,14 +70,14 @@ class DataAPI(object):
         if service_path is None:
             service_path = self.create_service_path(archive_name)
 
-        self.manager.create_archive(archive_name, authority_name, service_path=None, raise_if_exists=raise_if_exists, **metadata)
+        self.manager.create_archive(archive_name, authority_name, service_path=service_path, raise_if_exists=raise_if_exists, **metadata)
 
     def get_archive(self, archive_name):
         return self.manager.get_archive(archive_name)
 
     @property
     def archives(self):
-        self.manager.get_archives()
+        return self.manager.get_archives()
 
     @classmethod
     def create_timestamp(cls):

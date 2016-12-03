@@ -4,6 +4,16 @@ from datafs.managers.manager import BaseDataManager
 
 
 class DynamoDBManager(BaseDataManager):
+    """
+    Parameters
+    ----------
+    api : object
+        :py:class:`~datafs.core.data_api.DataAPI` object
+    table_name: str
+        For Climate Impact Lab table_name = "GCP"
+
+    """
+
     def __init__(self, table_name, api=None, *args, **kwargs):
         super(DynamoDBManager, self).__init__(api)
 
@@ -16,6 +26,13 @@ class DynamoDBManager(BaseDataManager):
 
     # Private methods (to be implemented!)
     
+    def _get_archives(self):
+        """
+        Returns a list of Archives in the table on Dynamo
+        """
+
+        return [archive['GCP_ID'] for archive in self.table.scan(AttributesToGet=['GCP_ID'])['Items']]
+
     def _update(self, archive_name, version_id, version_data):
         raise NotImplementedError
 
@@ -33,7 +50,7 @@ class DynamoDBManager(BaseDataManager):
 
     def _create_archive(self, archive_name, **metadata):
 
-      """
+        """
         This adds an item in a DynamoDB table corresponding to a S3 object
         
         Args
@@ -56,7 +73,6 @@ class DynamoDBManager(BaseDataManager):
         """
         try:
             res = self.table.put_item(Item={'GCP_ID': archive_name, 'Metadata': metadata})
-
             assert res['ResponseMetadata']['HTTPStatusCode'] == 200
 
         except AssertionError:

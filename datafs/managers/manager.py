@@ -43,6 +43,13 @@ class BaseDataManager(object):
 
         self._update_metadata(archive_name, **kwargs)
 
+    def get_archives(self):
+        """
+        Returns a list of all archives/variables available to the current manager
+        """
+
+        self._get_archives()
+
     def get_services_for_version(self, archive_name, version_id):
         '''
         Return services available for version ``version_id`` of archive ``archive_name``

@@ -168,7 +168,10 @@ class BaseDataManager(object):
 
 
     # Private methods (to be implemented by subclasses of DataManager)
-    
+
+    def _get_archives(self):
+        raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
+
     def _update(self, archive_name, version_id, version_data):
         raise NotImplementedError('BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
 

@@ -1,6 +1,8 @@
 import boto3
+import botocore.exceptions.ClientError
 
 from datafs.managers.manager import BaseDataManager
+from datafs.core.data_archive import DataArchive
 
 
 class DynamoDBManager(BaseDataManager):

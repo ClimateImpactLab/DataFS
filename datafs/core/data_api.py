@@ -15,50 +15,26 @@ class DataAPI(object):
 
     TimestampFormat = '%Y%m%d-%H%M%S'
 
-    def __init__(self, username, contact, download_priority=None, upload_services=None):
+    def __init__(self, username, contact):
         self.username = username
         self.contact = contact
 
         self.manager = None
-        self.services = {}
+        self.authorities = {}
+        self.cache = None
 
-        self._download_priority = download_priority
-        self._upload_services = upload_services
+    def attach_authority(self, service_name, service):
+        self.authorities[service_name] = DataService(service)
+        self.authorities[service_name].api = self
 
-    @property
-    def download_priority(self):
-        if self._download_priority is None:
-            return self.services.keys()
-        else:
-            return self._download_priority
+    # @property
+    # def download_service(self):
+    #     _download_service = MultiFS()
 
-    @download_priority.setter
-    def download_priority(self, value):
-        self.download_priority = value
+    #     for service_name in reversed(list(self.download_priority)):
+    #         _download_service.addfs(service_name, self.authorities[service_name].fs)
 
-    @property
-    def upload_services(self):
-        if self._upload_services is None:
-            return self.services.keys()
-        else:
-            return self._upload_services
-
-    @upload_services.setter
-    def upload_services(self, value):
-        self.upload_services = value
-
-    def attach_service(self, service_name, service):
-        self.services[service_name] = DataService(service)
-        self.services[service_name].api = self
-
-    @property
-    def download_service(self):
-        _download_service = MultiFS()
-
-        for service_name in reversed(list(self.download_priority)):
-            _download_service.addfs(service_name, self.services[service_name].fs)
-
-        return DataService(_download_service)
+    #     return DataService(_download_service)
 
     def attach_manager(self, manager):
         self.manager = manager
@@ -89,24 +65,14 @@ class DataAPI(object):
         return time.strftime(cls.TimestampFormat, time.gmtime())
 
     @classmethod
-    def create_version_id(cls, archive_name, filepath):
-        '''
-        Utility function for creating version IDs
-
-        Overload this function to change version naming scheme
-        '''
-
-        return cls.create_timestamp()
-
-    @classmethod
-    def create_service_path(cls, filepath, archive_name, version_id):
+    def create_service_path(cls, filepath, archive_name):
         '''
         Utility function for creating internal service paths
 
         Overload this function to change internal service path format
         '''
 
-        return fs.path.join(*tuple(archive_name.split('.') + [version_id + fs.path.splitext(filepath)[1]]))
+        return fs.path.join(*tuple(archive_name.split('.')))
 
     @staticmethod
     def hash_file(filepath):
@@ -128,7 +94,7 @@ class DataAPI(object):
         '''
 
         with open(filepath, 'rb') as f:
-            hashval = hashlib.sha256(f.read())
+            hashval = hashlib.md5(f.read())
 
-        return 'sha256', hashval.hexdigest()
+        return 'md5', hashval.hexdigest()
 

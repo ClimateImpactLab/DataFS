@@ -7,5 +7,5 @@ coverage==4.2
 Sphinx==1.4.9
 PyYAML==3.12
 pytest==3.0.4
-fs==0.5.4
 pymongo==3.4.0
+git+https://github.com/PyFilesystem/pyfilesystem/blob/master/fs/s3fs.py

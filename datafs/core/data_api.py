@@ -53,7 +53,7 @@ class DataAPI(object):
         if len(self._authorities) > 1:
             raise ValueError('Default authority ambiguous. Specify an authority or set the DefaultAuthorityName attribute.')
 
-        return self._authorities.keys()[0]
+        return list(self._authorities.keys())[0]
 
 
     @property

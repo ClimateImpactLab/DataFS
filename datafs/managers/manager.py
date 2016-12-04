@@ -1,6 +1,5 @@
 
 from __future__ import absolute_import
-import time
 
 
 class BaseDataManager(object):
@@ -106,11 +105,11 @@ class BaseDataManager(object):
 
     def _update(self, archive_name, archive_data):
         raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
+            'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _update_metadata(self, archive_name, metadata):
         raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
+            'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _create_archive(
             self,
@@ -119,7 +118,7 @@ class BaseDataManager(object):
             service_path,
             metadata):
         raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
+            'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _create_if_not_exists(
             self,
@@ -128,12 +127,12 @@ class BaseDataManager(object):
             service_path,
             metadata):
         raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
+            'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _get_archive(self, archive_name):
         raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
+            'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _get_archive_metadata(self, archive_name):
         raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass, such as MongoDBManager')
+            'BaseDataManager cannot be used directly. Use a subclass.')

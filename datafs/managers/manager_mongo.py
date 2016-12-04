@@ -7,8 +7,6 @@ from datafs.core.data_archive import DataArchive
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError, DuplicateKeyError
 
-import logging
-
 
 class ConnectionError(IOError):
     pass
@@ -20,10 +18,16 @@ def catch_timeout(func):
     '''
 
     def inner(*args, **kwargs):
+        msg = ' '.join([
+            'Connection to MongoDB server could not be established.',
+            'Make sure you are running a MongoDB server and that the MongoDB',
+            'Manager has been configured to connect over the correct port.',
+            'For more information see',
+            'https://docs.mongodb.com/manual/tutorial/.'])
         try:
             return func(*args, **kwargs)
-        except ServerSelectionTimeoutError as e:
-            raise ConnectionError('Connection to MongoDB server could not be established. Make sure you are running a MongoDB server and that the MongoDB Manager has been configured to connect over the correct port. For more information see https://docs.mongodb.com/manual/tutorial/.')
+        except ServerSelectionTimeoutError:
+            raise ConnectionError(msg)
 
     return inner
 

@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from datafs.core.data_file import DataFile
+from datafs.core.data_file import DataFile, LocalFile
 
 
 class DataArchive(object):
@@ -62,11 +62,6 @@ class DataArchive(object):
             return
 
         checksum = {"algorithm": algorithm, "value": hashval}
-
-        # loop through upload services
-        #   and put file to each
-
-        services = []
 
         self.authority.upload(filepath, self.service_path)
 

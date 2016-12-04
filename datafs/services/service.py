@@ -5,9 +5,6 @@ import os
 import fs.utils
 import fs.path
 from fs.osfs import OSFS
-from fs.base import FS
-
-from datafs.core.data_file import DataFile
 
 
 class DataService(object):

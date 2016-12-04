@@ -1,10 +1,7 @@
 from __future__ import absolute_import
 
-from datafs.managers.manager import BaseDataManager
 from datafs.services.service import DataService, CachingService
 
-from fs.multifs import MultiFS
-from collections import OrderedDict
 import fs.path
 
 import os
@@ -50,11 +47,11 @@ class DataAPI(object):
 
         if len(self._authorities) == 0:
             raise ValueError(
-                'No authorities have been attached. Use DataApi.attach_authority to attach a data service.')
+                'No authorities found. See attach_authority.')
 
         if len(self._authorities) > 1:
             raise ValueError(
-                'Default authority ambiguous. Specify an authority or set the DefaultAuthorityName attribute.')
+                'Authority ambiguous. Set authority or DefaultAuthorityName.')
 
         return list(self._authorities.keys())[0]
 
@@ -127,7 +124,8 @@ class DataAPI(object):
 
         .. code-block:: python
 
-            >>> print(DataAPI.create_service_path('pictures_2016_may_vegas_wedding.png'))
+            >>> print(DataAPI.create_service_path(
+            ...     'pictures_2016_may_vegas_wedding.png'))
             pictures/2016/may/vegas/wedding.png
 
         Overloading
@@ -146,7 +144,8 @@ class DataAPI(object):
             ...         return archive_name
             ...
             >>> api = MyAPI
-            >>> api.create_service_path('pictures_2016_may_vegas_wedding.png')   # doctest: +ELLIPSIS
+            >>> api.create_service_path(
+            ...   'pictures_2016_may_vegas_wedding.png')   # doctest: +ELLIPSIS
             Traceback (most recent call last):
             ...
             ValueError: No underscores allowed!

@@ -1,6 +1,5 @@
 
 import fs.utils
-import tempfile
 from fs.tempfs import TempFS
 from fs.multifs import MultiFS
 

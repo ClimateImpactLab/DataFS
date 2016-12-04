@@ -77,7 +77,7 @@ class DynamoDBManager(BaseDataManager):
         Coerce underscores to dashes
         """
         try:
-            res = self.table.put_item(Item={'GCP_ID': archive_name, 'Metadata': metadata})
+            res = self.table.put_item(Item={'GCP_ID': archive_name, 'Metadata': **metadata})
             assert res['ResponseMetadata']['HTTPStatusCode'] == 200
 
         except AssertionError:

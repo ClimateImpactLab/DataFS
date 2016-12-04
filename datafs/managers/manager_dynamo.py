@@ -41,8 +41,18 @@ class DynamoDBManager(BaseDataManager):
     def _update(self, archive_name, version_id, version_data):
         raise NotImplementedError
 
-    def _update_metadata(self, archive_name, **kwargs):
-        raise NotImplementedError
+
+    def _update_metadata(self, archive_name, updated_metadata):
+        
+
+
+        self.table.update_item(Key={'GCP_ID': archive_name},
+                    UpdateExpression="SET Metadata = list_append(:v, Metadata )",
+                    ExpressionAttributeValues={
+                    ':v': [updated_metadata]
+                    },
+                    ReturnValues='ALL_NEW'
+                    )
 
     def _get_services_for_version(self, archive_name, version_id):
         raise NotImplementedError
@@ -52,6 +62,10 @@ class DynamoDBManager(BaseDataManager):
 
     def _get_all_version_ids(self, archive_name):
         raise NotImplementedError
+
+    def _check_if_exists(self, archive_name):
+        return self.table.get_item(Key={'GCP_ID':archive_name})['ResponseMetadata']['HTTPHeaders']['x-amz-crc32'] != '2745614147'
+
 
     def _create_archive(self, archive_name, **metadata):
 
@@ -76,20 +90,29 @@ class DynamoDBManager(BaseDataManager):
         -----
         Coerce underscores to dashes
         """
-        try:
-            res = self.table.put_item(Item={'GCP_ID': archive_name, 'Metadata': **metadata})
-            assert res['ResponseMetadata']['HTTPStatusCode'] == 200
+        #check for existence
+        if self._check_if_exists(archive_name):
+            print "Archive already exists. Use api.get_archive(archive_name) to retrieve or api.update() to update"
 
-        except AssertionError:
-            return AssertionError
+        else:
+            try:
+                res = self.table.put_item(Item={'GCP_ID': archive_name, 'Metadata':[metadata]})
+                assert res['ResponseMetadata']['HTTPStatusCode'] == 200
 
-        return res
+            except AssertionError:
+                return AssertionError
 
+            return res
+            
+
+        
 
         
 
     def _create_if_not_exists(self, archive_name, **metadata):
-        raise NotImplementedError
+        self._create_archive(archive_name, **metadata)
 
     def _get_archive(self, archive_name):
-        raise NotImplementedError
+
+        return self.table.get_item(Key={'GCP_ID': archive_name})['Item']
+        

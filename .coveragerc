@@ -1,2 +1,4 @@
 [run]
-omit = */site-packages/*
+omit = 
+    */site-packages/*
+    */lib_pypy/*

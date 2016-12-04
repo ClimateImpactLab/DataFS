@@ -5,6 +5,8 @@ class DataArchive(object):
        self.api = api
        self.archive_name = archive_name
 
+    def __repr__(self):
+        return "<" + "{}".format(self.__class__.__name__) + ">" + ", " + "archive_name: {}".format(self.archive_name)
 
     @property
     def latest(self):

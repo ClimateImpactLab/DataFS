@@ -1,70 +1,38 @@
+from __future__ import absolute_import
+
+from datafs.core.data_file import DataFile, LocalFile
 
 
 class DataArchive(object):
-    def __init__(self, api, archive_name):
-       self.api = api
-       self.archive_name = archive_name
 
+    def __init__(self, api, archive_name, authority, service_path):
+        self.api = api
+        self.archive_name = archive_name
 
-    @property
-    def latest(self):
-        return self.get_version(sorted(self.version_ids)[-1])
-
-    @latest.setter
-    def latest(self, value):
-        raise AttributeError('latest attribute cannot be set')
-
+        self._authority_name = authority
+        self._service_path = service_path
 
     @property
-    def version_ids(self):
-        '''
-        Version ID history for an archive
-        '''
-
-        return self.api.manager.get_all_version_ids(self.archive_name)
-
-
-    @version_ids.setter
-    def version_ids(self, value):
-        raise AttributeError('version_ids attribute cannot be set')
-
+    def authority_name(self):
+        return self._authority_name
 
     @property
-    def versions(self):
-        '''
-        File history for an archive
-        '''
-        return [self.get_version(v) for v in self.version_ids]
+    def authority(self):
+        return self.api._authorities[self.authority_name]
 
-    @versions.setter
-    def versions(self, value):
-        raise AttributeError('versions attribute cannot be set')
+    @property
+    def service_path(self):
+        return self._service_path
 
-    
     @property
     def metadata(self):
         return self.api.manager.get_metadata(self.archive_name)
 
+    @property
+    def latest_hash(self):
+        pass
 
-    def get_version(self, version_id):
-        '''
-        Returns a DataFile for a specified version_id
-
-        Parameters
-        ----------
-        version_id : str
-
-        Returns
-        -------
-        version : object
-            :py:class:`~datafs.core.DataFile` object
-
-        '''
-
-        return self.api.manager.get_version(self.archive_name, version_id)
-
-
-    def update(self, filepath, **kwargs):
+    def update(self, filepath, cache=False, **kwargs):
         '''
         Enter a new version to a DataArchive
 
@@ -73,6 +41,11 @@ class DataArchive(object):
 
         filepath : str
             The path to the file on your local file system
+
+        cache : bool
+            Save file to cache before upload (default False)
+
+        **kwargs stored as update to metadata.
 
 
         .. todo::
@@ -83,41 +56,84 @@ class DataArchive(object):
         # Get hash value for file
 
         algorithm, hashval = self.api.hash_file(filepath)
-        hashsummary = {"algorithm": algorithm, "value": hashval}
 
+        if hashval == self.latest_hash:
+            self.update_metadata(kwargs)
+            return
 
-        # TODO: check for archive/version/hashval with manager
-        #       Not sure what the best way to implement this is
-        # services_with_hashval = self.api.manager.search_by_hashval() ??
+        checksum = {"algorithm": algorithm, "value": hashval}
 
+        self.authority.upload(filepath, self.service_path)
 
-        # loop through upload services
-        #   and put file to each
-
-        version_id = self.api.create_version_id(self.archive_name, filepath)
-
-        services = []
-
-        service_path = self.api.create_service_path(filepath, self.archive_name, version_id)
-
-        for service_name in self.api.upload_services:
-            
-            service = self.api.services[service_name]
-            
-            service.upload(filepath, service_path)
-            services.append(service_name)
+        if cache and self.api.cache:
+            self.api.cache.upload(filepath, self.service_path)
 
         # update records in self.api.manager
         self.api.manager.update(
-            archive_name = self.archive_name, 
-            version_id = version_id, 
-            service_path = service_path,
-            service_data = services, 
-            checksum = hashsummary)
-
+            archive_name=self.archive_name,
+            checksum=checksum,
+            metadata=kwargs)
 
     def update_metadata(self, **kwargs):
-        
+
         # just update records in self.api.manager
-        
-        self.api.manager.update(self.archive_name, **kwargs)
+
+        self.api.manager.update(self.archive_name, kwargs)
+
+    # File I/O methods
+
+    @property
+    def open(self):
+        '''
+        Opens a file for read/write
+        '''
+
+        return lambda *args, **kwargs: DataFile(self, *args, **kwargs)
+
+    @property
+    def get_local_path(self):
+        '''
+        Returns a local path for read/write
+        '''
+
+        return lambda *args, **kwargs: LocalFile(self, *args, **kwargs)
+
+    def isfile(self, *args, **kwargs):
+        '''
+        Check whether the path exists and is a file
+        '''
+        self.fs.isfile(self.path, *args, **kwargs)
+
+    def getinfo(self, *args, **kwargs):
+        '''
+        Return information about the path e.g. size, mtime
+        '''
+        self.fs.getinfo(self.path, *args, **kwargs)
+
+    def desc(self, *args, **kwargs):
+        '''
+        Return a short descriptive text regarding a path
+        '''
+
+        self.fs.desc(self.path, *args, **kwargs)
+
+    def exists(self, *args, **kwargs):
+        '''
+        Check whether a path exists as file or directory
+        '''
+
+        self.fs.exists(self.path, *args, **kwargs)
+
+    def getmeta(self, *args, **kwargs):
+        '''
+        Get the value of a filesystem meta value, if it exists
+        '''
+
+        self.fs.getmeta(self.path, *args, **kwargs)
+
+    def hasmeta(self, *args, **kwargs):
+        '''
+        Check if a filesystem meta value exists
+        '''
+
+        self.fs.hasmeta(self.path, *args, **kwargs)

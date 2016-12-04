@@ -6,8 +6,9 @@ flake8==3.2.1
 tox==2.5.0
 coverage==4.2
 Sphinx==1.4.9
+sphinx_rtd_theme==0.1.10a0
 cryptography==1.6
 PyYAML==3.12
 pytest==3.0.4
-fs==0.5.4
 pymongo==3.4.0
+git+https://github.com/PyFilesystem/pyfilesystem.git

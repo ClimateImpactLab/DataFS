@@ -1,158 +1,108 @@
 
-
-class DataFile(object):
-    '''
-    Base class for DataFile objects
-
-    '''
+import fs.utils
+from fs.tempfs import TempFS
+from fs.multifs import MultiFS
 
 
-    def __init__(self, api, archive, version_id, fs, path):
-        self.api = api
+class BaseVersionedFile(object):
+
+    def __init__(self, archive, cache=False, *args, **kwargs):
         self.archive = archive
-        self.version_id = version_id
-        self.fs = fs
-        self.path = path
+        self.cache = cache
 
-    @property
-    def metadata(self):
-        return self.archive.metadata
+        self.args = args
+        self.kwargs = kwargs
 
-    @metadata.setter
-    def metadata(self, value):
-        raise AttributeError('metadata attribute cannot be set')
+    def _get_file_wrapper(self):
 
-    def open(self, *args, **kwargs):
-        '''
-        Opens a file for read/writing
-        '''
+        # Check the hash (if one exists) for a local version of the file
+        if self.archive.api.cache:
 
-        return self.fs.open(self.path, *args, **kwargs)
+            # Delete the file in the local cache if it is out of date.
+            local_hash = self.archive.api.cache.get_hash(
+                self.archive.service_path)
+            latest_hash = self.archive.latest_hash()
+            if local_hash != latest_hash:
+                self.archive.api.cache.fs.remove(self.archive.service_path)
 
+        # Create a read-only wrapper with download priority cache, then
+        # authority
+        self.fs_wrapper = MultiFS()
+        self.fs_wrapper.addfs('authority', self.archive.authority.fs)
+        if self.archive.api.cache:
+            self.fs_wrapper.addfs('cache', self.archive.api.cache.fs)
 
-    def isfile(self, *args, **kwargs):
-        '''
-        Check whether the path exists and is a file
-        '''
-        self.fs.isfile(self.path, *args, **kwargs)
+        # Add a temporary filesystem as the write filesystem
+        self.temp_fs = TempFS()
+        self.fs_wrapper.setwritefs(self.temp_fs)
 
+    def open(self):
+        self._get_file_wrapper()
 
-    def remove(self, *args, **kwargs):
-        '''
-        Remove an existing file
-        '''
-        self.fs.remove(self.path, *args, **kwargs)
+        return self.fs_wrapper.open(
+            self.archive.service_path,
+            *self.args,
+            **self.kwargs)
 
+    def get_sys_path(self):
+        self._get_file_wrapper()
 
-    def rename(self, *args, **kwargs):
-        '''
-        Atomically rename a file or directory
-        '''
-        self.fs.rename(self.path, *args, **kwargs)
+        #  create a temporary file and save the data to the temporary file
+        self.temp_fs = TempFS()
+        fs.utils.copyfile(
+            self.fs_wrapper,
+            self.service_path,
+            self.temp_fs,
+            self.service_path)
 
+        return self.temp_fs.getsyspath(self.service_path)
 
-    def getinfo(self, *args, **kwargs):
-        '''
-        Return information about the path e.g. size, mtime
-        '''
-        self.fs.getinfo(self.path, *args, **kwargs)
+    def close(self):
+        # If nothing was written, exit
+        if not self.temp_fs.exists(self.archive.service_path):
+            self.temp_fs.close()
+            return True
 
+        # If cache exists:
+        if self.cache:
 
-    def copy(self, *args, **kwargs):
-        '''
-        Copy a file to a new location
-        '''
+            # Move the file to the cache before uploading
+            fs.utils.movefile(
+                self.temp_fs,
+                self.archive.service_path,
+                self.archive.api.cache.fs,
+                self.archive.service_path)
 
-        self.fs.copy(self.path, *args, **kwargs)
+            # Update the archive with the new version
+            self.archive.update(
+                self.archive.api.cache.fs.getsyspath(
+                    self.archive.service_path))
 
+        else:
+            # Update the archive with the new version
+            self.archive.update(
+                self.temp_fs.getsyspath(
+                    self.archive.service_path))
 
-    def desc(self, *args, **kwargs):
-        '''
-        Return a short descriptive text regarding a path
-        '''
-
-        self.fs.desc(self.path, *args, **kwargs)
-
-
-    def exists(self, *args, **kwargs):
-        '''
-        Check whether a path exists as file or directory
-        '''
-
-        self.fs.exists(self.path, *args, **kwargs)
-
-
-    def getpathurl(self, *args, **kwargs):
-        '''
-        Get an external URL at which the given file can be accessed, if possible
-        '''
-
-        self.fs.getpathurl(self.path, *args, **kwargs)
-
-
-    def getsyspath(self, *args, **kwargs):
-        '''
-        Get a file's name in the local filesystem, if possible
-        '''
-
-        self.fs.getsyspath(self.path, *args, **kwargs)
+        self.temp_fs.close()
+        return True
 
 
-    def getmeta(self, *args, **kwargs):
-        '''
-        Get the value of a filesystem meta value, if it exists
-        '''
+class DataFile(BaseVersionedFile):
 
-        self.fs.getmeta(self.path, *args, **kwargs)
+    def __enter__(self):
+        return self.open()
 
-
-    def getmmap(self, *args, **kwargs):
-        '''
-        Gets an mmap object for the given resource, if supported
-        '''
-
-        self.fs.getmmap(self.path, *args, **kwargs)
+    def __exit__(self, exception_type, exception_value, traceback):
+        self.close()
+        return True
 
 
-    def hassyspath(self, *args, **kwargs):
-        '''
-        Check if a path maps to a system path (recognized by the OS)
-        '''
+class LocalFile(DataFile):
 
-        self.fs.hassyspath(self.path, *args, **kwargs)
+    def __enter__(self):
+        return self.get_sys_path()
 
-
-    def haspathurl(self, *args, **kwargs):
-        '''
-        Check if a path maps to an external URL
-        '''
-
-        self.fs.haspathurl(self.path, *args, **kwargs)
-
-
-    def hasmeta(self, *args, **kwargs):
-        '''
-        Check if a filesystem meta value exists
-        '''
-
-        self.fs.hasmeta(self.path, *args, **kwargs)
-
-
-    def move(self, *args, **kwargs):
-        '''
-        Move a file to a new location
-        '''
-
-        self.fs.move(self.path, *args, **kwargs)
-
-
-    def settimes(self, *args, **kwargs):
-        '''
-        Sets the accessed and modified times of a path
-        '''
-
-        self.fs.settimes(self.path, *args, **kwargs)
-
-
-
-
+    def __exit__(self, exception_type, exception_value, traceback):
+        self.close()
+        return True

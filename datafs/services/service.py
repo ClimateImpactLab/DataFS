@@ -3,10 +3,9 @@ from __future__ import absolute_import
 
 import os
 import fs.utils
+import fs.path
 from fs.osfs import OSFS
-from fs.base import FS
 
-from datafs.core.data_file import DataFile
 
 class DataService(object):
 
@@ -14,39 +13,24 @@ class DataService(object):
         self.fs = fs
         self.api = api
 
-    def get_datafile(self, archive_name, version_id, path):
-        '''
-        Retrieve a :py:class:`~datafs.core.data_file.DataFile` object
+    def upload(self, filepath, service_path):
+        local = OSFS(os.path.dirname(filepath))
+        self.fs.makedir(
+            fs.path.dirname(service_path),
+            recursive=True,
+            allow_recreate=True)
+        fs.utils.copyfile(
+            local,
+            os.path.basename(filepath),
+            self.fs,
+            service_path)
 
-        Parameters
-        ----------
-        path : str
-            path to the requested file, relative to the service root
 
-        Returns
-        -------
-        datafile : object
-            :py:class:`~datafs.core.data_file.DataFile` object
-        
-        '''
-
-        return DataFile(self.api, archive_name, version_id, self.fs, path)
-
-    def upload(self, filepath, path):
-        '''
-
-        Returns
-        -------
-        response : dict
-            location of the object and other metadata
-
-        '''
-
-        current_fs = OSFS(os.path.dirname(filepath))
-        current_path = os.path.basename(filepath)
-
-        target_name = path
-
-        self.fs.makedir(fs.path.dirname(target_name), recursive=True, allow_recreate=True)
-        fs.utils.copyfile(current_fs, current_path, self.fs, target_name)
-
+def CachingService(DataService):
+    def cache(self, authority, service_path):
+        fs.utils.copyfile(
+            authority.fs,
+            service_path,
+            self.fs,
+            service_path,
+            overwrite=True)

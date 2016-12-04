@@ -72,7 +72,10 @@ def attach_manager(api):
     
     '''
 
-    manager = MongoDBManager()
+    manager = MongoDBManager(
+        database_name = 'MyDatabase',
+        table_name = 'DataFiles'
+    )
 
     api.attach_manager(manager)
 
@@ -100,7 +103,7 @@ def attach_service(api, local_dir):
 
     # We attach this file to the api and give it a name:
 
-    api.attach_service('local', local)
+    api.attach_authority('local', local)
 
 def create_archive(api):
     '''
@@ -116,7 +119,7 @@ def create_archive(api):
 
     api.create_archive(
         'my_first_archive',
-        description = 'My test data archive')
+        metadata = dict(description = 'My test data archive'))
 
 
 @expect.stdout(test=lambda x: literal_eval(x)['description'] == 'My test data archive')
@@ -162,22 +165,6 @@ def add_to_archive(api):
     os.remove('test.txt')
 
 
-@expect.stdout(test=lambda x: len(literal_eval(x)) == 1)
-def query_archive(api):
-    '''
-    Query archive
-    ~~~~~~~~~~~~~
-    '''
-
-    # Let's make sure the file is still in the archive:
-
-    var = api.get_archive('my_first_archive')
-
-    # List the archive's version IDs
-
-    print(var.version_ids)
-
-
 @expect.stdout('this is a test')
 def retrieve_from_archive(api):
     '''
@@ -190,11 +177,9 @@ def retrieve_from_archive(api):
     
     var = api.get_archive('my_first_archive')
 
-    with var.versions[0].open() as f:
+    with var.open() as f:
          print(f.read())
 
-
-@expect.stdout(test=lambda x: len(literal_eval(x)) == 2)
 def update_archive(api):
     '''
     Updating the archive
@@ -219,10 +204,6 @@ def update_archive(api):
 
     os.remove('newversion.txt')
 
-    # List the archive's version IDs
-
-    print(var.version_ids)
-
 
 @expect.stdout('this is the next test')
 def retrieving_the_latest_version(api):
@@ -236,7 +217,7 @@ def retrieving_the_latest_version(api):
 
     var = api.get_archive('my_first_archive')
 
-    with var.latest.open() as f:
+    with var.open() as f:
          print(f.read())
 
     # Looks good!
@@ -257,7 +238,6 @@ def run_local_example(local_dir):
     create_archive(api)
     retrieve_archive(api)
     add_to_archive(api)
-    query_archive(api)
     retrieve_from_archive(api)
     update_archive(api)
     retrieving_the_latest_version(api)

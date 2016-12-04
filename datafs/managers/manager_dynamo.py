@@ -38,12 +38,23 @@ class DynamoDBManager(BaseDataManager):
 
         return [DataArchive(self.api, str(archive['GCP_ID'])) for archive in self.table.scan(AttributesToGet=['GCP_ID'])['Items']]
 
-    def _update(self, archive_name, version_id, version_data):
-        raise NotImplementedError
-
 
     def _update_metadata(self, archive_name, updated_metadata):
-        
+        """
+        Appends the updated_metada dict to the Metadata Attribute list
+
+        Parameters
+        ----------
+        archive_name: str
+            Unique GCP_ID archive name
+
+        updated_metadata: dict
+            Dictionary of update metadata values
+            Right now just lets you append anything to the list
+
+        .. todo::
+
+        """
 
 
         self.table.update_item(Key={'GCP_ID': archive_name},
@@ -54,14 +65,9 @@ class DynamoDBManager(BaseDataManager):
                     ReturnValues='ALL_NEW'
                     )
 
-    def _get_services_for_version(self, archive_name, version_id):
-        raise NotImplementedError
+        return self._get_archive(archive_name)['Metadata']
 
-    def _get_datafile_from_service(self, archive_name, version_id, service):
-        raise NotImplementedError
 
-    def _get_all_version_ids(self, archive_name):
-        raise NotImplementedError
 
     def _check_if_exists(self, archive_name):
         return self.table.get_item(Key={'GCP_ID':archive_name})['ResponseMetadata']['HTTPHeaders']['x-amz-crc32'] != '2745614147'
@@ -112,7 +118,20 @@ class DynamoDBManager(BaseDataManager):
     def _create_if_not_exists(self, archive_name, **metadata):
         self._create_archive(archive_name, **metadata)
 
-    def _get_archive(self, archive_name):
+    def _get_archive_metadata(self, archive_name):
 
         return self.table.get_item(Key={'GCP_ID': archive_name})['Item']
+
+
+    def _update(self, archive_name, version_id, version_data):
+        raise NotImplementedError
+
+    def _get_services_for_version(self, archive_name, version_id):
+        raise NotImplementedError
+
+    def _get_datafile_from_service(self, archive_name, version_id, service):
+        raise NotImplementedError
+
+    def _get_all_version_ids(self, archive_name):
+        raise NotImplementedError
         

@@ -31,7 +31,7 @@ def get_counter():
     Counts up. Ensure we don't have name collisions
     '''
 
-    counter = 0
+    counter = random.randint(0,10000)
     while True:
         yield counter
         counter += 1
@@ -95,41 +95,51 @@ class TestHashFunctions(object):
 
         return apihash
 
-    def do_hashtest(self, archive, contents):
+    def do_hashtest(self, arch, contents):
 
         contents = unicode(contents)
 
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
-        apihash = self.update_and_hash(archive, contents)
+        apihash = self.update_and_hash(arch, contents)
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(direct, apihash)
-        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.latest_hash)
+        assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, arch.latest_hash)
 
         # Update and test again!
 
         contents = unicode(contents + '\n' + contents + '\nline 3!' + contents)
 
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
-        apihash = self.update_and_hash(archive, contents)
+        apihash = self.update_and_hash(arch, contents)
+
+        with arch.open('r') as f:
+            current = '\n'.join(list(map(lambda x: x.strip(), f.readlines())))
+
+        assert contents == current, 'Latest updates "{}" !=  archive contents "{}"'.format(contents, current)
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(direct, apihash)
-        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.latest_hash)
+        assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, arch.latest_hash)
 
         # Update and test a different way!
 
-        contents = unicode(contents + '\n' + contents + '\nline 3!' + contents)
+        contents = unicode(contents + '\nmore!!!\n' + contents)
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
 
-        with archive.open() as f:
+        with arch.open('w+') as f:
             f.write(contents)
 
-        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.latest_hash)
+        with arch.open('r') as f:
+            current = '\n'.join(list(map(lambda x: x.strip(), f.readlines())))
+
+        assert contents == current, 'Latest updates "{}" !=  archive contents "{}"'.format(contents, current)
+
+        assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, arch.latest_hash)
 
 
 
-    def test_hash_functions(self):
-        self.do_hashtest('')
-        self.do_hashtest('another test')
-        self.do_hashtest('9872387932487913874031713470304')
-        self.do_hashtest('ajfdsaion\ndaf\t\n\adfadsffdadsf\t')
+    def test_hash_functions(self, archive):
+        self.do_hashtest(archive, '')
+        self.do_hashtest(archive, 'another test')
+        self.do_hashtest(archive, '9872387932487913874031713470304')
+        self.do_hashtest(archive, 'ajfdsaion\ndaf\n\adfadsffdadsf')
 

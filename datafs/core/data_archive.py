@@ -74,11 +74,11 @@ class DataArchive(object):
             checksum=checksum,
             metadata=kwargs)
 
-    def update_metadata(self, **kwargs):
+    def update_metadata(self, metadata):
 
         # just update records in self.api.manager
 
-        self.api.manager.update(self.archive_name, kwargs)
+        self.api.manager.update_metadata(self.archive_name, metadata)
 
     # File I/O methods
 

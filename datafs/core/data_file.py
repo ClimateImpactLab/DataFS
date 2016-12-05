@@ -1,6 +1,9 @@
 
 import fs.utils
 import fs.path
+import tempfile
+import shutil
+# from fs.osfs import OSFS
 from fs.tempfs import TempFS
 from fs.multifs import MultiFS
 
@@ -45,6 +48,8 @@ class BaseVersionedFile(object):
             self.fs_wrapper.addfs('cache', self.archive.api.cache.fs)
 
         # Add a temporary filesystem as the write filesystem
+        # self.tempdir = tempfile.mkdtemp()
+        # self.temp_fs = OSFS(self.tempdir)
         self.temp_fs = TempFS()
 
         self.temp_fs.makedir(
@@ -84,6 +89,15 @@ class BaseVersionedFile(object):
         return self.temp_fs.getsyspath(self.archive.service_path)
 
     def close(self):
+        print('closing')
+        print('service path: "{}"'.format(self.archive.service_path))
+        print('system path: "{}"'.format(self.temp_fs.getsyspath(self.archive.service_path)))
+        print('exists: {}'.format(self.temp_fs.exists(self.archive.service_path)))
+
+        if self.temp_fs.exists(self.archive.service_path):
+            with self.temp_fs.open(self.archive.service_path) as f:
+                print('contents:\n{}\n"""\n{}\n"""'.format('-'*30, f.read()))
+
         # If nothing was written, exit
         if not self.temp_fs.exists(self.archive.service_path):
             for p in self.temp_fs.listdir('/'):
@@ -91,6 +105,10 @@ class BaseVersionedFile(object):
                     self.temp_fs.remove(p)
                 elif self.temp_fs.isdir(p):
                     self.temp_fs.removedir(p, recursive=True, force=True)
+
+            self.fs_wrapper.clearwritefs()
+            # self.temp_fs.close()
+            # shutil.rmtree(self.tempdir)
             return
 
         # If cache exists:
@@ -123,6 +141,9 @@ class BaseVersionedFile(object):
             elif self.temp_fs.isdir(p):
                 self.temp_fs.removedir(p, recursive=True, force=True)
 
+        self.fs_wrapper.clearwritefs()
+        # self.temp_fs.close()
+        # shutil.rmtree(self.tempdir)
 
 
 class DataFile(BaseVersionedFile):

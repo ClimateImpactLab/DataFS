@@ -28,7 +28,7 @@ script:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then
       pytest ./datafs ./tests ./docs ./examples;
     else
-      pytest ./datafs ./tests ./docs ./examples --cov --doctest-modules --cov-report term-missing;
+      pytest ./datafs ./tests ./examples --cov --doctest-modules --cov-report term-missing;
     fi
 
 

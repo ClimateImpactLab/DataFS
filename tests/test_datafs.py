@@ -25,25 +25,12 @@ try:
 except NameError:
     unicode = str
 
-'''
-This is an example of a fixture/test pair
-
-@pytest.fixture
-def response():
-    """Sample pytest fixture.
-    See more at: http://doc.pytest.org/en/latest/fixture.html
-    """
-    # import requests
-    # return requests.get('https://github.com/audreyr/cookiecutter-pypackage')
-
-def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument.
-    """
-    # from bs4 import BeautifulSoup
-    # assert 'GitHub' in BeautifulSoup(response.content).title.string
-'''
 
 def get_counter():
+    '''
+    Counts up. Ensure we don't have name collisions
+    '''
+
     counter = 0
     while True:
         yield counter
@@ -51,8 +38,12 @@ def get_counter():
 
 counter = get_counter()
 
+
 @pytest.fixture(scope="module")
 def api():
+    '''
+    Build an API connection for use in testing
+    '''
 
     api = DataAPI(
          username='My Name',
@@ -67,8 +58,13 @@ def api():
     local = TempFS()
     api.attach_authority('local', local)
 
+    return api
+
 @pytest.fixture
 def archive(api):
+    '''
+    Create a temporary archive for use in testing
+    '''
 
     test_id = next(counter)
 
@@ -81,24 +77,30 @@ def archive(api):
     return api.get_archive(archive_name)
 
 
-def do_hashtest(arch, contents):
-    direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
+class TestHashFunctions(object):
 
-    with tempfile.NamedTemporaryFile() as f:
-        with open(f.name, 'w+') as w:
-            w.write(contents)
-        alg, apihash = api.hash_file(f.name)
-        archive.update(f.name)
-    
-    assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(direct, apihash)
+    def do_hashtest(self, arch, contents):
+        direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
 
-    assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.latest_hash)
+        f = tempfile.NamedTemporaryFile(delete=False)
+        
+        try:
+            f.write(contents)
+            f.close()
 
+            alg, apihash = arch.api.hash_file(f.name)
+            arch.update(f.name)
 
+        finally:
+            os.remove(f.name)
 
+        assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(direct, apihash)
 
-def test_hash_functions(archive):
-    do_hashtest(archive, unicode(''))
-    do_hashtest(archive, unicode('another test'))
-    do_hashtest(archive, unicode('9872387932487913874031713470304'))
+        assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, arch.latest_hash)
+
+    def test_hash_functions(self, archive):
+        self.do_hashtest(archive, unicode(''))
+        self.do_hashtest(archive, unicode('another test'))
+        self.do_hashtest(archive, unicode('9872387932487913874031713470304'))
+        self.do_hashtest(archive, unicode('ajfdsaion\ndaf\t\n\adfadsffdadsf\t'))
 

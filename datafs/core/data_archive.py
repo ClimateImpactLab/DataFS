@@ -30,7 +30,7 @@ class DataArchive(object):
 
     @property
     def latest_hash(self):
-        pass
+        return self.api.manager.get_latest_hash(self.archive_name)
 
     def update(self, filepath, cache=False, **kwargs):
         '''

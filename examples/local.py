@@ -1,7 +1,5 @@
-"""
+'''
 
-Using DataFS Locally
-====================
 
 Use this tutorial to build a DataFS server using MongoDB and the local filesystem
 
@@ -23,231 +21,187 @@ To run this example:
 
         python -m examples.local
 
-"""
 
-# Set up the workspace
-# ~~~~~~~~~~~~~~~~~~~~
+Set up the workspace
+~~~~~~~~~~~~~~~~~~~~
 
-# We need a few things for this example:
+We need a few things for this example:
 
-from __future__ import absolute_import
+.. code-block:: python
 
-from datafs.managers.manager_mongo import MongoDBManager
-from datafs import DataAPI
-from tests.utils import using_tmp_dir, expect
-from fs.osfs import OSFS
-from ast import literal_eval
-import os
-import tempfile
-import shutil
+    >>> from datafs.managers.manager_mongo import MongoDBManager
+    >>> from datafs import DataAPI
+    >>> from fs.tempfs import TempFS
+    >>> from ast import literal_eval
+    >>> import os
+    >>> import tempfile
+    >>> import shutil
+    >>> 
+    >>> # overload unicode for python 3 compatability:
+    >>> 
+    >>> try:
+    ...     unicode = unicode
+    ... except NameError:
+    ...     unicode = str
 
-# Additionally, you'll need MongoDB and pymongo installed 
-# and a MongoDB instance running.
+Additionally, you'll need MongoDB and pymongo installed 
+and a MongoDB instance running.
 
+Create an API
+~~~~~~~~~~~~~
 
-def get_api():
-    '''
-    Create an API
-    ~~~~~~~~~~~~~
+Begin by creating an API instance:
 
-    Begin by creating an API instance:
-    '''
+.. code-block:: python
 
-    api = DataAPI(
-         username='My Name',
-         contact = 'my.email@example.com')
-
-    return api
-
-
-def attach_manager(api):
-    '''
-    Attach Manager
-    ~~~~~~~~~~~~~~~
-
-    Next, we'll choose an archive manager. DataFS currently 
-    supports MongoDB and DynamoDB managers. In this example 
-    we'll use a MongoDB manager. Make sure you have a MongoDB 
-    server running, then create a MongoDBManager instance:
-    
-    '''
-
-    manager = MongoDBManager(
-        database_name = 'MyDatabase',
-        table_name = 'DataFiles'
-    )
-
-    api.attach_manager(manager)
+    >>> api = DataAPI(
+    ...      username='My Name',
+    ...      contact = 'my.email@example.com')
 
 
-def attach_service(api, local_dir):
-    '''
-    Attach Service
-    ~~~~~~~~~~~~~~
+Attach Manager
+~~~~~~~~~~~~~~~
 
-    Now we need a storage service. DataFS is designed to be 
-    used with remote storage (S3, FTP, etc), but it can also 
-    be run on your local filesystem. In this tutorial we'll 
-    use a local service.
-    '''
+Next, we'll choose an archive manager. DataFS currently 
+supports MongoDB and DynamoDB managers. In this example 
+we'll use a MongoDB manager. Make sure you have a MongoDB 
+server running, then create a MongoDBManager instance:
 
-    # We got a local directory from the arguments to this 
-    # function:
-    
-    print(local_dir)
+.. code-block:: python
 
-    # Now we'll create a local file service using the fs 
-    # package:
-
-    local = OSFS(local_dir)
-
-    # We attach this file to the api and give it a name:
-
-    api.attach_authority('local', local)
-
-def create_archive(api):
-    '''
-    Create archives
-    ~~~~~~~~~~~~~~~
-
-    Next we'll create our first archive. An archive must 
-    have an archive_name. In addition, you can supply any 
-    additional keyword arguments, which will be stored as 
-    metadata. To suppress errors on re-creation, use the 
-    ``raise_if_exists=False`` flag.
-    '''
-
-    api.create_archive(
-        'my_first_archive',
-        metadata = dict(description = 'My test data archive'))
+    >>> manager = MongoDBManager(
+    ...     database_name = 'MyDatabase',
+    ...     table_name = 'DataFiles')
+    >>>
+    >>> api.attach_manager(manager)
 
 
-@expect.stdout(test=lambda x: literal_eval(x)['description'] == 'My test data archive')
-def retrieve_archive(api):
-    '''
-    Retrieve archive metadata
-    ~~~~~~~~~~~~~~~~~~~~~~~~~
+Attach Service
+~~~~~~~~~~~~~~
 
-    Now that we have created an archive, we can retrieve it 
-    from anywhere as long as we have access to the correct 
-    service. When we retrieve the archive, we can see the 
-    metadata that was created when it was initialized.
-    '''
+Now we need a storage service. DataFS is designed to be 
+used with remote storage (S3, FTP, etc), but it can also 
+be run on your local filesystem. In this tutorial we'll 
+use a local service.
+
+First, let's create a temporary filesystem to use for this 
+example:
+
+.. code-block:: python
+
+    >>> local = TempFS()
+
+We attach this file to the api and give it a name:
+
+.. code-block:: python
+
+    >>> api.attach_authority('local', local)
+
+Create archives
+~~~~~~~~~~~~~~~
+
+Next we'll create our first archive. An archive must 
+have an archive_name. In addition, you can supply any 
+additional keyword arguments, which will be stored as 
+metadata. To suppress errors on re-creation, use the 
+``raise_if_exists=False`` flag.
+
+.. code-block:: python
+
+    >>> api.create_archive(
+    ...     'my_first_archive',
+    ...     metadata = dict(description = 'My test data archive'))
+
+
+Retrieve archive metadata
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Now that we have created an archive, we can retrieve it 
+from anywhere as long as we have access to the correct 
+service. When we retrieve the archive, we can see the 
+metadata that was created when it was initialized.
        
-    var = api.get_archive('my_first_archive')
+.. code-block:: python
 
-    print(var.metadata)
+    >>> var = api.get_archive('my_first_archive')
 
-def add_to_archive(api):
-    '''
-    Add a file to the archive
-    ~~~~~~~~~~~~~~~~~~~~~~~~~
+We can access the metadata for this archive through the archive's ``metadata`` 
+property:
 
-    An archive is simply a versioned history of data files. 
-    So let's get started adding data!
+.. code-block:: python
 
-    '''
+    >>> print(var.metadata['description'])
+    My test data archive
+
+Add a file to the archive
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+An archive is simply a versioned history of data files. 
+So let's get started adding data!
+
+First, we'll create a local file, ``test.txt``, and put 
+some data in it:
+
+.. code-block:: python
+
+    >>> with open('test.txt', 'w+') as f:
+    ...     f.write('this is a test')
+
+Now we can add this file to the archive:
+
+.. code-block:: python
+
+    >>> var.update('test.txt')
+
+This file just got sent into our archive! Now we can delete the local copy:
+
+.. code-block:: python
+
+    >>> os.remove('test.txt')
+
+Reading from the archive
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Next we'll read from the archive. That file object returned by 
+``var.open()`` can be read just like a regular file
     
-    var = api.get_archive('my_first_archive')
+.. code-block:: python
 
-    # First, we'll create a local file, ``test.txt``, and put 
-    # some data in it:
+    >>> var = api.get_archive('my_first_archive')
+    >>> 
+    >>> with var.open('r') as f:
+    ...     print(f.read())
+    ...
+    this is a test
 
-    with open('test.txt', 'w+') as f:
-         f.write('this is a test')
+Updating the archive
+~~~~~~~~~~~~~~~~~~~~
 
-    # Now we can add this file to the archive:
+Open the archive and write to the file:
 
-    var.update('test.txt')
+.. code-block:: python
 
-    # This file just got sent into our archive! Now we can delete the local copy:
-
-    os.remove('test.txt')
-
-
-@expect.stdout('this is a test')
-def retrieve_from_archive(api):
-    '''
-    Reading from the archive
-    ~~~~~~~~~~~~~~~~~~~~~~~~
-
-    Next we'll read from the archive. That file object returned by 
-    ``var.versions`` can be opened and read just like a regular file
-    '''
-    
-    var = api.get_archive('my_first_archive')
-
-    with var.open() as f:
-         print(f.read())
-
-def update_archive(api):
-    '''
-    Updating the archive
-    ~~~~~~~~~~~~~~~~~~~~
-
-    If you write to the file objects in the archive, you'll overwrite the old 
-    versions. Instead, you should create a new version and upload it to the 
-    archive.
-    '''
-
-    # Write a file to your current directory
-
-    with open('newversion.txt', 'w+') as f:
-         f.write('this is the next test')
-
-    # Add this file to the archive
-
-    var = api.get_archive('my_first_archive')
-    var.update('newversion.txt')
-
-    # Remove the file from the current directory
-
-    os.remove('newversion.txt')
+    >>> with var.open('w+') as f:
+    ...     res = f.write(unicode('this is the next test'))
 
 
-@expect.stdout('this is the next test')
-def retrieving_the_latest_version(api):
-    '''
-    Retrieving the latest version
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieving the latest version
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Now let's make sure we're getting the latest version. This time, we'll use 
-    the ``latest`` property.
-    '''
+Now let's make sure we're getting the latest version:
 
-    var = api.get_archive('my_first_archive')
+.. code-block:: python
 
-    with var.open() as f:
-         print(f.read())
+    >>> with var.open() as f:
+    ...     print(f.read())
+    ...
+    this is the next test
 
-    # Looks good!
+Looks good!
 
-    # Because we used the @using_tmp_dir decorator, the temporary file 
-    # service will be cleaned up automatically.
+Next steps
+~~~~~~~~~~
 
+The :ref:`next tutorial <tutorial-aws>` describes setting up DataFS for remote obejct stores, such as with AWS storage.
 
-@using_tmp_dir
-def run_local_example(local_dir):
-    '''
-    Run all of the functions in this example
-    '''
-    
-    api = get_api()
-    attach_manager(api)
-    attach_service(api, local_dir)
-    create_archive(api)
-    retrieve_archive(api)
-    add_to_archive(api)
-    retrieve_from_archive(api)
-    update_archive(api)
-    retrieving_the_latest_version(api)
-
-
-def main():
-    run_local_example()
-
-def test_local():
-    run_local_example()
-
-if __name__ == '__main__':
-    main()
+'''

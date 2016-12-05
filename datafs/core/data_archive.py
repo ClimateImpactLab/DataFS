@@ -91,7 +91,7 @@ class DataArchive(object):
         return lambda *args, **kwargs: DataFile(self, *args, **kwargs)
 
     @property
-    def get_local_path(self):
+    def get_sys_path(self):
         '''
         Returns a local path for read/write
         '''

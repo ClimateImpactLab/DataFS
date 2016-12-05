@@ -101,6 +101,25 @@ class BaseDataManager(object):
 
         return self._get_archive_metadata(archive_name)
 
+    def get_latest_hash(self, archive_name):
+        '''
+        Retrieve the file hash for a given archive
+
+        Parameters
+        ----------
+        archive_name : str
+            name of the archive for which to retrieve the hash
+
+        Returns
+        -------
+        hashval : str
+            hash value for the latest version of archive_name
+
+        '''
+
+        return self._get_latest_hash(archive_name)
+
+
     # Private methods (to be implemented by subclasses of DataManager)
 
     def _update(self, archive_name, archive_data):
@@ -134,5 +153,9 @@ class BaseDataManager(object):
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _get_archive_metadata(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_latest_hash(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')

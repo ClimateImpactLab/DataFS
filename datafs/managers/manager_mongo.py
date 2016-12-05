@@ -148,3 +148,10 @@ class MongoDBManager(BaseDataManager):
         res = self._get_archive_listing(archive_name)
 
         return res['metadata']
+
+    def _get_latest_hash(self, archive_name):
+
+        res = self.self.collection.find_one({'_id': archive_name})
+
+        versions = res['versions']
+        return versions[-1]['checksum']['value']

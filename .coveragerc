@@ -2,3 +2,4 @@
 omit = 
     */site-packages/*
     */lib_pypy/*
+    docs/_*

@@ -1,19 +1,31 @@
 
 import fs.utils
+import fs.path
 from fs.tempfs import TempFS
 from fs.multifs import MultiFS
 
 
 class BaseVersionedFile(object):
+    '''
+    .. todo:: 
 
-    def __init__(self, archive, cache=False, *args, **kwargs):
+        Enable caching
+
+    '''
+
+    def __init__(self, archive, *args, **kwargs):
         self.archive = archive
-        self.cache = cache
+        self.cache = False
 
         self.args = args
         self.kwargs = kwargs
 
     def _get_file_wrapper(self):
+
+        self.archive.authority.fs.makedir(
+            fs.path.dirname(self.archive.service_path),
+            recursive=True,
+            allow_recreate=True)
 
         # Check the hash (if one exists) for a local version of the file
         if self.archive.api.cache:
@@ -34,6 +46,12 @@ class BaseVersionedFile(object):
 
         # Add a temporary filesystem as the write filesystem
         self.temp_fs = TempFS()
+
+        self.temp_fs.makedir(
+            fs.path.dirname(self.archive.service_path),
+            recursive=True,
+            allow_recreate=True)
+
         self.fs_wrapper.setwritefs(self.temp_fs)
 
     def open(self):
@@ -49,22 +67,37 @@ class BaseVersionedFile(object):
 
         #  create a temporary file and save the data to the temporary file
         self.temp_fs = TempFS()
-        fs.utils.copyfile(
-            self.fs_wrapper,
-            self.service_path,
-            self.temp_fs,
-            self.service_path)
+        self.temp_fs.makedir(
+            fs.path.dirname(self.archive.service_path),
+            recursive=True,
+            allow_recreate=True)
 
-        return self.temp_fs.getsyspath(self.service_path)
+        # Check if the file already exists. If so, copy it into the temporary
+        # directory
+        if self.fs_wrapper.exists(self.archive.service_path):
+            fs.utils.copyfile(
+                self.fs_wrapper,
+                self.archive.service_path,
+                self.temp_fs,
+                self.archive.service_path)
+
+        return self.temp_fs.getsyspath(self.archive.service_path)
 
     def close(self):
         # If nothing was written, exit
         if not self.temp_fs.exists(self.archive.service_path):
-            self.temp_fs.close()
-            return True
+            for p in self.temp_fs.listdir('/'):
+                if self.temp_fs.isfile(p):
+                    self.temp_fs.remove(p)
+                elif self.temp_fs.isdir(p):
+                    self.temp_fs.removedir(p, recursive=True, force=True)
+            return
 
         # If cache exists:
         if self.cache:
+
+            if self.api.cache:
+                raise IOError('Cannot save to cache - cache not set')
 
             # Move the file to the cache before uploading
             fs.utils.movefile(
@@ -84,8 +117,12 @@ class BaseVersionedFile(object):
                 self.temp_fs.getsyspath(
                     self.archive.service_path))
 
-        self.temp_fs.close()
-        return True
+        for p in self.temp_fs.listdir('/'):
+            if self.temp_fs.isfile(p):
+                self.temp_fs.remove(p)
+            elif self.temp_fs.isdir(p):
+                self.temp_fs.removedir(p, recursive=True, force=True)
+
 
 
 class DataFile(BaseVersionedFile):
@@ -95,7 +132,7 @@ class DataFile(BaseVersionedFile):
 
     def __exit__(self, exception_type, exception_value, traceback):
         self.close()
-        return True
+        return False
 
 
 class LocalFile(DataFile):
@@ -105,4 +142,4 @@ class LocalFile(DataFile):
 
     def __exit__(self, exception_type, exception_value, traceback):
         self.close()
-        return True
+        return False

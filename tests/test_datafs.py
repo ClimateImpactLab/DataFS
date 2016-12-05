@@ -79,9 +79,8 @@ def archive(api):
 
 class TestHashFunctions(object):
 
-    def do_hashtest(self, arch, contents):
-        direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
-
+    def update_and_hash(self, arch, contents):
+        
         f = tempfile.NamedTemporaryFile(delete=False)
         
         try:
@@ -94,13 +93,43 @@ class TestHashFunctions(object):
         finally:
             os.remove(f.name)
 
+        return apihash
+
+    def do_hashtest(self, archive, contents):
+
+        contents = unicode(contents)
+
+        direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
+        apihash = self.update_and_hash(archive, contents)
+
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(direct, apihash)
+        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.latest_hash)
 
-        assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, arch.latest_hash)
+        # Update and test again!
 
-    def test_hash_functions(self, archive):
-        self.do_hashtest(archive, unicode(''))
-        self.do_hashtest(archive, unicode('another test'))
-        self.do_hashtest(archive, unicode('9872387932487913874031713470304'))
-        self.do_hashtest(archive, unicode('ajfdsaion\ndaf\t\n\adfadsffdadsf\t'))
+        contents = unicode(contents + '\n' + contents + '\nline 3!' + contents)
+
+        direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
+        apihash = self.update_and_hash(archive, contents)
+
+        assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(direct, apihash)
+        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.latest_hash)
+
+        # Update and test a different way!
+
+        contents = unicode(contents + '\n' + contents + '\nline 3!' + contents)
+        direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
+
+        with archive.open() as f:
+            f.write(contents)
+
+        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.latest_hash)
+
+
+
+    def test_hash_functions(self):
+        self.do_hashtest('')
+        self.do_hashtest('another test')
+        self.do_hashtest('9872387932487913874031713470304')
+        self.do_hashtest('ajfdsaion\ndaf\t\n\adfadsffdadsf\t')
 

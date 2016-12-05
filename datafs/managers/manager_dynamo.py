@@ -37,7 +37,7 @@ class DynamoDBManager(BaseDataManager):
         """
 
 
-        return [DataArchive(self.api, str(archive['GCP_ID'])) for archive in self.table.scan(AttributesToGet=['GCP_ID'])['Items']]
+        return [str(archive['GCP_ID']) for archive in self.table.scan(AttributesToGet=['GCP_ID'])['Items']]
 
 
     def _update_metadata(self, archive_name, updated_metadata):
@@ -74,7 +74,7 @@ class DynamoDBManager(BaseDataManager):
         return self.table.get_item(Key={'GCP_ID':archive_name})['ResponseMetadata']['HTTPHeaders']['x-amz-crc32'] != '2745614147'
 
 
-    def _create_archive(self, archive_name, **metadata):
+    def _create_archive(self, archive_name, authority_name, service_path, **metadata):
 
         """
         This adds an item in a DynamoDB table corresponding to a S3 object
@@ -103,7 +103,12 @@ class DynamoDBManager(BaseDataManager):
 
         else:
             try:
-                res = self.table.put_item(Item={'GCP_ID': archive_name, 'Metadata':[metadata]})
+                res = self.table.put_item(Item={
+                    'GCP_ID': archive_name, 
+                    'authority_name': authority_name, 
+                    'service_path': service_path, 
+                    'Metadata':[metadata]}
+                    )
                 assert res['ResponseMetadata']['HTTPStatusCode'] == 200
 
             except AssertionError:

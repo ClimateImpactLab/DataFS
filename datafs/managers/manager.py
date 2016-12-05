@@ -84,6 +84,13 @@ class BaseDataManager(object):
 
         return self._get_archive(archive_name)
 
+    def get_archives(self):
+        '''
+        Returns a list of DataArchive objects 
+
+        '''
+        return self._get_archives()
+
     def get_metadata(self, archive_name):
         '''
         Retrieve the metadata for a given archive
@@ -129,9 +136,10 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_archive(self, archive_name):
+    def _get_archives(self):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
+
 
     def _get_archive_metadata(self, archive_name):
         raise NotImplementedError(

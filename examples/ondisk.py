@@ -21,8 +21,8 @@ Initialize the API
     >>>
     >>> manager = MongoDBManager(
     ...     database_name = 'MyDatabase',
-    ...     table_name = 'DataFiles'
-    ... )
+    ...     table_name = 'DataFiles')
+    >>>
     >>> api.attach_manager(manager)
 
 In this example we'll approximate a remote file system (such as AWS S3 or an ftp 

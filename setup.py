@@ -23,6 +23,7 @@ test_requirements = [
     'sphinx_rtd_theme==0.1.10a0',
     'PyYAML==3.12',
     'pytest==3.0.4',
+    'moto==0.4.30',
     'fs==0.5.4',
     'pymongo==3.3.1'
 ]

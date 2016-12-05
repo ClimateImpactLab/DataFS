@@ -3,28 +3,20 @@ from __future__ import absolute_import
 
 import doctest
 import datafs
-from examples import (local,multifs,s3,ondisk)
+import moto
+from examples import (local,ondisk,s3,multifs)
 
 
 def test_local():
     doctest.testmod(local)
-
-
-def test_multifs():
-    doctest.testmod(multifs)
-
-
-def test_s3():
-    doctest.testmod(s3)
-
 
 def test_ondisk():
 
     has_special_dependencies = False
 
     try:
-        import xarray as xr
         import netCDF4
+        import xarray as xr
         has_special_dependencies = True
 
     except ImportError:
@@ -32,3 +24,19 @@ def test_ondisk():
 
     if has_special_dependencies:
         doctest.testmod(ondisk)
+
+def test_s3():
+
+    m = moto.mock_s3()
+    m.start()
+    
+    try:
+        doctest.testmod(s3)
+    
+    finally:
+        # Stop mock
+        m.stop()
+
+
+def test_multifs():
+    doctest.testmod(multifs)

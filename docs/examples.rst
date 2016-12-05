@@ -5,4 +5,5 @@ Examples
 
     examples.local
     examples.ondisk
-    examples.aws
+    examples.s3
+    examples.other

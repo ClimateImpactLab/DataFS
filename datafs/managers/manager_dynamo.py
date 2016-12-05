@@ -37,7 +37,7 @@ class DynamoDBManager(BaseDataManager):
         """
 
 
-        return [str(archive['GCP_ID']) for archive in self.table.scan(AttributesToGet=['GCP_ID'])['Items']]
+        return [str(archive['_id']) for archive in self.table.scan(AttributesToGet=['_id'])['Items']]
 
 
     def _update_metadata(self, archive_name, updated_metadata):
@@ -71,12 +71,12 @@ class DynamoDBManager(BaseDataManager):
 
 
     def _check_if_exists(self, archive_name):
-        return self.table.get_item(Key={'GCP_ID':archive_name})['ResponseMetadata']['HTTPHeaders']['x-amz-crc32'] != '2745614147'
+        return self.table.get_item(Key={'_id':archive_name})['ResponseMetadata']['HTTPHeaders']['x-amz-crc32'] != '2745614147'
 
 
-    def _create_archive(self, archive_name, authority_name, service_path, **metadata):
+    def _create_archive(self, archive_name, authority_name, service_path, metadata):
 
-        """
+        '''
         This adds an item in a DynamoDB table corresponding to a S3 object
         
         Args
@@ -96,37 +96,37 @@ class DynamoDBManager(BaseDataManager):
         Todo
         -----
         Coerce underscores to dashes
-        """
-        #check for existence
+        '''
+
+
+        item = {
+                '_id': archive_name, 
+                'authority_name': authority_name, 
+                'service_path': service_path, 
+                'versions' : [],
+                'metadata':metadata
+                }
+
         if self._check_if_exists(archive_name):
-            print "Archive already exists. Use api.get_archive(archive_name) to retrieve or api.update() to update"
 
+            print("{} already exists. Use get_archive() to view or use update() to update metadata".format(archive_name))
+        
         else:
-            try:
-                res = self.table.put_item(Item={
-                    'GCP_ID': archive_name, 
-                    'authority_name': authority_name, 
-                    'service_path': service_path, 
-                    'Metadata':[metadata]}
-                    )
-                assert res['ResponseMetadata']['HTTPStatusCode'] == 200
-
-            except AssertionError:
-                return AssertionError
+            res = self.table.put_item(Item=item)
 
             return res
+
             
 
+    
         
 
-        
-
-    def _create_if_not_exists(self, archive_name, **metadata):
-        self._create_archive(archive_name, **metadata)
+    def _create_if_not_exists(self, archive_name, authority_name, service_name, metadata):
+        self._create_archive(archive_name, authority_name, service_name, metadata)
 
     def _get_archive_metadata(self, archive_name):
 
-        return self.table.get_item(Key={'GCP_ID': archive_name})['Item']
+        return self.table.get_item(Key={'_id': archive_name})['Item']
 
 
     def _update(self, archive_name, version_id, version_data):

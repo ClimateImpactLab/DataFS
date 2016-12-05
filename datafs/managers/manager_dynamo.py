@@ -39,6 +39,34 @@ class DynamoDBManager(BaseDataManager):
 
         return [str(archive['_id']) for archive in self.table.scan(AttributesToGet=['_id'])['Items']]
 
+    def _update(self, archive_name, version_metadata):
+        '''
+        Updates the version specific metadata attribute in DynamoDB
+        In DynamoDB this is simply a list append on this attribute value
+
+
+        Parameters
+        ----------
+        archive_name: str
+            unique '_id' primary key
+
+        version_metadata: dict
+            dictionary of version metadata values
+
+        Returns
+        -------
+        dict
+            list of dictionaries of version_metadata 
+        '''
+        self.table.update_item(
+                    Key={'_id': archive_name},
+                    UpdateExpression="SET version_metadata = list_append(:v, version_metadata)",
+                    ExpressionAttributeValues={ ':v': [version_metadata]
+                    },
+                    ReturnValues='ALL_NEW'
+                )
+
+        return self._get_archive_metadata(archive_name)['version_metadata']
 
     def _update_metadata(self, archive_name, updated_metadata):
         """
@@ -57,16 +85,17 @@ class DynamoDBManager(BaseDataManager):
 
         """
 
+        #read in a a json object, update dictionary through json and python
 
         self.table.update_item(Key={'GCP_ID': archive_name},
-                    UpdateExpression="SET Metadata = list_append(:v, Metadata )",
+                    UpdateExpression="SET metadata = list_append(:v, metadata )",
                     ExpressionAttributeValues={
                     ':v': [updated_metadata]
                     },
                     ReturnValues='ALL_NEW'
                     )
 
-        return self._get_archive(archive_name)['Metadata']
+        return self._get_archive(archive_name)['metadata']
 
 
 
@@ -103,8 +132,8 @@ class DynamoDBManager(BaseDataManager):
                 '_id': archive_name, 
                 'authority_name': authority_name, 
                 'service_path': service_path, 
-                'versions' : [],
-                'metadata':metadata
+                'version_metadata' : [],
+                'archive_data':metadata
                 }
 
         if self._check_if_exists(archive_name):
@@ -125,12 +154,9 @@ class DynamoDBManager(BaseDataManager):
         self._create_archive(archive_name, authority_name, service_name, metadata)
 
     def _get_archive_metadata(self, archive_name):
-
         return self.table.get_item(Key={'_id': archive_name})['Item']
 
 
-    def _update(self, archive_name, version_id, version_data):
-        raise NotImplementedError
 
     def _get_services_for_version(self, archive_name, version_id):
         raise NotImplementedError

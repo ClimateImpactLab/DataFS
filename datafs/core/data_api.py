@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from datafs.services.service import DataService, CachingService
+from datafs.core.data_archive import DataArchive
 
 import fs.path
 
@@ -14,6 +15,8 @@ class DataAPI(object):
     TimestampFormat = '%Y%m%d-%H%M%S'
 
     DefaultAuthorityName = None
+
+    _ArchiveConstructor = DataArchive
 
     def __init__(self, username, contact):
         self.username = username

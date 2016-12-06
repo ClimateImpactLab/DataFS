@@ -106,38 +106,38 @@ class DataArchive(object):
         '''
         Check whether the path exists and is a file
         '''
-        self.fs.isfile(self.path, *args, **kwargs)
+        self.authority.fs.isfile(self.path, *args, **kwargs)
 
     def getinfo(self, *args, **kwargs):
         '''
         Return information about the path e.g. size, mtime
         '''
-        self.fs.getinfo(self.path, *args, **kwargs)
+        self.authority.fs.getinfo(self.path, *args, **kwargs)
 
     def desc(self, *args, **kwargs):
         '''
         Return a short descriptive text regarding a path
         '''
 
-        self.fs.desc(self.path, *args, **kwargs)
+        self.authority.fs.desc(self.path, *args, **kwargs)
 
     def exists(self, *args, **kwargs):
         '''
         Check whether a path exists as file or directory
         '''
 
-        self.fs.exists(self.path, *args, **kwargs)
+        self.authority.fs.exists(self.path, *args, **kwargs)
 
     def getmeta(self, *args, **kwargs):
         '''
         Get the value of a filesystem meta value, if it exists
         '''
 
-        self.fs.getmeta(self.path, *args, **kwargs)
+        self.authority.fs.getmeta(self.path, *args, **kwargs)
 
     def hasmeta(self, *args, **kwargs):
         '''
         Check if a filesystem meta value exists
         '''
 
-        self.fs.hasmeta(self.path, *args, **kwargs)
+        self.authority.fs.hasmeta(self.path, *args, **kwargs)

@@ -13,6 +13,7 @@ import pytest
 from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
 from datafs import DataAPI
+from fs.osfs import OSFS
 from fs.tempfs import TempFS
 from fs.s3fs import S3FS
 from ast import literal_eval
@@ -33,46 +34,6 @@ except NameError:
     unicode = str
 
 
-def get_manager():
-    manager_mongo = MongoDBManager(
-            database_name='MyDatabase',
-            table_name='DataFiles')
-    
-    yield manager_mongo
-
-    m = moto.mock_s3()
-    m.start()
-
-    try:
-        manager_dynamo = DynamoDBManager(
-            table_name='my-table')
-
-        yield manager_dynamo
-
-    finally:
-        m.stop()
-
-
-def get_filesystem():
-
-    local = TempFS()
-    yield local
-    local.close()
-
-
-    m = moto.mock_s3()
-    m.start()
-
-    s3 = S3FS(
-        'test-bucket', 
-        aws_access_key='MY_KEY',
-        aws_secret_key='MY_SECRET_KEY')
-
-    yield s3
-
-    m.stop()
-
-
 def get_counter():
     '''
     Counts up. Ensure we don't have name collisions
@@ -87,12 +48,78 @@ counter = get_counter()
 
 
 
+@pytest.yield_fixture(scope='function')
+def manager(mgr_name):
+
+    if mgr_name == 'mongo':
+
+        manager_mongo = MongoDBManager(
+                database_name='MyDatabase',
+                table_name='DataFiles')
+        
+        yield manager_mongo
+
+    elif mgr_name == 'dynamo':
+
+        m = moto.mock_dynamodb2()
+        m.start()
+
+        manager_dynamo = DynamoDBManager(
+            table_name='my-table')
+
+        yield manager_dynamo
+
+        m.stop()
+
+@pytest.yield_fixture(scope='function')
+def filesystem(fs_name):
+
+    if fs_name == 'OSFS':
+
+        tmpdir = tempfile.mkdtemp()
+
+        try:
+            local = OSFS(tmpdir)
+
+            yield local
+
+            local.close()
+
+        finally:
+            try:
+                shutil.rmtree(tmpdir)
+            except (WindowsError, OSError, IOError):
+                time.sleep(0.5)
+                shutil.rmtree(tmpdir)
+
+
+    elif fs_name == 'TempFS':
+
+        local = TempFS()
+
+        yield local
+
+        local.close()
+
+    elif fs_name == 'S3FS':
+
+        m = moto.mock_s3()
+        m.start()
+
+        s3 = S3FS(
+            'test-bucket', 
+            aws_access_key='MY_KEY',
+            aws_secret_key='MY_SECRET_KEY')
+
+        yield s3
+
+        s3.close()
+        m.stop()
+
+
+
 @pytest.fixture
-@pytest.mark.parametrize('manager,filesystem', itertools.product(get_manager(), get_filesystem()))
 def api(manager, filesystem):
-    '''
-    Build an API connection for use in testing
-    '''
 
     api = DataAPI(
         username='My Name',
@@ -159,20 +186,20 @@ class TestHashFunction(object):
         contents = unicode(contents)
 
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
-        apihash = self.update_and_hash(arch, contents)
+        apihash = self.update_and_hash(archive, contents)
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, arch.latest_hash)
+        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
+            direct, archive.latest_hash)
 
         # Try uploading the same file
-        apihash = self.update_and_hash(arch, contents)
+        apihash = self.update_and_hash(archive, contents)
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, arch.latest_hash)
+        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
+            direct, archive.latest_hash)
 
         # Update and test again!
 
@@ -180,9 +207,9 @@ class TestHashFunction(object):
             [contents, contents, 'line 3!' + contents]))
 
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
-        apihash = self.update_and_hash(arch, contents)
+        apihash = self.update_and_hash(archive, contents)
 
-        with arch.open('rb') as f:
+        with archive.open('rb') as f:
             current = f.read()
 
         assert contents == current, 'Latest updates "{}" !=  archive contents "{}"'.format(
@@ -190,25 +217,25 @@ class TestHashFunction(object):
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, arch.latest_hash)
+        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
+            direct, archive.latest_hash)
 
         # Update and test a different way!
 
         contents = unicode((os.linesep).join([contents, 'more!!!', contents]))
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
 
-        with arch.open('wb+') as f:
+        with archive.open('wb+') as f:
             f.write(b(contents))
 
-        with arch.open('rb') as f2:
+        with archive.open('rb') as f2:
             current = f2.read()
 
         assert contents == current, 'Latest updates "{}" !=  archive contents "{}"'.format(
             contents, current)
 
-        assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, arch.latest_hash)
+        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
+            direct, archive.latest_hash)
 
 
 
@@ -235,3 +262,7 @@ class TestArchiveCreation(object):
         var.update_metadata({'testval': 'a different test value'})
         
         assert var.metadata['testval'] == 'a different test value', "Test archive was not updated!"
+
+
+
+

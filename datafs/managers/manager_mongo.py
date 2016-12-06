@@ -104,7 +104,7 @@ class MongoDBManager(BaseDataManager):
         try:
             self.collection.insert_one(doc)
         except DuplicateKeyError:
-            raise KeyError('Archive {} already exists'.format(archive_name))
+            raise KeyError('Archive "{}" already exists'.format(archive_name))
 
     def _create_if_not_exists(
             self,

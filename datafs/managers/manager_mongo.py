@@ -101,7 +101,10 @@ class MongoDBManager(BaseDataManager):
             'versions': []}
         doc['metadata'] = metadata
 
-        self.collection.insert_one(doc)
+        try:
+            self.collection.insert_one(doc)
+        except DuplicateKeyError:
+            raise KeyError('Archive {} already exists'.format(archive_name))
 
     def _create_if_not_exists(
             self,
@@ -116,7 +119,7 @@ class MongoDBManager(BaseDataManager):
                 authority_name,
                 service_path,
                 metadata)
-        except DuplicateKeyError:
+        except KeyError:
             pass
 
     @catch_timeout

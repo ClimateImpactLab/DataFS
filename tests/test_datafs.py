@@ -21,6 +21,8 @@ import hashlib
 import random
 import time
 
+from six import b
+
 try:
     unicode
 except NameError:
@@ -142,7 +144,7 @@ class TestHashFunctions(object):
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
 
         with arch.open('wb+') as f:
-            f.write(contents)
+            f.write(b(contents))
 
         with arch.open('rb') as f2:
             current = f2.read()
@@ -159,3 +161,25 @@ class TestHashFunctions(object):
         self.do_hashtest(archive, '9872387932487913874031713470304')
         self.do_hashtest(archive, os.linesep.join(
             ['ajfdsaion', 'daf', 'adfadsffdadsf']))
+
+
+class TestArchiveCreation(object):
+    
+
+    def test_create_archive(self, api):
+        archive_name = 'test_recreation_error'
+
+        api.create_archive(archive_name, metadata = {'testval': 'my test value'})
+        var = api.get_archive(archive_name)
+
+        testval = var.metadata['testval']
+
+        with pytest.raises(KeyError) as excinfo:
+            api.create_archive(archive_name)
+        
+        assert "already exists" in str(excinfo.value)
+
+        api.create_archive(archive_name, metadata = {'testva': 'a different test value'}, raise_if_exists=False)
+        var = api.get_archive(archive_name)
+
+        assert testval == var.metadata['testval'], "Test archive was incorrectly updated!"

@@ -76,7 +76,7 @@ class DataAPI(object):
         if service_path is None:
             service_path = self.create_service_path(archive_name)
 
-        self.manager.create_archive(
+        return self.manager.create_archive(
             archive_name,
             authority_name,
             service_path=service_path,

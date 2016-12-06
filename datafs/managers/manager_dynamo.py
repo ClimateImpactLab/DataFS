@@ -16,10 +16,10 @@ class DynamoDBManager(BaseDataManager):
 
     """
 
-    def __init__(self, table_name, api=None, *args, **kwargs):
+    def __init__(self, table_name, api=None, **session_kwargs):
         super(DynamoDBManager, self).__init__(api)
 
-        self._session = boto3.Session(profile_name='cil_dynamo')
+        self._session = boto3.Session(**session_kwargs)
         self._client = self._session.client('dynamodb', region_name='us-east-1')
         self._resource = self._session.resource('dynamodb',  region_name='us-east-1')
         self.table = self._resource.Table(table_name)

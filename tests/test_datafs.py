@@ -11,15 +11,19 @@ Tests for `datafs` module.
 import pytest
 
 from datafs.managers.manager_mongo import MongoDBManager
+from datafs.managers.manager_dynamo import DynamoDBManager
 from datafs import DataAPI
 from fs.tempfs import TempFS
+from fs.s3fs import S3FS
 from ast import literal_eval
 import os
 import tempfile
 import shutil
 import hashlib
 import random
+import itertools
 import time
+import moto
 
 from six import b
 
@@ -27,6 +31,46 @@ try:
     unicode
 except NameError:
     unicode = str
+
+
+def get_manager():
+    manager_mongo = MongoDBManager(
+            database_name='MyDatabase',
+            table_name='DataFiles')
+    
+    yield manager_mongo
+
+    m = moto.mock_s3()
+    m.start()
+
+    try:
+        manager_dynamo = DynamoDBManager(
+            table_name='my-table')
+
+        yield manager_dynamo
+
+    finally:
+        m.stop()
+
+
+def get_filesystem():
+
+    local = TempFS()
+    yield local
+    local.close()
+
+
+    m = moto.mock_s3()
+    m.start()
+
+    s3 = S3FS(
+        'test-bucket', 
+        aws_access_key='MY_KEY',
+        aws_secret_key='MY_SECRET_KEY')
+
+    yield s3
+
+    m.stop()
 
 
 def get_counter():
@@ -42,28 +86,24 @@ def get_counter():
 counter = get_counter()
 
 
-def setup_fixtures():
 
-    manager_mongo = MongoDBManager(
-            database_name='MyDatabase',
-            table_name='DataFiles')
+@pytest.fixture
+@pytest.mark.parametrize('manager,filesystem', itertools.product(get_manager(), get_filesystem()))
+def api(manager, filesystem):
+    '''
+    Build an API connection for use in testing
+    '''
 
-    @pytest.fixture(scope="module", params = [manager_mongo])
-    def api(manager):
-        '''
-        Build an API connection for use in testing
-        '''
+    api = DataAPI(
+        username='My Name',
+        contact='my.email@example.com')
 
-        api = DataAPI(
-            username='My Name',
-            contact='my.email@example.com')
+    api.attach_manager(manager)
 
-        api.attach_manager(manager)
+    api.attach_authority('filesys', filesystem)
 
-        local = TempFS()
-        api.attach_authority('local', local)
+    return api
 
-        return api
 
 
 @pytest.fixture
@@ -83,7 +123,13 @@ def archive(api):
     return api.get_archive(archive_name)
 
 
-class HashFunctionTester(object):
+string_tests =[
+    '', 
+    'another test', 
+    '9872387932487913874031713470304', 
+    os.linesep.join(['ajfdsaion', 'daf', 'adfadsffdadsf'])]
+
+class TestHashFunction(object):
 
     def update_and_hash(self, arch, contents):
         '''
@@ -104,7 +150,8 @@ class HashFunctionTester(object):
 
         return apihash
 
-    def do_hashtest(self, arch, contents):
+    @pytest.mark.parametrize('contents', string_tests)
+    def test_hashfuncs(self, archive, contents):
         '''
         Run through a number of iterations of the hash functions
         '''
@@ -163,15 +210,9 @@ class HashFunctionTester(object):
         assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
             direct, arch.latest_hash)
 
-    def test_hash_functions(self, archive):
-        self.do_hashtest(archive, '')
-        self.do_hashtest(archive, 'another test')
-        self.do_hashtest(archive, '9872387932487913874031713470304')
-        self.do_hashtest(archive, os.linesep.join(
-            ['ajfdsaion', 'daf', 'adfadsffdadsf']))
 
 
-class ArchiveCreationTester(object):
+class TestArchiveCreation(object):
     
     def test_create_archive(self, api):
         archive_name = 'test_recreation_error'

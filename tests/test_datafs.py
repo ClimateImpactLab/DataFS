@@ -42,26 +42,28 @@ def get_counter():
 counter = get_counter()
 
 
-@pytest.fixture(scope="module")
-def api():
-    '''
-    Build an API connection for use in testing
-    '''
+def setup_fixtures():
 
-    api = DataAPI(
-        username='My Name',
-        contact='my.email@example.com')
+    manager_mongo = MongoDBManager(
+            database_name='MyDatabase',
+            table_name='DataFiles')
 
-    manager = MongoDBManager(
-        database_name='MyDatabase',
-        table_name='DataFiles')
+    @pytest.fixture(scope="module", params = [manager_mongo])
+    def api(manager):
+        '''
+        Build an API connection for use in testing
+        '''
 
-    api.attach_manager(manager)
+        api = DataAPI(
+            username='My Name',
+            contact='my.email@example.com')
 
-    local = TempFS()
-    api.attach_authority('local', local)
+        api.attach_manager(manager)
 
-    return api
+        local = TempFS()
+        api.attach_authority('local', local)
+
+        return api
 
 
 @pytest.fixture

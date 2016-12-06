@@ -18,12 +18,11 @@ def catch_timeout(func):
     '''
 
     def inner(*args, **kwargs):
-        msg = ' '.join([
-            'Connection to MongoDB server could not be established.',
-            'Make sure you are running a MongoDB server and that the MongoDB',
-            'Manager has been configured to connect over the correct port.',
-            'For more information see',
-            'https://docs.mongodb.com/manual/tutorial/.'])
+        msg = 'Connection to MongoDB server could not be established. '\
+            'Make sure you are running a MongoDB server and that the MongoDB '\
+            'Manager has been configured to connect over the correct port. '\
+            'For more information see '\
+            'https://docs.mongodb.com/manual/tutorial/.'
         try:
             return func(*args, **kwargs)
         except ServerSelectionTimeoutError:

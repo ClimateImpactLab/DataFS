@@ -81,9 +81,12 @@ def archive(api):
     return api.get_archive(archive_name)
 
 
-class TestHashFunctions(object):
+class HashFunctionTester(object):
 
     def update_and_hash(self, arch, contents):
+        '''
+        Save contents to archive ``arch`` and return the DataAPI's hash value
+        '''
 
         f = tempfile.NamedTemporaryFile(delete=False)
 
@@ -100,6 +103,9 @@ class TestHashFunctions(object):
         return apihash
 
     def do_hashtest(self, arch, contents):
+        '''
+        Run through a number of iterations of the hash functions
+        '''
 
         contents = unicode(contents)
 
@@ -163,9 +169,8 @@ class TestHashFunctions(object):
             ['ajfdsaion', 'daf', 'adfadsffdadsf']))
 
 
-class TestArchiveCreation(object):
+class ArchiveCreationTester(object):
     
-
     def test_create_archive(self, api):
         archive_name = 'test_recreation_error'
 
@@ -179,7 +184,11 @@ class TestArchiveCreation(object):
         
         assert "already exists" in str(excinfo.value)
 
-        api.create_archive(archive_name, metadata = {'testva': 'a different test value'}, raise_if_exists=False)
+        api.create_archive(archive_name, metadata = {'testval': 'a different test value'}, raise_if_exists=False)
         var = api.get_archive(archive_name)
 
         assert testval == var.metadata['testval'], "Test archive was incorrectly updated!"
+
+        var.update_metadata({'testval': 'a different test value'})
+        
+        assert var.metadata['testval'] == 'a different test value', "Test archive was not updated!"

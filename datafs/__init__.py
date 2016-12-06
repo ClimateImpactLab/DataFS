@@ -11,6 +11,6 @@ __version__ = '0.2.2'
 
 _module_imports = (
     DataAPI,
-    )
+)
 
 __all__ = list(map(lambda x: x.__name__, _module_imports))

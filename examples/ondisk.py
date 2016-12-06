@@ -25,8 +25,8 @@ Initialize the API
     >>>
     >>> api.attach_manager(manager)
 
-In this example we'll approximate a remote file system (such as AWS S3 or an ftp 
-server) using an in-memory filesystem. This filesystem returns 
+In this example we'll approximate a remote file system (such as AWS S3 or an ftp
+server) using an in-memory filesystem. This filesystem returns
 :py:class:`io.TextIOWrapper` objects, so approximates the streaming objects
 returned by ``boto`` or ``request`` calls.
 
@@ -40,7 +40,7 @@ returned by ``boto`` or ``request`` calls.
     >>> var = api.get_archive('streaming_archive')
     >>>
 
-Create a sample dataset (from the 
+Create a sample dataset (from the
 `xarray docs <http://xarray.pydata.org/en/stable/examples/weather-data.html>`_):
 
 .. code-block:: python
@@ -89,7 +89,7 @@ NetCDF files cannot be read from a streaming object:
     Traceback (most recent call last):
     ...
     UnicodeDecodeError: 'utf8' codec can't decode byte 0x89 in position 0: invalid start byte
-    
+
 
 Instead, we can get a local path to open:
 
@@ -117,7 +117,7 @@ We can update file in the same way:
     >>> with var.get_sys_path() as f:
     ...     ds = xr.open_dataset(f)
     ...     #
-    ...     # Load the dataset fully into memory and then close the file    
+    ...     # Load the dataset fully into memory and then close the file
     ...     #
     ...     dsmem = ds.load()
     ...     ds.close()

@@ -4,11 +4,12 @@ from __future__ import absolute_import
 import doctest
 import datafs
 import moto
-from examples import (local,ondisk,s3,caching)
+from examples import (local, ondisk, s3, caching)
 
 
 def test_local():
     doctest.testmod(local)
+
 
 def test_ondisk():
 
@@ -25,14 +26,15 @@ def test_ondisk():
     if has_special_dependencies:
         doctest.testmod(ondisk)
 
+
 def test_s3():
 
     m = moto.mock_s3()
     m.start()
-    
+
     try:
         doctest.testmod(s3)
-    
+
     finally:
         # Stop mock
         m.stop()

@@ -120,7 +120,6 @@ class BaseDataManager(object):
 
         return self._get_latest_hash(archive_name)
 
-
     # Private methods (to be implemented by subclasses of DataManager)
 
     def _update(self, archive_name, archive_data):

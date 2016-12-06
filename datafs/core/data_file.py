@@ -13,7 +13,7 @@ from fs.errors import (ResourceLockedError, ResourceInvalidError)
 
 class BaseVersionedFile(object):
     '''
-    .. todo:: 
+    .. todo::
 
         Enable caching
 
@@ -91,14 +91,12 @@ class BaseVersionedFile(object):
 
         return self.temp_fs.getsyspath(self.archive.service_path)
 
-
     def _close_temp_fs(self):
         try:
             self.temp_fs.close()
         except (ResourceLockedError, ResourceInvalidError):
             time.sleep(0.5)
             self.temp_fs.close()
-
 
     def close(self):
 

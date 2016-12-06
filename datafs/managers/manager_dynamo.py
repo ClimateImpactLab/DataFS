@@ -138,9 +138,9 @@ class DynamoDBManager(BaseDataManager):
                 'archive_data':metadata
                 }
 
-        if self._check_if_exists(archive_name):
+        if 'Item' in self.table.get_item(Key={'_id': archive_name}):
 
-            print("{} already exists. Use get_archive() to view or use update() to update metadata".format(archive_name))
+            raise KeyError("{} already exists. Use get_archive() to view".format(archive_name))
         
         else:
             res = self.table.put_item(Item=item)

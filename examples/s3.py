@@ -1,7 +1,7 @@
 '''
 
-
-Use this tutorial to build a DataFS server using MongoDB and the local filesystem
+Use this tutorial to build a DataFS server system using MongoDB and a Simple 
+Storage Service such as AWS's S3.
 
 
 Running this example
@@ -13,13 +13,9 @@ To run this example:
    `MongoDB's Tutorial <https://docs.mongodb.com/manual/tutorial/>`_ 
    installation and startup instructions. 
 
-2. Start the MongoDB server (e.g. `mongod  --dbpath . --nojournal`)
+2. Start the MongoDB server (e.g. ``mongod  --dbpath . --nojournal``)
 
-3. Run ``local.py`` with DataFS installed, or as a module from the repo root:
-
-    .. code-block:: bash
-
-        python -m examples.local
+3. Follow the steps below
 
 
 Set up the workspace

@@ -128,8 +128,7 @@ class DataAPI(object):
             ...     'pictures_2016_may_vegas_wedding.png'))
             pictures/2016/may/vegas/wedding.png
 
-        Overloading
-        -----------
+        *Overloading*
 
         Overload this function to change default internal service path format
         and to enforce certain requirements on paths:

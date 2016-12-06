@@ -1,9 +1,9 @@
 
-.. _tutorial-multifs:
+.. _tutorial-cache:
 
 Caching Remote Results Locally
 ==============================
 
-.. include:: ../examples/multifs.py
+.. include:: ../examples/caching.py
     :start-after: '''
     :end-before: '''

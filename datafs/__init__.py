@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 '''
 '''
 
@@ -10,4 +9,8 @@ __author__ = """Climate Impact Lab"""
 __email__ = 'jsimcock@rhg.com'
 __version__ = '0.2.2'
 
-__all__ = [DataAPI]
+_module_imports = (
+    DataAPI,
+    )
+
+__all__ = list(map(lambda x: x.__name__, _module_imports))

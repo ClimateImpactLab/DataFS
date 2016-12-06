@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import doctest
 import datafs
 import moto
-from examples import (local,ondisk,s3,multifs)
+from examples import (local,ondisk,s3,caching)
 
 
 def test_local():
@@ -38,5 +38,5 @@ def test_s3():
         m.stop()
 
 
-def test_multifs():
-    doctest.testmod(multifs)
+def test_caching():
+    doctest.testmod(caching)

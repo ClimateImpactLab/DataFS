@@ -19,6 +19,7 @@ import tempfile
 import shutil
 import hashlib
 import random
+import time
 
 try:
     unicode
@@ -105,15 +106,21 @@ class TestHashFunctions(object):
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(direct, apihash)
         assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, arch.latest_hash)
 
+        # Try uploading the same file
+        apihash = self.update_and_hash(arch, contents)
+
+        assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(direct, apihash)
+        assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, arch.latest_hash)
+
         # Update and test again!
 
-        contents = unicode(contents + '\n' + contents + '\nline 3!' + contents)
+        contents = unicode((os.linesep).join([contents, contents, 'line 3!' + contents]))
 
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
         apihash = self.update_and_hash(arch, contents)
 
-        with arch.open('r') as f:
-            current = '\n'.join(list(map(lambda x: x.strip(), f.readlines())))
+        with arch.open('rb') as f:
+            current = f.read()
 
         assert contents == current, 'Latest updates "{}" !=  archive contents "{}"'.format(contents, current)
 
@@ -122,24 +129,23 @@ class TestHashFunctions(object):
 
         # Update and test a different way!
 
-        contents = unicode(contents + '\nmore!!!\n' + contents)
+        contents = unicode((os.linesep).join([contents, 'more!!!', contents]))
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
 
-        with arch.open('w+') as f:
+        with arch.open('wb+') as f:
             f.write(contents)
 
-        with arch.open('r') as f:
-            current = '\n'.join(list(map(lambda x: x.strip(), f.readlines())))
+        with arch.open('rb') as f2:
+            current = f2.read()
 
         assert contents == current, 'Latest updates "{}" !=  archive contents "{}"'.format(contents, current)
 
         assert direct == arch.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(direct, arch.latest_hash)
 
 
-
     def test_hash_functions(self, archive):
         self.do_hashtest(archive, '')
         self.do_hashtest(archive, 'another test')
         self.do_hashtest(archive, '9872387932487913874031713470304')
-        self.do_hashtest(archive, 'ajfdsaion\ndaf\n\adfadsffdadsf')
+        self.do_hashtest(archive, os.linesep.join(['ajfdsaion','daf','adfadsffdadsf']))
 

@@ -163,4 +163,4 @@ class MongoDBManager(BaseDataManager):
             return None
 
         else:
-            return versions[-1]['checksum']['value']
+            return versions[-1]['checksum']

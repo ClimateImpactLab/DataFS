@@ -15,11 +15,7 @@ To run this example:
 
 2. Start the MongoDB server (e.g. `mongod  --dbpath . --nojournal`)
 
-3. Run ``local.py`` with DataFS installed, or as a module from the repo root:
-
-    .. code-block:: bash
-
-        python -m examples.local
+3. Follow the steps below
 
 
 Set up the workspace

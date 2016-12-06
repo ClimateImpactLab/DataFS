@@ -3,9 +3,12 @@ import fs.utils
 import fs.path
 import tempfile
 import shutil
+import time
 # from fs.osfs import OSFS
 from fs.tempfs import TempFS
 from fs.multifs import MultiFS
+
+from fs.errors import (ResourceLockedError, ResourceInvalidError)
 
 
 class BaseVersionedFile(object):
@@ -88,15 +91,16 @@ class BaseVersionedFile(object):
 
         return self.temp_fs.getsyspath(self.archive.service_path)
 
-    def close(self):
-        print('closing')
-        print('service path: "{}"'.format(self.archive.service_path))
-        print('system path: "{}"'.format(self.temp_fs.getsyspath(self.archive.service_path)))
-        print('exists: {}'.format(self.temp_fs.exists(self.archive.service_path)))
 
-        if self.temp_fs.exists(self.archive.service_path):
-            with self.temp_fs.open(self.archive.service_path) as f:
-                print('contents:\n{}\n"""\n{}\n"""'.format('-'*30, f.read()))
+    def _close_temp_fs(self):
+        try:
+            self.temp_fs.close()
+        except (ResourceLockedError, ResourceInvalidError):
+            time.sleep(0.5)
+            self.temp_fs.close()
+
+
+    def close(self):
 
         # If nothing was written, exit
         if not self.temp_fs.exists(self.archive.service_path):
@@ -107,7 +111,7 @@ class BaseVersionedFile(object):
                     self.temp_fs.removedir(p, recursive=True, force=True)
 
             self.fs_wrapper.clearwritefs()
-            # self.temp_fs.close()
+            self._close_temp_fs()
             # shutil.rmtree(self.tempdir)
             return
 
@@ -142,16 +146,19 @@ class BaseVersionedFile(object):
                 self.temp_fs.removedir(p, recursive=True, force=True)
 
         self.fs_wrapper.clearwritefs()
-        # self.temp_fs.close()
+        self._close_temp_fs()
+        # del self.temp_fs.close()
         # shutil.rmtree(self.tempdir)
 
 
 class DataFile(BaseVersionedFile):
 
     def __enter__(self):
-        return self.open()
+        self._f_obj = self.open()
+        return self._f_obj
 
     def __exit__(self, exception_type, exception_value, traceback):
+        self._f_obj.close()
         self.close()
         return False
 

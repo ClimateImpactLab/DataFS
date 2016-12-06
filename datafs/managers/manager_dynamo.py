@@ -68,7 +68,7 @@ class DynamoDBManager(BaseDataManager):
 
         return self._get_archive_metadata(archive_name)['version_metadata']
 
-    def _update_metadata(self, archive_name, updated_metadata):
+    def _update_metadata(self, archive_name, metadata):
         """
         Appends the updated_metada dict to the Metadata Attribute list
 
@@ -85,17 +85,19 @@ class DynamoDBManager(BaseDataManager):
 
         """
 
-        #read in a a json object, update dictionary through json and python
-
-        self.table.update_item(Key={'GCP_ID': archive_name},
-                    UpdateExpression="SET metadata = list_append(:v, metadata )",
+        #keep the current state in memory
+        archive_data_current = self.table.get_item(Key={'_id': archive_name})['Item']['archive_data']
+        archive_data_current.update(metadata)
+        #add the updated archive_data object to Dynamo
+        updated = self.table.update_item(Key={'_id': archive_name},
+                    UpdateExpression="SET archive_data = :v",
                     ExpressionAttributeValues={
-                    ':v': [updated_metadata]
+                    ':v': archive_data_current
                     },
                     ReturnValues='ALL_NEW'
                     )
 
-        return self._get_archive(archive_name)['metadata']
+        return updated
 
 
 

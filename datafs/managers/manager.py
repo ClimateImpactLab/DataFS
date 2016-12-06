@@ -1,6 +1,7 @@
 
 from __future__ import absolute_import
 
+from datafs.core.data_archive import DataArchive
 
 class BaseDataManager(object):
     '''
@@ -83,7 +84,27 @@ class BaseDataManager(object):
 
         '''
 
-        return self._get_archive(archive_name)
+
+        return DataArchive(
+            api=self.api,
+            archive_name=archive_name,
+            authority=self._get_authority_name(archive_name),
+            service_path=self._get_service_path(archive_name))
+
+
+    def get_archives(self):
+        '''
+        Returns a list of DataArchive objects 
+
+        '''
+        return [self.get_archive(arch) for arch in self._get_archive_names()]
+
+    def get_archive_names(self):
+        '''
+        Returns a list of DataArchive names 
+
+        '''
+        return self._get_archive_names()
 
     def get_metadata(self, archive_name):
         '''
@@ -126,10 +147,6 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _update_metadata(self, archive_name, metadata):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
     def _create_archive(
             self,
             archive_name,
@@ -148,14 +165,23 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_archive(self, archive_name):
+    def _get_archives(self):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
+
 
     def _get_archive_metadata(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _get_latest_hash(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_authority_name(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_service_path(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')

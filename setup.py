@@ -27,6 +27,7 @@ test_requirements = [
     'PyYAML==3.12',
     'pytest==3.0.5',
     'pymongo==3.4.0',
+    'boto3==1.4.2',
     'moto==0.4.30'
 ]
 

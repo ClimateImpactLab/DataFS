@@ -173,8 +173,13 @@ class DataAPI(object):
             Hash digest value
         '''
 
+
         if os.path.isfile(filepath):
             with open(filepath, 'rb') as f:
                 hashval = hashlib.md5(f.read())
 
+
         return 'md5', hashval.hexdigest()
+
+    
+

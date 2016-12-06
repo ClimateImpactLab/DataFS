@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from datafs.core.data_file import DataFile, LocalFile
 
+    
 
 class DataArchive(object):
 
@@ -11,6 +12,9 @@ class DataArchive(object):
 
         self._authority_name = authority
         self._service_path = service_path
+
+    def __repr__(self):
+        return "<" + "{}".format(self.__class__.__name__) + ">" + ", " + "archive_name: {}".format(self.archive_name)
 
     @property
     def authority_name(self):

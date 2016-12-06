@@ -29,7 +29,7 @@ class DynamoDBManager(BaseDataManager):
 
     # Private methods (to be implemented!)
     
-    def _get_archives(self):
+    def _get_archives_names(self):
         """
         Returns a list of Archives in the table on Dynamo
 
@@ -147,18 +147,13 @@ class DynamoDBManager(BaseDataManager):
 
             return res
 
-            
-
-    
-        
+              
 
     def _create_if_not_exists(self, archive_name, authority_name, service_name, metadata):
         self._create_archive(archive_name, authority_name, service_name, metadata)
 
     def _get_archive_metadata(self, archive_name):
         return self.table.get_item(Key={'_id': archive_name})['Item']
-
-
 
     def _get_services_for_version(self, archive_name, version_id):
         raise NotImplementedError

@@ -25,7 +25,8 @@ class BaseDataManager(object):
             "author": self.api.username,
             "contact": self.api.contact,
             "updated": self.api.create_timestamp(),
-            "checksum": checksum}
+            "algorithm": checksum['algorithm'],
+            "checksum": checksum['checksum']}
 
         archive_data = metadata
 
@@ -82,14 +83,27 @@ class BaseDataManager(object):
 
         '''
 
-        return self._get_archive(archive_name)
+
+        return DataArchive(
+            api=self.api,
+            archive_name=archive_name,
+            authority=self._get_authority_name(archive_name),
+            service_path=self._get_service_path(archive_name))
+
 
     def get_archives(self):
         '''
         Returns a list of DataArchive objects 
 
         '''
-        return self._get_archives()
+        return [self.get_archive(arch) for arch in self._get_archive_names()]
+
+    def get_archive_names(self):
+        '''
+        Returns a list of DataArchive names 
+
+        '''
+        return self._get_archive_names()
 
     def get_metadata(self, archive_name):
         '''
@@ -111,10 +125,6 @@ class BaseDataManager(object):
     # Private methods (to be implemented by subclasses of DataManager)
 
     def _update(self, archive_name, archive_data):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
-    def _update_metadata(self, archive_name, metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
@@ -144,3 +154,12 @@ class BaseDataManager(object):
     def _get_archive_metadata(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_authority_name(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_service_path(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+

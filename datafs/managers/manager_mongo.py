@@ -132,16 +132,18 @@ class MongoDBManager(BaseDataManager):
 
         return self.collection.find_one({'_id': archive_name})
 
-    @catch_timeout
-    def _get_archive(self, archive_name):
+    def _get_authority_name(self, archive_name):
 
-        res = self.collection.find_one({'_id': archive_name})
+        res = self._get_archive_listing(archive_name)
 
-        return DataArchive(
-            api=self.api,
-            archive_name=res['_id'],
-            authority=res['authority_name'],
-            service_path=res['service_path'])
+        return res['authority_name']
+
+    def _get_service_path(self, archive_name):
+
+        res = self._get_archive_listing(archive_name)
+
+        return res['service_path']
+
 
     def _get_archive_metadata(self, archive_name):
 

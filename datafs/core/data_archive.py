@@ -65,7 +65,7 @@ class DataArchive(object):
             self.update_metadata(kwargs)
             return
 
-        checksum = {"algorithm": algorithm, "value": hashval}
+        checksum = {"algorithm": algorithm, "checksum": hashval}
 
         self.authority.upload(filepath, self.service_path)
 

@@ -2,7 +2,6 @@ import boto3
 #import botocore.exceptions.ClientError
 
 from datafs.managers.manager import BaseDataManager
-from datafs.core.data_archive import DataArchive
 
 
 class DynamoDBManager(BaseDataManager):
@@ -100,11 +99,6 @@ class DynamoDBManager(BaseDataManager):
         return updated
 
 
-
-    def _check_if_exists(self, archive_name):
-        return self.table.get_item(Key={'_id':archive_name})['ResponseMetadata']['HTTPHeaders']['x-amz-crc32'] != '2745614147'
-
-
     def _create_archive(self, archive_name, authority_name, service_path, metadata):
 
         '''
@@ -153,6 +147,9 @@ class DynamoDBManager(BaseDataManager):
         self._create_archive(archive_name, authority_name, service_name, metadata)
 
 
+    def _get_archive_metadata(self, archive_name):
+        return self.table.get_item(Key={'_id': archive_name})['Item']
+
     def _get_authority_name(self, archive_name):
 
         res = self._get_archive_metadata(archive_name)
@@ -165,8 +162,6 @@ class DynamoDBManager(BaseDataManager):
 
         return res['service_path']
 
-    def _get_archive_metadata(self, archive_name):
-        return self.table.get_item(Key={'_id': archive_name})['Item']
 
     def _get_services_for_version(self, archive_name, version_id):
         raise NotImplementedError

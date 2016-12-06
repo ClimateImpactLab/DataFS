@@ -1,6 +1,7 @@
 
 from __future__ import absolute_import
 
+from datafs.core.data_archive import DataArchive
 
 class BaseDataManager(object):
     '''

@@ -152,6 +152,19 @@ class DynamoDBManager(BaseDataManager):
     def _create_if_not_exists(self, archive_name, authority_name, service_name, metadata):
         self._create_archive(archive_name, authority_name, service_name, metadata)
 
+
+    def _get_authority_name(self, archive_name):
+
+        res = self._get_archive_metadata(archive_name)
+
+        return res['authority_name']
+
+    def _get_service_path(self, archive_name):
+
+        res = self._get_archive_metadata(archive_name)
+
+        return res['service_path']
+
     def _get_archive_metadata(self, archive_name):
         return self.table.get_item(Key={'_id': archive_name})['Item']
 

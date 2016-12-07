@@ -26,7 +26,14 @@ class DataAPI(object):
         self._cache = None
         self._authorities = {}
 
+        self._authorities_locked = False
+        self._manager_locked = False
+
     def attach_authority(self, service_name, service):
+
+        if self._authorities_locked:
+            raise ValueError('Authorities locked')
+
         self._authorities[service_name] = DataService(service)
         self._authorities[service_name].api = self
 
@@ -63,6 +70,10 @@ class DataAPI(object):
         return self._authorities[self.default_authority_name]
 
     def attach_manager(self, manager):
+
+        if self._manager_locked:
+            raise ValueError('Manager locked')
+
         self._manager = manager
         self.manager.api = self
 
@@ -73,6 +84,31 @@ class DataAPI(object):
             service_path=None,
             raise_if_exists=True,
             **metadata):
+        '''
+        Create a DataFS archive
+
+        Parameters
+        ----------
+
+        archive_name : str
+            Name of the archive
+
+        authority_name : str
+            Name of the data service to use as the archive's version "authority"
+
+        service_path : str
+            Path to use on the data services (optional)
+
+        raise_if_exists : bool
+            Raise an error if the archive already exists (default True)
+
+        **kwargs will be passed to the archive as metadata
+            
+    
+
+        
+        '''
+
         if authority_name is None:
             authority_name = self.default_authority_name
 
@@ -156,6 +192,24 @@ class DataAPI(object):
         '''
 
         return fs.path.join(*tuple(archive_name.split('_')))
+
+    def delete_archive(self, archive_name):
+        '''
+        Delete an archive
+
+        Parameters
+        ----------
+
+        archive_name : str
+            Name of the archive to delete
+
+        '''
+
+        archive = self.get_archive(archive_name)
+
+        archive.delete()
+
+
 
     @staticmethod
     def hash_file(filepath):

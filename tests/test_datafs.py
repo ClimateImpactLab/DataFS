@@ -158,6 +158,7 @@ string_tests =[
 
 class TestHashFunction(object):
 
+
     def update_and_hash(self, arch, contents):
         '''
         Save contents to archive ``arch`` and return the DataAPI's hash value
@@ -263,6 +264,11 @@ class TestArchiveCreation(object):
         
         assert var.metadata['testval'] == 'a different test value', "Test archive was not updated!"
 
+        # Test archive deletion
+        var.delete()
+
+        with pytest.raises(KeyError) as excinfo:
+            api.get_archive(archive_name)
 
 
 

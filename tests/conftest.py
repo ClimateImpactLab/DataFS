@@ -14,5 +14,6 @@ def pytest_generate_tests(metafunc):
     if 'fs_name' in metafunc.fixturenames:
 
         metafunc.parametrize('fs_name', ['OSFS', 'TempFS', 'S3FS'])
+        # metafunc.parametrize('fs_name', ['TempFS'])
         
 

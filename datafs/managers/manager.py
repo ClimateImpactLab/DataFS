@@ -72,6 +72,8 @@ class BaseDataManager(object):
             self._create_if_not_exists(
                 archive_name, authority_name, service_path, metadata)
 
+        return self.get_archive(archive_name)
+
     def get_archive(self, archive_name):
         '''
         Get a data archive given an archive name

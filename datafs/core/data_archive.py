@@ -102,6 +102,18 @@ class DataArchive(object):
 
         return lambda *args, **kwargs: LocalFile(self, *args, **kwargs)
 
+    def delete(self):
+        '''
+        Delete the archive
+
+        .. warning::
+
+            Deleting an archive will erase all data and metadata permanently.
+            This functionality can be removed by subclassing and overloading 
+            this method. For help subclassing DataFS see 
+            :ref:`Subclassing DataFS <tutorial-sublcassing>`
+
+
     def isfile(self, *args, **kwargs):
         '''
         Check whether the path exists and is a file

@@ -25,12 +25,6 @@ class DataService(object):
             self.fs,
             service_path)
 
+    def get_hash(self, service_path):
 
-class CachingService(DataService):
-    def cache(self, authority, service_path):
-        fs.utils.copyfile(
-            authority.fs,
-            service_path,
-            self.fs,
-            service_path,
-            overwrite=True)
+        local_hash = self.archive.api.get_hash(self.fs.getsyspath(service_path))

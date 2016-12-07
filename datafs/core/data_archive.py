@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from datafs.core.data_file import DataFile, LocalFile
+from datafs.core.data_file import FileOpener, FilePathOpener
 
     
 
@@ -92,7 +92,7 @@ class DataArchive(object):
         Opens a file for read/write
         '''
 
-        return lambda *args, **kwargs: DataFile(self, *args, **kwargs)
+        return lambda *args, **kwargs: FileOpener(self, *args, **kwargs)
 
     @property
     def get_sys_path(self):
@@ -100,7 +100,7 @@ class DataArchive(object):
         Returns a local path for read/write
         '''
 
-        return lambda *args, **kwargs: LocalFile(self, *args, **kwargs)
+        return lambda *args, **kwargs: FilePathOpener(self, *args, **kwargs)
 
     def delete(self):
         '''

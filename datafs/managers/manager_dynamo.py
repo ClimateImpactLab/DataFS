@@ -146,18 +146,12 @@ class DynamoDBManager(BaseDataManager):
     def _get_archive_metadata(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
-
-        if 'Item' not in res:
-            raise KeyError
-
+        
         return res['archive_data']
 
     def _get_authority_name(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
-
-        if 'Item' not in res:
-            raise KeyError
 
         return res['authority_name']
 
@@ -165,17 +159,11 @@ class DynamoDBManager(BaseDataManager):
 
         res = self._get_archive_listing(archive_name)
 
-        if 'Item' not in res:
-            raise KeyError
-
         return res['service_path']
 
     def _get_versions(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
-
-        if 'Item' not in res:
-            raise KeyError
 
         return res['version_metadata']
 

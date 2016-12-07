@@ -10,6 +10,12 @@ import time
 import hashlib
 
 
+try:
+    PermissionError
+except:
+    class PermissionError(NameError):
+        pass
+
 class DataAPI(object):
 
     TimestampFormat = '%Y%m%d-%H%M%S'
@@ -32,7 +38,7 @@ class DataAPI(object):
     def attach_authority(self, service_name, service):
 
         if self._authorities_locked:
-            raise ValueError('Authorities locked')
+            raise PermissionError('Authorities locked')
 
         self._authorities[service_name] = DataService(service)
         self._authorities[service_name].api = self
@@ -72,7 +78,7 @@ class DataAPI(object):
     def attach_manager(self, manager):
 
         if self._manager_locked:
-            raise ValueError('Manager locked')
+            raise PermissionError('Manager locked')
 
         self._manager = manager
         self.manager.api = self

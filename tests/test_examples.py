@@ -5,6 +5,7 @@ import doctest
 import datafs
 import moto
 from examples import (local, ondisk, s3, caching)
+from examples.subclassing import client
 
 
 def test_local():
@@ -45,3 +46,19 @@ def test_s3():
 
 def test_caching():
     doctest.testmod(caching)
+
+
+def test_subclassing():
+
+    m = moto.mock_s3()
+    mdb = moto.mock_dynamodb()
+    m.start()
+    mdb.start()
+
+    try:
+        doctest.testmod(client)
+
+    finally:
+        # Stop mock
+        m.stop()
+        mdb.stop()

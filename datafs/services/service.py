@@ -26,7 +26,7 @@ class DataService(object):
             service_path)
 
 
-def CachingService(DataService):
+class CachingService(DataService):
     def cache(self, authority, service_path):
         fs.utils.copyfile(
             authority.fs,

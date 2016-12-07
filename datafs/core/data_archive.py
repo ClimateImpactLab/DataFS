@@ -69,8 +69,8 @@ class DataArchive(object):
 
         self.authority.upload(filepath, self.service_path)
 
-        if cache and self.api.cache:
-            self.api.cache.upload(filepath, self.service_path)
+        if cache:
+            self.cache()
 
         # update records in self.api.manager
         self.api.manager.update(
@@ -164,3 +164,14 @@ class DataArchive(object):
         '''
 
         self.authority.fs.hasmeta(self.path, *args, **kwargs)
+
+
+    def cache(self, authority, service_path):
+        
+        if not self.api.cache:
+
+            raise ValueError('No Cache attached')
+
+        self.api.cache.upload(filepath, self.service_path)
+
+

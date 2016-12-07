@@ -38,8 +38,12 @@ class DataAPI(object):
         self._authorities[service_name].api = self
 
     def attach_cache(self, service):
-        self._cache = CachingService(service)
-        self._cache.api = self
+
+        if service in self._authorities.values():
+            raise ValueError('Attach authority as a cache is prohibited')
+        else:    
+            self._cache = DataService(service)
+            self._cache.api = self
 
     @property
     def manager(self):

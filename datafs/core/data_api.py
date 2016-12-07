@@ -83,7 +83,7 @@ class DataAPI(object):
             authority_name=None,
             service_path=None,
             raise_if_exists=True,
-            **metadata):
+            metadata={}):
         '''
         Create a DataFS archive
 
@@ -120,7 +120,7 @@ class DataAPI(object):
             authority_name,
             service_path=service_path,
             raise_if_exists=raise_if_exists,
-            **metadata)
+            metadata=metadata)
 
     def get_archive(self, archive_name):
         return self.manager.get_archive(archive_name)

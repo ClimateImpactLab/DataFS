@@ -8,8 +8,8 @@ def pytest_generate_tests(metafunc):
 
     if 'mgr_name' in metafunc.fixturenames:
 
-        # metafunc.parametrize('mgr_name', ['mongo', 'dynamo'])
-        metafunc.parametrize('mgr_name', ['mongo'])
+        metafunc.parametrize('mgr_name', ['mongo', 'dynamo'])
+        # metafunc.parametrize('mgr_name', ['mongo'])
 
     if 'fs_name' in metafunc.fixturenames:
 

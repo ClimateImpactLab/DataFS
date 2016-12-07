@@ -24,7 +24,13 @@ import hashlib
 import random
 import itertools
 import time
+import boto
 import moto
+from freezegun import freeze_time
+import moto
+from moto import mock_dynamodb
+from moto.dynamodb import dynamodb_backend
+
 
 from six import b
 
@@ -48,6 +54,16 @@ counter = get_counter()
 
 
 
+
+@mock_dynamodb
+def test_list_tables():
+    name = 'my-table'
+    dynamodb_backend.create_table(name, hash_key_attr="_id", hash_key_type="S")
+    conn = boto.connect_dynamodb('the_key', 'the_secret')
+    assert conn.list_tables() == ['my-table']
+
+
+
 @pytest.yield_fixture(scope='function')
 def manager(mgr_name):
 
@@ -61,15 +77,25 @@ def manager(mgr_name):
 
     elif mgr_name == 'dynamo':
 
-        m = moto.mock_dynamodb2()
-        m.start()
+        m = moto.mock_s3()
+        mdb = moto.mock_dynamodb()
 
+        m.start()
+        mdb.start()
+
+        name = 'my-table'
+        dynamodb_backend.create_table(name, hash_key_attr="_id", hash_key_type="S")
         manager_dynamo = DynamoDBManager(
-            table_name='my-table')
+            table_name=name,
+            session_args={
+            'aws_access_key_id':'my_key',
+            'aws_secret_access_key':'my_secret_key'},
+            resource_args={'region_name':'us-east-1'})
 
         yield manager_dynamo
 
         m.stop()
+        mdb.stop()
 
 @pytest.yield_fixture(scope='function')
 def filesystem(fs_name):

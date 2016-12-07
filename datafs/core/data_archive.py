@@ -14,7 +14,7 @@ class DataArchive(object):
         self._service_path = service_path
 
     def __repr__(self):
-        return "<" + "{}".format(self.__class__.__name__) + ">" + ", " + "archive_name: {}".format(self.archive_name)
+        return "<{}, archive_name: '{}'>".format(self.__class__.__name__, self.archive_name)
 
     @property
     def authority_name(self):

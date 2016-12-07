@@ -16,10 +16,10 @@ class DynamoDBManager(BaseDataManager):
 
     """
 
-    def __init__(self, table_name, api=None, **session_kwargs):
+    def __init__(self, table_name, api=None, *args, **kwargs):
         super(DynamoDBManager, self).__init__(api)
 
-        self._session = boto3.Session(**session_kwargs)
+        self._session = boto3.Session(profile_name='cil_dynamo')
         self._client = self._session.client('dynamodb', region_name='us-east-1')
         self._resource = self._session.resource('dynamodb',  region_name='us-east-1')
         self.table = self._resource.Table(table_name)
@@ -28,7 +28,7 @@ class DynamoDBManager(BaseDataManager):
 
     # Private methods (to be implemented!)
     
-    def _get_archives_names(self):
+    def _get_archive_names(self):
         """
         Returns a list of Archives in the table on Dynamo
 
@@ -65,7 +65,7 @@ class DynamoDBManager(BaseDataManager):
                     ReturnValues='ALL_NEW'
                 )
 
-        return self._get_archive_metadata(archive_name)['version_metadata']
+        return self._get_archive_listing(archive_name)['version_metadata']
 
     def _update_metadata(self, archive_name, metadata):
         """
@@ -146,21 +146,49 @@ class DynamoDBManager(BaseDataManager):
     def _create_if_not_exists(self, archive_name, authority_name, service_name, metadata):
         self._create_archive(archive_name, authority_name, service_name, metadata)
 
+    def _get_archive_listing(self, archive_name):
+        '''
+        Return full document for ``{_id:'archive_name'}``
+
+        .. note::
+
+            DynamoDB specific results - do not expose to user
+        '''
+        return self.table.get_item(Key={'_id': archive_name})['Item']
 
     def _get_archive_metadata(self, archive_name):
-        return self.table.get_item(Key={'_id': archive_name})['Item']
+
+        res = self._get_archive_listing(archive_name)
+
+        return res['archive_data']
 
     def _get_authority_name(self, archive_name):
 
-        res = self._get_archive_metadata(archive_name)
+        res = self._get_archive_listing(archive_name)
 
         return res['authority_name']
 
     def _get_service_path(self, archive_name):
 
-        res = self._get_archive_metadata(archive_name)
+        res = self._get_archive_listing(archive_name)
 
         return res['service_path']
+
+    def _get_versions(self, archive_name):
+
+        res = self._get_archive_listing(archive_name)
+
+        return res['version_metadata']
+
+    def _get_latest_hash(self, archive_name):
+
+        versions = self._get_versions(archive_name)
+
+        if len(versions) == 0:
+            return None
+
+        else:
+            return versions[0]['checksum']
 
 
     def _get_services_for_version(self, archive_name, version_id):

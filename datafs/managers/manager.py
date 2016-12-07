@@ -83,12 +83,18 @@ class BaseDataManager(object):
 
         '''
 
+        try:
+            authority_name = self._get_authority_name(archive_name)
+            service_path = self._get_service_path(archive_name)
+            
+        except KeyError:
+            raise KeyError('Archive "{}" not found'.format(archive_name))
 
         return self.api._ArchiveConstructor(
             api=self.api,
             archive_name=archive_name,
-            authority=self._get_authority_name(archive_name),
-            service_path=self._get_service_path(archive_name))
+            authority=authority_name,
+            service_path=service_path)
 
 
     def get_archives(self):
@@ -152,7 +158,7 @@ class BaseDataManager(object):
 
         '''
 
-        self._delete_archive(archive_name)
+        self._delete_archive_record(archive_name)
 
     # Private methods (to be implemented by subclasses of DataManager)
 
@@ -199,6 +205,6 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _delete_archive(self, archive_name):
+    def _delete_archive_record(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')

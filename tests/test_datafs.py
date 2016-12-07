@@ -150,14 +150,14 @@ def archive(api):
     return api.get_archive(archive_name)
 
 
+string_tests =[
+    '', 
+    'another test', 
+    '9872387932487913874031713470304', 
+    os.linesep.join(['ajfdsaion', 'daf', 'adfadsffdadsf'])]
 
 class TestHashFunction(object):
 
-    string_tests =[
-        '', 
-        'another test', 
-        '9872387932487913874031713470304', 
-        os.linesep.join(['ajfdsaion', 'daf', 'adfadsffdadsf'])]
 
     def update_and_hash(self, arch, contents):
         '''
@@ -178,7 +178,7 @@ class TestHashFunction(object):
 
         return apihash
 
-    @pytest.mark.parametrize('contents', TestHashFunction.string_tests)
+    @pytest.mark.parametrize('contents', string_tests)
     def test_hashfuncs(self, archive, contents):
         '''
         Run through a number of iterations of the hash functions
@@ -264,6 +264,11 @@ class TestArchiveCreation(object):
         
         assert var.metadata['testval'] == 'a different test value', "Test archive was not updated!"
 
+        # Test archive deletion
+        var.delete()
+
+        with pytest.raises(KeyError) as excinfo:
+            api.get_archive(archive_name)
 
 
 

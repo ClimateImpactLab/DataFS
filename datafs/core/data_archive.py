@@ -122,7 +122,7 @@ class DataArchive(object):
             if self.api.cache.fs.exists(self.archive_name):
                 self.api.cache.fs.delete(self.archive_name)
 
-        self.api.manager.delete(self.archive_name)
+        self.api.manager.delete_archive_record(self.archive_name)
 
 
     def isfile(self, *args, **kwargs):

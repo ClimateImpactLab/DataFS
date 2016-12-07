@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from datafs.services.service import DataService, CachingService
+from datafs.services.service import DataService
 from datafs.core.data_archive import DataArchive
 
 import fs.path

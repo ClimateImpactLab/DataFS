@@ -31,9 +31,8 @@ def test_ondisk():
 def test_s3():
 
     m = moto.mock_s3()
-    mdb = moto.mock_dynamodb()
+    mdb= moto.mock_dynamodb()
     m.start()
-    mdb.start()
 
     try:
         doctest.testmod(s3)
@@ -41,7 +40,6 @@ def test_s3():
     finally:
         # Stop mock
         m.stop()
-        mdb.stop()
 
 
 def test_caching():

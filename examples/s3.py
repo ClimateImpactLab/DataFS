@@ -27,6 +27,7 @@ We need a few things for this example:
 
     >>> from datafs.managers.manager_dynamo import DynamoDBManager
     >>> from datafs import DataAPI
+    >>> from fs.tempfs import TempFS
     >>> from ast import literal_eval
     >>> import os
     >>> import tempfile

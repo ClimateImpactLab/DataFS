@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from datafs.services.service import DataService, CachingService
+from datafs.services.service import DataService
 from datafs.core.data_archive import DataArchive
 
 import fs.path
@@ -44,8 +44,12 @@ class DataAPI(object):
         self._authorities[service_name].api = self
 
     def attach_cache(self, service):
-        self._cache = CachingService(service)
-        self._cache.api = self
+
+        if service in self._authorities.values():
+            raise ValueError('Attach authority as a cache is prohibited')
+        else:    
+            self._cache = DataService(service)
+            self._cache.api = self
 
     @property
     def manager(self):
@@ -89,7 +93,7 @@ class DataAPI(object):
             authority_name=None,
             service_path=None,
             raise_if_exists=True,
-            **metadata):
+            metadata={}):
         '''
         Create a DataFS archive
 
@@ -126,7 +130,7 @@ class DataAPI(object):
             authority_name,
             service_path=service_path,
             raise_if_exists=raise_if_exists,
-            **metadata)
+            metadata=metadata)
 
     def get_archive(self, archive_name):
         return self.manager.get_archive(archive_name)
@@ -241,6 +245,8 @@ class DataAPI(object):
             with open(filepath, 'rb') as f:
                 hashval = hashlib.md5(f.read())
 
+        else:
+            hashval = hashlib.md5(f.read())
 
         return 'md5', hashval.hexdigest()
 

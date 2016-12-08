@@ -67,5 +67,5 @@ target/
 
 
 #.IPython
-.ipynb
-.ipynb_checkpoints
+*.ipynb
+*.ipynb_checkpoints

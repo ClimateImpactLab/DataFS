@@ -24,7 +24,12 @@ import hashlib
 import random
 import itertools
 import time
+import boto
 import moto
+import moto
+from moto import mock_dynamodb
+from moto.dynamodb import dynamodb_backend
+
 
 from six import b
 
@@ -48,6 +53,12 @@ counter = get_counter()
 
 
 
+
+
+
+
+
+
 @pytest.yield_fixture(scope='function')
 def manager(mgr_name):
 
@@ -61,15 +72,36 @@ def manager(mgr_name):
 
     elif mgr_name == 'dynamo':
 
-        m = moto.mock_dynamodb2()
-        m.start()
+        
 
-        manager_dynamo = DynamoDBManager(
-            table_name='my-table')
+        name = 'my-new-table-name'
+        manager = DynamoDBManager(name, session_args={ 'aws_access_key_id': "access-key-id-of-your-choice",
+            'aws_secret_access_key': "secret-key-of-your-choice",}, resource_args={ 'endpoint_url':'http://localhost:8000/','region_name':'us-east-1'})
+        # manager_dynamo = DynamoDBManager(
+        #     table_name=name,
+        #     session_args={
+        #     'aws_access_key_id':'my_key',
+        #     'aws_secret_access_key':'my_secret_key'},
+        #     resource_args={'region_name':'us-east-1', 'endpoint_url':os.environ['DYNAMODB_URL']})
 
-        yield manager_dynamo
+        if name not in list(map(lambda t: t.name, manager._resource.tables.all())):
+            manager.table = manager._resource.create_table(TableName=name, 
+                        KeySchema=[
+                                {'AttributeName': '_id', 'KeyType': 'HASH'},
+                                
+                            ],
+                            AttributeDefinitions=[
+                                {'AttributeName': '_id', 'AttributeType': 'S'},
+                                
+                            ], 
+                            ProvisionedThroughput={'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123}
+                            
+                    )
 
-        m.stop()
+        yield manager
+
+        manager.table.delete()
+
 
 @pytest.yield_fixture(scope='function')
 def filesystem(fs_name):

@@ -25,12 +25,10 @@ class DataService(object):
             self.fs,
             service_path)
 
+    def get_hash(self, service_path):
 
-def CachingService(DataService):
-    def cache(self, authority, service_path):
-        fs.utils.copyfile(
-            authority.fs,
-            service_path,
-            self.fs,
-            service_path,
-            overwrite=True)
+        os_path = self.fs.getsyspath(service_path)
+        if not os.path.exists(os_path):
+            raise OSError('File does not exist')
+            
+        return self.api.hash_file()

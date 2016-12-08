@@ -34,11 +34,10 @@ test_requirements = [
 
 setup(
     name='datafs',
-    version='0.2.2',
+    version='0.1.2',
     description="DataFS is an abstraction layer for data storage systems. It manages file versions and metadata using a json-like storage system like AWS's DynamoDB and relies on PyFilesystem to abstract file storage, allowing you to store files locally and on the cloud in a seamless interface.",
     long_description=readme + '\n\n' + history,
     author="Climate Impact Lab",
-    author_email='jsimcock@rhg.com',
     url='https://github.com/ClimateImpactLab/datafs',
     packages=[
         'datafs',
@@ -56,9 +55,9 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3'
+        'Programming Language :: Python :: 2.7'
+        # 'Programming Language :: Python :: 3',
+        # 'Programming Language :: Python :: 3.3',
         # 'Programming Language :: Python :: 3.4',
         # 'Programming Language :: Python :: 3.5',
     ],

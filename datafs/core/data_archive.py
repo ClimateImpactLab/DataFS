@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from datafs.core.data_file import DataFile, LocalFile
+from datafs.core.data_file import FileOpener, FilePathOpener
 
     
 
@@ -69,8 +69,8 @@ class DataArchive(object):
 
         self.authority.upload(filepath, self.service_path)
 
-        if cache and self.api.cache:
-            self.api.cache.upload(filepath, self.service_path)
+        if cache:
+            self.cache()
 
         # update records in self.api.manager
         self.api.manager.update(
@@ -92,7 +92,7 @@ class DataArchive(object):
         Opens a file for read/write
         '''
 
-        return lambda *args, **kwargs: DataFile(self, *args, **kwargs)
+        return lambda *args, **kwargs: FileOpener(self, *args, **kwargs)
 
     @property
     def get_sys_path(self):
@@ -100,7 +100,7 @@ class DataArchive(object):
         Returns a local path for read/write
         '''
 
-        return lambda *args, **kwargs: LocalFile(self, *args, **kwargs)
+        return lambda *args, **kwargs: FilePathOpener(self, *args, **kwargs)
 
     def delete(self):
         '''
@@ -164,3 +164,14 @@ class DataArchive(object):
         '''
 
         self.authority.fs.hasmeta(self.path, *args, **kwargs)
+
+
+    def cache(self, authority, service_path):
+        
+        if not self.api.cache:
+
+            raise ValueError('No Cache attached')
+
+        self.api.cache.upload(filepath, self.service_path)
+
+

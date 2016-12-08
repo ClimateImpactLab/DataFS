@@ -48,6 +48,7 @@ deploy:
 services: 
   - mongodb
   - dynamodb
+  - docker
 
 before_install: 
   - docker pull tray/dynamodb-local

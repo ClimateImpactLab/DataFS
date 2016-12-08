@@ -28,8 +28,7 @@ test_requirements = [
     'pytest==3.0.5',
     'pymongo==3.4.0',
     'boto3==1.4.2',
-    'moto==0.4.30',
-    'git+https://github.com/PyFilesystem/pyfilesystem#egg=0.5.5a1'
+    'moto==0.4.30'
 ]
 
 setup(
@@ -62,5 +61,8 @@ setup(
         # 'Programming Language :: Python :: 3.5',
     ],
     test_suite='tests',
-    tests_require=test_requirements
+    tests_require=test_requirements,
+    dependency_links = [
+    'git+https://github.com/PyFilesystem/pyfilesystem#egg=0.5.5a1'
+    ]
 )

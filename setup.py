@@ -10,7 +10,6 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'fs==0.5.4'
 ]
 
 test_requirements = [
@@ -63,6 +62,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     dependency_links = [
-    'git+https://github.com/PyFilesystem/pyfilesystem#egg=0.5.5a1'
+    'git+https://github.com/PyFilesystem/pyfilesystem.git@c94b20c877f1f2ab190d7b1eae3ecc53b3a6d295#egg=pyfilesystem'
     ]
 )

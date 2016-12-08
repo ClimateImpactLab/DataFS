@@ -131,7 +131,10 @@ class DynamoDBManager(BaseDataManager):
 
              
     def _create_if_not_exists(self, archive_name, authority_name, service_name, metadata):
-        self._create_archive(archive_name, authority_name, service_name, metadata)
+        try:
+            self._create_archive(archive_name, authority_name, service_name, metadata)
+        except KeyError:
+            pass
 
     def _get_archive_listing(self, archive_name):
         '''
@@ -147,17 +150,11 @@ class DynamoDBManager(BaseDataManager):
 
         res = self._get_archive_listing(archive_name)
 
-        if 'Item' not in res:
-            raise KeyError
-
         return res['archive_data']
 
     def _get_authority_name(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
-
-        if 'Item' not in res:
-            raise KeyError
 
         return res['authority_name']
 
@@ -165,17 +162,11 @@ class DynamoDBManager(BaseDataManager):
 
         res = self._get_archive_listing(archive_name)
 
-        if 'Item' not in res:
-            raise KeyError
-
         return res['service_path']
 
     def _get_versions(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
-
-        if 'Item' not in res:
-            raise KeyError
 
         return res['version_metadata']
 

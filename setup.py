@@ -15,16 +15,20 @@ requirements = [
 
 test_requirements = [
     'pip==9.0.1',
+    'bumpversion==0.5.3',
+    'wheel==0.29.0',
     'watchdog==0.8.3',
-    'flake8==3.2.0',
+    'flake8==3.2.1',
     'tox==2.5.0',
     'coverage==4.2',
-    'cryptography==1.5.3',
+    'Sphinx==1.5',
     'sphinx_rtd_theme==0.1.10a0',
+    'cryptography==1.6',
     'PyYAML==3.12',
-    'pytest==3.0.4',
-    'fs==0.5.4',
-    'pymongo==3.3.1'
+    'pytest==3.0.5',
+    'pymongo==3.4.0',
+    'boto3==1.4.2',
+    'moto==0.4.30'
 ]
 
 setup(
@@ -51,9 +55,9 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3'
+        'Programming Language :: Python :: 2.7'
+        # 'Programming Language :: Python :: 3',
+        # 'Programming Language :: Python :: 3.3',
         # 'Programming Language :: Python :: 3.4',
         # 'Programming Language :: Python :: 3.5',
     ],

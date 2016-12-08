@@ -22,10 +22,11 @@ class BaseDataManager(object):
 
         '''
         version_metadata = {
-            "author": self.api.username,
-            "contact": self.api.contact,
-            "updated": self.api.create_timestamp(),
-            "checksum": checksum}
+            'author': self.api.username,
+            'contact': self.api.contact,
+            'updated': self.api.create_timestamp(),
+            'algorithm': checksum['algorithm'],
+            'checksum': checksum['checksum']}
 
         archive_data = metadata
 
@@ -71,6 +72,8 @@ class BaseDataManager(object):
             self._create_if_not_exists(
                 archive_name, authority_name, service_path, metadata)
 
+        return self.get_archive(archive_name)
+
     def get_archive(self, archive_name):
         '''
         Get a data archive given an archive name
@@ -82,7 +85,33 @@ class BaseDataManager(object):
 
         '''
 
-        return self._get_archive(archive_name)
+        try:
+            authority_name = self._get_authority_name(archive_name)
+            service_path = self._get_service_path(archive_name)
+            
+        except KeyError:
+            raise KeyError('Archive "{}" not found'.format(archive_name))
+
+        return self.api._ArchiveConstructor(
+            api=self.api,
+            archive_name=archive_name,
+            authority=authority_name,
+            service_path=service_path)
+
+
+    def get_archives(self):
+        '''
+        Returns a list of DataArchive objects 
+
+        '''
+        return [self.get_archive(arch) for arch in self._get_archive_names()]
+
+    def get_archive_names(self):
+        '''
+        Returns a list of DataArchive names 
+
+        '''
+        return self._get_archive_names()
 
     def get_metadata(self, archive_name):
         '''
@@ -101,13 +130,41 @@ class BaseDataManager(object):
 
         return self._get_archive_metadata(archive_name)
 
+    def get_latest_hash(self, archive_name):
+        '''
+        Retrieve the file hash for a given archive
+
+        Parameters
+        ----------
+        archive_name : str
+            name of the archive for which to retrieve the hash
+
+        Returns
+        -------
+        hashval : str
+            hash value for the latest version of archive_name
+
+        '''
+
+        return self._get_latest_hash(archive_name)
+
+    def delete_archive_record(self, archive_name):
+        '''
+        Deletes an archive from the database
+
+        Parameters
+        ----------
+
+        archive_name : str
+            name of the archive to delete
+
+        '''
+
+        self._delete_archive_record(archive_name)
+
     # Private methods (to be implemented by subclasses of DataManager)
 
     def _update(self, archive_name, archive_data):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
-    def _update_metadata(self, archive_name, metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
@@ -129,10 +186,27 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_archive(self, archive_name):
+    def _get_archives(self):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
+
     def _get_archive_metadata(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_latest_hash(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_authority_name(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_service_path(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _delete_archive_record(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')

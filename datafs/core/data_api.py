@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
-from datafs.services.service import DataService, CachingService
+from datafs.services.service import DataService
+from datafs.core.data_archive import DataArchive
 
 import fs.path
 
@@ -15,6 +16,8 @@ class DataAPI(object):
 
     DefaultAuthorityName = None
 
+    _ArchiveConstructor = DataArchive
+
     def __init__(self, username, contact):
         self.username = username
         self.contact = contact
@@ -23,13 +26,24 @@ class DataAPI(object):
         self._cache = None
         self._authorities = {}
 
+        self._authorities_locked = False
+        self._manager_locked = False
+
     def attach_authority(self, service_name, service):
+
+        if self._authorities_locked:
+            raise ValueError('Authorities locked')
+
         self._authorities[service_name] = DataService(service)
         self._authorities[service_name].api = self
 
     def attach_cache(self, service):
-        self._cache = CachingService(service)
-        self._cache.api = self
+
+        if service in self._authorities.values():
+            raise ValueError('Attach authority as a cache is prohibited')
+        else:    
+            self._cache = DataService(service)
+            self._cache.api = self
 
     @property
     def manager(self):
@@ -60,6 +74,10 @@ class DataAPI(object):
         return self._authorities[self.default_authority_name]
 
     def attach_manager(self, manager):
+
+        if self._manager_locked:
+            raise ValueError('Manager locked')
+
         self._manager = manager
         self.manager.api = self
 
@@ -69,19 +87,44 @@ class DataAPI(object):
             authority_name=None,
             service_path=None,
             raise_if_exists=True,
-            **metadata):
+            metadata={}):
+        '''
+        Create a DataFS archive
+
+        Parameters
+        ----------
+
+        archive_name : str
+            Name of the archive
+
+        authority_name : str
+            Name of the data service to use as the archive's version "authority"
+
+        service_path : str
+            Path to use on the data services (optional)
+
+        raise_if_exists : bool
+            Raise an error if the archive already exists (default True)
+
+        **kwargs will be passed to the archive as metadata
+            
+    
+
+        
+        '''
+
         if authority_name is None:
             authority_name = self.default_authority_name
 
         if service_path is None:
             service_path = self.create_service_path(archive_name)
 
-        self.manager.create_archive(
+        return self.manager.create_archive(
             archive_name,
             authority_name,
             service_path=service_path,
             raise_if_exists=raise_if_exists,
-            **metadata)
+            metadata=metadata)
 
     def get_archive(self, archive_name):
         return self.manager.get_archive(archive_name)
@@ -128,8 +171,7 @@ class DataAPI(object):
             ...     'pictures_2016_may_vegas_wedding.png'))
             pictures/2016/may/vegas/wedding.png
 
-        Overloading
-        -----------
+        *Overloading*
 
         Overload this function to change default internal service path format
         and to enforce certain requirements on paths:
@@ -155,6 +197,24 @@ class DataAPI(object):
 
         return fs.path.join(*tuple(archive_name.split('_')))
 
+    def delete_archive(self, archive_name):
+        '''
+        Delete an archive
+
+        Parameters
+        ----------
+
+        archive_name : str
+            Name of the archive to delete
+
+        '''
+
+        archive = self.get_archive(archive_name)
+
+        archive.delete()
+
+
+
     @staticmethod
     def hash_file(filepath):
         '''
@@ -174,8 +234,15 @@ class DataAPI(object):
             Hash digest value
         '''
 
+
         if os.path.isfile(filepath):
             with open(filepath, 'rb') as f:
                 hashval = hashlib.md5(f.read())
 
+        else:
+            hashval = hashlib.md5(f.read())
+
         return 'md5', hashval.hexdigest()
+
+    
+

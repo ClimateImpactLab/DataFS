@@ -1,7 +1,7 @@
 .. _tutorial-aws:
 
-Using DataFS with Remote Services
-=================================
+Using Other Services
+====================
 
 Because the file operations in DataFS are backed by pyFilesystem, DataFS supports any of the following remote storage services:
 

@@ -18,12 +18,11 @@ def catch_timeout(func):
     '''
 
     def inner(*args, **kwargs):
-        msg = ' '.join([
-            'Connection to MongoDB server could not be established.',
-            'Make sure you are running a MongoDB server and that the MongoDB',
-            'Manager has been configured to connect over the correct port.',
-            'For more information see',
-            'https://docs.mongodb.com/manual/tutorial/.'])
+        msg = 'Connection to MongoDB server could not be established. '\
+            'Make sure you are running a MongoDB server and that the MongoDB '\
+            'Manager has been configured to connect over the correct port. '\
+            'For more information see '\
+            'https://docs.mongodb.com/manual/tutorial/.'
         try:
             return func(*args, **kwargs)
         except ServerSelectionTimeoutError:
@@ -102,7 +101,10 @@ class MongoDBManager(BaseDataManager):
             'versions': []}
         doc['metadata'] = metadata
 
-        self.collection.insert_one(doc)
+        try:
+            self.collection.insert_one(doc)
+        except DuplicateKeyError:
+            raise KeyError('Archive "{}" already exists'.format(archive_name))
 
     def _create_if_not_exists(
             self,
@@ -117,7 +119,7 @@ class MongoDBManager(BaseDataManager):
                 authority_name,
                 service_path,
                 metadata)
-        except DuplicateKeyError:
+        except KeyError:
             pass
 
     @catch_timeout
@@ -132,19 +134,55 @@ class MongoDBManager(BaseDataManager):
 
         return self.collection.find_one({'_id': archive_name})
 
-    @catch_timeout
-    def _get_archive(self, archive_name):
+    def _get_authority_name(self, archive_name):
 
-        res = self.collection.find_one({'_id': archive_name})
+        res = self._get_archive_listing(archive_name)
 
-        return DataArchive(
-            api=self.api,
-            archive_name=res['_id'],
-            authority=res['authority_name'],
-            service_path=res['service_path'])
+        if res is None:
+            raise KeyError
+
+        return res['authority_name']
+
+    def _get_service_path(self, archive_name):
+
+        res = self._get_archive_listing(archive_name)
+
+        if res is None:
+            raise KeyError
+
+        return res['service_path']
+
 
     def _get_archive_metadata(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
 
+        if res is None:
+            raise KeyError
+
         return res['metadata']
+
+    def _get_versions(self, archive_name):
+
+        res = self.collection.find_one({'_id': archive_name})
+
+        if res is None:
+            raise KeyError
+
+        return res['versions']
+
+    def _get_latest_hash(self, archive_name):
+
+        versions = self._get_versions(archive_name)
+
+        if len(versions) == 0:
+            return None
+
+        else:
+            return versions[-1]['checksum']
+
+
+    def _delete_archive_record(self, archive_name):
+
+        return self.collection.remove({'_id': archive_name})
+        

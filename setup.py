@@ -26,6 +26,7 @@ test_requirements = [
     'cryptography==1.6',
     'PyYAML==3.12',
     'pytest==3.0.5',
+    'pytest_cov==2.4.0',
     'pymongo==3.4.0',
     'boto3==1.4.2',
     'moto==0.4.30'

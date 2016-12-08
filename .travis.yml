@@ -49,12 +49,12 @@ services:
   - mongodb
   - dynamodb
 
- before_install: 
-    - docker pull tray/dynamodb-local
-    - docker run -d -p 8000:8000 tray/dynamodb-local -inMemory -port 8000
-    # - mkdir /home/travis/.aws
-    # - printf \"[default]\\nregion=us-east-1\\noutput=json\\n\" > /home/travis/.aws/config
-    # - printf \"[default]\\naws_access_key_id = FAKE0000000000000000\\naws_secret_access_key = FAKE000000000000000000000000000000000000\\n\" > /home/travis/.aws/credentials
+before_install: 
+  - docker pull tray/dynamodb-local
+  - docker run -d -p 8000:8000 tray/dynamodb-local -inMemory -port 8000
+  # - mkdir /home/travis/.aws
+  # - printf \"[default]\\nregion=us-east-1\\noutput=json\\n\" > /home/travis/.aws/config
+  # - printf \"[default]\\naws_access_key_id = FAKE0000000000000000\\naws_secret_access_key = FAKE000000000000000000000000000000000000\\n\" > /home/travis/.aws/credentials
   
 env: 
   global:

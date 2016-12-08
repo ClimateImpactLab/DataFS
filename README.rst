@@ -37,7 +37,11 @@ See :ref:`examples <examples>`
 Features
 --------
 
-* TODO 
+
+Todo
+----
+
+Add a front-end
 
 Credits
 ---------

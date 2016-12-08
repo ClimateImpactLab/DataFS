@@ -27,4 +27,8 @@ class DataService(object):
 
     def get_hash(self, service_path):
 
-        local_hash = self.archive.api.get_hash(self.fs.getsyspath(service_path))
+        os_path = self.fs.getsyspath(service_path)
+        if not os.path.exists(os_path):
+            raise OSError('File does not exist')
+            
+        return self.api.hash_file()

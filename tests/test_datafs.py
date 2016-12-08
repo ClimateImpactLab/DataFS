@@ -26,7 +26,6 @@ import itertools
 import time
 import boto
 import moto
-from freezegun import freeze_time
 import moto
 from moto import mock_dynamodb
 from moto.dynamodb import dynamodb_backend
@@ -55,12 +54,8 @@ counter = get_counter()
 
 
 
-@mock_dynamodb
-def test_list_tables():
-    name = 'my-table'
-    dynamodb_backend.create_table(name, hash_key_attr="_id", hash_key_type="S")
-    conn = boto.connect_dynamodb('the_key', 'the_secret')
-    assert conn.list_tables() == ['my-table']
+
+
 
 
 
@@ -77,25 +72,36 @@ def manager(mgr_name):
 
     elif mgr_name == 'dynamo':
 
-        m = moto.mock_s3()
-        mdb = moto.mock_dynamodb()
+        
 
-        m.start()
-        mdb.start()
+        name = 'my-new-table-name'
+        manager = DynamoDBManager(name, session_args={ 'aws_access_key_id': "access-key-id-of-your-choice",
+            'aws_secret_access_key': "secret-key-of-your-choice",}, resource_args={ 'endpoint_url':'http://localhost:8000/','region_name':'us-east-1'})
+        # manager_dynamo = DynamoDBManager(
+        #     table_name=name,
+        #     session_args={
+        #     'aws_access_key_id':'my_key',
+        #     'aws_secret_access_key':'my_secret_key'},
+        #     resource_args={'region_name':'us-east-1', 'endpoint_url':os.environ['DYNAMODB_URL']})
 
-        name = 'my-table'
-        dynamodb_backend.create_table(name, hash_key_attr="_id", hash_key_type="S")
-        manager_dynamo = DynamoDBManager(
-            table_name=name,
-            session_args={
-            'aws_access_key_id':'my_key',
-            'aws_secret_access_key':'my_secret_key'},
-            resource_args={'region_name':'us-east-1'})
+        if name not in list(map(lambda t: t.name, manager._resource.tables.all())):
+            manager.table = manager._resource.create_table(TableName=name, 
+                        KeySchema=[
+                                {'AttributeName': '_id', 'KeyType': 'HASH'},
+                                
+                            ],
+                            AttributeDefinitions=[
+                                {'AttributeName': '_id', 'AttributeType': 'S'},
+                                
+                            ], 
+                            ProvisionedThroughput={'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123}
+                            
+                    )
 
-        yield manager_dynamo
+        yield manager
 
-        m.stop()
-        mdb.stop()
+        manager.table.delete()
+
 
 @pytest.yield_fixture(scope='function')
 def filesystem(fs_name):

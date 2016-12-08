@@ -239,6 +239,8 @@ class DataAPI(object):
             with open(filepath, 'rb') as f:
                 hashval = hashlib.md5(f.read())
 
+        else:
+            hashval = hashlib.md5(f.read())
 
         return 'md5', hashval.hexdigest()
 

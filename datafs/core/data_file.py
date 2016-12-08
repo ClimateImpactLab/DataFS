@@ -47,8 +47,11 @@ class BaseVersionedFileOpener(object):
         # Check the hash (if one exists) for a local version of the file
         if self.archive.api.cache:
 
-            local_hash = self.archive.api.cache.get_hash(
-                self.archive.service_path)
+            try:
+                local_hash = self.archive.api.cache.get_hash(
+                    self.archive.service_path)
+            except OSError:
+                return
 
             latest_hash = self.archive.latest_hash()
             
@@ -166,20 +169,20 @@ class BaseVersionedFileOpener(object):
 class FileOpener(BaseVersionedFileOpener):
 
     def __enter__(self):
-        self._f_obj = self._()
+        self._f_obj = self._open()
         return self._f_obj
 
     def __exit__(self, exception_type, exception_value, traceback):
         self._f_obj.close()
-        self._()
+        self._close()
         return False
 
 
-class FilePathOpener(DataFile):
+class FilePathOpener(FileOpener):
 
     def __enter__(self):
         return self._get_sys_path()
 
     def __exit__(self, exception_type, exception_value, traceback):
-        self._()
+        self._close()
         return False

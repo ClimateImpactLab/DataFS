@@ -46,7 +46,17 @@ deploy:
     condition: $TOXENV == py27
 
 services: 
-  - mongodb
+  mongodb:
+
+  dynamodb:
+    image: tray/dynamodb-local
+    ports:
+      - "8000"
+    command: -inMemory -port 8000
+    links:
+      - dynamodb
+    environment:
+      DYNAMODB_URL: http://dynamodb:8000/
 
 notifications:
   email:

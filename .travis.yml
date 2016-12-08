@@ -1,70 +1,40 @@
-# Config file for automatic testing at travis-ci.org
-# This file will be regenerated if you run travis_pypi_setup.py
-
-
 language: python
 python:
-  - "2.7"
-  # - "3.3"
-  # - "3.4"
-  # - "3.5"
-  # PyPy versions
-  - "pypy"  # PyPy2 2.5.0
-  # - "pypy3" # Pypy3 2.4.0
-  # - "pypy-5.3.1"
-# command to install dependencies
+- '2.7'
+- pypy
 install:
-  - pip install .
-  - pip install -r requirements.txt
-  - pip install -r requirements_test.txt
-  - pip install coveralls
-  - pip install pytest-cov
-
-# command to run tests
-# For testing coverage locally, use:
-# pytest datafs --cov=datafs --cov-report term-missing;
-script: 
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then
-      pytest ./datafs ./tests ./docs;
-    else
-      pytest ./datafs ./tests ./docs --cov --doctest-modules --cov-report term-missing;
-    fi
-
-
-# After you create the Github repo and add it to Travis, run the
-# travis_pypi_setup.py script to finish PyPI deployment setup
+- pip install .
+- pip install -r requirements.txt
+- pip install -r requirements_test.txt
+- pip install coveralls
+- pip install pytest-cov
+script:
+- if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then pytest ./datafs ./tests ./docs;
+  else pytest ./datafs ./tests ./docs --cov --doctest-modules --cov-report term-missing;
+  fi
 deploy:
   provider: pypi
-  distributions: sdist bdist_wheel
   user: delgadom
   password:
-    secure: PLEASE_REPLACE_ME
+    secure: Jw4AqKuQcVpK9nsLZu/chk91cLGZxdwTugewhQlaEp5k1Hyx6HxvJMg5LFg4cFzfzRibmOtatWJUDy9XA3q7OhDNwKjd2UxCflOpB/Sb3jsgUWnEnGOgr8bDbnfRUW40zZf4vheKhSGif5hf3HqtnPMe41vtLy8QzTQSMl7FHgLI0eW+6sXErzKdDVmkcNGFhjClm7/yWJRPxNxFsJv2ofXMFkdN97eaN8gOiNKteB0JRHsKiAvH/y8nHKO/R/f3GwAyXw+WlkxoD0iMYyAUy+CTU1U83Kphwym1y2xkh6KGJnyKMiOm7bSWqomHRcHD5vCj8Qlxz5LD+Xpy/CIRe3tw5YmDJDrpTAEQLJgH5h2ers6H7+uk5VPdBL8O/L+Vk2yKAt0F0nWw9nObiGWCUx3efuikqyEDZkpiGkDgFszIFeLpvd1TFSM0AnQNhhof3KDaFSkTGc4cuYPKbVQCAC0wevZPExKj5f6djPkyl5SaoAOGbHfuKuLsHbssX8IBOU193r8c/K03rjDTtcwvkT73uKE2II9Rfo8R8drqH/kznr8Kq1wUEKGh/A4uretZlr2dw051qi6qxgEgUKoQNfuIhP+5KBm7Zp2jIdG3Nqi4iP9zpH4+Kjwvhl6hn9Kx5SDwxVwbnS5A9P7I6L32QyZbc5VJSs2RaiKeG5h8o7I=
   on:
     tags: true
-    repo: ClimateImpactLab/datafs
-    condition: $TOXENV == py27
-
-services: 
-  - mongodb
-  - dynamodb
-  - docker
-
-before_install: 
-  - docker pull tray/dynamodb-local
-  - docker run -d -p 8000:8000 tray/dynamodb-local -inMemory -port 8000
-  # - mkdir /home/travis/.aws
-  # - printf \"[default]\\nregion=us-east-1\\noutput=json\\n\" > /home/travis/.aws/config
-  # - printf \"[default]\\naws_access_key_id = FAKE0000000000000000\\naws_secret_access_key = FAKE000000000000000000000000000000000000\\n\" > /home/travis/.aws/credentials
-  
-env: 
+    distributions: sdist bdist_wheel
+    repo: ClimateImpactLab/DataFS
+    branch: master
+services:
+- mongodb
+- dynamodb
+- docker
+before_install:
+- docker pull tray/dynamodb-local
+- docker run -d -p 8000:8000 tray/dynamodb-local -inMemory -port 8000
+env:
   global:
     DYNAMODB_URL: http://dynamodb:8000/
-
 notifications:
   email:
     on_success: never
     on_failure: never
-
-
 after_success:
-  - coveralls
+- coveralls

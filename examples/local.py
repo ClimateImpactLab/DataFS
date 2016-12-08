@@ -195,6 +195,14 @@ Now let's make sure we're getting the latest version:
 
 Looks good!
 
+Cleaning up
+~~~~~~~~~~~
+
+.. code-block:: python
+
+    >>> var.delete()
+    
+
 Next steps
 ~~~~~~~~~~
 

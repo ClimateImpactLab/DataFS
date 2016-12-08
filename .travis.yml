@@ -46,16 +46,16 @@ deploy:
     condition: $TOXENV == py27
 
 services: 
-  mongodb:
+  - mongodb
+  - dynamodb
 
-  dynamodb:
-    image: tray/dynamodb-local
-    ports:
-      - "8000"
-    command: -inMemory -port 8000
-    links:
-      - dynamodb
-      
+ before_install: 
+    - docker pull tray/dynamodb-local
+    - docker run -d -p 8000:8000 tray/dynamodb-local -inMemory -port 8000
+    # - mkdir /home/travis/.aws
+    # - printf \"[default]\\nregion=us-east-1\\noutput=json\\n\" > /home/travis/.aws/config
+    # - printf \"[default]\\naws_access_key_id = FAKE0000000000000000\\naws_secret_access_key = FAKE000000000000000000000000000000000000\\n\" > /home/travis/.aws/credentials
+  
 env: 
   global:
     DYNAMODB_URL: http://dynamodb:8000/

@@ -29,6 +29,7 @@ test_requirements = [
     'pymongo==3.4.0',
     'boto3==1.4.2',
     'moto==0.4.30'
+    'git+https://github.com/PyFilesystem/pyfilesystem#egg=0.5.5a1'
 ]
 
 setup(

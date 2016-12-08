@@ -104,7 +104,7 @@ class MongoDBManager(BaseDataManager):
         try:
             self.collection.insert_one(doc)
         except DuplicateKeyError:
-            raise KeyError('Archive {} already exists'.format(archive_name))
+            raise KeyError('Archive "{}" already exists'.format(archive_name))
 
     def _create_if_not_exists(
             self,
@@ -138,11 +138,17 @@ class MongoDBManager(BaseDataManager):
 
         res = self._get_archive_listing(archive_name)
 
+        if res is None:
+            raise KeyError
+
         return res['authority_name']
 
     def _get_service_path(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
+
+        if res is None:
+            raise KeyError
 
         return res['service_path']
 
@@ -151,11 +157,17 @@ class MongoDBManager(BaseDataManager):
 
         res = self._get_archive_listing(archive_name)
 
+        if res is None:
+            raise KeyError
+
         return res['metadata']
 
     def _get_versions(self, archive_name):
 
         res = self.collection.find_one({'_id': archive_name})
+
+        if res is None:
+            raise KeyError
 
         return res['versions']
 
@@ -168,3 +180,9 @@ class MongoDBManager(BaseDataManager):
 
         else:
             return versions[-1]['checksum']
+
+
+    def _delete_archive_record(self, archive_name):
+
+        return self.collection.remove({'_id': archive_name})
+        

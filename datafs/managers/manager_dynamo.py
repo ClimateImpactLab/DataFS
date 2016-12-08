@@ -12,37 +12,33 @@ class DynamoDBManager(BaseDataManager):
     api : object
         :py:class:`~datafs.core.data_api.DataAPI` object
     table_name: str
-        For Climate Impact Lab table_name = "GCP"
+        For Climate Impact Lab table_name = "cil-data"
 
     """
 
-    def __init__(self, table_name, api=None, *args, **kwargs):
+    def __init__(self, table_name, api=None, session_args={}, resource_args={}):
         super(DynamoDBManager, self).__init__(api)
 
-        self._session = boto3.Session(profile_name='cil_dynamo')
-        self._client = self._session.client('dynamodb', region_name='us-east-1')
-        self._resource = self._session.resource('dynamodb',  region_name='us-east-1')
+        self._session = boto3.Session(**session_args)
+        self._resource = self._session.resource('dynamodb', **resource_args)
         self.table = self._resource.Table(table_name)
-
-
 
     # Private methods (to be implemented!)
     
-    def _get_archives_names(self):
+    def _get_archive_names(self):
         """
         Returns a list of Archives in the table on Dynamo
-
-
         """
-
-
-        return [str(archive['_id']) for archive in self.table.scan(AttributesToGet=['_id'])['Items']]
+        if len(self.table.scan()['Items']) == 0:
+            return []
+        else:
+            res = [str(archive['_id']) for archive in self.table.scan(AttributesToGet=['_id'])['Items']]
+            return res
 
     def _update(self, archive_name, version_metadata):
         '''
         Updates the version specific metadata attribute in DynamoDB
         In DynamoDB this is simply a list append on this attribute value
-
 
         Parameters
         ----------
@@ -65,8 +61,6 @@ class DynamoDBManager(BaseDataManager):
                     ReturnValues='ALL_NEW'
                 )
 
-        return self._get_archive_metadata(archive_name)['version_metadata']
-
     def _update_metadata(self, archive_name, metadata):
         """
         Appends the updated_metada dict to the Metadata Attribute list
@@ -85,7 +79,7 @@ class DynamoDBManager(BaseDataManager):
         """
 
         #keep the current state in memory
-        archive_data_current = self.table.get_item(Key={'_id': archive_name})['Item']['archive_data']
+        archive_data_current = self._get_archive_metadata(archive_name)
         archive_data_current.update(metadata)
         #add the updated archive_data object to Dynamo
         updated = self.table.update_item(Key={'_id': archive_name},
@@ -95,9 +89,6 @@ class DynamoDBManager(BaseDataManager):
                     },
                     ReturnValues='ALL_NEW'
                     )
-
-        return updated
-
 
     def _create_archive(self, archive_name, authority_name, service_path, metadata):
 
@@ -123,7 +114,6 @@ class DynamoDBManager(BaseDataManager):
         Coerce underscores to dashes
         '''
 
-
         item = {
                 '_id': archive_name, 
                 'authority_name': authority_name, 
@@ -132,43 +122,65 @@ class DynamoDBManager(BaseDataManager):
                 'archive_data':metadata
                 }
 
-        if 'Item' in self.table.get_item(Key={'_id': archive_name}):
+        if archive_name in self._get_archive_names():
 
             raise KeyError("{} already exists. Use get_archive() to view".format(archive_name))
         
         else:
-            res = self.table.put_item(Item=item)
+            self.table.put_item(Item=item)
 
-            return res
-
-              
-
+             
     def _create_if_not_exists(self, archive_name, authority_name, service_name, metadata):
-        self._create_archive(archive_name, authority_name, service_name, metadata)
+        try:
+            self._create_archive(archive_name, authority_name, service_name, metadata)
+        except KeyError:
+            pass
 
+    def _get_archive_listing(self, archive_name):
+        '''
+        Return full document for ``{_id:'archive_name'}``
+
+        .. note::
+
+            DynamoDB specific results - do not expose to user
+        '''
+        return self.table.get_item(Key={'_id': archive_name})['Item']
 
     def _get_archive_metadata(self, archive_name):
-        return self.table.get_item(Key={'_id': archive_name})['Item']
+
+        res = self._get_archive_listing(archive_name)
+
+        return res['archive_data']
 
     def _get_authority_name(self, archive_name):
 
-        res = self._get_archive_metadata(archive_name)
+        res = self._get_archive_listing(archive_name)
 
         return res['authority_name']
 
     def _get_service_path(self, archive_name):
 
-        res = self._get_archive_metadata(archive_name)
+        res = self._get_archive_listing(archive_name)
 
         return res['service_path']
 
+    def _get_versions(self, archive_name):
 
-    def _get_services_for_version(self, archive_name, version_id):
-        raise NotImplementedError
+        res = self._get_archive_listing(archive_name)
 
-    def _get_datafile_from_service(self, archive_name, version_id, service):
-        raise NotImplementedError
+        return res['version_metadata']
 
-    def _get_all_version_ids(self, archive_name):
-        raise NotImplementedError
-        
+    def _get_latest_hash(self, archive_name):
+
+        versions = self._get_versions(archive_name)
+
+        if len(versions) == 0:
+            return None
+
+        else:
+            return versions[0]['checksum']
+
+    def _delete_archive_record(self, archive_name):
+
+
+        return self.table.delete_item(Key={'_id': archive_name})        

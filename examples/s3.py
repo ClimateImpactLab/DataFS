@@ -25,8 +25,9 @@ We need a few things for this example:
 
 .. code-block:: python
 
-    >>> from datafs.managers.manager_mongo import MongoDBManager
+    >>> from datafs.managers.manager_dynamo import DynamoDBManager
     >>> from datafs import DataAPI
+    >>> from fs.tempfs import TempFS
     >>> from ast import literal_eval
     >>> import os
     >>> import tempfile
@@ -71,9 +72,7 @@ server running, then create a MongoDBManager instance:
 
 .. code-block:: python
 
-    >>> manager = MongoDBManager(
-    ...     database_name = 'MyDatabase',
-    ...     table_name = 'DataFiles')
+    >>> manager = DynamoDBManager(table_name = 'my-table')
     >>>
     >>> api.attach_manager(manager)
 
@@ -107,6 +106,18 @@ metadata. To suppress errors on re-creation, use the
     >>> api.create_archive(
     ...     'my_remote_archive',
     ...     metadata = dict(description = 'My test data archive'))
+
+
+
+View all available archives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Let's see what archives we have available to us.
+
+.. code-block:: python
+
+    >>> api.archives
+    [<DataArchive, archive_name: 'my_remote_archive'>]
 
 
 Retrieve archive metadata

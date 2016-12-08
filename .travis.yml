@@ -5,14 +5,13 @@
 language: python
 python:
   - "2.7"
-  - "3.3"
+  # - "3.3"
   # - "3.4"
   # - "3.5"
   # PyPy versions
-  - "pypy"
   - "pypy"  # PyPy2 2.5.0
-  - "pypy3" # Pypy3 2.4.0
-  - "pypy-5.3.1"
+  # - "pypy3" # Pypy3 2.4.0
+  # - "pypy-5.3.1"
 # command to install dependencies
 install:
   - pip install .
@@ -47,6 +46,19 @@ deploy:
 
 services: 
   - mongodb
+  - dynamodb
+  - docker
+
+before_install: 
+  - docker pull tray/dynamodb-local
+  - docker run -d -p 8000:8000 tray/dynamodb-local -inMemory -port 8000
+  # - mkdir /home/travis/.aws
+  # - printf \"[default]\\nregion=us-east-1\\noutput=json\\n\" > /home/travis/.aws/config
+  # - printf \"[default]\\naws_access_key_id = FAKE0000000000000000\\naws_secret_access_key = FAKE000000000000000000000000000000000000\\n\" > /home/travis/.aws/credentials
+  
+env: 
+  global:
+    DYNAMODB_URL: http://dynamodb:8000/
 
 notifications:
   email:

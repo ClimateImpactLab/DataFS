@@ -1,7 +1,6 @@
 
 from __future__ import absolute_import
 
-from datafs.core.data_archive import DataArchive
 
 class BaseDataManager(object):
     '''
@@ -73,6 +72,8 @@ class BaseDataManager(object):
             self._create_if_not_exists(
                 archive_name, authority_name, service_path, metadata)
 
+        return self.get_archive(archive_name)
+
     def get_archive(self, archive_name):
         '''
         Get a data archive given an archive name
@@ -84,12 +85,18 @@ class BaseDataManager(object):
 
         '''
 
+        try:
+            authority_name = self._get_authority_name(archive_name)
+            service_path = self._get_service_path(archive_name)
+            
+        except KeyError:
+            raise KeyError('Archive "{}" not found'.format(archive_name))
 
-        return DataArchive(
+        return self.api._ArchiveConstructor(
             api=self.api,
             archive_name=archive_name,
-            authority=self._get_authority_name(archive_name),
-            service_path=self._get_service_path(archive_name))
+            authority=authority_name,
+            service_path=service_path)
 
 
     def get_archives(self):
@@ -141,6 +148,20 @@ class BaseDataManager(object):
 
         return self._get_latest_hash(archive_name)
 
+    def delete_archive_record(self, archive_name):
+        '''
+        Deletes an archive from the database
+
+        Parameters
+        ----------
+
+        archive_name : str
+            name of the archive to delete
+
+        '''
+
+        self._delete_archive_record(archive_name)
+
     # Private methods (to be implemented by subclasses of DataManager)
 
     def _update(self, archive_name, archive_data):
@@ -183,5 +204,9 @@ class BaseDataManager(object):
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _get_service_path(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _delete_archive_record(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')

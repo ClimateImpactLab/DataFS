@@ -55,8 +55,10 @@ services:
     command: -inMemory -port 8000
     links:
       - dynamodb
-    environment:
-      DYNAMODB_URL: http://dynamodb:8000/
+      
+env: 
+  global:
+    DYNAMODB_URL: http://dynamodb:8000/
 
 notifications:
   email:

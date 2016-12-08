@@ -7,7 +7,7 @@ from datafs.core.data_api import DataAPI
 
 __author__ = """Climate Impact Lab"""
 __email__ = 'jsimcock@rhg.com'
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 
 _module_imports = (
     DataAPI,

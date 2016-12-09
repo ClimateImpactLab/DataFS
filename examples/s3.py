@@ -25,7 +25,7 @@ We need a few things for this example:
 
 .. code-block:: python
 
-    >>> from datafs.managers.manager_dynamo import DynamoDBManager
+    >>> from datafs.managers.manager_mongo import MongoDBManager
     >>> from datafs import DataAPI
     >>> from fs.tempfs import TempFS
     >>> from ast import literal_eval
@@ -67,13 +67,28 @@ Attach Manager
 
 Next, we'll choose an archive manager. DataFS currently
 supports MongoDB and DynamoDB managers. In this example
-we'll use a MongoDB manager. Make sure you have a MongoDB
-server running, then create a MongoDBManager instance:
+we'll use a local MongoDB manager. Make sure you have 
+a MongoDB server running, then create a 
+MongoDBManager instance:
 
 .. code-block:: python
 
-    >>> manager = DynamoDBManager(table_name = 'my-table')
-    >>>
+    >>> manager = MongoDBManager(
+    ...     database_name = 'MyDatabase',
+    ...     table_name = 'DataFiles')
+
+If this is the first time you've set up this database, you'll need to create a 
+table:
+
+.. code-block:: python
+
+    >>> manager.create_archive_table('DataFiles', raise_if_exists=False)
+
+
+All set. Now we can attach the manager to our DataAPI object:
+
+.. code-block:: python
+
     >>> api.attach_manager(manager)
 
 
@@ -95,7 +110,7 @@ filesystem we imported:
 Create archives
 ~~~~~~~~~~~~~~~
 
-Next we'll create our first archive. An archive must
+Now we can create our first archive. An archive must
 have an archive_name. In addition, you can supply any
 additional keyword arguments, which will be stored as
 metadata. To suppress errors on re-creation, use the
@@ -106,7 +121,7 @@ metadata. To suppress errors on re-creation, use the
     >>> api.create_archive(
     ...     'my_remote_archive',
     ...     metadata = dict(description = 'My test data archive'))
-
+    <DataArchive, archive_name: 'my_remote_archive'>
 
 
 View all available archives
@@ -211,6 +226,7 @@ Cleaning up
 .. code-block:: python
 
     >>> var.delete()
+    >>> api.manager.delete_table('DataFiles')
     
 
 Next steps

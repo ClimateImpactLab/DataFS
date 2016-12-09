@@ -43,6 +43,12 @@ class DataAPI(object):
         self._authorities[service_name] = DataService(service)
         self._authorities[service_name].api = self
 
+    def lock_authorities(self):
+        self._authorities_locked = True
+
+    def lock_manager(self):
+        self._manager_locked = True
+
     def attach_cache(self, service):
 
         if service in self._authorities.values():

@@ -4,41 +4,62 @@ Here is an example API that you could implement: :download:`download my_api.py <
 
 .. literalinclude:: ../examples/subclassing/my_api.py
 
-
-A user of this API will have access to the more limited set of archive 
-operations:
+A user can now use your custom version of the DataFS API:
 
 .. code-block:: python
 
     >>> from my_api import MyAPI
     >>>
-    >>> my_api = MyAPI('my name')
+    >>> my_api = MyAPI(
+    ...   username='my name', 
+    ...   contact='my_email@example.com',
+    ...   AWS_ACCESS_KEY='my_access_key',
+    ...   AWS_SECRET_KEY='my_secret_key')
+
+The user of this API will have access to the more limited set of archive 
+operations:
+
+.. code-block:: python
+
+    >>> archive = my_api.create_archive('archive_name', authority_name='s3-1')
     >>>
-    >>> my_api.create_archive('archive_name')
-    >>>
-    >>> archive = my_api.get_archive('archive_name')
-    >>> 
     >>> archive.delete()                             # doctest: +ELLIPSIS
-    Traceback (most recent call first):
+    Traceback (most recent call last):
     ...
     IOError: Data archives cannot be deleted
-    >>> archive.attach_authority('s3-1', None)       # doctest: +ELLIPSIS
-    Traceback (most recent call first):
+    >>> my_api.attach_authority('s3-1', None)        # doctest: +ELLIPSIS
+    Traceback (most recent call last):
     ...
     PermissionError: Authorities locked
 
 However, users of this api still have access to all other features:
 
 .. code-block:: python
-
-    >>> with archive.open('w+') as f:
-    ...     res = f.write('my new data')
+    
+    >>> archive_2 = my_api.create_archive(
+    ...     'another archive', 
+    ...     authority_name='NAT-1',
+    ...     metadata={'description':'data file to be stored on network-attached-storage'})
+    ...    
+    >>> with archive_2.open('w+') as f:
+    ...     res = f.write(u'my new data')
     ...
-    >>> with archive.open('r') as f:
-    ...     print(res.read())
+    >>> with archive_2.open('r') as f:
+    ...     print(f.read())
     my new data
-    >>> with snacks in my mouth:
-    ...     talk
+    >>> 
 
+Cleanup
+~~~~~~~~~~~~~~
+
+.. code-block::python
+
+    >>> from my_api import teardown
+    >>> teardown()
 
 '''
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

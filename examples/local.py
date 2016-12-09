@@ -1,6 +1,5 @@
 '''
 
-
 Use this tutorial to build a DataFS server using MongoDB and the local filesystem
 
 
@@ -68,7 +67,19 @@ server running, then create a MongoDBManager instance:
     >>> manager = MongoDBManager(
     ...     database_name = 'MyDatabase',
     ...     table_name = 'DataFiles')
-    >>>
+
+
+If this is the first time you've set up this database, you'll need to create a 
+table:
+
+.. code-block:: python
+
+    >>> manager.create_archive_table('DataFiles', raise_if_exists=False)
+
+All set. Now we can attach the manager to our DataAPI object:
+
+.. code-block:: python
+
     >>> api.attach_manager(manager)
 
 
@@ -107,6 +118,7 @@ metadata. To suppress errors on re-creation, use the
     >>> api.create_archive(
     ...     'my_first_archive',
     ...     metadata = dict(description = 'My test data archive'))
+    <DataArchive, archive_name: 'my_first_archive'>
 
 
 Retrieve archive metadata
@@ -201,6 +213,7 @@ Cleaning up
 .. code-block:: python
 
     >>> var.delete()
+    >>> api.manager.delete_table('DataFiles')
     
 
 Next steps

@@ -21,18 +21,16 @@ class DynamoDBManager(BaseDataManager):
 
         self._session = boto3.Session(**session_args)
         self._resource = self._session.resource('dynamodb', **resource_args)
-        self.table = self._resource.Table(table_name)
+        self._table = self._resource.Table(table_name)
 
-    # Private methods (to be implemented!)
-    
     def _get_archive_names(self):
         """
         Returns a list of Archives in the table on Dynamo
         """
-        if len(self.table.scan()['Items']) == 0:
+        if len(self._table.scan()['Items']) == 0:
             return []
         else:
-            res = [str(archive['_id']) for archive in self.table.scan(AttributesToGet=['_id'])['Items']]
+            res = [str(archive['_id']) for archive in self._table.scan(AttributesToGet=['_id'])['Items']]
             return res
 
     def _update(self, archive_name, version_metadata):
@@ -53,13 +51,43 @@ class DynamoDBManager(BaseDataManager):
         dict
             list of dictionaries of version_metadata 
         '''
-        self.table.update_item(
+        self._table.update_item(
                     Key={'_id': archive_name},
                     UpdateExpression="SET version_metadata = list_append(:v, version_metadata)",
                     ExpressionAttributeValues={ ':v': [version_metadata]
                     },
                     ReturnValues='ALL_NEW'
                 )
+
+    def _get_table_names(self):
+        return [t.name for t in self._resource.tables.all()]
+
+    def _create_archive_table(self, table_name):
+        if table_name in self._get_table_names():
+            raise KeyError('Table "{}" already exists'.format(table_name))
+
+        try:
+            self._resource.create_table(TableName=table_name, 
+                    KeySchema=[{'AttributeName': '_id', 'KeyType': 'HASH'},],
+                    AttributeDefinitions=[{'AttributeName': '_id', 'AttributeType': 'S'},], 
+                    ProvisionedThroughput={'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123})
+
+        except ValueError:
+            # Error handling for windows incompatability issue
+            assert table_name in self._get_table_names(), 'Table creation failed'
+
+    def _delete_table(self, table_name):
+        if table_name not in self._get_table_names():
+            raise KeyError('Table "{}" not found'.format(table_name))
+
+        try:
+
+            self._resource.Table(table_name).delete()
+
+        except ValueError:
+            # Error handling for windows incompatability issue
+            assert table_name not in self._get_table_names(), 'Table deletion failed'
+
 
     def _update_metadata(self, archive_name, metadata):
         """
@@ -82,7 +110,7 @@ class DynamoDBManager(BaseDataManager):
         archive_data_current = self._get_archive_metadata(archive_name)
         archive_data_current.update(metadata)
         #add the updated archive_data object to Dynamo
-        updated = self.table.update_item(Key={'_id': archive_name},
+        updated = self._table.update_item(Key={'_id': archive_name},
                     UpdateExpression="SET archive_data = :v",
                     ExpressionAttributeValues={
                     ':v': archive_data_current
@@ -127,7 +155,7 @@ class DynamoDBManager(BaseDataManager):
             raise KeyError("{} already exists. Use get_archive() to view".format(archive_name))
         
         else:
-            self.table.put_item(Item=item)
+            self._table.put_item(Item=item)
 
              
     def _create_if_not_exists(self, archive_name, authority_name, service_name, metadata):
@@ -144,7 +172,7 @@ class DynamoDBManager(BaseDataManager):
 
             DynamoDB specific results - do not expose to user
         '''
-        return self.table.get_item(Key={'_id': archive_name})['Item']
+        return self._table.get_item(Key={'_id': archive_name})['Item']
 
     def _get_archive_metadata(self, archive_name):
 
@@ -183,4 +211,4 @@ class DynamoDBManager(BaseDataManager):
     def _delete_archive_record(self, archive_name):
 
 
-        return self.table.delete_item(Key={'_id': archive_name})        
+        return self._table.delete_item(Key={'_id': archive_name})        

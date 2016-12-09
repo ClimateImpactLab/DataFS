@@ -1,7 +1,13 @@
 '''
 
+This tutorial demonstrates reading and writing files to remote archives using 
+on-disk I/O operations.
+
+To demonstrate this, we make use of the :py:mod:`xarray` module, which cannot 
+read from a streaming object.
 
 Set up the workspace
+--------------------
 
 .. code-block:: python
 
@@ -25,6 +31,10 @@ Initialize the API
     >>>
     >>> api.attach_manager(manager)
 
+
+Attach a remote service
+~~~~~~~~~~~~~~~~~~~~~~~
+
 In this example we'll approximate a remote file system (such as AWS S3 or an ftp
 server) using an in-memory filesystem. This filesystem returns
 :py:class:`io.TextIOWrapper` objects, so approximates the streaming objects
@@ -39,6 +49,11 @@ returned by ``boto`` or ``request`` calls.
     >>>
     >>> var = api.get_archive('streaming_archive')
     >>>
+
+
+Create sample data
+~~~~~~~~~~~~~~~~~~
+
 
 Create a sample dataset (from the
 `xarray docs <http://xarray.pydata.org/en/stable/examples/weather-data.html>`_):
@@ -71,6 +86,9 @@ Upload the dataset to the archive
     >>> with var.get_sys_path() as f:
     ...     ds.to_netcdf(f)
     ...
+
+Read and write to disk
+----------------------
 
 NetCDF files cannot be read from a streaming object:
 
@@ -147,4 +165,14 @@ Now let's open the file and see if our change was saved:
         tmin      (time, location) float64 -8.037 -1.788 -3.932 -9.341 -6.558 ...
     Attributes:
         version: version 2
+
+
+
+Cleaning up
+~~~~~~~~~~~
+
+.. code-block:: python
+
+    >>> var.delete()
+    
 '''

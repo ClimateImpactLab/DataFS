@@ -34,7 +34,7 @@ class BaseVersionedFileOpener(object):
             allow_recreate=True)
         
         if self.archive.api.cache:
-            self.archive.authority.fs.makedir(
+            self.archive.api.cache.fs.makedir(
                 fs.path.dirname(self.archive.service_path),
                 recursive=True,
                 allow_recreate=True)

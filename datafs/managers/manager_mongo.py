@@ -62,6 +62,22 @@ class MongoDBManager(BaseDataManager):
     def table_name(self):
         return self._table_name
 
+    def _get_table_names(self):
+        return self.db.collection_names(include_system_collections=False)
+
+    def _create_archive_table(self, table_name):
+        if table_name in self._get_table_names():
+            raise KeyError('Table "{}" already exists'.format(table_name))
+
+        self.db.create_collection(self.table_name)
+
+    def _delete_table(self, table_name):
+        if table_name not in self._get_table_names():
+            raise KeyError('Table "{}" not found'.format(table_name))
+        
+        self.db.drop_collection(table_name)
+
+
     @property
     def collection(self):
         if self._coll is None:
@@ -69,10 +85,20 @@ class MongoDBManager(BaseDataManager):
 
         return self._coll
 
+
+    @property
+    def db(self):
+        if self._db is None:
+            self._db = self._client[self.database_name]
+
+        return self._db
+
     def _connect(self):
 
-        self._db = self._client[self.database_name]
-        self._coll = self._db[self.table_name]
+        if self.table_name not in self._get_table_names():
+            raise KeyError('Table "{}" not found'.format(self.table_name))
+
+        self._coll = self.db[self.table_name]
 
     # Private methods (to be implemented!)
 
@@ -186,3 +212,8 @@ class MongoDBManager(BaseDataManager):
 
         return self.collection.remove({'_id': archive_name})
         
+    def _get_archive_names(self):
+
+        res = self.collection.find({}, {"_id": 1})
+        
+        return [r['_id'] for r in res]

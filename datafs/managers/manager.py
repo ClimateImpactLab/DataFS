@@ -12,6 +12,23 @@ class BaseDataManager(object):
     def __init__(self, api=None):
         self.api = api
 
+    @property
+    def table_names(self):
+        return self._get_table_names()
+
+    def create_archive_table(self, table_name, raise_if_exists=True):
+        if raise_if_exists:
+            self._create_archive_table(table_name)
+
+        else:
+            try:
+                self._create_archive_table(table_name)
+            except KeyError:
+                pass
+
+    def delete_table(self, table_name):
+        self._delete_table(table_name)
+
     def update(self, archive_name, checksum, metadata):
         '''
         Register a new version for archive ``archive_name``
@@ -190,7 +207,6 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-
     def _get_archive_metadata(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
@@ -208,5 +224,17 @@ class BaseDataManager(object):
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _delete_archive_record(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_table_names(self):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _create_archive_table(self, table_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _delete_table(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')

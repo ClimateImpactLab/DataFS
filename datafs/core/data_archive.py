@@ -111,7 +111,7 @@ class DataArchive(object):
             Deleting an archive will erase all data and metadata permanently.
             This functionality can be removed by subclassing and overloading 
             this method. For help subclassing DataFS see 
-            :ref:`Subclassing DataFS <tutorial-sublcassing>`
+            :ref:`Subclassing DataFS <tutorial-subclassing>`
         
         '''
 

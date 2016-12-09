@@ -12,6 +12,7 @@ import hashlib
 
 class DataAPI(object):
 
+
     TimestampFormat = '%Y%m%d-%H%M%S'
 
     DefaultAuthorityName = None
@@ -29,6 +30,7 @@ class DataAPI(object):
         self._authorities_locked = False
         self._manager_locked = False
 
+    #Setup file system service
     def attach_authority(self, service_name, service):
 
         if self._authorities_locked:
@@ -36,7 +38,7 @@ class DataAPI(object):
 
         self._authorities[service_name] = DataService(service)
         self._authorities[service_name].api = self
-
+    #setup
     def attach_cache(self, service):
 
         if service in self._authorities.values():
@@ -44,15 +46,15 @@ class DataAPI(object):
         else:    
             self._cache = DataService(service)
             self._cache.api = self
-
+    #set manager attr
     @property
     def manager(self):
         return self._manager
-
+    #set cache attr
     @property
     def cache(self):
         return self._cache
-
+    #get the default athority setting 
     @property
     def default_authority_name(self):
 
@@ -66,13 +68,14 @@ class DataAPI(object):
         if len(self._authorities) > 1:
             raise ValueError(
                 'Authority ambiguous. Set authority or DefaultAuthorityName.')
-
+        #get the zeroth key
         return list(self._authorities.keys())[0]
 
+    #Do we want to provide a method for setting authorities
     @property
     def default_authority(self):
         return self._authorities[self.default_authority_name]
-
+    #attach a metadata index
     def attach_manager(self, manager):
 
         if self._manager_locked:

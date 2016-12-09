@@ -26,18 +26,19 @@ class BaseVersionedFileOpener(object):
         self.args = args
         self.kwargs = kwargs
 
+    #Create directories and file systems at the cache and authority level
     def _create_service_paths(self):
 
         self.archive.authority.fs.makedir(
             fs.path.dirname(self.archive.service_path),
             recursive=True,
             allow_recreate=True)
-        
-        if self.archive.api.cache:
-            self.archive.authority.fs.makedir(
-                fs.path.dirname(self.archive.service_path),
-                recursive=True,
-                allow_recreate=True)
+        #
+        # if self.archive.api.cache:
+        #     self.archive.authority.fs.makedir(
+        #         fs.path.dirname(self.archive.service_path),
+        #         recursive=True,
+        #         allow_recreate=True)
 
     def _prune_outdated_cache_files(self):
         '''
@@ -46,7 +47,7 @@ class BaseVersionedFileOpener(object):
 
         # Check the hash (if one exists) for a local version of the file
         if self.archive.api.cache:
-
+            #where is this being called
             try:
                 local_hash = self.archive.api.cache.get_hash(
                     self.archive.service_path)

@@ -23,7 +23,7 @@ class DynamoDBManager(BaseDataManager):
         self._resource = self._session.resource('dynamodb', **resource_args)
         self.table = self._resource.Table(table_name)
 
-    # Private methods (to be implemented!)
+    # Private methods 
     
     def _get_archive_names(self):
         """
@@ -181,6 +181,4 @@ class DynamoDBManager(BaseDataManager):
             return versions[0]['checksum']
 
     def _delete_archive_record(self, archive_name):
-
-
         return self.table.delete_item(Key={'_id': archive_name})        

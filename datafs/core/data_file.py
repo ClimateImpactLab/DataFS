@@ -203,7 +203,7 @@ def get_local_path(authority, cache, use_cache, update, service_path, latest_ver
 
     
     use_cache = determine_cache_state(cache, service_path, latest_version_check)
-    fs_wrapper = create_downloader(authority, cache, use_cache):
+    fs_wrapper = create_downloader(authority, cache, use_cache)
     write_fs = create_writer(service_path)
 
     if use_cache and cache.fs.isfile(service_path):

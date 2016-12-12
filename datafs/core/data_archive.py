@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from datafs.core.data_file import FileOpener, FilePathOpener
 import fs.utils
+from contextlib import contextmanager
     
 
 class DataArchive(object):
@@ -36,7 +37,7 @@ class DataArchive(object):
     def latest_hash(self):
         return self.api.manager.get_latest_hash(self.archive_name)
 
-    def update(self, filepath, cache=False, **kwargs):
+    def update(self, filepath, **kwargs):
         '''
         Enter a new version to a DataArchive
 
@@ -89,21 +90,46 @@ class DataArchive(object):
 
     # File I/O methods
 
-    @property
-    def open(self):
+    @contextmanager
+    def open(self, mode, **kwargs):
         '''
         Opens a file for read/write
         '''
 
-        return lambda *args, **kwargs: FileOpener(self, *args, **kwargs)
+        latest_hash = self.latest_hash
 
-    @property
-    def get_sys_path(self):
+        # latest_version_check returns true if fp's hash is current as of read
+        latest_version_check = lambda fp: self.api.hash_file(fp) == latest_hash
+
+        return data_file.open(
+            mode, 
+            authority = self.authority, 
+            cache = self.api.cache, 
+            update = self.update, 
+            service_path = self.service_path, 
+            latest_version_check = latest_version_check, 
+            **kwargs)
+
+
+    @contextmanager
+    def get_local_path(self, **kwargs):
         '''
         Returns a local path for read/write
         '''
+        
+        latest_hash = self.latest_hash
 
-        return lambda *args, **kwargs: FilePathOpener(self, *args, **kwargs)
+        # latest_version_check returns true if fp's hash is current as of read
+        latest_version_check = lambda fp: self.api.hash_file(fp) == latest_hash
+
+        return data_file.get_local_path(
+            authority = self.authority, 
+            cache = self.api.cache, 
+            update = self.update, 
+            service_path = self.service_path, 
+            latest_version_check = latest_version_check, 
+            **kwargs)
+
 
     def delete(self):
         '''

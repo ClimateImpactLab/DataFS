@@ -8,25 +8,32 @@ import time
 from fs.tempfs import TempFS
 from fs.multifs import MultiFS
 
-from contextlib import contextmanager
-
 from fs.errors import (ResourceLockedError, ResourceInvalidError)
 
 class NoCacheError(IOError):
     pass
 
 
-def clear_outdated_cache_files(cache, service_path, up_to_date_check):
+def clear_outdated_cache_files(cache, service_path, latest_version_check):
     '''
     Check if file at service_path exists and is up to date
+
+    Parameters
+    ----------
+
+    cache : object
+
+        :py:mod:`fs` filesystem object to use a cache (default None)
     '''
 
     # Check the hash (if one exists) for a local version of the file
-    not cache is None:
+    if cache is None:
         raise NoCacheError
 
+    # Check to see if there is a valid system file in the cache at the service 
+    # path. If so, check if it is up to date. If not, raise NoCacheError.
     if cache.fs.exists(service_path) and cache.fs.hassyspath():
-        up_to_date = up_to_date_check(cache.fs.getsyspath(service_path))
+        up_to_date = latest_version_check(cache.fs.getsyspath(service_path))
 
     else:
         raise NoCacheError
@@ -35,8 +42,39 @@ def clear_outdated_cache_files(cache, service_path, up_to_date_check):
     if not up_to_date:
         self.cache.fs.remove(self.service_path)
 
-@contextmanager
-def open(mode, authority, cache, update, service_path, up_to_date_check, local_path=None, **kwargs):
+def determine_cache_state(cache, service_path, latest_version_check):
+
+    try:
+        clear_outdated_cache_files(cache, service_path, latest_version_check)
+        use_cache = True
+    except NoCacheError:
+        use_cache = False
+
+    return use_cache
+
+def create_downloader(authority, cache, use_cache):
+
+
+    fs_wrapper = MultiFS()
+    fs_wrapper.addfs('authority', authority.fs)
+
+    if use_cache:
+        fs_wrapper.addfs('cache', cache.fs)
+
+    return fs_wrapper
+
+def create_writer(service_path):
+    
+    write_fs = TempFS()
+    write_fs.makedir(
+        fs.path.dirname(service_path),
+        recursive=True,
+        allow_recreate=True)
+
+    return write_fs
+
+
+def open(mode, authority, cache, update, service_path, latest_version_check, **kwargs):
     '''
 
     Context manager for reading/writing from an archive and uploading on changes
@@ -48,17 +86,20 @@ def open(mode, authority, cache, update, service_path, up_to_date_check, local_p
             if cache and cache up to date:
             
                 use_cache = True
+
                 return cache opener
             
             elif cache and cache out of date:
 
                 delete cache
                 use_cache = True
+
                 return authority opener
             
             else:
             
                 use_cache = False
+
                 return authority opener
 
         on write:
@@ -73,6 +114,7 @@ def open(mode, authority, cache, update, service_path, up_to_date_check, local_p
                 write to authority
 
             update manager
+    
     Parameters
     ----------
     authority : object
@@ -87,35 +129,25 @@ def open(mode, authority, cache, update, service_path, up_to_date_check, local_p
 
     use_cache : bool
 
-         update, service_pathh, up_to_date_check, **kwargs
+         update, service_pathh, latest_version_check, **kwargs
     '''
 
-    try:
-        clear_outdated_cache_files(cache, service_path, up_to_date_check)
-        use_cache = True
-    except NoCacheError:
-        use_cache = False
+    use_cache = determine_cache_state(cache, service_path, latest_version_check)
+    fs_wrapper = create_downloader(authority, cache, use_cache):
+    write_fs = create_writer(service_path)
 
-    fs_wrapper = MultiFS()
-    fs_wrapper.addfs('authority', authority.fs)
-    
-    if use_cache:
-        fs_wrapper.addfs('cache', cache.fs)
-        fs_wrapper.setwritefs(cache.fs)
-
-    else:
-        fs_wrapper.setwritefs(authority.fs)
+    fs_wrapper.setwritefs(write_fs)
 
     yield fs_wrapper.open(mode, **kwargs)
 
-    if use_cache:
-        fs.utils.copyfile(cache.fs, service_path, authority.fs, service_path)
-    
-    update()
+    if write_fs.isfile(service_path):
+        update(write_fs.getsyspath(service_path))
+
+    write_fs.close()
 
 
-@contextmanager
-def get_local_path(authority, cache, use_cache, update, service_path, up_to_date_check, **kwargs):
+
+def get_local_path(authority, cache, use_cache, update, service_path, latest_version_check, **kwargs):
     '''
     Context manager for retrieving a system path for I/O and updating on changes    
 
@@ -146,10 +178,10 @@ def get_local_path(authority, cache, use_cache, update, service_path, up_to_date
             if use_cache:
                 write to cache
                 copy to authority
-                update manager
             else:
                 copy temp file to authority
-                update manager 
+
+            update manager 
 
 
     Parameters
@@ -166,67 +198,51 @@ def get_local_path(authority, cache, use_cache, update, service_path, up_to_date
 
     use_cache : bool
 
-         update, service_pathh, up_to_date_check, **kwargs
+         update, service_pathh, latest_version_check, **kwargs
     '''
 
-    try:
-        clear_outdated_cache_files(cache, service_path, up_to_date_check)
-        use_cache = True
-    except NoCacheError:
-        use_cache = False
-
-    fs_wrapper = MultiFS()
-    fs_wrapper.addfs('authority', authority.fs)
     
-    if use_cache:
-        fs_wrapper.addfs('cache', cache.fs)
+    use_cache = determine_cache_state(cache, service_path, latest_version_check)
+    fs_wrapper = create_downloader(authority, cache, use_cache):
+    write_fs = create_writer(service_path)
 
-        tmp = None
-        write_fs = cache.fs
-        local_path = cache.fs.getsyspath(service_path)
-
+    if use_cache and cache.fs.isfile(service_path):
+        fs.utils.movefile(cache.fs, service_path, write_fs, service_path)
     else:
-        tmp = TempFS()
-        tmp.makedir(
-            fs.path.dirname(service_path),
-            recursive=True,
-            allow_recreate=True)
-        write_fs = tmp
-        local_path = tmp.getsyspath(service_path)
+        fs.utils.copyfile(fs_wrapper, service_path, write_fs, service_path)
 
-    fs.utils.copyfile(fs_wrapper, service_path, tmp, service_path)
+    local_path = write_fs.getsyspath(service_path)
 
     yield local_path
 
-    if use_cache:
-        fs.utils.copyfile(write_fs, service_path, cache, service_path)
-
-    fs.utils.copyfile(write_fs, service_path, authority, service_path)
-
-    if tmp:
-        tmp.close()
-
-    update()
-
-class FileOpener(BaseVersionedFileOpener):
-
-    def __enter__(self):
-        self._f_obj = self._open()
-        return self._f_obj
-
-    def __exit__(self, exception_type, exception_value, traceback):
-        self._f_obj.close()
-        self._close()
-        return False
+    if not latest_version_check(write_fs.getsyspath(service_path)):
+        update(write_fs.getsyspath(service_path))
+    
+    write_fs.close()
 
 
-class FilePathOpener(FileOpener):
 
-    def __enter__(self):
-        return self._get_sys_path()
+'''
+Usage
+-----
 
-    def __exit__(self, exception_type, exception_value, traceback):
-        self._close()
-        return False
+in DataArchive(object):
+    def get_local_path(self):
+        current_latest_hash = self.latest_hash
+        get_local_path(latest_version_check=lambda fp: api.hash_file(fp) == current_latest_hash)
 
+
+with var.get_local_path() as fp:
+    ds = xr.open_dataset(fp)
+    other_var = do_something_complex(ds)
+
+    other_var.to_netcdf('var2.nc')
+
+    api.create_archive()
+
+meanwhile...
+
+do_some_update(var)
+
+then...
 

@@ -133,7 +133,7 @@ def open(mode, authority, cache, update, service_path, latest_version_check, **k
     '''
 
     use_cache = determine_cache_state(cache, service_path, latest_version_check)
-    fs_wrapper = create_downloader(authority, cache, use_cache):
+    fs_wrapper = create_downloader(authority, cache, use_cache)
     write_fs = create_writer(service_path)
 
     fs_wrapper.setwritefs(write_fs)

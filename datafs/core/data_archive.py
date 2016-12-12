@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from datafs.core.data_file import FileOpener, FilePathOpener
-
+import fs.utils
     
 
 class DataArchive(object):
@@ -14,7 +14,7 @@ class DataArchive(object):
         self._service_path = service_path
 
     def __repr__(self):
-        return "<{}, archive_name: '{}'>".format(self.__class__.__name__, self.archive_name)
+        return "<{}, {}://'{}'>".format(self.__class__.__name__, self.authority_name, self.archive_name)
 
     @property
     def authority_name(self):
@@ -70,7 +70,10 @@ class DataArchive(object):
         self.authority.upload(filepath, self.service_path)
 
         if cache:
-            self.cache()
+            if not self.api.cache:
+                raise ValueError('No Cache attached')
+
+            self.api.cache.upload(filepath, self.service_path)
 
         # update records in self.api.manager
         self.api.manager.update(
@@ -166,12 +169,15 @@ class DataArchive(object):
         self.authority.fs.hasmeta(self.path, *args, **kwargs)
 
 
-    def cache(self, authority, service_path):
+    def cache(self):
         
         if not self.api.cache:
 
             raise ValueError('No Cache attached')
 
-        self.api.cache.upload(filepath, self.service_path)
-
+        fs.utils.copyfile(
+            self.authority.fs,
+            self.service_path,
+            self.api.cache.fs,
+            self.service_path)
 

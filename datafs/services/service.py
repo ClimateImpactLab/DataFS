@@ -31,4 +31,4 @@ class DataService(object):
         if not os.path.exists(os_path):
             raise OSError('File does not exist')
             
-        return self.api.hash_file()
+        return self.api.hash_file(os_path)

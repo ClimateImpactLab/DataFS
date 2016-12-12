@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -38,9 +38,7 @@ setup(
     long_description=readme + '\n\n' + history,
     author="Climate Impact Lab",
     url='https://github.com/ClimateImpactLab/datafs',
-    packages=[
-        'datafs',
-    ],
+    packages=find_packages(exclude=['*.tests', '*.tests.*', 'tests.*', 'tests', 'docs', 'examples']),
     package_dir={'datafs':
                  'datafs'},
     include_package_data=True,

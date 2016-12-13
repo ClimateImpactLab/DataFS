@@ -167,7 +167,6 @@ def open_file(authority, cache, update, service_path, latest_version_check, *arg
 
         fs_wrapper.setwritefs(write_fs)
 
-
         try:
             
             f = fs_wrapper.open(service_path, *args, **kwargs)
@@ -252,7 +251,7 @@ def get_local_path(authority, cache, update, service_path, latest_version_check)
             allow_recreate=True)
 
 
-        if use_cache and cache.fs.isfile(service_path):
+        if use_cache and cache.fs.isfile(service_path) and latest_version_check(cache.fs.getsyspath(service_path)):
             fs.utils.movefile(cache.fs, service_path, write_fs, service_path)
         
         elif fs_wrapper.isfile(service_path):
@@ -272,6 +271,7 @@ def get_local_path(authority, cache, update, service_path, latest_version_check)
 
             else:
                 raise OSError('Local file removed during execution. Archive not updated.') 
+            
 
         finally:
 

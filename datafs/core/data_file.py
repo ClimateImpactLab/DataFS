@@ -4,185 +4,279 @@ import fs.path
 import tempfile
 import shutil
 import time
-# from fs.osfs import OSFS
-from fs.tempfs import TempFS
+from fs.osfs import OSFS
 from fs.multifs import MultiFS
 
 from fs.errors import (ResourceLockedError, ResourceInvalidError)
 
+from contextlib import contextmanager
 
-class BaseVersionedFileOpener(object):
+
+class NoCacheError(IOError):
+    pass
+
+
+
+def clear_outdated_cache_files(cache, service_path, latest_version_check):
     '''
-    .. todo::
+    Check if file at service_path exists and is up to date
 
-        Enable caching
+    Parameters
+    ----------
 
+    cache : object
+
+        :py:mod:`fs` filesystem object to use a cache (default None)
     '''
 
-    def __init__(self, archive, *args, **kwargs):
-        self.archive = archive
-        self.cache = False
+    # Check the hash (if one exists) for a local version of the file
+    if cache is None:
+        raise NoCacheError
 
-        self.args = args
-        self.kwargs = kwargs
+    # Check to see if there is a valid system file in the cache at the service 
+    # path. If so, check if it is up to date. If not, raise NoCacheError.
+    if cache.fs.exists(service_path) and cache.fs.hassyspath(service_path):
+        up_to_date = latest_version_check(cache.fs.getsyspath(service_path))
 
-    def _create_service_paths(self):
+    else:
+        raise NoCacheError
+    
+    # Delete the file in the local cache if it is out of date.
+    if not up_to_date:
+        cache.fs.remove(service_path)
 
-        self.archive.authority.fs.makedir(
-            fs.path.dirname(self.archive.service_path),
-            recursive=True,
-            allow_recreate=True)
+def determine_cache_state(authority, cache, service_path, latest_version_check):
+
+    try:
+        clear_outdated_cache_files(cache, service_path, latest_version_check)
         
-        if self.archive.api.cache:
-            self.archive.authority.fs.makedir(
-                fs.path.dirname(self.archive.service_path),
+        if (not cache.fs.isfile(service_path)) and authority.fs.isfile(service_path):
+            cache.fs.makedir(
+                fs.path.dirname(service_path),
                 recursive=True,
                 allow_recreate=True)
 
-    def _prune_outdated_cache_files(self):
-        '''
-        Delete service path from cache if hash does not match latest
-        '''
+            fs.utils.copyfile(authority.fs, service_path, cache.fs, service_path)
 
-        # Check the hash (if one exists) for a local version of the file
-        if self.archive.api.cache:
+        use_cache = True
 
-            try:
-                local_hash = self.archive.api.cache.get_hash(
-                    self.archive.service_path)
-            except OSError:
-                return
+    except NoCacheError:
+        use_cache = False
 
-            latest_hash = self.archive.latest_hash()
+    return use_cache
+
+def create_downloader(authority, cache, use_cache):
+
+
+    fs_wrapper = MultiFS()
+    fs_wrapper.addfs('authority', authority.fs)
+
+    if use_cache:
+        fs_wrapper.addfs('cache', cache.fs)
+
+    return fs_wrapper
+
+
+def close(filesys):
+
+    closed = False
+
+    for i in range(5):
+        try:
+            filesys.close()
+            closed = True
+            break
+        except ResourceLockedError as e:
+            time.sleep(0.5)
+
+    if not closed:
+        raise e
+
+
+
+
+@contextmanager
+def open_file(authority, cache, update, service_path, latest_version_check, *args, **kwargs):
+    '''
+
+    Context manager for reading/writing from an archive and uploading on changes
+    
+    case: Remote file
+
+        on open:
             
-            # Delete the file in the local cache if it is out of date.
-            if local_hash != latest_hash:
-                self.archive.api.cache.fs.remove(self.archive.service_path)
+            if cache and cache up to date:
+            
+                use_cache = True
 
-    def _get_file_wrapper(self):
+                return cache opener
+            
+            elif cache and cache out of date:
 
-        # Make sure we don't have any old data in the cache
-        self._prune_outdated_cache_files()
+                delete cache
+                use_cache = True
 
-        # Make sure services have the directory for our file
-        self._create_service_paths()
+                return authority opener
+            
+            else:
+            
+                use_cache = False
 
-        # Create a read-only wrapper with download priority cache, then
-        # authority
-        self.fs_wrapper = MultiFS()
-        self.fs_wrapper.addfs('authority', self.archive.authority.fs)
-        if self.archive.api.cache:
-            self.fs_wrapper.addfs('cache', self.archive.api.cache.fs)
+                return authority opener
 
-    def _attach_temporary_write_dir(self):
-        # Add a temporary filesystem as the write filesystem
-        self.temp_write_fs = TempFS()
-        self.temp_write_fs.makedir(
-            fs.path.dirname(self.archive.service_path),
+        on write:
+            
+            if use_cache:
+            
+                write to cache
+                copy to authority
+
+            else:
+            
+                write to authority
+
+            update manager
+    
+    Parameters
+    ----------
+    authority : object
+        
+        :py:mod:`pyFilesystem` filesystem object to use as the authoritative, 
+        up-to-date source for the archive
+
+    cache : object
+
+        :py:mod:`pyFilesystem` filesystem object to use as the cache. Default 
+        ``None``.
+
+    use_cache : bool
+
+         update, service_path, latest_version_check, **kwargs
+    '''
+
+    use_cache = determine_cache_state(authority, cache, service_path, latest_version_check)
+    fs_wrapper = create_downloader(authority, cache, use_cache)
+    
+    tmp = tempfile.mkdtemp()
+    try:
+        write_fs = OSFS(tmp)
+        write_fs.makedir(
+            fs.path.dirname(service_path),
             recursive=True,
             allow_recreate=True)
 
-        self.fs_wrapper.setwritefs(self.temp_write_fs)
+        fs_wrapper.setwritefs(write_fs)
 
-    def _open(self):
-        self._get_file_wrapper()
-        self._attach_temporary_write_dir()
-
-        return self.fs_wrapper.open(
-            self.archive.service_path,
-            *self.args,
-            **self.kwargs)
-
-    def _get_sys_path(self):
-        self._get_file_wrapper()
-        self._attach_temporary_write_dir()
-
-        # Check if the file already exists. If so, copy it into the temporary
-        # directory
-        if self.fs_wrapper.exists(self.archive.service_path):
-            fs.utils.copyfile(
-                self.fs_wrapper,
-                self.archive.service_path,
-                self.temp_write_fs,
-                self.archive.service_path)
-
-        return self.temp_write_fs.getsyspath(self.archive.service_path)
-
-    def _close_temp_write_fs(self):
         try:
-            self.temp_write_fs.close()
-        except (ResourceLockedError, ResourceInvalidError):
-            time.sleep(0.5)
-            self.temp_write_fs.close()
+            
+            f = fs_wrapper.open(service_path, *args, **kwargs)
+            yield f
 
-    def _close(self):
+            f.close()
 
-        # If nothing was written, exit
-        if not self.temp_write_fs.exists(self.archive.service_path):
-            for p in self.temp_write_fs.listdir('/'):
-                if self.temp_write_fs.isfile(p):
-                    self.temp_write_fs.remove(p)
-                elif self.temp_write_fs.isdir(p):
-                    self.temp_write_fs.removedir(p, recursive=True, force=True)
+            if write_fs.isfile(service_path):
+                update(write_fs.getsyspath(service_path))
 
-            self.fs_wrapper.clearwritefs()
-            self._close_temp_write_fs()
-            # shutil.rmtree(self.tempdir)
-            return
+        finally:
+            close(write_fs)
 
-        # If cache exists:
-        if self.cache:
+    finally:
+        shutil.rmtree(tmp)
 
-            if self.api.cache:
-                raise IOError('Cannot save to cache - cache not set')
+@contextmanager
+def get_local_path(authority, cache, update, service_path, latest_version_check):
+    '''
+    Context manager for retrieving a system path for I/O and updating on changes    
 
-            # Move the file to the cache before uploading
-            fs.utils.movefile(
-                self.temp_write_fs,
-                self.archive.service_path,
-                self.archive.api.cache.fs,
-                self.archive.service_path)
+    case: required local path
 
-            # Update the archive with the new version
-            self.archive.update(
-                self.archive.api.cache.fs.getsyspath(
-                    self.archive.service_path))
+        on open:
+
+            if cache and cache up to date:
+                use_cache = True
+
+                return cache path
+            
+            elif cache and cache out of date:
+                delete cache
+                use_cache = True
+
+                download to cache
+                return cache path
+            
+            else:
+                use_cache = False
+
+                create temporary file
+                download authority to temp file
+                return temp file
+
+        on write:
+            if use_cache:
+                write to cache
+                copy to authority
+            else:
+                copy temp file to authority
+
+            update manager 
+
+
+    Parameters
+    ----------
+    authority : object
+        
+        :py:mod:`pyFilesystem` filesystem object to use as the authoritative, 
+        up-to-date source for the archive
+ 
+    cache : object
+
+        :py:mod:`pyFilesystem` filesystem object to use as the cache. Default 
+        ``None``.
+
+    use_cache : bool
+
+         update, service_path, latest_version_check, **kwargs
+    '''
+
+    
+    use_cache = determine_cache_state(authority, cache, service_path, latest_version_check)
+    fs_wrapper = create_downloader(authority, cache, use_cache)
+    
+    tmp = tempfile.mkdtemp()
+    try:
+        write_fs = OSFS(tmp)
+        write_fs.makedir(
+            fs.path.dirname(service_path),
+            recursive=True,
+            allow_recreate=True)
+
+
+        if use_cache and cache.fs.isfile(service_path) and latest_version_check(cache.fs.getsyspath(service_path)):
+            fs.utils.movefile(cache.fs, service_path, write_fs, service_path)
+        
+        elif fs_wrapper.isfile(service_path):
+            fs.utils.copyfile(fs_wrapper, service_path, write_fs, service_path)
 
         else:
-            # Update the archive with the new version
-            self.archive.update(
-                self.temp_write_fs.getsyspath(
-                    self.archive.service_path))
+            write_fs.createfile(service_path)
 
-        for p in self.temp_write_fs.listdir('/'):
-            if self.temp_write_fs.isfile(p):
-                self.temp_write_fs.remove(p)
-            elif self.temp_write_fs.isdir(p):
-                self.temp_write_fs.removedir(p, recursive=True, force=True)
+        local_path = write_fs.getsyspath(service_path)
 
-        self.fs_wrapper.clearwritefs()
-        self._close_temp_write_fs()
-        # del self.temp_write_fs.close()
-        # shutil.rmtree(self.tempdir)
+        yield local_path
 
+        try:
+            if write_fs.isfile(service_path):
+                if not latest_version_check(write_fs.getsyspath(service_path)):
+                    update(write_fs.getsyspath(service_path))
 
-class FileOpener(BaseVersionedFileOpener):
+            else:
+                raise OSError('Local file removed during execution. Archive not updated.') 
+            
 
-    def __enter__(self):
-        self._f_obj = self._open()
-        return self._f_obj
+        finally:
 
-    def __exit__(self, exception_type, exception_value, traceback):
-        self._f_obj.close()
-        self._close()
-        return False
+            close(write_fs)
 
 
-class FilePathOpener(FileOpener):
-
-    def __enter__(self):
-        return self._get_sys_path()
-
-    def __exit__(self, exception_type, exception_value, traceback):
-        self._close()
-        return False
+    finally:
+        shutil.rmtree(tmp)

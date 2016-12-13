@@ -62,45 +62,36 @@ counter = get_counter()
 @pytest.yield_fixture(scope='function')
 def manager(mgr_name):
 
+    table_name = 'my-new-table-name'
+    
     if mgr_name == 'mongo':
 
         manager_mongo = MongoDBManager(
                 database_name='MyDatabase',
-                table_name='DataFiles')
+                table_name=table_name)
+
+        manager_mongo.create_archive_table(table_name)
         
         yield manager_mongo
 
+        manager_mongo.delete_table(table_name)
+
     elif mgr_name == 'dynamo':
 
-        
+        manager_dynamo = DynamoDBManager(
+            table_name, 
+            session_args={
+                'aws_access_key_id': "access-key-id-of-your-choice",
+                'aws_secret_access_key': "secret-key-of-your-choice"}, 
+            resource_args={
+                'endpoint_url':'http://localhost:8000/',
+                'region_name':'us-east-1'})
 
-        name = 'my-new-table-name'
-        manager = DynamoDBManager(name, session_args={ 'aws_access_key_id': "access-key-id-of-your-choice",
-            'aws_secret_access_key': "secret-key-of-your-choice",}, resource_args={ 'endpoint_url':'http://localhost:8000/','region_name':'us-east-1'})
-        # manager_dynamo = DynamoDBManager(
-        #     table_name=name,
-        #     session_args={
-        #     'aws_access_key_id':'my_key',
-        #     'aws_secret_access_key':'my_secret_key'},
-        #     resource_args={'region_name':'us-east-1', 'endpoint_url':os.environ['DYNAMODB_URL']})
+        manager_dynamo.create_archive_table(table_name)
 
-        if name not in list(map(lambda t: t.name, manager._resource.tables.all())):
-            manager.table = manager._resource.create_table(TableName=name, 
-                        KeySchema=[
-                                {'AttributeName': '_id', 'KeyType': 'HASH'},
-                                
-                            ],
-                            AttributeDefinitions=[
-                                {'AttributeName': '_id', 'AttributeType': 'S'},
-                                
-                            ], 
-                            ProvisionedThroughput={'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123}
-                            
-                    )
+        yield manager_dynamo
 
-        yield manager
-
-        manager.table.delete()
+        manager_dynamo.delete_table(table_name)
 
 
 @pytest.yield_fixture(scope='function')

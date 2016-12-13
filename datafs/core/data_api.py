@@ -228,7 +228,7 @@ class DataAPI(object):
 
 
     @staticmethod
-    def hash_file(filepath):
+    def hash_file(f):
         '''
         Utility function for hashing file contents
 
@@ -247,12 +247,15 @@ class DataAPI(object):
         '''
 
 
-        if os.path.isfile(filepath):
-            with open(filepath, 'rb') as f:
-                hashval = hashlib.md5(f.read())
+        if os.path.isfile(f):
+            with open(f, 'rb') as f_obj:
+                hashval = hashlib.md5(f_obj.read())
+
+        elif hasattr(f, 'read'):
+            hashval = hashlib.md5(f.read())
 
         else:
-            hashval = hashlib.md5(f.read())
+            raise ValueError('"{}" cannot be read'.format(f))
 
         return 'md5', hashval.hexdigest()
 

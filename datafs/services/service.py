@@ -13,6 +13,9 @@ class DataService(object):
         self.fs = fs
         self.api = api
 
+    def __repr__(self):
+        return "<{}:{} object at {}>".format(self.__class__.__name__, self.fs.__class__.__name__, hex(id(self)))
+
     def upload(self, filepath, service_path):
         local = OSFS(os.path.dirname(filepath))
         self.fs.makedir(

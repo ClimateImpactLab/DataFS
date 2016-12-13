@@ -10,8 +10,12 @@ from fs.multifs import MultiFS
 
 from fs.errors import (ResourceLockedError, ResourceInvalidError)
 
+from contextlib import contextmanager
+
+
 class NoCacheError(IOError):
     pass
+
 
 
 def clear_outdated_cache_files(cache, service_path, latest_version_check):
@@ -42,10 +46,12 @@ def clear_outdated_cache_files(cache, service_path, latest_version_check):
     if not up_to_date:
         self.cache.fs.remove(self.service_path)
 
-def determine_cache_state(cache, service_path, latest_version_check):
+def determine_cache_state(authority, cache, service_path, latest_version_check):
 
     try:
         clear_outdated_cache_files(cache, service_path, latest_version_check)
+        if not cache.isfile(service_path):
+            fs.utils.copyfile(authority.fs, service_path, cache.fs, service_path)
         use_cache = True
     except NoCacheError:
         use_cache = False
@@ -73,8 +79,26 @@ def create_writer(service_path):
 
     return write_fs
 
+def close(filesys):
 
-def open(mode, authority, cache, update, service_path, latest_version_check, **kwargs):
+    closed = False
+
+        for i in range(5):
+            try:
+                filesys.close()
+                closed = True
+                break
+            except ResourceLockedError as e:
+                time.sleep(0.5)
+
+        if not closed:
+            raise e
+
+
+
+
+@contextmanager
+def open_file(authority, cache, update, service_path, latest_version_check, *args, **kwargs):
     '''
 
     Context manager for reading/writing from an archive and uploading on changes
@@ -132,22 +156,24 @@ def open(mode, authority, cache, update, service_path, latest_version_check, **k
          update, service_pathh, latest_version_check, **kwargs
     '''
 
-    use_cache = determine_cache_state(cache, service_path, latest_version_check)
-    fs_wrapper = create_downloader(authority, cache, use_cache):
+    use_cache = determine_cache_state(authority, cache, service_path, latest_version_check)
+    fs_wrapper = create_downloader(authority, cache, use_cache)
     write_fs = create_writer(service_path)
 
     fs_wrapper.setwritefs(write_fs)
 
-    yield fs_wrapper.open(mode, **kwargs)
+    f = fs_wrapper.open(service_path, *args, **kwargs)
+    yield f
+    f.close()
 
     if write_fs.isfile(service_path):
         update(write_fs.getsyspath(service_path))
 
-    write_fs.close()
+    close(write_fs)
 
 
-
-def get_local_path(authority, cache, use_cache, update, service_path, latest_version_check, **kwargs):
+@contextmanager
+def get_local_path(authority, cache, update, service_path, latest_version_check):
     '''
     Context manager for retrieving a system path for I/O and updating on changes    
 
@@ -202,47 +228,34 @@ def get_local_path(authority, cache, use_cache, update, service_path, latest_ver
     '''
 
     
-    use_cache = determine_cache_state(cache, service_path, latest_version_check)
-    fs_wrapper = create_downloader(authority, cache, use_cache):
+    use_cache = determine_cache_state(authority, cache, service_path, latest_version_check)
+    fs_wrapper = create_downloader(authority, cache, use_cache)
     write_fs = create_writer(service_path)
 
     if use_cache and cache.fs.isfile(service_path):
         fs.utils.movefile(cache.fs, service_path, write_fs, service_path)
-    else:
+    
+    elif fs_wrapper.isfile(service_path):
         fs.utils.copyfile(fs_wrapper, service_path, write_fs, service_path)
+
+    else:
+        write_fs.createfile(service_path)
 
     local_path = write_fs.getsyspath(service_path)
 
     yield local_path
 
-    if not latest_version_check(write_fs.getsyspath(service_path)):
-        update(write_fs.getsyspath(service_path))
-    
-    write_fs.close()
+    try:
+        if write_fs.isfile(service_path):
+            if not latest_version_check(write_fs.getsyspath(service_path)):
+                update(write_fs.getsyspath(service_path))
 
+            else:
+                raise ValueError('I got here')
 
+        else:
+            raise OSError('Local file removed during execution. Archive not updated.') 
 
-'''
-Usage
------
+    finally:
 
-in DataArchive(object):
-    def get_local_path(self):
-        current_latest_hash = self.latest_hash
-        get_local_path(latest_version_check=lambda fp: api.hash_file(fp) == current_latest_hash)
-
-
-with var.get_local_path() as fp:
-    ds = xr.open_dataset(fp)
-    other_var = do_something_complex(ds)
-
-    other_var.to_netcdf('var2.nc')
-
-    api.create_archive()
-
-meanwhile...
-
-do_some_update(var)
-
-then...
-
+        close(write_fs)

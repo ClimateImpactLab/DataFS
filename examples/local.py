@@ -118,7 +118,7 @@ metadata. To suppress errors on re-creation, use the
     >>> api.create_archive(
     ...     'my_first_archive',
     ...     metadata = dict(description = 'My test data archive'))
-    <DataArchive, archive_name: 'my_first_archive'>
+    <DataArchive local://my_first_archive>
 
 
 Retrieve archive metadata

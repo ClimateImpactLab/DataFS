@@ -13,8 +13,7 @@ def pytest_generate_tests(metafunc):
 
     if 'fs_name' in metafunc.fixturenames:
 
-        # metafunc.parametrize('fs_name', ['OSFS', 'TempFS', 'S3FS'])
-        metafunc.parametrize('fs_name', ['OSFS', 'S3FS', 'OSFS', 'OSFS', 'OSFS', 'S3FS', 'OSFS', 'OSFS'])
+        metafunc.parametrize('fs_name', ['OSFS', 'S3FS', 'OSFS', 'OSFS', 'S3FS'])
         
 
     if 'open_func' in metafunc.fixturenames:

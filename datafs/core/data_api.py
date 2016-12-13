@@ -41,7 +41,6 @@ class DataAPI(object):
             raise PermissionError('Authorities locked')
 
         self._authorities[service_name] = DataService(service)
-        self._authorities[service_name].api = self
 
     def lock_authorities(self):
         self._authorities_locked = True
@@ -55,7 +54,6 @@ class DataAPI(object):
             raise ValueError('Attach authority as a cache is prohibited')
         else:    
             self._cache = DataService(service)
-            self._cache.api = self
 
     @property
     def manager(self):

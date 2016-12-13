@@ -8,10 +8,28 @@ from examples import (local, ondisk, s3, caching)
 from examples.subclassing import client
 from datafs.managers.manager_dynamo import DynamoDBManager
 
+
+def mock_s3(func):
+    def inner(*args, **kwargs):
+        
+        m = moto.mock_s3()
+        m.start()
+
+        try:
+            return func(*args, **kwargs)
+
+        finally:
+            m.stop()
+
+    return inner
+
+
 def test_local():
-    doctest.testmod(local, raise_on_error=True)
+    failures, tests = doctest.testmod(local, report=True)
+    assert failures == 0
 
 
+@mock_s3
 def test_ondisk():
 
     has_special_dependencies = False
@@ -25,24 +43,22 @@ def test_ondisk():
         pass
 
     if has_special_dependencies:
-        doctest.testmod(ondisk, raise_on_error=True)
+        failures, tests = doctest.testmod(ondisk, report=True)
+        assert failures == 0
 
 
+@mock_s3
 def test_s3():
-
-    m = moto.mock_s3()
-    m.start()
-
-    try:
-        doctest.testmod(s3, raise_on_error=True)
-
-    finally:
-        # Stop mock
-        m.stop()
+    
+    failures, tests = doctest.testmod(s3, report=True)
+    assert failures == 0
 
 
+@mock_s3
 def test_caching():
-    doctest.testmod(caching, raise_on_error=True)
+
+    failures, tests = doctest.testmod(caching, report=True)
+    assert failures == 0
 
 
 def test_subclassing():
@@ -62,7 +78,8 @@ def test_subclassing():
 
     manager.create_archive_table(table_name, raise_if_exists=False)
         
-    doctest.testmod(client, raise_on_error=True)
+    failures, tests = doctest.testmod(client, report=True)
+    assert failures == 0
 
     manager.delete_table(table_name)
 

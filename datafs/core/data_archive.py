@@ -15,7 +15,7 @@ class DataArchive(object):
         self._service_path = service_path
 
     def __repr__(self):
-        return "<{} '{}://{}'>".format(self.__class__.__name__, self.authority_name, self.archive_name)
+        return "<{} {}://{}>".format(self.__class__.__name__, self.authority_name, self.archive_name)
 
     @property
     def authority_name(self):
@@ -70,10 +70,7 @@ class DataArchive(object):
 
         self.authority.upload(filepath, self.service_path)
 
-        if cache:
-            if not self.api.cache:
-                raise ValueError('No Cache attached')
-
+        if self.cache:
             self.api.cache.upload(filepath, self.service_path)
 
         # update records in self.api.manager
@@ -130,8 +127,7 @@ class DataArchive(object):
             self.api.cache, 
             self.update, 
             self.service_path, 
-            latest_version_check, 
-            **kwargs)
+            latest_version_check)
 
         with path as fp:
             yield fp
@@ -200,16 +196,38 @@ class DataArchive(object):
 
         self.authority.fs.hasmeta(self.path, *args, **kwargs)
 
-
+    @property
     def cache(self):
+        '''
+        Set the cache property to start/stop file caching for this archive
+        '''
         
         if not self.api.cache:
+            return False
 
-            raise ValueError('No Cache attached')
+        if self.api.cache.fs.isfile(self.service_path):
+            return True
 
-        fs.utils.copyfile(
-            self.authority.fs,
-            self.service_path,
-            self.api.cache.fs,
-            self.service_path)
+    @cache.setter
+    def cache(self, value):
 
+        if not self.api.cache:
+            raise ValueError('No cache attached')
+
+        if value:
+
+            if not self.api.cache.fs.isfile(self.service_path):
+                self.api.cache.fs.makedir(
+                    fs.path.dirname(self.service_path),
+                    recursive=True,
+                    allow_recreate=True)
+                self.api.cache.fs.createfile(self.service_path)
+
+            else:
+                # cache exists
+                pass
+
+        else:
+
+            if self.api.cache.fs.isfile(self.service_path):
+                self.api.cache.fs.remove(self.service_path)

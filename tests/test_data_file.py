@@ -7,7 +7,7 @@ import shutil
 import time
 import os
 
-from fs.tempfs import TempFS
+from fs.osfs import OSFS
 from fs.multifs import MultiFS
 
 from datafs import DataAPI
@@ -29,18 +29,22 @@ except NameError:
 def upload(tfs, fp):
     fs.utils.copyfile(tfs, fp, a, fp)
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def auth1():
-    f = TempFS()
-    yield DataService(f, DataAPI)
+    t = tempfile.mkdtemp()
+    f = OSFS(t)
+    yield DataService(f)
     f.close()
+    shutil.rmtree(t)
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def cache():
-    f = TempFS()
-    yield DataService(f, DataAPI)
+    t = tempfile.mkdtemp()
+    f = OSFS(t)
+    yield DataService(f)
     f.close()
+    shutil.rmtree(t)
 
 
 @pytest.fixture
@@ -53,12 +57,7 @@ def opener(open_func):
 
     if open_func == 'open_file':
         
-        @contextmanager
-        def inner(authority, cache, update, service_path, latest_version_check, *args, **kwargs):
-            with data_file.open_file(authority, cache, update, service_path, latest_version_check, *args, **kwargs) as f:
-                yield f
-
-        return inner
+        return data_file.open_file
 
     elif open_func == 'get_local_path':
 
@@ -78,13 +77,6 @@ def opener(open_func):
 
 p = 'path/to/file/name.txt'
 
-def get_updater(auth, path, cache=None):
-    def update(fp):
-        auth.upload(fp, path)
-        if cache and os.path.isfile(fp):
-            cache.upload(fp, path)
-
-    return update
 
 def get_service_hash_checker(service, service_path):
     if service.fs.isfile(service_path):
@@ -96,6 +88,17 @@ def get_service_hash_checker(service, service_path):
         return DataAPI.hash_file(fp) == checksum
 
     return check
+
+def get_updater(auth, path, cache=None):
+    up_to_date = get_service_hash_checker(auth, path)
+    def update(fp):
+        if not up_to_date(fp):
+            auth.upload(fp, path)
+            if cache and cache.fs.isfile(path):
+                cache.upload(fp, path)
+
+    return update
+
 
 def test_file_io(auth1, cache, opener):
 
@@ -112,7 +115,7 @@ def test_file_io(auth1, cache, opener):
         assert u('test data 1') == f.read()
 
     # We expect that the cache was left empty, because no file was present on update.
-    assert not os.path.isfile(cache.getsyspath(p))
+    assert not os.path.isfile(cache.fs.getsyspath(p))
 
 
     # SUBTEST 2
@@ -128,16 +131,14 @@ def test_file_io(auth1, cache, opener):
             assert u('test data 1') == f.read()
 
         # We expect that the cache was left empty, because no file was present on update.
-        assert not os.path.isfile(cache.getsyspath(p))
+        assert not os.path.isfile(cache.fs.getsyspath(p))
 
 
     # SUBTEST 3
 
     # Overwrite file and check contents again, this time with no cache
 
-    nullcache = None
-
-    with opener(auth1, nullcache, get_updater(auth1, p, nullcache), p, get_service_hash_checker(auth1, p), 'w+') as f:
+    with opener(auth1, None, get_updater(auth1, p, None), p, get_service_hash_checker(auth1, p), 'w+') as f:
         f.write(u('test data 2'))
 
     # We expect the contents to be written to the authority
@@ -145,7 +146,7 @@ def test_file_io(auth1, cache, opener):
         assert u('test data 2') == f.read()
 
     # We expect that the cache was left empty, because no file was present on update.
-    assert not os.path.isfile(cache.getsyspath(p))
+    assert not os.path.isfile(cache.fs.getsyspath(p))
 
 
     # SUBTEST 4
@@ -161,7 +162,7 @@ def test_file_io(auth1, cache, opener):
             assert u('test data 2' + 'appended data'*(i+1)) == f.read()
 
         # We expect that the cache was left empty, because no file was present on update.
-        assert not os.path.isfile(cache.getsyspath(p))
+        assert not os.path.isfile(cache.fs.getsyspath(p))
 
 
 
@@ -180,7 +181,7 @@ def test_file_caching(auth1, cache, opener):
         assert u('test data 1') == f.read()
 
     # We expect that the cache was left empty, because no file was present on update.
-    assert not os.path.isfile(cache.getsyspath(p))
+    assert not os.path.isfile(cache.fs.getsyspath(p))
 
 
     # SUBTEST 2
@@ -297,7 +298,7 @@ def test_delete_handling(auth1, cache):
     with open(cache.fs.getsyspath(p), 'w+') as f:
         f.write('')
 
-    with data_file.get_local_path(auth1, None, get_updater(auth1, p), p, get_service_hash_checker(auth1, p)) as fp:
+    with data_file.get_local_path(auth1, cache, get_updater(auth1, p, cache), p, get_service_hash_checker(auth1, p)) as fp:
         with open(fp, 'w+') as f:
             f.write(u('test data 1'))
 
@@ -317,7 +318,7 @@ def test_delete_handling(auth1, cache):
 
     with pytest.raises(OSError) as excinfo:
 
-        with data_file.get_local_path(auth1, None, get_updater(auth1, p), p, get_service_hash_checker(auth1, p)) as fp:
+        with data_file.get_local_path(auth1, cache, get_updater(auth1, p, cache), p, get_service_hash_checker(auth1, p)) as fp:
             with open(fp, 'r') as f:
                 assert u('test data 1') == f.read()
 

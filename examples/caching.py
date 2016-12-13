@@ -1,46 +1,81 @@
+'''
 
-from datafs.managers.manager_mongo import MongoDBManager
-from datafs import DataAPI
-from fs.tempfs import TempFS
-from fs.osfs import OSFS
-from ast import literal_eval
-import os
-import tempfile
-import shutil
+Setup
+~~~~~
 
-api = DataAPI(
-     username='My Name',
-     contact = 'my.email@example.com')
+    >>> from datafs.managers.manager_mongo import MongoDBManager
+    >>> from datafs import DataAPI
+    >>> from fs.tempfs import TempFS
+    >>> from fs.s3fs import S3FS
+    >>> from ast import literal_eval
+    >>> import os
+    >>> import tempfile
+    >>> import shutil
 
-manager = MongoDBManager(
-    database_name = 'MyDatabase',
-    table_name = 'DataFiles')
+Create an API and attach a manager
 
-manager.create_archive_table('DataFiles', raise_if_exists=False)
-api.attach_manager(manager)
+    >>> api = DataAPI(
+    ...      username='My Name',
+    ...      contact = 'my.email@example.com')
+    >>>
+    >>> manager = MongoDBManager(
+    ...     database_name = 'MyDatabase',
+    ...     table_name = 'DataFiles')
+    >>>
+    >>> manager.create_archive_table('DataFiles', raise_if_exists=False)
+    >>> api.attach_manager(manager)
+    >>>
 
-tmp = tempfile.mkdtemp()
-local1 = OSFS(tmp)
-api.attach_authority('local1', local1)
+For this example we'll use an AWS S3 store. Any filesystem will work, though:
 
-var = api.create_archive(
-    'my_first_archive',
-    metadata = dict(description = 'My test data archive'), 
-    authority_name='local1',
-    raise_if_exists=False)
+    >>> s3 = S3FS(
+    ...     'test-bucket',
+    ...     aws_access_key='MY_KEY',
+    ...     aws_secret_key='MY_SECRET_KEY')
+    >>>
+    >>> api.attach_authority('aws', s3)
 
-var = api.get_archive('my_first_archive')
+Create an archive
 
-with var.open('w+') as f:
-  res = f.write(u'hello')
+    >>> var = api.create_archive(
+    ...     'caching_archive',
+    ...     metadata = dict(description = 'My cached remote archive'), 
+    ...     authority_name='aws')
+    >>>
+    >>> with var.open('w+') as f:
+    ...     res = f.write(u'hello')
+    ...
+    >>>
+    >>> with var.open('r') as f:
+    ...     print(f.read())
+    hello
 
-with var.open('r') as f:
-  print(f.read())
+Let's peek under the hood to see where this data is stored:
 
-cache = TempFS()
+    >>> var.authority.fs.getpathurl('caching/archive') # doctest: +ELLIPSIS
+    'https://test-bucket.s3.amazonaws.com/caching/archive?...AWSAccessKeyId=MY_KEY'
 
-api.attach_cache(cache)
-var.cache()
+Now let's set up a cache. This would typically be a local or networked directory 
+but we'll use a temporary filesystem for this example:
+
+    >>> cache = TempFS()
+    >>> api.attach_cache(cache)
+
+Now we can activate caching for our archive:
+
+    >>> var.cache = True
+
+When we read the data from the cache, it downloads the file for future use:
 
 
-shutil.rmtree(tmp)
+    >>> with var.open('r') as f:
+    ...     print(f.read())
+    hello
+
+Cleanup
+~~~~~~~
+
+    >>> var.delete()
+
+'''
+

@@ -29,7 +29,7 @@ except NameError:
 def upload(tfs, fp):
     fs.utils.copyfile(tfs, fp, a, fp)
 
-@pytest.fixture(scope='function')
+@pytest.yield_fixture(scope='function')
 def auth1():
     t = tempfile.mkdtemp()
     f = OSFS(t)
@@ -38,7 +38,7 @@ def auth1():
     shutil.rmtree(t)
 
 
-@pytest.fixture(scope='function')
+@pytest.yield_fixture(scope='function')
 def cache():
     t = tempfile.mkdtemp()
     f = OSFS(t)

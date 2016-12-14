@@ -64,7 +64,7 @@ def _get_metadata(metadata):
 	
 
 
-def main(sysArgs=None, api_constructor=DataAPI(username='j', contact='j')):
+def main(sysArgs=None, api_constructor=DataAPI:
 
 
 
@@ -149,7 +149,7 @@ def main(sysArgs=None, api_constructor=DataAPI(username='j', contact='j')):
 
 
 if __name__ == "__main__":
-    main()
+    main(DataAPI(username='Justin', contact='j@rhg'))
 
 
 

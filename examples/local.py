@@ -1,6 +1,5 @@
 '''
 
-
 Use this tutorial to build a DataFS server using MongoDB and the local filesystem
 
 
@@ -27,7 +26,7 @@ We need a few things for this example:
 
     >>> from datafs.managers.manager_mongo import MongoDBManager
     >>> from datafs import DataAPI
-    >>> from fs.tempfs import TempFS
+    >>> from fs.osfs import OSFS
     >>> from ast import literal_eval
     >>> import os
     >>> import tempfile
@@ -68,7 +67,19 @@ server running, then create a MongoDBManager instance:
     >>> manager = MongoDBManager(
     ...     database_name = 'MyDatabase',
     ...     table_name = 'DataFiles')
-    >>>
+
+
+If this is the first time you've set up this database, you'll need to create a 
+table:
+
+.. code-block:: python
+
+    >>> manager.create_archive_table('DataFiles', raise_if_exists=False)
+
+All set. Now we can attach the manager to our DataAPI object:
+
+.. code-block:: python
+
     >>> api.attach_manager(manager)
 
 
@@ -85,7 +96,8 @@ example:
 
 .. code-block:: python
 
-    >>> local = TempFS()
+    >>> temp = tempfile.mkdtemp()
+    >>> local = OSFS(temp)
 
 We attach this file to the api and give it a name:
 
@@ -107,6 +119,7 @@ metadata. To suppress errors on re-creation, use the
     >>> api.create_archive(
     ...     'my_first_archive',
     ...     metadata = dict(description = 'My test data archive'))
+    <DataArchive local://my_first_archive>
 
 
 Retrieve archive metadata
@@ -163,8 +176,6 @@ Next we'll read from the archive. That file object returned by
 
 .. code-block:: python
 
-    >>> var = api.get_archive('my_first_archive')
-    >>>
     >>> with var.open('r') as f:
     ...     print(f.read())
     ...
@@ -179,6 +190,7 @@ Open the archive and write to the file:
 
     >>> with var.open('w+') as f:
     ...     res = f.write(unicode('this is the next test'))
+    ...
 
 
 Retrieving the latest version
@@ -188,12 +200,22 @@ Now let's make sure we're getting the latest version:
 
 .. code-block:: python
 
-    >>> with var.open() as f:
+    >>> with var.open('r') as f:
     ...     print(f.read())
     ...
     this is the next test
 
 Looks good!
+
+Cleaning up
+~~~~~~~~~~~
+
+.. code-block:: python
+
+    >>> var.delete()
+    >>> api.manager.delete_table('DataFiles')
+    >>> shutil.rmtree(temp)
+    
 
 Next steps
 ~~~~~~~~~~

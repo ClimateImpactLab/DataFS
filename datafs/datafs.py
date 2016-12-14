@@ -185,7 +185,7 @@ class DataFSInterface(object):
 def cli(ctx, config_file=None, profile=None):
     
     ctx.obj = DataFSInterface()
-    
+
     ctx.obj.config_file = config_file
 
     if config_file is not None:
@@ -203,11 +203,11 @@ def cli(ctx, config_file=None, profile=None):
 
     ctx.obj.profile = profile
 
-    api = config.generate_api_from_config()
+    api = config.generate_api_from_config(profile=ctx.obj.profile)
     
-    config.attach_manager_from_config(api)
-    config.attach_services_from_config(api)
-    config.attach_cache_from_config(api)
+    config.attach_manager_from_config(api, profile=ctx.obj.profile)
+    config.attach_services_from_config(api, profile=ctx.obj.profile)
+    config.attach_cache_from_config(api, profile=ctx.obj.profile)
 
     ctx.obj.api = api
 

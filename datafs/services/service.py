@@ -36,4 +36,3 @@ class DataService(object):
             self.fs,
             service_path)
 
-    

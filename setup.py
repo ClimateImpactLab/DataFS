@@ -10,6 +10,9 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
+    'fs==0.5.5a1',
+    'click==6.6',
+    'PyYAML==3.12'
 ]
 
 test_requirements = [
@@ -28,7 +31,8 @@ test_requirements = [
     'pytest_cov==2.4.0',
     'pymongo==3.4.0',
     'boto3==1.4.2',
-    'moto==0.4.30'
+    'moto==0.4.30',
+    'click==6.6'
 ]
 
 setup(

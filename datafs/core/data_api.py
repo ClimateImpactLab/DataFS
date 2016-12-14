@@ -24,9 +24,18 @@ class DataAPI(object):
 
     _ArchiveConstructor = DataArchive
 
-    def __init__(self, username, contact):
-        self.username = username
-        self.contact = contact
+    REQUIRED_USER_CONFIG = {
+        'name': 'your full name',
+        'contact': 'your contact info'
+    }
+
+    REQUIRED_ARCHIVE_METADATA = {
+        'description': 'description of the archive'
+    }
+
+    def __init__(self, **kwargs):
+
+        self.user_config = kwargs
 
         self._manager = None
         self._cache = None
@@ -34,14 +43,6 @@ class DataAPI(object):
 
         self._authorities_locked = False
         self._manager_locked = False
-        #add your organization specific metadata here
-        self._api_metadata =  {
-                    'source':  "Please enter a source for this Archive. i.e 'UN DATA'", 
-                    'dependency' : "Please enter dependencies for this Archive. i.e 'BCSD GFDL'",
-                    'oneline_description': "Please enter a oneline description for this Archive. i.e 'Global TAs for days with big waves'",
-                    'long_description': "Please enter a long description for this Archive. i.e 'UN DATA'",
-                    'additional': "Please enter any additional data"
-                    }
 
     def attach_authority(self, service_name, service):
 

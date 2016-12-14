@@ -37,6 +37,10 @@ class DataArchive(object):
     def latest_hash(self):
         return self.api.manager.get_latest_hash(self.archive_name)
 
+    @property
+    def versions(self):
+        return self.api.manager.get_versions(self.archive_name)
+
     def update(self, filepath, **kwargs):
         '''
         Enter a new version to a DataArchive

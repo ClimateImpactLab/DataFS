@@ -10,4 +10,3 @@ Examples
     examples.s3
     examples.other
     examples.caching
-    tutorial.subclassing

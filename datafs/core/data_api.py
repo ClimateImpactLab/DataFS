@@ -10,6 +10,12 @@ import time
 import hashlib
 
 
+try:
+    PermissionError
+except:
+    class PermissionError(NameError):
+        pass
+
 class DataAPI(object):
 
     TimestampFormat = '%Y%m%d-%H%M%S'
@@ -32,10 +38,15 @@ class DataAPI(object):
     def attach_authority(self, service_name, service):
 
         if self._authorities_locked:
-            raise ValueError('Authorities locked')
+            raise PermissionError('Authorities locked')
 
         self._authorities[service_name] = DataService(service)
-        self._authorities[service_name].api = self
+
+    def lock_authorities(self):
+        self._authorities_locked = True
+
+    def lock_manager(self):
+        self._manager_locked = True
 
     def attach_cache(self, service):
 
@@ -43,7 +54,6 @@ class DataAPI(object):
             raise ValueError('Attach authority as a cache is prohibited')
         else:    
             self._cache = DataService(service)
-            self._cache.api = self
 
     @property
     def manager(self):
@@ -76,7 +86,7 @@ class DataAPI(object):
     def attach_manager(self, manager):
 
         if self._manager_locked:
-            raise ValueError('Manager locked')
+            raise PermissionError('Manager locked')
 
         self._manager = manager
         self.manager.api = self
@@ -216,7 +226,7 @@ class DataAPI(object):
 
 
     @staticmethod
-    def hash_file(filepath):
+    def hash_file(f):
         '''
         Utility function for hashing file contents
 
@@ -235,14 +245,17 @@ class DataAPI(object):
         '''
 
 
-        if os.path.isfile(filepath):
-            with open(filepath, 'rb') as f:
-                hashval = hashlib.md5(f.read())
-
-        else:
+        if hasattr(f, 'read'):
             hashval = hashlib.md5(f.read())
 
-        return 'md5', hashval.hexdigest()
+        elif os.path.isfile(f):
+            with open(f, 'rb') as f_obj:
+                hashval = hashlib.md5(f_obj.read())
+
+        else:
+            raise ValueError('"{}" cannot be read'.format(f))
+
+        return {'algorithm': 'md5', 'checksum': hashval.hexdigest()}
 
     
 

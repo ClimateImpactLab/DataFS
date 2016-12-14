@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -33,14 +33,12 @@ test_requirements = [
 
 setup(
     name='datafs',
-    version='0.1.3',
+    version='0.3.0',
     description="DataFS is an abstraction layer for data storage systems. It manages file versions and metadata using a json-like storage system like AWS's DynamoDB and relies on PyFilesystem to abstract file storage, allowing you to store files locally and on the cloud in a seamless interface.",
     long_description=readme + '\n\n' + history,
     author="Climate Impact Lab",
     url='https://github.com/ClimateImpactLab/datafs',
-    packages=[
-        'datafs',
-    ],
+    packages=find_packages(exclude=['*.tests', '*.tests.*', 'tests.*', 'tests', 'docs', 'examples']),
     package_dir={'datafs':
                  'datafs'},
     include_package_data=True,

@@ -259,17 +259,17 @@ class DataAPI(object):
         '''
 
 
-        if os.path.isfile(f):
+        if hasattr(f, 'read'):
+            hashval = hashlib.md5(f.read())
+
+        elif os.path.isfile(f):
             with open(f, 'rb') as f_obj:
                 hashval = hashlib.md5(f_obj.read())
-
-        elif hasattr(f, 'read'):
-            hashval = hashlib.md5(f.read())
 
         else:
             raise ValueError('"{}" cannot be read'.format(f))
 
-        return 'md5', hashval.hexdigest()
+        return {'algorithm': 'md5', 'checksum': hashval.hexdigest()}
 
     
 

@@ -27,7 +27,7 @@ class DynamoDBManager(BaseDataManager):
         """
         Returns a list of Archives in the table on Dynamo
         """
-        if len(self._table.scan()['Items']) == 0:
+        if len(self._table.scan(AttributesToGet=['_id'])['Items']) == 0:
             return []
         else:
             res = [str(archive['_id']) for archive in self._table.scan(AttributesToGet=['_id'])['Items']]

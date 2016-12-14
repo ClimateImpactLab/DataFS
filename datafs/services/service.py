@@ -17,6 +17,12 @@ class DataService(object):
 
     def upload(self, filepath, service_path):
         local = OSFS(os.path.dirname(filepath))
+
+        # Skip if source and dest are the same
+        if self.fs.hassyspath(service_path) and (
+            self.fs.getsyspath(service_path) == local.getsyspath(os.path.basename(filepath))):
+
+            return
         
         if not self.fs.isdir(fs.path.dirname(service_path)):
             self.fs.makedir(

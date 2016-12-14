@@ -207,7 +207,6 @@ class MongoDBManager(BaseDataManager):
         else:
             return versions[-1]['checksum']
 
-
     def _delete_archive_record(self, archive_name):
 
         return self.collection.remove({'_id': archive_name})

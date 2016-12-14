@@ -34,6 +34,14 @@ class DataAPI(object):
 
         self._authorities_locked = False
         self._manager_locked = False
+        #add your organization specific metadata here
+        self._api_metadata =  {
+                    'source':  "Please enter a source for this Archive. i.e 'UN DATA'", 
+                    'dependency' : "Please enter dependencies for this Archive. i.e 'BCSD GFDL'",
+                    'oneline_description': "Please enter a oneline description for this Archive. i.e 'Global TAs for days with big waves'",
+                    'long_description': "Please enter a long description for this Archive. i.e 'UN DATA'",
+                    'additional': "Please enter any additional data"
+                    }
 
     def attach_authority(self, service_name, service):
 

@@ -240,7 +240,7 @@ def configure(ctx, helper):
 @click.pass_context
 def create_archive(ctx, archive_name, authority_name):
     kwargs = {ctx.args[i][2:]: ctx.args[i+1] for i in xrange(0, len(ctx.args), 2)}
-    var = ctx.obj.api.create_archive(archive_name, authority_name=authority_name, **kwargs)
+    var = ctx.obj.api.create_archive(archive_name, authority_name=authority_name, metadata=kwargs)
     click.echo('created archive {}'.format(var))
 
 

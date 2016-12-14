@@ -39,12 +39,12 @@ class BaseDataManager(object):
 
         '''
         version_metadata = {
-            'author': self.api.username,
-            'contact': self.api.contact,
             'updated': self.api.create_timestamp(),
             'algorithm': checksum['algorithm'],
             'checksum': checksum['checksum']}
 
+
+        version_metadata.update(self.api.user_config)
 
         archive_data = metadata
 

@@ -22,7 +22,12 @@ class Config(object):
         for fp in map(os.path.expanduser, self.CONFIG_FILE_LIST+additional_fps):
             try:
                 with open(fp, 'r') as y:
-                    self.config.update(yaml.load(y))
+                    config = yaml.load(y)
+                    if not 'profiles' in config:
+                        config = {'default-profile': 'default', 'profiles': {'default': config}}
+
+
+                    self.config.update(config)
 
             except IOError:
                 pass
@@ -40,21 +45,28 @@ class Config(object):
         with open(os.path.expanduser(read_fp), 'w+') as f:
             f.write(yaml.dump(self.config))
 
-    def get_default_config_from_api(self, api):
+    def get_profile_config(self, profile=None):
+        if profile is None:
+            profile = self.config['default-profile']
+
+        return self.config['profiles'][profile]
+
+    def get_default_config_from_api(self, api, profile=None):
+        profile_config = self.get_profile_config(profile)
 
         for kw in ['api', 'manager', 'authorities', 'cache']:
-            self.config[kw] = self.config.get(kw, {})
+            profile_config[kw] = profile_config.get(kw, {})
 
         
-        if not 'user_config' in self.config['api']:
-            self.config['api']['user_config'] = {}
+        if not 'user_config' in profile_config['api']:
+            profile_config['api']['user_config'] = {}
 
         for kw in api.user_config.keys():
-            self.config['api']['user_config'][kw] = self.config['api']['user_config'].get(kw, api.user_config[kw])
+            profile_config['api']['user_config'][kw] = profile_config['api']['user_config'].get(kw, api.user_config[kw])
             
         
-        if not 'constructor' in self.config['api']:
-            self.config['api']['constructor'] = {
+        if not 'constructor' in profile_config['api']:
+            profile_config['api']['constructor'] = {
                 'module': api.__class__.__module__, 
                 'class': api.__class__.__name__
             }
@@ -68,7 +80,7 @@ class Config(object):
         }
 
         for kw in ['module', 'class', 'args', 'kwargs']:
-            self.config['manager'][kw] = self.config['manager'].get(kw, manager_cfg[kw])
+            profile_config['manager'][kw] = profile_config['manager'].get(kw, manager_cfg[kw])
 
         authorities_cfg = {
             service_name: {
@@ -80,11 +92,11 @@ class Config(object):
         for service_name, service in api._authorities.items()}
 
         for service_name in authorities_cfg.keys():
-            if service_name not in self.config['authorities']:
-                self.config['authorities'][service_name] = {}
+            if service_name not in profile_config['authorities']:
+                profile_config['authorities'][service_name] = {}
 
             for kw in ['module', 'class', 'args', 'kwargs']:
-                self.config['authorities'][service_name][kw] = self.config['authorities'][service_name].get(kw, authorities_cfg[service_name][kw])
+                profile_config['authorities'][service_name][kw] = profile_config['authorities'][service_name].get(kw, authorities_cfg[service_name][kw])
 
         if api.cache:
             cache_cfg = {
@@ -95,36 +107,39 @@ class Config(object):
             }
 
             for kw in ['module', 'class', 'args', 'kwargs']:
-                self.config['cache'][kw] = self.config['cache'].get(kw, cache_cfg[kw])
+                profile_config['cache'][kw] = profile_config['cache'].get(kw, cache_cfg[kw])
 
 
-    def generate_api_from_config(self):
+    def generate_api_from_config(self, profile=None):
+        profile_config = self.get_profile_config(profile)
 
         try:
-            api_mod = importlib.import_module(self.config['api']['constructor']['module'])
-            api_cls = api_mod.__dict__[self.config['api']['constructor']['class']]
+            api_mod = importlib.import_module(profile_config['api']['constructor']['module'])
+            api_cls = api_mod.__dict__[profile_config['api']['constructor']['class']]
 
         except KeyError:
             api_cls = DataAPI
 
-        api = api_cls(**self.config['api']['user_config'])
+        api = api_cls(**profile_config['api']['user_config'])
 
         return api
 
-    def attach_manager_from_config(self, api):
+    def attach_manager_from_config(self, api, profile=None):
+        profile_config = self.get_profile_config(profile)
 
-        if 'manager' in self.config:
+        if 'manager' in profile_config:
 
             try:
-                manager = self._generate_manager(self.config['manager'])
+                manager = self._generate_manager(profile_config['manager'])
                 api.attach_manager(manager)
 
             except (PermissionError, KeyError):
                 pass
 
-    def attach_services_from_config(self, api):
+    def attach_services_from_config(self, api, profile=None):
+        profile_config = self.get_profile_config(profile)
 
-        for service_name, service_config in self.config.get('authorities', {}).items():
+        for service_name, service_config in profile_config.get('authorities', {}).items():
 
             try:
                 service = self._generate_service(service_config)
@@ -133,12 +148,13 @@ class Config(object):
             except PermissionError:
                 pass
 
-    def attach_cache_from_config(self, api):
+    def attach_cache_from_config(self, api, profile=None):
+        profile_config = self.get_profile_config(profile)
 
-        if 'cache' in self.config:
+        if 'cache' in profile_config:
 
             try:
-                service = self._generate_service(self.config['cache'])
+                service = self._generate_service(profile_config['cache'])
                 api.attach_cache(service)
 
             except (PermissionError, KeyError):

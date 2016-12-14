@@ -156,17 +156,23 @@ def main(api_constructor=DataAPI, sysArgs=None):
     
     args.func(args)
 
-def interactive_configuration(ctx):
-    for kw in ctx.obj.api.REQUIRED_USER_CONFIG:
-        if not kw in ctx.obj.api.user_config:
-            ctx.obj.config.config['api']['user_config'][kw] = click.prompt(ctx.obj.api.REQUIRED_USER_CONFIG[kw])
+def interactive_configuration(api, config, profile=None):
+    profile_config = config.get_profile_config(profile)
+
+    for kw in api.REQUIRED_USER_CONFIG:
+        if not kw in api.user_config:
+            profile_config['api']['user_config'][kw] = click.prompt(
+                api.REQUIRED_USER_CONFIG[kw])
+        
         else:
-            ctx.obj.config.config['api']['user_config'][kw] = click.prompt(ctx.obj.api.REQUIRED_USER_CONFIG[kw], default=ctx.obj.config.config['api']['user_config'][kw])
+            profile_config['api']['user_config'][kw] = click.prompt(
+                api.REQUIRED_USER_CONFIG[kw], 
+                default=profile_config['api']['user_config'][kw])
 
 
 
 class DataFSInterface(object):
-    def __init__(self, config, api, config_file=None):
+    def __init__(self, config={}, api=None, config_file=None, profile=None):
         self.config = config
         self.api = api
         self.config_file = config_file
@@ -174,9 +180,14 @@ class DataFSInterface(object):
 
 @click.group()
 @click.option('--config-file', envvar='CONFIG_FILE', type=str)
+@click.option('--profile', envvar='PROFILE', type=str, default=None)
 @click.pass_context
-def cli(ctx, config_file=None):
+def cli(ctx, config_file=None, profile=None):
     
+    ctx.obj = DataFSInterface()
+    
+    ctx.obj.config_file = config_file
+
     if config_file is not None:
         addl_config = [config_file]
     else:
@@ -184,14 +195,22 @@ def cli(ctx, config_file=None):
 
     config = Config()
     config.read_config(addl_config)
+
+    ctx.obj.config = config
     
+    if profile is None:
+        profile = config.config['default-profile']
+
+    ctx.obj.profile = profile
+
     api = config.generate_api_from_config()
     
     config.attach_manager_from_config(api)
     config.attach_services_from_config(api)
     config.attach_cache_from_config(api)
 
-    ctx.obj = DataFSInterface(config, api)
+    ctx.obj.api = api
+
 
 @cli.command(context_settings=dict(ignore_unknown_options=True,allow_extra_args=True))
 @click.option('--helper', envvar='HELPER', is_flag=True)
@@ -202,10 +221,10 @@ def configure(ctx, helper):
     '''
 
     kwargs = {ctx.args[i][2:]: ctx.args[i+1] for i in xrange(0, len(ctx.args), 2)}
-    ctx.obj.api.user_config.update(kwargs)
+    ctx.obj.config.config['profiles'][ctx.obj.profile]['api']['user_config'].update(kwargs)
 
     if helper:
-        interactive_configuration(ctx)
+        interactive_configuration(ctx.obj.api, ctx.obj.config, profile=ctx.obj.profile)
 
     else:
         for kw in ctx.obj.api.REQUIRED_USER_CONFIG:

@@ -166,7 +166,7 @@ class Config(object):
         mgr_module = importlib.import_module(manager_config['module'])
         mgr_class = mgr_module.__dict__[manager_config['class']]
 
-        manager = mgr_class(*manager_config['args'], **manager_config['kwargs'])
+        manager = mgr_class(*manager_config.get('args',[]), **manager_config.get('kwargs',{}))
 
         return manager
 
@@ -174,6 +174,6 @@ class Config(object):
 
         svc_module = importlib.import_module(service_config['module'])
         svc_class = svc_module.__dict__[service_config['class']]
-        service = svc_class(*service_config['args'], **service_config['kwargs'])
+        service = svc_class(*service_config.get('args',[]), **service_config.get('kwargs',{}))
 
         return service

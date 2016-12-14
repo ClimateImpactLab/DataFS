@@ -60,11 +60,31 @@ def _get_metadata(metadata):
 	#set default
 	interactive = {k: click.prompt(v, type=str, default='None') for k, v in metadata.items()}
 	return interactive
-	
-	
 
 
-def main(sysArgs=None, api_constructor=DataAPI:
+#initialize and mock out a config 
+#this will change but needed to see how this could work
+def initialize_api_settings():
+
+
+	username = click.prompt('Please enter a username', type=str)
+	contact = click.prompt('Please enter contact info', type=str)
+	
+
+	#manager config
+	#manager = ManagerName(table, session_args = {}, resource_args={})
+
+	#authority config
+	#auth_name = click.prompt('Please enter an authority name', type=str)
+	
+	
+	api = DataAPI(username=username, contact=contact)
+	return api
+	#api.attach_manager(manager)
+	#api.attach_authority(str(auth_name), auth_name)
+
+	
+def main(api_constructor, sysArgs=None):
 
 
 
@@ -149,7 +169,9 @@ def main(sysArgs=None, api_constructor=DataAPI:
 
 
 if __name__ == "__main__":
-    main(DataAPI(username='Justin', contact='j@rhg'))
+	api = initialize_api_settings()
+	
+	main(api_constructor=api)
 
 
 

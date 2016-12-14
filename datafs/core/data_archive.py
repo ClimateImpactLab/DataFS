@@ -60,24 +60,26 @@ class DataArchive(object):
 
         # Get hash value for file
 
-        algorithm, hashval = self.api.hash_file(filepath)
+        checksum = self.api.hash_file(filepath)
 
-        if hashval == self.latest_hash:
+        if checksum['checksum'] == self.latest_hash:
             self.update_metadata(kwargs)
             return
-
-        checksum = {'algorithm': algorithm, 'checksum': hashval}
 
         self.authority.upload(filepath, self.service_path)
 
         if self.cache:
             self.api.cache.upload(filepath, self.service_path)
 
+        self._update_manager(checksum, kwargs)
+
+    def _update_manager(self, checksum, metadata={}):
+
         # update records in self.api.manager
         self.api.manager.update(
             archive_name=self.archive_name,
             checksum=checksum,
-            metadata=kwargs)
+            metadata=metadata)
 
     def update_metadata(self, metadata):
 
@@ -88,22 +90,24 @@ class DataArchive(object):
     # File I/O methods
 
     @contextmanager
-    def open(self, *args, **kwargs):
+    def open(self, mode='r', *args, **kwargs):
         '''
         Opens a file for read/write
         '''
 
         latest_hash = self.latest_hash
 
-        # latest_version_check returns true if fp's hash is current as of read
-        latest_version_check = lambda fp: self.api.hash_file(fp) == latest_hash
+        # version_check returns true if fp's hash is current as of read
+        version_check = lambda chk: chk['checksum'] == latest_hash
 
         opener = data_file.open_file(
             self.authority, 
             self.api.cache, 
-            self.update, 
+            self._update_manager, 
             self.service_path, 
-            latest_version_check,
+            version_check,
+            self.api.hash_file,
+            mode,
             *args, 
             **kwargs)
 
@@ -125,9 +129,10 @@ class DataArchive(object):
         path = data_file.get_local_path(
             self.authority, 
             self.api.cache, 
-            self.update, 
+            self._update_manager, 
             self.service_path, 
-            latest_version_check)
+            version_check,
+            self.api.hash_file)
 
         with path as fp:
             yield fp

@@ -156,12 +156,20 @@ def main(api_constructor=DataAPI, sysArgs=None):
     
     args.func(args)
 
+def interactive_configuration(ctx):
+    for kw in ctx.obj.api.REQUIRED_USER_CONFIG:
+        if not kw in ctx.obj.api.user_config:
+            ctx.obj.config.config['api']['user_config'][kw] = click.prompt(ctx.obj.api.REQUIRED_USER_CONFIG[kw])
+        else:
+            ctx.obj.config.config['api']['user_config'][kw] = click.prompt(ctx.obj.api.REQUIRED_USER_CONFIG[kw], default=ctx.obj.config.config['api']['user_config'][kw])
+
 
 
 class DataFSInterface(object):
-    def __init__(self, config, api):
+    def __init__(self, config, api, config_file=None):
         self.config = config
         self.api = api
+        self.config_file = config_file
 
 
 @click.group()
@@ -176,16 +184,35 @@ def cli(ctx, config_file=None):
 
     config = Config()
     config.read_config(addl_config)
+    
     api = config.generate_api_from_config()
+    
+    config.attach_manager_from_config(api)
+    config.attach_services_from_config(api)
+    config.attach_cache_from_config(api)
+
     ctx.obj = DataFSInterface(config, api)
 
-@click.command()
+@cli.command(context_settings=dict(ignore_unknown_options=True,allow_extra_args=True))
+@click.option('--helper', envvar='HELPER', is_flag=True)
 @click.pass_context
-def configure(ctx):
+def configure(ctx, helper):
     '''
     Update existing configuration or create a new default profile
     '''
-    pass
+
+    kwargs = {ctx.args[i][2:]: ctx.args[i+1] for i in xrange(0, len(ctx.args), 2)}
+    ctx.obj.api.user_config.update(kwargs)
+
+    if helper:
+        interactive_configuration(ctx)
+
+    else:
+        for kw in ctx.obj.api.REQUIRED_USER_CONFIG:
+            if not kw in ctx.obj.api.user_config:
+                raise KeyError('Required configuration option "{}" not supplied. Use --helper to configure interactively'.format(kw))
+    
+    ctx.obj.config.write_config(ctx.obj.config_file)
 
 
 @cli.command(context_settings=dict(ignore_unknown_options=True,allow_extra_args=True))
@@ -209,7 +236,7 @@ def upload(ctx, archive_name, filepath):
     click.echo('uploaded data to {}'.format(var))
 
 
-@cli.command
+@cli.command()
 @click.argument('archive_name')
 @click.argument('filepath')
 @click.pass_context

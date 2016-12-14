@@ -16,6 +16,19 @@ except:
     class PermissionError(NameError):
         pass
 
+def enforce_user_config_requirements(func):
+    '''
+    Method decorator for DataAPI enforcing user_config requirements
+    '''
+    def inner(self, *args, **kwargs):
+        for kw in self.REQUIRED_USER_CONFIG.keys():
+            if not kw in self.user_config:
+                raise KeyError('Required API configuration item "{}" not found'.format(kw))
+
+        return func(self, *args, **kwargs)
+    return inner
+
+
 class DataAPI(object):
 
     TimestampFormat = '%Y%m%d-%H%M%S'
@@ -43,6 +56,7 @@ class DataAPI(object):
 
         self._authorities_locked = False
         self._manager_locked = False
+
 
     def attach_authority(self, service_name, service):
 
@@ -106,6 +120,7 @@ class DataAPI(object):
         self._manager = manager
         self.manager.api = self
 
+    @enforce_user_config_requirements
     def create_archive(
             self,
             archive_name,
@@ -151,11 +166,15 @@ class DataAPI(object):
             raise_if_exists=raise_if_exists,
             metadata=metadata)
 
+    @enforce_user_config_requirements
     def get_archive(self, archive_name):
+
         return self.manager.get_archive(archive_name)
 
     @property
+    @enforce_user_config_requirements
     def archives(self):
+
         return self.manager.get_archives()
 
     @classmethod

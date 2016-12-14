@@ -13,7 +13,6 @@ except NameError:
 class Config(object):
 
     CONFIG_FILE_LIST = ['~/.datafs/config.yml', '/env/datafs/config.yml']
-    API_CONSTRUCTOR = DataAPI
 
     def __init__(self):
         self.config = {}
@@ -45,10 +44,20 @@ class Config(object):
 
         for kw in ['api', 'manager', 'authorities', 'cache']:
             self.config[kw] = self.config.get(kw, {})
+
         
-            
+        if not 'user_config' in self.config['api']:
+            self.config['api']['user_config'] = {}
+
         for kw in api.user_config.keys():
-            self.config['api'][kw] = self.config['api'].get(kw, api.user_config[kw])
+            self.config['api']['user_config'][kw] = self.config['api']['user_config'].get(kw, api.user_config[kw])
+            
+        
+        if not 'constructor' in self.config['api']:
+            self.config['api']['constructor'] = {
+                'module': api.__class__.__module__, 
+                'class': api.__class__.__name__
+            }
 
 
         manager_cfg = {
@@ -91,38 +100,52 @@ class Config(object):
 
     def generate_api_from_config(self):
 
-        api = self.API_CONSTRUCTOR(**self.config['api'])
+        try:
+            api_mod = importlib.import_module(self.config['api']['constructor']['module'])
+            api_cls = api_mod.__dict__[self.config['api']['constructor']['class']]
+
+        except KeyError:
+            api_cls = DataAPI
+
+        api = api_cls(**self.config['api']['user_config'])
+
+        return api
+
+    def attach_manager_from_config(self, api):
 
         if 'manager' in self.config:
 
             try:
-                manager = self.generate_manager_from_config(self.config['manager'])
+                manager = self._generate_manager(self.config['manager'])
                 api.attach_manager(manager)
 
             except (PermissionError, KeyError):
                 pass
 
+    def attach_services_from_config(self, api):
+
         for service_name, service_config in self.config.get('authorities', {}).items():
 
             try:
-                service = self.generate_service_from_config(service_config)
+                service = self._generate_service(service_config)
                 api.attach_authority(service_name, service)
 
             except PermissionError:
                 pass
 
+    def attach_cache_from_config(self, api):
+
         if 'cache' in self.config:
 
             try:
-                service = self.generate_service_from_config(self.config['cache'])
+                service = self._generate_service(self.config['cache'])
                 api.attach_cache(service)
 
             except (PermissionError, KeyError):
                 pass
 
-        return api
 
-    def generate_manager_from_config(self, manager_config):
+    def _generate_manager(self, manager_config):
 
         mgr_module = importlib.import_module(manager_config['module'])
         mgr_class = mgr_module.__dict__[manager_config['class']]
@@ -131,7 +154,7 @@ class Config(object):
 
         return manager
 
-    def generate_service_from_config(self, service_config):
+    def _generate_service(self, service_config):
 
         svc_module = importlib.import_module(service_config['module'])
         svc_class = svc_module.__dict__[service_config['class']]

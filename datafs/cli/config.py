@@ -99,7 +99,7 @@ class Config(object):
                 manager = self.generate_manager_from_config(self.config['manager'])
                 api.attach_manager(manager)
 
-            except PermissionError:
+            except (PermissionError, KeyError):
                 pass
 
         for service_name, service_config in self.config.get('authorities', {}).items():
@@ -135,6 +135,11 @@ class Config(object):
 
         svc_module = importlib.import_module(service_config['module'])
         svc_class = svc_module.__dict__[service_config['class']]
+
+        print(svc_module)
+        print(svc_class)
+        print(service_config['args'])
+        print(service_config['kwargs'])
 
         service = svc_class(*service_config['args'], **service_config['kwargs'])
 

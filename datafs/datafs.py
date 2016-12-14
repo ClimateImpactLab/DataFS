@@ -182,14 +182,19 @@ def cli(ctx, config_file=None):
 @click.command()
 @click.pass_context
 def configure(ctx):
+    '''
+    Update existing configuration or create a new default profile
+    '''
     pass
+
 
 @cli.command(context_settings=dict(ignore_unknown_options=True,allow_extra_args=True))
 @click.argument('archive_name')
+@click.option('--authority_name', envvar='AUTHORITY_NAME', default=None)
 @click.pass_context
-def create_archive(ctx, archive_name):
+def create_archive(ctx, archive_name, authority_name):
     kwargs = {ctx.args[i][2:]: ctx.args[i+1] for i in xrange(0, len(ctx.args), 2)}
-    var = ctx.obj.api.create_archive(archive_name, **kwargs)
+    var = ctx.obj.api.create_archive(archive_name, authority_name=authority_name, **kwargs)
     click.echo('created archive {}'.format(var))
 
 

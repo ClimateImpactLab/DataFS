@@ -135,12 +135,6 @@ class Config(object):
 
         svc_module = importlib.import_module(service_config['module'])
         svc_class = svc_module.__dict__[service_config['class']]
-
-        print(svc_module)
-        print(svc_class)
-        print(service_config['args'])
-        print(service_config['kwargs'])
-
         service = svc_class(*service_config['args'], **service_config['kwargs'])
 
         return service

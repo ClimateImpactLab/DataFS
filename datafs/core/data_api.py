@@ -41,7 +41,6 @@ class DataAPI(object):
             raise PermissionError('Authorities locked')
 
         self._authorities[service_name] = DataService(service)
-        self._authorities[service_name].api = self
 
     def lock_authorities(self):
         self._authorities_locked = True
@@ -55,7 +54,6 @@ class DataAPI(object):
             raise ValueError('Attach authority as a cache is prohibited')
         else:    
             self._cache = DataService(service)
-            self._cache.api = self
 
     @property
     def manager(self):
@@ -228,7 +226,7 @@ class DataAPI(object):
 
 
     @staticmethod
-    def hash_file(filepath):
+    def hash_file(f):
         '''
         Utility function for hashing file contents
 
@@ -247,14 +245,17 @@ class DataAPI(object):
         '''
 
 
-        if os.path.isfile(filepath):
-            with open(filepath, 'rb') as f:
-                hashval = hashlib.md5(f.read())
-
-        else:
+        if hasattr(f, 'read'):
             hashval = hashlib.md5(f.read())
 
-        return 'md5', hashval.hexdigest()
+        elif os.path.isfile(f):
+            with open(f, 'rb') as f_obj:
+                hashval = hashlib.md5(f_obj.read())
+
+        else:
+            raise ValueError('"{}" cannot be read'.format(f))
+
+        return {'algorithm': 'md5', 'checksum': hashval.hexdigest()}
 
     
 

@@ -121,7 +121,7 @@ metadata. To suppress errors on re-creation, use the
     >>> api.create_archive(
     ...     'my_remote_archive',
     ...     metadata = dict(description = 'My test data archive'))
-    <DataArchive, archive_name: 'my_remote_archive'>
+    <DataArchive aws://my_remote_archive>
 
 
 View all available archives
@@ -132,7 +132,7 @@ Let's see what archives we have available to us.
 .. code-block:: python
 
     >>> api.archives
-    [<DataArchive, archive_name: 'my_remote_archive'>]
+    [<DataArchive aws://my_remote_archive>]
 
 
 Retrieve archive metadata

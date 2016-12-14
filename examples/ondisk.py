@@ -13,9 +13,7 @@ Set up the workspace
 
     >>> from datafs import DataAPI
     >>> from datafs.managers.manager_mongo import MongoDBManager
-    >>> from fs.memoryfs import MemoryFS
-    >>> import tempfile
-    >>> import shutil
+    >>> from fs.s3fs import S3FS
 
 Initialize the API
 
@@ -29,25 +27,28 @@ Initialize the API
     ...     database_name = 'MyDatabase',
     ...     table_name = 'DataFiles')
     >>>
+    >>> manager.create_archive_table('DataFiles', raise_if_exists=False)
+    >>>
     >>> api.attach_manager(manager)
 
 
 Attach a remote service
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-In this example we'll approximate a remote file system (such as AWS S3 or an ftp
-server) using an in-memory filesystem. This filesystem returns
-:py:class:`io.TextIOWrapper` objects, so approximates the streaming objects
-returned by ``boto`` or ``request`` calls.
+In this example we'll use a remote file system, in this case AWS S3. This 
+filesystem returns streaming objects returned by ``boto`` or ``request`` calls.
 
-    >>> mfs = MemoryFS()
-    >>> api.attach_authority('mfs', mfs)
+
+    >>> s3 = S3FS(
+    ...     'test-bucket',
+    ...     aws_access_key='MY_KEY',
+    ...     aws_secret_key='MY_SECRET_KEY')
     >>>
-    >>> api.create_archive(
+    >>> api.attach_authority('aws', s3)
+    >>>
+    >>> var = api.create_archive(
     ...     'streaming_archive',
     ...     metadata = dict(description = 'My test data archive'))
-    >>>
-    >>> var = api.get_archive('streaming_archive')
     >>>
 
 
@@ -83,7 +84,7 @@ Upload the dataset to the archive
 
 .. code-block:: python
 
-    >>> with var.get_sys_path() as f:
+    >>> with var.get_local_path() as f:
     ...     ds.to_netcdf(f)
     ...
 
@@ -113,9 +114,9 @@ Instead, we can get a local path to open:
 
 .. code-block:: python
 
-    >>> with var.get_sys_path() as f:
-    ...     ds = xr.open_dataset(f)
-    ...     print(ds)
+    >>> with var.get_local_path() as f:
+    ...     with xr.open_dataset(f) as ds:
+    ...         print(ds)
     ...
     <xarray.Dataset>
     Dimensions:   (location: 3, time: 731)
@@ -132,16 +133,16 @@ We can update file in the same way:
 
 .. code-block:: python
 
-    >>> with var.get_sys_path() as f:
-    ...     ds = xr.open_dataset(f)
-    ...     #
-    ...     # Load the dataset fully into memory and then close the file
-    ...     #
-    ...     dsmem = ds.load()
-    ...     ds.close()
-    ...     #
+    >>> with var.get_local_path() as f:
+    ...     with xr.open_dataset(f) as ds:
+    ...     
+    ...         # Load the dataset fully into memory and then close the file
+    ...         
+    ...         dsmem = ds.load()
+    ...         ds.close()
+    ...     
     ...     # Update the version and save the file
-    ...     #
+    ...     
     ...     dsmem.attrs['version'] = 'version 2'
     ...     dsmem.to_netcdf(f)
     ...
@@ -151,7 +152,7 @@ Now let's open the file and see if our change was saved:
 .. code-block:: python
 
     >>> # Acquire the file from the archive and print the version
-    ... with var.get_sys_path() as f:
+    ... with var.get_local_path() as f:
     ...     with xr.open_dataset(f) as ds:
     ...         print(ds)
     ...
@@ -174,5 +175,6 @@ Cleaning up
 .. code-block:: python
 
     >>> var.delete()
+    >>> api.manager.delete_table('DataFiles')
     
 '''

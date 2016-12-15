@@ -8,6 +8,27 @@ import click
 import yaml
 import pprint
 
+def process_kwargs(kwarg_name):
+    def decorator(func):
+        def inner(*args, **kwargs):
+            keyword_arguments = kwargs.pop(kwarg_name, {})
+
+            assert len(keyword_arguments)%2==0
+            for i in range(0, len(keyword_arguments), 2):
+                kwargs[keyword_arguments[i].lstrip('-')] = keyword_arguments[i+1]
+
+            return func(*args, **kwargs)
+        return inner
+    return decorator
+
+
+def parse_args_as_kwargs(args):
+    assert len(args)%2==0
+    kwargs = {}
+    for i in range(0, len(args), 2):
+        kwargs[args[i].lstrip('-')] = args[i+1]
+    return kwargs
+
 def interactive_configuration(api, config, profile=None):
     profile_config = config.get_profile_config(profile)
 
@@ -91,7 +112,7 @@ def configure(ctx, helper):
 @click.option('--authority_name', envvar='AUTHORITY_NAME', default=None)
 @click.pass_context
 def create_archive(ctx, archive_name, authority_name):
-    kwargs = {ctx.args[i][2:]: ctx.args[i+1] for i in xrange(0, len(ctx.args), 2)}
+    kwargs = parse_args_as_kwargs(ctx.args)
     var = ctx.obj.api.create_archive(archive_name, authority_name=authority_name, metadata=kwargs)
     click.echo('created archive {}'.format(var))
 
@@ -101,7 +122,7 @@ def create_archive(ctx, archive_name, authority_name):
 @click.argument('filepath')
 @click.pass_context
 def upload(ctx, archive_name, filepath):
-    kwargs = {ctx.args[i][2:]: ctx.args[i+1] for i in xrange(0, len(ctx.args), 2)}
+    kwargs = parse_args_as_kwargs(ctx.args)
     var = ctx.obj.api.get_archive(archive_name)
     var.update(filepath, **kwargs)
     click.echo('uploaded data to {}'.format(var))

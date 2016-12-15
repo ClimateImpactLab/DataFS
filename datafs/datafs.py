@@ -6,7 +6,7 @@ from datafs.cli.config import Config
 import os 
 import click
 import yaml
-
+import pprint
 
 def interactive_configuration(api, config, profile=None):
     profile_config = config.get_profile_config(profile)
@@ -122,7 +122,7 @@ def download(ctx, archive_name, filepath):
 @click.pass_context
 def metadata(ctx, archive_name):
     var = ctx.obj.api.get_archive(archive_name)
-    click.echo(var.metadata)
+    click.echo(pprint.pformat(var.metadata))
 
 
 @cli.command()

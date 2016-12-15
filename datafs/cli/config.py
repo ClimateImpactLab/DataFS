@@ -24,11 +24,11 @@ class Config(object):
                 with open(fp, 'r') as y:
                     config = yaml.load(y)
                     if not 'profiles' in config:
-                        config = {'default-profile': 'default', 'profiles': {'default': config}}
+                        config = {'profiles': {'default': config}}
 
 
-                    for kw in self.config.keys():
-                        self.config[kw].update(config[kw])
+                    self.config['default-profile'] = config.get('default-profile', self.config['default-profile'])
+                    self.config['profiles'].update(config['profiles'])
 
             except IOError:
                 pass
@@ -122,7 +122,7 @@ class Config(object):
 
         for kw in ['user_config', 'constructor']:
             if not kw in profile_config['api']:
-                profile_config['api']['user_config'] = {}
+                profile_config['api'][kw] = {}
 
         try:
             api_mod = importlib.import_module(profile_config['api']['constructor']['module'])

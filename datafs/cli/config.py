@@ -15,7 +15,7 @@ class Config(object):
     CONFIG_FILE_LIST = ['~/.datafs/config.yml', '/env/datafs/config.yml']
 
     def __init__(self):
-        self.config = {}
+        self.config = {'default-profile': 'default', 'profiles': {}}
 
     def read_config(self, additional_fps = []):
 
@@ -27,7 +27,8 @@ class Config(object):
                         config = {'default-profile': 'default', 'profiles': {'default': config}}
 
 
-                    self.config.update(config)
+                    for kw in self.config.keys():
+                        self.config[kw].update(config[kw])
 
             except IOError:
                 pass
@@ -49,13 +50,19 @@ class Config(object):
         if profile is None:
             profile = self.config['default-profile']
 
-        return self.config['profiles'][profile]
+        if profile not in self.config['profiles']:
+            self.config['profiles'][profile] = {}
 
-    def get_default_config_from_api(self, api, profile=None):
-        profile_config = self.get_profile_config(profile)
+        profile_config= self.config['profiles'][profile]
 
         for kw in ['api', 'manager', 'authorities', 'cache']:
             profile_config[kw] = profile_config.get(kw, {})
+
+        return profile_config
+
+
+    def get_default_config_from_api(self, api, profile=None):
+        profile_config = self.get_profile_config(profile)
 
         
         if not 'user_config' in profile_config['api']:
@@ -112,6 +119,10 @@ class Config(object):
 
     def generate_api_from_config(self, profile=None):
         profile_config = self.get_profile_config(profile)
+
+        for kw in ['user_config', 'constructor']:
+            if not kw in profile_config['api']:
+                profile_config['api']['user_config'] = {}
 
         try:
             api_mod = importlib.import_module(profile_config['api']['constructor']['module'])

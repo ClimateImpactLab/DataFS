@@ -38,7 +38,7 @@ class DataAPI(object):
     _ArchiveConstructor = DataArchive
 
     REQUIRED_USER_CONFIG = {
-        'name': 'your full name',
+        'username': 'your full name',
         'contact': 'your contact info'
     }
 

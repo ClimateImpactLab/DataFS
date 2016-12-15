@@ -10,6 +10,25 @@ import time
 import hashlib
 
 
+try:
+    PermissionError
+except:
+    class PermissionError(NameError):
+        pass
+
+def enforce_user_config_requirements(func):
+    '''
+    Method decorator for DataAPI enforcing user_config requirements
+    '''
+    def inner(self, *args, **kwargs):
+        for kw in self.REQUIRED_USER_CONFIG.keys():
+            if not kw in self.user_config:
+                raise KeyError('Required API configuration item "{}" not found'.format(kw))
+
+        return func(self, *args, **kwargs)
+    return inner
+
+
 class DataAPI(object):
 
 
@@ -19,9 +38,18 @@ class DataAPI(object):
 
     _ArchiveConstructor = DataArchive
 
-    def __init__(self, username, contact):
-        self.username = username
-        self.contact = contact
+    REQUIRED_USER_CONFIG = {
+        'username': 'your full name',
+        'contact': 'your contact info'
+    }
+
+    REQUIRED_ARCHIVE_METADATA = {
+        'description': 'description of the archive'
+    }
+
+    def __init__(self, **kwargs):
+
+        self.user_config = kwargs
 
         self._manager = None
         self._cache = None
@@ -30,23 +58,34 @@ class DataAPI(object):
         self._authorities_locked = False
         self._manager_locked = False
 
-    #Setup file system service
+
     def attach_authority(self, service_name, service):
 
         if self._authorities_locked:
-            raise ValueError('Authorities locked')
+            raise PermissionError('Authorities locked')
 
         self._authorities[service_name] = DataService(service)
-        self._authorities[service_name].api = self
-    #setup
+
+
+    def lock_authorities(self):
+        self._authorities_locked = True
+
+    def lock_manager(self):
+        self._manager_locked = True
+
+    def lock_authorities(self):
+        self._authorities_locked = True
+
+    def lock_manager(self):
+        self._manager_locked = True
+
     def attach_cache(self, service):
 
         if service in self._authorities.values():
             raise ValueError('Attach authority as a cache is prohibited')
         else:    
             self._cache = DataService(service)
-            self._cache.api = self
-    #set manager attr
+
     @property
     def manager(self):
         return self._manager
@@ -79,11 +118,12 @@ class DataAPI(object):
     def attach_manager(self, manager):
 
         if self._manager_locked:
-            raise ValueError('Manager locked')
+            raise PermissionError('Manager locked')
 
         self._manager = manager
         self.manager.api = self
 
+    @enforce_user_config_requirements
     def create_archive(
             self,
             archive_name,
@@ -129,11 +169,15 @@ class DataAPI(object):
             raise_if_exists=raise_if_exists,
             metadata=metadata)
 
+    @enforce_user_config_requirements
     def get_archive(self, archive_name):
+
         return self.manager.get_archive(archive_name)
 
     @property
+    @enforce_user_config_requirements
     def archives(self):
+
         return self.manager.get_archives()
 
     @classmethod
@@ -219,7 +263,7 @@ class DataAPI(object):
 
 
     @staticmethod
-    def hash_file(filepath):
+    def hash_file(f):
         '''
         Utility function for hashing file contents
 
@@ -238,14 +282,17 @@ class DataAPI(object):
         '''
 
 
-        if os.path.isfile(filepath):
-            with open(filepath, 'rb') as f:
-                hashval = hashlib.md5(f.read())
-
-        else:
+        if hasattr(f, 'read'):
             hashval = hashlib.md5(f.read())
 
-        return 'md5', hashval.hexdigest()
+        elif os.path.isfile(f):
+            with open(f, 'rb') as f_obj:
+                hashval = hashlib.md5(f_obj.read())
+
+        else:
+            raise ValueError('"{}" cannot be read'.format(f))
+
+        return {'algorithm': 'md5', 'checksum': hashval.hexdigest()}
 
     
 

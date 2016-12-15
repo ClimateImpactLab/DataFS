@@ -4,186 +4,228 @@ import fs.path
 import tempfile
 import shutil
 import time
-# from fs.osfs import OSFS
-from fs.tempfs import TempFS
+from fs.osfs import OSFS
 from fs.multifs import MultiFS
 
 from fs.errors import (ResourceLockedError, ResourceInvalidError)
 
+from contextlib import contextmanager
 
-class BaseVersionedFileOpener(object):
-    '''
-    .. todo::
 
-        Enable caching
 
-    '''
+# HELPER FUNCTIONS
 
-    def __init__(self, archive, *args, **kwargs):
-        self.archive = archive
-        self.cache = False
+def _close(filesys):
 
-        self.args = args
-        self.kwargs = kwargs
+    closed = False
 
-    #Create directories and file systems at the cache and authority level
-    def _create_service_paths(self):
-
-        self.archive.authority.fs.makedir(
-            fs.path.dirname(self.archive.service_path),
-            recursive=True,
-            allow_recreate=True)
-        #
-        # if self.archive.api.cache:
-        #     self.archive.authority.fs.makedir(
-        #         fs.path.dirname(self.archive.service_path),
-        #         recursive=True,
-        #         allow_recreate=True)
-
-    def _prune_outdated_cache_files(self):
-        '''
-        Delete service path from cache if hash does not match latest
-        '''
-
-        # Check the hash (if one exists) for a local version of the file
-        if self.archive.api.cache:
-            #where is this being called
-            try:
-                local_hash = self.archive.api.cache.get_hash(
-                    self.archive.service_path)
-            except OSError:
-                return
-
-            latest_hash = self.archive.latest_hash()
-            
-            # Delete the file in the local cache if it is out of date.
-            if local_hash != latest_hash:
-                self.archive.api.cache.fs.remove(self.archive.service_path)
-
-    def _get_file_wrapper(self):
-
-        # Make sure we don't have any old data in the cache
-        self._prune_outdated_cache_files()
-
-        # Make sure services have the directory for our file
-        self._create_service_paths()
-
-        # Create a read-only wrapper with download priority cache, then
-        # authority
-        self.fs_wrapper = MultiFS()
-        self.fs_wrapper.addfs('authority', self.archive.authority.fs)
-        if self.archive.api.cache:
-            self.fs_wrapper.addfs('cache', self.archive.api.cache.fs)
-
-    def _attach_temporary_write_dir(self):
-        # Add a temporary filesystem as the write filesystem
-        self.temp_write_fs = TempFS()
-        self.temp_write_fs.makedir(
-            fs.path.dirname(self.archive.service_path),
-            recursive=True,
-            allow_recreate=True)
-
-        self.fs_wrapper.setwritefs(self.temp_write_fs)
-
-    def _open(self):
-        self._get_file_wrapper()
-        self._attach_temporary_write_dir()
-
-        return self.fs_wrapper.open(
-            self.archive.service_path,
-            *self.args,
-            **self.kwargs)
-
-    def _get_sys_path(self):
-        self._get_file_wrapper()
-        self._attach_temporary_write_dir()
-
-        # Check if the file already exists. If so, copy it into the temporary
-        # directory
-        if self.fs_wrapper.exists(self.archive.service_path):
-            fs.utils.copyfile(
-                self.fs_wrapper,
-                self.archive.service_path,
-                self.temp_write_fs,
-                self.archive.service_path)
-
-        return self.temp_write_fs.getsyspath(self.archive.service_path)
-
-    def _close_temp_write_fs(self):
+    for i in range(5):
         try:
-            self.temp_write_fs.close()
-        except (ResourceLockedError, ResourceInvalidError):
+            filesys.close()
+            closed = True
+            break
+        except ResourceLockedError as e:
             time.sleep(0.5)
-            self.temp_write_fs.close()
 
-    def _close(self):
+    if not closed:
+        raise e
+        
 
-        # If nothing was written, exit
-        if not self.temp_write_fs.exists(self.archive.service_path):
-            for p in self.temp_write_fs.listdir('/'):
-                if self.temp_write_fs.isfile(p):
-                    self.temp_write_fs.remove(p)
-                elif self.temp_write_fs.isdir(p):
-                    self.temp_write_fs.removedir(p, recursive=True, force=True)
+def _makedirs(filesystem, path):
+    filesystem.makedir(path,recursive=True,allow_recreate=True)
 
-            self.fs_wrapper.clearwritefs()
-            self._close_temp_write_fs()
-            # shutil.rmtree(self.tempdir)
-            return
+def _touch(filesystem, path):
+    _makedirs(filesystem, fs.path.dirname(path))
+    if not filesystem.isfile(path):
+        filesystem.createfile(path)
 
-        # If cache exists:
-        if self.cache:
 
-            if self.api.cache:
-                raise IOError('Cannot save to cache - cache not set')
+# HELPER CONTEXT MANAGERS
 
-            # Move the file to the cache before uploading
-            fs.utils.movefile(
-                self.temp_write_fs,
-                self.archive.service_path,
-                self.archive.api.cache.fs,
-                self.archive.service_path)
 
-            # Update the archive with the new version
-            self.archive.update(
-                self.archive.api.cache.fs.getsyspath(
-                    self.archive.service_path))
+@contextmanager
+def _choose_read_fs(authority, cache, service_path, version_check, hasher):
+    '''
+    Context manager returning the appropriate up-to-date readable filesystem
+
+    Use ``cache`` if it is a valid filessystem and has a file at 
+    ``service_path``, otherwise use ``authority``. If the file at ``service_path`` is 
+    out of date, update the file in ``cache`` before returning it.
+    '''
+
+    if cache and cache.fs.isfile(service_path):
+        if version_check(hasher(cache.fs.open(service_path, 'rb'))):
+            yield cache.fs
+
+        elif authority.fs.isfile(service_path):
+            fs.utils.copyfile(authority.fs, service_path, cache.fs, service_path)
+            yield cache.fs
 
         else:
-            # Update the archive with the new version
-            self.archive.update(
-                self.temp_write_fs.getsyspath(
-                    self.archive.service_path))
+            _touch(authority.fs, service_path)
+            _touch(cache.fs, service_path)
+            yield cache.fs
 
-        for p in self.temp_write_fs.listdir('/'):
-            if self.temp_write_fs.isfile(p):
-                self.temp_write_fs.remove(p)
-            elif self.temp_write_fs.isdir(p):
-                self.temp_write_fs.removedir(p, recursive=True, force=True)
-
-        self.fs_wrapper.clearwritefs()
-        self._close_temp_write_fs()
-        # del self.temp_write_fs.close()
-        # shutil.rmtree(self.tempdir)
+    else:
+        if not authority.fs.isfile(service_path):
+            _touch(authority.fs, service_path)
+    
+        yield authority.fs
 
 
-class FileOpener(BaseVersionedFileOpener):
 
-    def __enter__(self):
-        self._f_obj = self._open()
-        return self._f_obj
+@contextmanager
+def _choose_write_fs(cache, service_path):
+    '''
+    Context manager returning a writable filesystem
 
-    def __exit__(self, exception_type, exception_value, traceback):
-        self._f_obj.close()
-        self._close()
-        return False
+    Use the cache if the cache is a valid filessystem and caching is enabled for 
+    this archive, otherwise use a temporary directory and clean on exit.
+
+    .. todo::
+
+        Evaluate options for using a cached memoryFS or streaming object instead 
+        of an OSFS(tmp). This could offer significant performance improvements. 
+        Writing to the cache is less of a problem since this would be done in 
+        any case, though performance could be improved by writing to an 
+        in-memory filesystem and then writing to both cache and auth.
+
+    '''
+
+    if cache and cache.fs.isfile(service_path):
+
+        yield cache.fs
+
+    else:
+        tmp = tempfile.mkdtemp()
+
+        # Create a writeFS and path to the directory containing the archive
+        write_fs = OSFS(tmp)
+
+        yield write_fs
+
+        _close(write_fs)
+        shutil.rmtree(tmp)
 
 
-class FilePathOpener(FileOpener):
 
-    def __enter__(self):
-        return self._get_sys_path()
+@contextmanager
+def _prepare_write_fs(read_fs, cache, service_path, readwrite_mode=True):
 
-    def __exit__(self, exception_type, exception_value, traceback):
-        self._close()
-        return False
+    with _choose_write_fs(cache, service_path) as write_fs:
+
+        # If opening in read/write or append mode, make sure file data is accessible
+        if readwrite_mode:
+
+            if not write_fs.isfile(service_path):
+                _touch(write_fs, service_path)
+                fs.utils.copyfile(read_fs, service_path, write_fs, service_path)
+
+        else:
+            _touch(write_fs, service_path)
+
+        yield write_fs
+
+
+
+# AVAILABLE I/O CONTEXT MANAGERS
+
+@contextmanager
+def open_file(authority, cache, update, service_path, version_check, hasher, mode='r', *args, **kwargs):
+    '''
+
+    Context manager for reading/writing from an archive and uploading on changes
+    
+    Parameters
+    ----------
+    authority : object
+        
+        :py:mod:`pyFilesystem` filesystem object to use as the authoritative, 
+        up-to-date source for the archive
+>>>>>>> cil
+
+    cache : object
+
+        :py:mod:`pyFilesystem` filesystem object to use as the cache. Default 
+        ``None``.
+
+    use_cache : bool
+
+         update, service_path, version_check, **kwargs
+    '''
+
+    with _choose_read_fs(authority, cache, service_path, version_check, hasher) as read_fs:
+
+
+        write_mode = ('w' in mode) or ('a' in mode) or ('+' in mode)
+
+        if write_mode:
+
+            readwrite_mode = (('a' in mode) or (('r' in mode) and ('+' in mode)))
+
+            with _prepare_write_fs(read_fs, cache, service_path, readwrite_mode) as write_fs:
+
+                wrapper = MultiFS()
+                wrapper.addfs('reader', read_fs)
+                wrapper.setwritefs(write_fs)
+
+                with wrapper.open(service_path, mode, *args, **kwargs) as f:
+
+                    yield f
+
+                with write_fs.open(service_path, 'rb') as f:
+                    checksum = hasher(f)
+
+                if not version_check(checksum):
+                    fs.utils.copyfile(write_fs, service_path, authority.fs, service_path)
+                    update(checksum=checksum)
+
+        else:
+
+            with read_fs.open(service_path, mode, *args, **kwargs) as f:
+               
+                yield f
+
+
+@contextmanager
+def get_local_path(authority, cache, update, service_path, version_check, hasher):
+    '''
+    Context manager for retrieving a system path for I/O and updating on changes
+
+
+    Parameters
+    ----------
+    authority : object
+        
+        :py:mod:`pyFilesystem` filesystem object to use as the authoritative, 
+        up-to-date source for the archive
+ 
+    cache : object
+
+        :py:mod:`pyFilesystem` filesystem object to use as the cache. Default 
+        ``None``.
+
+    use_cache : bool
+
+         update, service_path, version_check, **kwargs
+    '''
+
+    
+    with _choose_read_fs(authority, cache, service_path, version_check, hasher) as read_fs:
+
+        with _prepare_write_fs(read_fs, cache, service_path, readwrite_mode=True) as write_fs:
+
+            yield write_fs.getsyspath(service_path)
+
+            if write_fs.isfile(service_path):
+
+                with write_fs.open(service_path, 'rb') as f:
+                    checksum = hasher(f)
+
+                if not version_check(checksum):
+                    fs.utils.copyfile(write_fs, service_path, authority.fs, service_path)
+                    update(checksum=checksum)
+
+            else:
+                _touch(write_fs, service_path)
+                raise OSError('Local file removed during execution. Archive not updated.') 

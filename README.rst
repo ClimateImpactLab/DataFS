@@ -31,7 +31,7 @@ DataFS is an abstraction layer for data storage systems. It manages file version
 Usage
 -----
 
-See :ref:`examples <examples>`
+See `examples <http://datafs.readthedocs.io/en/latest/examples.html>`_ for more extensive use cases.
 
 
 Features

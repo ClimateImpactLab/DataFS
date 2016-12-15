@@ -9,26 +9,30 @@ from fs.osfs import OSFS
 
 class DataService(object):
 
-    def __init__(self, fs, api=None):
+    def __init__(self, fs):
         self.fs = fs
-        self.api = api
+
+    def __repr__(self):
+        return "<{}:{} object at {}>".format(self.__class__.__name__, self.fs.__class__.__name__, hex(id(self)))
 
     def upload(self, filepath, service_path):
         local = OSFS(os.path.dirname(filepath))
-        self.fs.makedir(
-            fs.path.dirname(service_path),
-            recursive=True,
-            allow_recreate=True)
+
+        # Skip if source and dest are the same
+        if self.fs.hassyspath(service_path) and (
+            self.fs.getsyspath(service_path) == local.getsyspath(os.path.basename(filepath))):
+
+            return
+        
+        if not self.fs.isdir(fs.path.dirname(service_path)):
+            self.fs.makedir(
+                fs.path.dirname(service_path),
+                recursive=True,
+                allow_recreate=True)
+
         fs.utils.copyfile(
             local,
             os.path.basename(filepath),
             self.fs,
             service_path)
 
-    def get_hash(self, service_path):
-
-        os_path = self.fs.getsyspath(service_path)
-        if not os.path.exists(os_path):
-            raise OSError('File does not exist')
-            
-        return self.api.hash_file()

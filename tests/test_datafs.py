@@ -62,45 +62,40 @@ counter = get_counter()
 @pytest.yield_fixture(scope='function')
 def manager(mgr_name):
 
+    table_name = 'my-new-table-name'
+    
     if mgr_name == 'mongo':
 
         manager_mongo = MongoDBManager(
                 database_name='MyDatabase',
-                table_name='DataFiles')
+                table_name=table_name)
+
+        manager_mongo.create_archive_table(table_name, raise_if_exists=False)
         
-        yield manager_mongo
+        try:
+            yield manager_mongo
+
+        finally:
+            manager_mongo.delete_table(table_name)
 
     elif mgr_name == 'dynamo':
 
-        
+        manager_dynamo = DynamoDBManager(
+            table_name, 
+            session_args={
+                'aws_access_key_id': "access-key-id-of-your-choice",
+                'aws_secret_access_key': "secret-key-of-your-choice"}, 
+            resource_args={
+                'endpoint_url':'http://localhost:8000/',
+                'region_name':'us-east-1'})
 
-        name = 'my-new-table-name'
-        manager = DynamoDBManager(name, session_args={ 'aws_access_key_id': "access-key-id-of-your-choice",
-            'aws_secret_access_key': "secret-key-of-your-choice",}, resource_args={ 'endpoint_url':'http://localhost:8000/','region_name':'us-east-1'})
-        # manager_dynamo = DynamoDBManager(
-        #     table_name=name,
-        #     session_args={
-        #     'aws_access_key_id':'my_key',
-        #     'aws_secret_access_key':'my_secret_key'},
-        #     resource_args={'region_name':'us-east-1', 'endpoint_url':os.environ['DYNAMODB_URL']})
+        manager_dynamo.create_archive_table(table_name, raise_if_exists=False)
 
-        if name not in list(map(lambda t: t.name, manager._resource.tables.all())):
-            manager.table = manager._resource.create_table(TableName=name, 
-                        KeySchema=[
-                                {'AttributeName': '_id', 'KeyType': 'HASH'},
-                                
-                            ],
-                            AttributeDefinitions=[
-                                {'AttributeName': '_id', 'AttributeType': 'S'},
-                                
-                            ], 
-                            ProvisionedThroughput={'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123}
-                            
-                    )
-
-        yield manager
-
-        manager.table.delete()
+        try:
+            yield manager_dynamo
+    
+        finally:
+            manager_dynamo.delete_table(table_name)
 
 
 @pytest.yield_fixture(scope='function')
@@ -129,24 +124,29 @@ def filesystem(fs_name):
 
         local = TempFS()
 
-        yield local
+        try:
+            yield local
 
-        local.close()
+        finally:
+            local.close()
 
     elif fs_name == 'S3FS':
 
         m = moto.mock_s3()
         m.start()
 
-        s3 = S3FS(
-            'test-bucket', 
-            aws_access_key='MY_KEY',
-            aws_secret_key='MY_SECRET_KEY')
+        try:
 
-        yield s3
+            s3 = S3FS(
+                'test-bucket', 
+                aws_access_key='MY_KEY',
+                aws_secret_key='MY_SECRET_KEY')
 
-        s3.close()
-        m.stop()
+            yield s3
+            s3.close()
+
+        finally:
+            m.stop()
 
 
 
@@ -165,7 +165,7 @@ def api(manager, filesystem):
 
 
 
-@pytest.fixture
+@pytest.yield_fixture(scope='function')
 def archive(api):
     '''
     Create a temporary archive for use in testing
@@ -175,11 +175,16 @@ def archive(api):
 
     archive_name = 'test_archive_{}'.format(test_id)
 
-    api.create_archive(
+    var = api.create_archive(
         archive_name,
         metadata=dict(description='My test data archive #{}'.format(test_id)))
 
-    return api.get_archive(archive_name)
+    try:
+        yield var
+
+    finally:
+        var.delete()
+
 
 
 string_tests =[
@@ -202,7 +207,7 @@ class TestHashFunction(object):
             f.write(contents)
             f.close()
 
-            alg, apihash = arch.api.hash_file(f.name)
+            apihash = arch.api.hash_file(f.name)['checksum']
             arch.update(f.name)
 
         finally:
@@ -256,6 +261,7 @@ class TestHashFunction(object):
         # Update and test a different way!
 
         contents = unicode((os.linesep).join([contents, 'more!!!', contents]))
+
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
 
         with archive.open('wb+') as f:

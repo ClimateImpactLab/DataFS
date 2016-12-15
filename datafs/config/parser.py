@@ -4,38 +4,51 @@ from datafs.core.data_api import DataAPI
 import yaml
 import os
 import importlib
+import click
 
 try:
     PermissionError
 except NameError:
     from datafs.core.data_api import PermissionError
 
-class Config(object):
+class ConfigFile(object):
 
-    CONFIG_FILE_LIST = ['~/.datafs/config.yml', '/env/datafs/config.yml']
-
-    def __init__(self):
+    def __init__(self, config_file = None):
         self.config = {'default-profile': 'default', 'profiles': {}}
 
-    def read_config(self, additional_fps = []):
+        if config_file:
+            self.config_file = config_file
+        else:
+            self.config_file = os.path.join(click.get_app_dir('datafs'), 'config.yml')
 
-        for fp in map(os.path.expanduser, self.CONFIG_FILE_LIST+additional_fps):
-            try:
-                with open(fp, 'r') as y:
-                    config = yaml.load(y)
-                    if not 'profiles' in config:
-                        config = {'profiles': {'default': config}}
+    def parse_configfile_contents(self, config):
+        if not 'profiles' in config:
+            config = {'profiles': {'default': config}}
 
 
-                    self.config['default-profile'] = config.get('default-profile', self.config['default-profile'])
-                    self.config['profiles'].update(config['profiles'])
+        self.config['default-profile'] = config.get('default-profile', self.config['default-profile'])
+        self.config['profiles'].update(config['profiles'])
 
-            except IOError:
-                pass
+
+    def read_config(self, contents=None):
+
+        try:
+            with open(self.config_file, 'r') as y:
+                config = yaml.load(y)
+                self.parse_configfile_contents(config)
+
+        except IOError:
+            pass
+
+    def edit_config_file(self):
+        self.write_config()
+
+        click.edit(filename=self.config_file)
+        
 
     def write_config(self, fp=None):
 
-        read_fp = self.CONFIG_FILE_LIST[0]
+        read_fp = os.path.join(click.get_app_dir('datafs'), 'config.yml')
 
         if fp is not None:
             read_fp = fp

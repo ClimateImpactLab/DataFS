@@ -41,7 +41,7 @@ class DataArchive(object):
     def versions(self):
         return self.api.manager.get_versions(self.archive_name)
 
-    def update(self, filepath, **kwargs):
+    def update(self, filepath, cache=False, remove=False, **kwargs):
         '''
         Enter a new version to a DataArchive
 
@@ -52,7 +52,7 @@ class DataArchive(object):
             The path to the file on your local file system
 
         cache : bool
-            Save file to cache before upload (default False)
+            Turn on caching for this archive if not already on before upload
 
         **kwargs stored as update to metadata.
 
@@ -64,16 +64,27 @@ class DataArchive(object):
 
         # Get hash value for file
 
+        if cache:
+            self.cache = True
+
         checksum = self.api.hash_file(filepath)
 
         if checksum['checksum'] == self.latest_hash:
             self.update_metadata(kwargs)
+            
+            if self.cache:
+                cache_loc = self.api.cache.fs.getsyspath(self.service_path)
+                cache_hash = self.api.hash_file(cache_loc)['checksum']
+    
+                if self.latest_hash != cache_hash:
+                    self.api.cache.upload(filepath, self.service_path, remove=remove)
+
             return
 
         self.authority.upload(filepath, self.service_path)
 
         if self.cache:
-            self.api.cache.upload(filepath, self.service_path)
+            self.api.cache.upload(filepath, self.service_path, remove=remove)
 
         self._update_manager(checksum, kwargs)
 
@@ -127,8 +138,8 @@ class DataArchive(object):
         
         latest_hash = self.latest_hash
 
-        # latest_version_check returns true if fp's hash is current as of read
-        latest_version_check = lambda fp: self.api.hash_file(fp) == latest_hash
+        # version_check returns true if fp's hash is current as of read
+        version_check = lambda chk: chk['checksum'] == latest_hash
 
         path = data_file.get_local_path(
             self.authority, 
@@ -211,11 +222,10 @@ class DataArchive(object):
         Set the cache property to start/stop file caching for this archive
         '''
         
-        if not self.api.cache:
-            return False
-
-        if self.api.cache.fs.isfile(self.service_path):
+        if self.api.cache and self.api.cache.fs.isfile(self.service_path):
             return True
+
+        return False
 
     @cache.setter
     def cache(self, value):
@@ -223,7 +233,7 @@ class DataArchive(object):
         if not self.api.cache:
             raise ValueError('No cache attached')
 
-        if value:
+        if bool(value):
 
             if not self.api.cache.fs.isfile(self.service_path):
                 self.api.cache.fs.makedir(

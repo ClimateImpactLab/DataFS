@@ -8,6 +8,8 @@ import click
 import yaml
 import pprint
 
+
+#this parses the text users put in as options
 def process_kwargs(kwarg_name):
     def decorator(func):
         def inner(*args, **kwargs):
@@ -22,6 +24,7 @@ def process_kwargs(kwarg_name):
     return decorator
 
 
+
 def parse_args_as_kwargs(args):
     assert len(args)%2==0
     kwargs = {}
@@ -29,10 +32,14 @@ def parse_args_as_kwargs(args):
         kwargs[args[i].lstrip('-')] = args[i+1]
     return kwargs
 
+
+#
 def interactive_configuration(api, config, profile=None):
     profile_config = config.get_profile_config(profile)
 
+    #read from the required config settings in DataAPI
     for kw in api.REQUIRED_USER_CONFIG:
+
         if not kw in api.user_config:
             profile_config['api']['user_config'][kw] = click.prompt(
                 api.REQUIRED_USER_CONFIG[kw])
@@ -51,11 +58,15 @@ class DataFSInterface(object):
         self.config_file = config_file
 
 
+
+
+#this sets the command line environment for 
 @click.group()
 @click.option('--config-file', envvar='CONFIG_FILE', type=str)
 @click.option('--profile', envvar='PROFILE', type=str, default=None)
 @click.pass_context
 def cli(ctx, config_file=None, profile=None):
+    
     
     ctx.obj = DataFSInterface()
 

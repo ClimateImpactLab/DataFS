@@ -1,4 +1,3 @@
 git+https://github.com/PyFilesystem/pyfilesystem#egg=0.5.5a1
 click==6.6
-fs==0.5.5a1
 PyYAML==3.12

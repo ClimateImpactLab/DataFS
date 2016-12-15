@@ -1,4 +1,4 @@
-language: python
+exitlanguage: python
 python:
 - '2.7'
 - pypy

@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from datafs.services.service import DataService
 from datafs.core.data_archive import DataArchive
+from contextlib import contextmanager
 
 import fs.path
 
@@ -10,11 +11,25 @@ import time
 import hashlib
 
 
+
 try:
     PermissionError
 except:
     class PermissionError(NameError):
         pass
+
+def enforce_user_config_requirements(func):
+    '''
+    Method decorator for DataAPI enforcing user_config requirements
+    '''
+    def inner(self, *args, **kwargs):
+        for kw in self.REQUIRED_USER_CONFIG.keys():
+            if not kw in self.user_config:
+                raise KeyError('Required API configuration item "{}" not found'.format(kw))
+
+        return func(self, *args, **kwargs)
+    return inner
+
 
 class DataAPI(object):
 
@@ -24,9 +39,15 @@ class DataAPI(object):
 
     _ArchiveConstructor = DataArchive
 
-    def __init__(self, username, contact):
-        self.username = username
-        self.contact = contact
+    REQUIRED_USER_CONFIG = {
+    }
+
+    REQUIRED_ARCHIVE_METADATA = {
+    }
+
+    def __init__(self, **kwargs):
+
+        self.user_config = kwargs
 
         self._manager = None
         self._cache = None
@@ -35,12 +56,19 @@ class DataAPI(object):
         self._authorities_locked = False
         self._manager_locked = False
 
+
     def attach_authority(self, service_name, service):
 
         if self._authorities_locked:
             raise PermissionError('Authorities locked')
 
         self._authorities[service_name] = DataService(service)
+
+    def lock_authorities(self):
+        self._authorities_locked = True
+
+    def lock_manager(self):
+        self._manager_locked = True
 
     def lock_authorities(self):
         self._authorities_locked = True
@@ -91,6 +119,7 @@ class DataAPI(object):
         self._manager = manager
         self.manager.api = self
 
+    @enforce_user_config_requirements
     def create_archive(
             self,
             archive_name,
@@ -136,11 +165,15 @@ class DataAPI(object):
             raise_if_exists=raise_if_exists,
             metadata=metadata)
 
+    @enforce_user_config_requirements
     def get_archive(self, archive_name):
+
         return self.manager.get_archive(archive_name)
 
     @property
+    @enforce_user_config_requirements
     def archives(self):
+
         return self.manager.get_archives()
 
     @classmethod
@@ -233,29 +266,36 @@ class DataAPI(object):
         Overload this function to change the file equality checking algorithm
 
         Parameters
+        ----------
+
+        f : file-like
+            File-like object or file path from which to compute checksum value
 
 
         Returns
         -------
-        algorithm : str
-            Name/description of the algorithm being used.
+        checksum : dict
+            dictionary with {'algorithm': 'md5', 'checksum': hexdigest}
 
-        value : str
-            Hash digest value
         '''
 
+        @contextmanager
+        def open_file(f):
 
-        if hasattr(f, 'read'):
-            hashval = hashlib.md5(f.read())
+            if hasattr(f, 'read'):
+                yield f
 
-        elif os.path.isfile(f):
-            with open(f, 'rb') as f_obj:
-                hashval = hashlib.md5(f_obj.read())
+            else:
+                with open(f, 'rb') as f_obj:
+                    yield f_obj
 
-        else:
-            raise ValueError('"{}" cannot be read'.format(f))
 
-        return {'algorithm': 'md5', 'checksum': hashval.hexdigest()}
+        md5 = hashlib.md5()
+
+        with open_file(f) as f_obj:
+            for chunk in iter(lambda: f_obj.read(128*md5.block_size), b''): 
+                md5.update(chunk)
+            
+        return {'algorithm': 'md5', 'checksum': md5.hexdigest()}
 
     
-

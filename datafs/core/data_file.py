@@ -49,8 +49,9 @@ def _choose_read_fs(authority, cache, service_path, version_check, hasher):
     Context manager returning the appropriate up-to-date readable filesystem
 
     Use ``cache`` if it is a valid filessystem and has a file at 
-    ``service_path``, otherwise use ``authority``. If the file at ``service_path`` is 
-    out of date, update the file in ``cache`` before returning it.
+    ``service_path``, otherwise use ``authority``. If the file at 
+    ``service_path`` is out of date, update the file in ``cache`` before 
+    returning it.
     '''
 
     if cache and cache.fs.isfile(service_path):
@@ -113,7 +114,8 @@ def _prepare_write_fs(read_fs, cache, service_path, readwrite_mode=True):
 
     with _choose_write_fs(cache, service_path) as write_fs:
 
-        # If opening in read/write or append mode, make sure file data is accessible
+        # If opening in read/write or append mode, make sure file data is 
+        # accessible
         if readwrite_mode:
 
             if not write_fs.isfile(service_path):

@@ -19,9 +19,24 @@ class DynamoDBManager(BaseDataManager):
     def __init__(self, table_name, api=None, session_args={}, resource_args={}):
         super(DynamoDBManager, self).__init__(api)
 
+        self._table_name = table_name
+        self._session_args = session_args
+        self._resource_args = resource_args
+
         self._session = boto3.Session(**session_args)
         self._resource = self._session.resource('dynamodb', **resource_args)
         self._table = self._resource.Table(table_name)
+
+
+    @property
+    def config(self):
+        config = {
+            'table_name': self._table_name,
+            'session_args': self._session_args,
+            'resource_args': self._resource_args
+            }
+
+        return config
 
     def _get_archive_names(self):
         """

@@ -9,27 +9,18 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-]
 
-test_requirements = [
-    'pip==9.0.1',
-    'bumpversion==0.5.3',
-    'wheel==0.29.0',
-    'watchdog==0.8.3',
-    'flake8==3.2.1',
-    'tox==2.5.0',
-    'coverage==4.2',
-    'Sphinx==1.5',
-    'sphinx_rtd_theme==0.1.10a0',
-    'cryptography==1.6',
-    'PyYAML==3.12',
-    'pytest==3.0.5',
-    'pytest_cov==2.4.0',
-    'pymongo==3.4.0',
-    'boto3==1.4.2',
-    'moto==0.4.30'
-]
+with open('requirements.txt', 'r') as req:
+    requirements = [req for req in req.readlines() if '==' in req]
+
+with open('requirements.txt', 'r') as req:
+    dependency_links = [req for req in req.readlines() if 'http' in req]
+
+with open('requirements_test.txt', 'r') as req:
+    test_requirements = [req for req in req.readlines() if '==' in req]
+
+with open('entry_points.cfg', 'r') as e:
+    entry_points = e.read()
 
 setup(
     name='datafs',
@@ -43,6 +34,7 @@ setup(
                  'datafs'},
     include_package_data=True,
     install_requires=requirements,
+    entry_points=entry_points,
     license="MIT license",
     zip_safe=False,
     keywords='datafs',

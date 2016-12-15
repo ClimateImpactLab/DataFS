@@ -40,12 +40,9 @@ class DataAPI(object):
     _ArchiveConstructor = DataArchive
 
     REQUIRED_USER_CONFIG = {
-        'username': 'your full name',
-        'contact': 'your contact info'
     }
 
     REQUIRED_ARCHIVE_METADATA = {
-        'description': 'description of the archive'
     }
 
     def __init__(self, **kwargs):
@@ -296,7 +293,7 @@ class DataAPI(object):
         md5 = hashlib.md5()
 
         with open_file(f) as f_obj:
-            for chunk in iter(lambda: f.read(128*md5.block_size), b''): 
+            for chunk in iter(lambda: f_obj.read(128*md5.block_size), b''): 
                 md5.update(chunk)
             
         return {'algorithm': 'md5', 'checksum': md5.hexdigest()}

@@ -39,11 +39,12 @@ class BaseDataManager(object):
 
         '''
         version_metadata = {
-            'author': self.api.username,
-            'contact': self.api.contact,
             'updated': self.api.create_timestamp(),
             'algorithm': checksum['algorithm'],
             'checksum': checksum['checksum']}
+
+
+        version_metadata.update(self.api.user_config)
 
         archive_data = metadata
 
@@ -74,20 +75,28 @@ class BaseDataManager(object):
 
         '''
 
-        metadata['creator'] = metadata.get('creator', self.api.username)
-        metadata['contact'] = metadata.get('contact', self.api.contact)
-        metadata['creation_date'] = metadata.get(
+        archive_metadata = {}
+        archive_metadata.update(self.api.user_config)
+        archive_metadata.update(metadata)
+
+        archive_metadata['creation_date'] = archive_metadata.get(
             'creation_date', self.api.create_timestamp())
+
+        required = set(self.api.REQUIRED_USER_CONFIG.keys())
+        required |= set(self.api.REQUIRED_ARCHIVE_METADATA.keys())
+
+        for attr in required:
+            assert attr in archive_metadata, 'Required attribute "{}" missing from metadata'.format(attr)
 
         if raise_if_exists:
             self._create_archive(
                 archive_name,
                 authority_name,
                 service_path,
-                metadata)
+                archive_metadata)
         else:
             self._create_if_not_exists(
-                archive_name, authority_name, service_path, metadata)
+                archive_name, authority_name, service_path, archive_metadata)
 
         return self.get_archive(archive_name)
 
@@ -179,6 +188,9 @@ class BaseDataManager(object):
 
         self._delete_archive_record(archive_name)
 
+    def get_versions(self, archive_name):
+        return self._get_versions(archive_name)
+
     # Private methods (to be implemented by subclasses of DataManager)
 
     def _update(self, archive_name, archive_data):
@@ -236,5 +248,9 @@ class BaseDataManager(object):
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _delete_table(self, table_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_versions(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')

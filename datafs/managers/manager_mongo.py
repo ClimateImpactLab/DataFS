@@ -41,18 +41,29 @@ class MongoDBManager(BaseDataManager):
     *args, **kwargs passed to :py:class:`pymongo.MongoClient`
     '''
 
-    def __init__(self, database_name, table_name, api=None, *args, **kwargs):
+    def __init__(self, database_name, table_name, api=None, client_kwargs={}):
         super(MongoDBManager, self).__init__(api)
 
         # setup MongoClient
         # Arguments can be passed to the client
-        self._client = MongoClient(*args, **kwargs)
+        self._client_kwargs = client_kwargs
+        self._client = MongoClient(**client_kwargs)
 
         self._database_name = database_name
         self._table_name = table_name
 
         self._db = None
         self._coll = None
+
+    @property
+    def config(self):
+        config = {
+            'database_name': self._database_name,
+            'table_name': self._table_name,
+            'client_kwargs': self._client_kwargs
+            }
+
+        return config
 
     @property
     def database_name(self):

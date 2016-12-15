@@ -210,6 +210,7 @@ class TestHashFunction(object):
             apihash = arch.api.hash_file(f.name)['checksum']
             arch.update(f.name)
 
+            
         finally:
             os.remove(f.name)
 

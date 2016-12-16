@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 from datafs.core.data_api import DataAPI
-from datafs.cli.config import Config
+from datafs.config.parser import ConfigFile
 import os 
 import click
 import yaml
@@ -72,13 +72,8 @@ def cli(ctx, config_file=None, profile=None):
 
     ctx.obj.config_file = config_file
 
-    if config_file is not None:
-        addl_config = [config_file]
-    else:
-        addl_config = []
-
-    config = Config()
-    config.read_config(addl_config)
+    config = ConfigFile(ctx.obj.config_file)
+    config.read_config()
 
     ctx.obj.config = config
     
@@ -98,8 +93,9 @@ def cli(ctx, config_file=None, profile=None):
 
 @cli.command(context_settings=dict(ignore_unknown_options=True,allow_extra_args=True))
 @click.option('--helper', envvar='HELPER', is_flag=True)
+@click.option('--edit', envvar='EDIT', is_flag=True)
 @click.pass_context
-def configure(ctx, helper):
+def configure(ctx, helper, edit):
     '''
     Update existing configuration or create a new default profile
     '''
@@ -110,12 +106,15 @@ def configure(ctx, helper):
     if helper:
         interactive_configuration(ctx.obj.api, ctx.obj.config, profile=ctx.obj.profile)
 
+    elif edit:
+        ctx.obj.config.edit_config_file()
+
     else:
         for kw in ctx.obj.api.REQUIRED_USER_CONFIG:
             if not kw in ctx.obj.api.user_config:
                 raise KeyError('Required configuration option "{}" not supplied. Use --helper to configure interactively'.format(kw))
     
-    ctx.obj.config.write_config(ctx.obj.config_file)
+    ctx.obj.config.write_config()
 
 
 @cli.command(context_settings=dict(ignore_unknown_options=True,allow_extra_args=True))

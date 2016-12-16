@@ -2,12 +2,14 @@ from __future__ import absolute_import
 
 from datafs.services.service import DataService
 from datafs.core.data_archive import DataArchive
+from contextlib import contextmanager
 
 import fs.path
 
 import os
 import time
 import hashlib
+
 
 
 try:
@@ -39,12 +41,9 @@ class DataAPI(object):
     _ArchiveConstructor = DataArchive
 
     REQUIRED_USER_CONFIG = {
-        'username': 'your full name',
-        'contact': 'your contact info'
     }
 
     REQUIRED_ARCHIVE_METADATA = {
-        'description': 'description of the archive'
     }
 
     def __init__(self, **kwargs):
@@ -270,29 +269,36 @@ class DataAPI(object):
         Overload this function to change the file equality checking algorithm
 
         Parameters
+        ----------
+
+        f : file-like
+            File-like object or file path from which to compute checksum value
 
 
         Returns
         -------
-        algorithm : str
-            Name/description of the algorithm being used.
+        checksum : dict
+            dictionary with {'algorithm': 'md5', 'checksum': hexdigest}
 
-        value : str
-            Hash digest value
         '''
 
+        @contextmanager
+        def open_file(f):
 
-        if hasattr(f, 'read'):
-            hashval = hashlib.md5(f.read())
+            if hasattr(f, 'read'):
+                yield f
 
-        elif os.path.isfile(f):
-            with open(f, 'rb') as f_obj:
-                hashval = hashlib.md5(f_obj.read())
+            else:
+                with open(f, 'rb') as f_obj:
+                    yield f_obj
 
-        else:
-            raise ValueError('"{}" cannot be read'.format(f))
 
-        return {'algorithm': 'md5', 'checksum': hashval.hexdigest()}
+        md5 = hashlib.md5()
+
+        with open_file(f) as f_obj:
+            for chunk in iter(lambda: f_obj.read(128*md5.block_size), b''): 
+                md5.update(chunk)
+            
+        return {'algorithm': 'md5', 'checksum': md5.hexdigest()}
 
     
-

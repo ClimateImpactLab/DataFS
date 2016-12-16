@@ -4,62 +4,55 @@ from datafs.core.data_api import DataAPI
 import yaml
 import os
 import importlib
+import click
 
 try:
     PermissionError
 except NameError:
     from datafs.core.data_api import PermissionError
 
-#All of this is handled through command line arguments or via setting it up manually and 
-#reading it on subsequent loads of datafs. 
+class ConfigFile(object):
 
-#We have this config object that does all the necessary config logic. It connects the command line with the api
-class Config(object):
-
-    #we need some sort of environmnent seed so we know what the parameters are when we start this thing up. 
-    CONFIG_FILE_LIST = ['~/.datafs/config.yml', '/env/datafs/config.yml']
-
-    #initialize the config object with the appropriate settings
-    #these are global settings internally but can be specified at the user level
-    #We see we create a default setting and then give the option for alternative profiles
-    def __init__(self):
+    def __init__(self, config_file = None):
         self.config = {'default-profile': 'default', 'profiles': {}}
 
+        if config_file:
+            self.config_file = config_file
+        else:
+            self.config_file = os.path.join(click.get_app_dir('datafs'), 'config.yml')
 
-    #now lets actually do the logic that reads the seeds
-    #sets the state of config object 
-    def read_config(self, additional_fps = []):
+    def parse_configfile_contents(self, config):
+        if not 'profiles' in config:
+            config = {'profiles': {'default': config}}
 
-        #this generates a path as string to help us locate where the config file is
-        #we map a function os.path.expanduser to a set of input directory path strings
-        #we can add addtional file paths and concat those to our list of config file
-        for fp in map(os.path.expanduser, self.CONFIG_FILE_LIST+additional_fps):
-            try:
-                #read in the file
-                with open(fp, 'r') as y:
-                    #read the config.yml file with our yaml lib
-                    config = yaml.load(y)
 
-                    #this checks for the the keys of the config to see if you've set up different profiles
-                    if not 'profiles' in config:
-                        #If you do not have profiles, it creates a profiles and default setting
-                        config = {'profiles': {'default': config}}
+        self.config['default-profile'] = config.get('default-profile', self.config['default-profile'])
+        self.config['profiles'].update(config['profiles'])
 
-                    #set default config for Config object with the values in yaml file
-                    #if none exist default to current values
-                    self.config['default-profile'] = config.get('default-profile', self.config['default-profile'])
-                    #Update the config object profile values with the values in the config files
-                    self.config['profiles'].update(config['profiles'])
 
-            except IOError:
-                pass
+
+    def read_config(self, contents=None):
+
+        try:
+            with open(self.config_file, 'r') as y:
+                config = yaml.load(y)
+                self.parse_configfile_contents(config)
+
+        except IOError:
+            pass
+
+    def edit_config_file(self):
+        self.write_config()
+
+        click.edit(filename=self.config_file)
+        
 
 
 
     #you should play with yaml to generate and write yaml files on the fly
     def write_config(self, fp=None):
 
-        read_fp = self.CONFIG_FILE_LIST[0]
+        read_fp = os.path.join(click.get_app_dir('datafs'), 'config.yml')
 
         if fp is not None:
             read_fp = fp

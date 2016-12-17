@@ -7,6 +7,7 @@ import tempfile
 import shutil
 import time
 import os
+import warnings
 
 from fs.osfs import OSFS
 from fs.multifs import MultiFS
@@ -185,3 +186,7 @@ def test_multi_api(api1, api2, auth1, cache1, cache2):
         assert len(archive1.versions) == 6
         assert u('67890') == u(f1.read())   # I expected this to fail
 
+    warnings.warn('Test passage unexpected. More investegation into the FS backend needed!')
+
+    # This works for some reason. We need to look into FS's 
+    # read/write lock implementation!!!

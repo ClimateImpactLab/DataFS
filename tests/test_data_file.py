@@ -20,8 +20,7 @@ import pytest
 
 from tests.resources import (
     string_types,
-    u,
-    upload)
+    u)
 
 p = 'path/to/file/name.txt'
 

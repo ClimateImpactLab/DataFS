@@ -1,9 +1,9 @@
 from __future__ import absolute_import
 
 from datafs.core import data_file
-import fs.utils
 from contextlib import contextmanager
-    
+import fs.utils
+import os    
 
 class DataArchive(object):
 
@@ -79,10 +79,13 @@ class DataArchive(object):
                 if self.latest_hash != cache_hash:
                     self.api.cache.upload(filepath, self.service_path, remove=remove)
 
+            if remove and os.path.isfile(filepath):
+                os.remove(filepath)
+
             return
 
 
-        if self.cache:
+        elif self.cache:
             self.authority.upload(filepath, self.service_path)
             self.api.cache.upload(filepath, self.service_path, remove=remove)
 
@@ -236,18 +239,12 @@ class DataArchive(object):
         if not self.api.cache:
             raise ValueError('No cache attached')
 
-        if bool(value):
+        if value:
 
             if not self.api.cache.fs.isfile(self.service_path):
-                self.api.cache.fs.makedir(
-                    fs.path.dirname(self.service_path),
-                    recursive=True,
-                    allow_recreate=True)
-                self.api.cache.fs.createfile(self.service_path)
+                data_file._touch(self.api.cache.fs, self.service_path)
 
-            else:
-                # cache exists
-                pass
+            assert self.api.cache.fs.isfile(self.service_path), "Cache creation failed"
 
         else:
 

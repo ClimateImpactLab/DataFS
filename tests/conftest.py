@@ -43,16 +43,10 @@ from datafs.managers.manager_dynamo import DynamoDBManager
 
 from contextlib import contextmanager
 
+@contextmanager
+def prep_manager(mgr_name):
 
-
-
-
-
-
-@pytest.yield_fixture(scope='function')
-def manager(mgr_name):
-
-    table_name = 'my-new-table-name'
+    table_name = 'my-new-data-table'
     
     if mgr_name == 'mongo':
 
@@ -60,13 +54,17 @@ def manager(mgr_name):
                 database_name='MyDatabase',
                 table_name=table_name)
 
-        manager_mongo.create_archive_table(table_name, raise_if_exists=False)
+        manager_mongo.create_archive_table(
+            table_name, 
+            raise_if_exists=False)
         
         try:
             yield manager_mongo
 
         finally:
-            manager_mongo.delete_table(table_name)
+            manager_mongo.delete_table(
+                table_name,
+                raise_if_exists=False)
 
     elif mgr_name == 'dynamo':
 
@@ -79,13 +77,20 @@ def manager(mgr_name):
                 'endpoint_url':'http://localhost:8000/',
                 'region_name':'us-east-1'})
 
-        manager_dynamo.create_archive_table(table_name, raise_if_exists=False)
+        manager_dynamo.create_archive_table(
+            table_name, 
+            raise_if_exists=False)
 
         try:
             yield manager_dynamo
     
         finally:
-            manager_dynamo.delete_table(table_name)
+            manager_dynamo.delete_table(
+                table_name, 
+                raise_if_exists=False)
+
+    else:
+        raise ValueError('Manager "{}" not recognized'.format(mgr_name))
 
 @contextmanager
 def prep_filesystem(fs_name):
@@ -140,31 +145,46 @@ def prep_filesystem(fs_name):
 
 
 @pytest.yield_fixture
-def api(manager, fs_name):
+def api(mgr_name, fs_name):
 
-    api = DataAPI(
-        username='My Name',
-        contact='my.email@example.com')
+    with prep_manager(mgr_name) as manager:
 
-    api.attach_manager(manager)
+        api = DataAPI(
+            username='My Name',
+            contact='my.email@example.com')
 
-    with prep_filesystem(fs_name) as filesystem:
-        api.attach_authority('filesys', filesystem)
+        api.attach_manager(manager)
+
+        with prep_filesystem(fs_name) as filesystem:
+            api.attach_authority('filesys', filesystem)
+
+            yield api
+
+
+@pytest.yield_fixture
+def api1(mgr_name):
+
+    with prep_manager(mgr_name) as manager:
+
+        api = DataAPI(
+            username='My Name',
+            contact='my.email@example.com')
+
+        api.attach_manager(manager)
 
         yield api
 
 
 @pytest.yield_fixture
-def api2(manager, fs_name):
+def api2(mgr_name):
 
-    api = DataAPI(
-        username='My Name',
-        contact='my.email@example.com')
+    with prep_manager(mgr_name) as manager:
 
-    api.attach_manager(manager)
+        api = DataAPI(
+            username='My Name',
+            contact='my.email@example.com')
 
-    with prep_filesystem(fs_name) as filesystem:
-        api.attach_authority('filesys', filesystem)
+        api.attach_manager(manager)
 
         yield api
 
@@ -190,6 +210,18 @@ def auth2(fs_name):
 
 @pytest.yield_fixture(scope='function')
 def cache():
+
+    with prep_filesystem('OSFS') as filesystem:
+        yield filesystem
+
+@pytest.yield_fixture(scope='function')
+def cache1():
+
+    with prep_filesystem('OSFS') as filesystem:
+        yield filesystem
+
+@pytest.yield_fixture(scope='function')
+def cache2():
 
     with prep_filesystem('OSFS') as filesystem:
         yield filesystem

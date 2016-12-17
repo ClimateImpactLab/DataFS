@@ -26,8 +26,14 @@ class BaseDataManager(object):
             except KeyError:
                 pass
 
-    def delete_table(self, table_name):
-        self._delete_table(table_name)
+    def delete_table(self, table_name, raise_if_exists=True):
+        if raise_if_exists:
+            self._delete_table(table_name)
+        else:
+            try:
+                self._delete_table(table_name)
+            except KeyError:
+                pass
 
     def update(self, archive_name, checksum, metadata):
         '''

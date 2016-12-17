@@ -50,7 +50,6 @@ def get_counter():
 counter = get_counter()
 
 
-
 @pytest.yield_fixture(scope='function')
 def archive(api):
     '''
@@ -72,15 +71,14 @@ def archive(api):
         var.delete()
 
 
-
-string_tests =[
-    '', 
-    'another test', 
-    '9872387932487913874031713470304', 
+string_tests = [
+    '',
+    'another test',
+    '9872387932487913874031713470304',
     os.linesep.join(['ajfdsaion', 'daf', 'adfadsffdadsf'])]
 
-class TestHashFunction(object):
 
+class TestHashFunction(object):
 
     def update_and_hash(self, arch, contents):
         '''
@@ -96,7 +94,6 @@ class TestHashFunction(object):
             apihash = arch.api.hash_file(f.name)['checksum']
             arch.update(f.name)
 
-            
         finally:
             os.remove(f.name)
 
@@ -164,34 +161,38 @@ class TestHashFunction(object):
             direct, archive.latest_hash)
 
 
-
 class TestArchiveCreation(object):
-    
+
     def test_create_archive(self, api):
         archive_name = 'test_recreation_error'
 
-        api.create_archive(archive_name, metadata = {'testval': 'my test value'})
+        api.create_archive(archive_name, metadata={'testval': 'my test value'})
         var = api.get_archive(archive_name)
 
         testval = var.metadata['testval']
 
         with pytest.raises(KeyError) as excinfo:
             api.create_archive(archive_name)
-        
+
         assert "already exists" in str(excinfo.value)
 
-        api.create_archive(archive_name, metadata = {'testval': 'a different test value'}, raise_if_exists=False)
+        api.create_archive(
+            archive_name,
+            metadata={
+                'testval': 'a different test value'},
+            raise_if_exists=False)
         var = api.get_archive(archive_name)
 
-        assert testval == var.metadata['testval'], "Test archive was incorrectly updated!"
+        assert testval == var.metadata[
+            'testval'], "Test archive was incorrectly updated!"
 
         var.update_metadata({'testval': 'a different test value'})
-        
-        assert var.metadata['testval'] == 'a different test value', "Test archive was not updated!"
+
+        assert var.metadata[
+            'testval'] == 'a different test value', "Test archive was not updated!"
 
         # Test archive deletion
         var.delete()
 
         with pytest.raises(KeyError) as excinfo:
             api.get_archive(archive_name)
-

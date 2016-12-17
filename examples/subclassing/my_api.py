@@ -10,6 +10,7 @@ import shutil
 
 tmpdir = tempfile.mkdtemp()
 
+
 class MyArchive(DataArchive):
 
     def delete(self):
@@ -29,13 +30,13 @@ class MyAPI(DataAPI):
         # pre-configure the API with your organization's setup
 
         manager = DynamoDBManager(
-            table_name = 'project_data', 
+            table_name='project_data',
             session_args={
-              'aws_access_key_id': AWS_ACCESS_KEY,
-              'aws_secret_access_key': AWS_SECRET_KEY}, 
+                'aws_access_key_id': AWS_ACCESS_KEY,
+                'aws_secret_access_key': AWS_SECRET_KEY},
             resource_args={
-              'endpoint_url':'http://localhost:8000/',
-              'region_name':'us-east-1'})
+                'endpoint_url': 'http://localhost:8000/',
+                'region_name': 'us-east-1'})
 
         if 'project_data' in manager.table_names:
             manager.delete_table('project_data')
@@ -47,14 +48,13 @@ class MyAPI(DataAPI):
         # Prevent changes to the manager configuration
         self.lock_manager()
 
-
         s3_bucket1 = S3FS(
-            'org-bucket-1', 
+            'org-bucket-1',
             aws_access_key=AWS_ACCESS_KEY,
             aws_secret_key=AWS_SECRET_KEY)
 
         s3_bucket2 = S3FS(
-            'org-bucket-2', 
+            'org-bucket-2',
             aws_access_key=AWS_ACCESS_KEY,
             aws_secret_key=AWS_SECRET_KEY)
 

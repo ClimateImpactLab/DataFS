@@ -10,27 +10,27 @@ import fs
 
 class ConfigFile(object):
 
-    def __init__(self, config_file = None, default_profile='default'):
+    def __init__(self, config_file=None, default_profile='default'):
         self.default_profile = default_profile
         self.config = {
-            'default-profile': self.default_profile, 
+            'default-profile': self.default_profile,
             'profiles': {}}
 
         if config_file:
             self.config_file = config_file
         else:
-            self.config_file = os.path.join(click.get_app_dir('datafs'), 'config.yml')
+            self.config_file = os.path.join(
+                click.get_app_dir('datafs'), 'config.yml')
 
     def parse_configfile_contents(self, config):
         if not 'profiles' in config:
             config = {'profiles': {'default': config}}
 
-
-        self.default_profile = config.get('default-profile', self.config['default-profile'])
+        self.default_profile = config.get(
+            'default-profile', self.config['default-profile'])
         self.config['default-profile'] = self.default_profile
 
         self.config['profiles'].update(config['profiles'])
-
 
     def read_config(self):
 
@@ -41,7 +41,7 @@ class ConfigFile(object):
             else:
                 with open(self.config_file, 'r') as y:
                     config = yaml.load(y)
-            
+
             self.parse_configfile_contents(config)
 
         except IOError:
@@ -51,7 +51,6 @@ class ConfigFile(object):
         self.write_config()
 
         click.edit(filename=self.config_file)
-        
 
     def write_config(self, fp=None):
 
@@ -66,7 +65,7 @@ class ConfigFile(object):
         else:
             configdir = os.path.dirname(
                 os.path.expanduser(read_fp))
-            
+
             if not os.path.isdir(configdir):
                 os.makedirs(configdir)
 
@@ -80,24 +79,22 @@ class ConfigFile(object):
         if profile not in self.config['profiles']:
             self.config['profiles'][profile] = {}
 
-        profile_config= self.config['profiles'][profile]
+        profile_config = self.config['profiles'][profile]
 
         for kw in ['api', 'manager', 'authorities', 'cache']:
             profile_config[kw] = profile_config.get(kw, {})
 
         return profile_config
 
-
     def get_config_from_api(self, api, profile=None):
         profile_config = self.get_profile_config(profile)
 
-        
         if not 'user_config' in profile_config['api']:
             profile_config['api']['user_config'] = {}
 
         for kw in api.user_config.keys():
-            profile_config['api']['user_config'][kw] = profile_config['api']['user_config'].get(kw, api.user_config[kw])
-
+            profile_config['api']['user_config'][kw] = profile_config[
+                'api']['user_config'].get(kw, api.user_config[kw])
 
         manager_cfg = {
             'class': api.manager.__class__.__name__,
@@ -106,7 +103,8 @@ class ConfigFile(object):
         }
 
         for kw in ['class', 'args', 'kwargs']:
-            profile_config['manager'][kw] = profile_config['manager'].get(kw, manager_cfg[kw])
+            profile_config['manager'][kw] = profile_config[
+                'manager'].get(kw, manager_cfg[kw])
 
         authorities_cfg = {
             service_name: {
@@ -114,14 +112,15 @@ class ConfigFile(object):
                 'args': [],
                 'kwargs': {}
             }
-        for service_name, service in api._authorities.items()}
+            for service_name, service in api._authorities.items()}
 
         for service_name in authorities_cfg.keys():
             if service_name not in profile_config['authorities']:
                 profile_config['authorities'][service_name] = {}
 
             for kw in ['service', 'args', 'kwargs']:
-                profile_config['authorities'][service_name][kw] = profile_config['authorities'][service_name].get(kw, authorities_cfg[service_name][kw])
+                profile_config['authorities'][service_name][kw] = profile_config[
+                    'authorities'][service_name].get(kw, authorities_cfg[service_name][kw])
 
         if api.cache:
             cache_cfg = {
@@ -131,7 +130,8 @@ class ConfigFile(object):
             }
 
             for kw in ['service', 'args', 'kwargs']:
-                profile_config['cache'][kw] = profile_config['cache'].get(kw, cache_cfg[kw])
+                profile_config['cache'][kw] = profile_config[
+                    'cache'].get(kw, cache_cfg[kw])
 
     def write_config_from_api(self, api, profile=None, config_file=None):
         '''
@@ -141,22 +141,22 @@ class ConfigFile(object):
         ----------
 
         api : object
-            The :py:class:`datafs.DataAPI` object from which 
+            The :py:class:`datafs.DataAPI` object from which
             to create the config profile
 
         profile : str
-            Name of the profile to use in the config file 
+            Name of the profile to use in the config file
             (default "default-profile")
 
         config_file : str or file
-            Path or file in which to write config (default 
-            is your OS's default datafs application 
+            Path or file in which to write config (default
+            is your OS's default datafs application
             directory)
 
         Examples
         --------
 
-        Create a simple API and then write the config to a 
+        Create a simple API and then write the config to a
         buffer:
 
         .. code-block:: python
@@ -186,7 +186,7 @@ class ConfigFile(object):
             >>> api.attach_authority('local', local)
             >>>
             >>> # Create a StringIO object for the config file
-            ... 
+            ...
             >>> try:
             ...   from StringIO import StringIO
             ... except ImportError:
@@ -196,7 +196,7 @@ class ConfigFile(object):
             >>>
             >>> config_file = ConfigFile(default_profile='my-api')
             >>> config_file.write_config_from_api(
-            ...     api, 
+            ...     api,
             ...     profile='my-api',
             ...     config_file=conf)
             >>>
@@ -223,7 +223,7 @@ class ConfigFile(object):
             >>> conf.close()
             >>> local.close()
 
-        At this point, we can retrieve the api object from 
+        At this point, we can retrieve the api object from
         the configuration file:
 
         .. code-block:: python
@@ -264,7 +264,7 @@ class ConfigFile(object):
             >>>
             >>> config_file = ConfigFile(default_profile='my-api')
             >>> config_file.write_config_from_api(
-            ...     api, 
+            ...     api,
             ...     profile='my-api',
             ...     config_file=conf2)
             >>>

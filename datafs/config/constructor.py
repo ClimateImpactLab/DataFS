@@ -10,6 +10,7 @@ try:
 except NameError:
     from datafs.core.data_api import PermissionError
 
+
 class APIConstructor(object):
 
     @staticmethod
@@ -20,7 +21,8 @@ class APIConstructor(object):
                 config['api'][kw] = {}
 
         try:
-            api_mod = importlib.import_module(config['api']['constructor']['module'])
+            api_mod = importlib.import_module(
+                config['api']['constructor']['module'])
             api_cls = api_mod.__dict__[config['api']['constructor']['class']]
 
         except KeyError:
@@ -45,7 +47,8 @@ class APIConstructor(object):
     @classmethod
     def attach_services_from_config(cls, api, config):
 
-        for service_name, service_config in config.get('authorities', {}).items():
+        for service_name, service_config in config.get(
+                'authorities', {}).items():
 
             try:
                 service = cls._generate_service(service_config)
@@ -66,7 +69,6 @@ class APIConstructor(object):
             except (PermissionError, KeyError):
                 pass
 
-
     @staticmethod
     def _generate_manager(manager_config):
         '''
@@ -76,17 +78,17 @@ class APIConstructor(object):
         ----------
 
         manager_config : dict
-            Configuration with keys class, args, and kwargs 
+            Configuration with keys class, args, and kwargs
             used to generate a new datafs.manager object
 
         Returns
         -------
 
         manager : object
-            datafs.managers.MongoDBManager or 
-            datafs.managers.DynamoDBManager object 
+            datafs.managers.MongoDBManager or
+            datafs.managers.DynamoDBManager object
             initialized with *args, **kwargs
-        
+
         Examples
         --------
 
@@ -96,11 +98,11 @@ class APIConstructor(object):
 
         >>> mgr = APIConstructor._generate_manager({
         ...     'class': 'DynamoDBManager',
-        ...     'args': ['data-from-yaml'], 
+        ...     'args': ['data-from-yaml'],
         ...     'kwargs': {
         ...         'session_args': {
         ...             'aws_access_key_id': "access-key-id-of-your-choice",
-        ...             'aws_secret_access_key': "secret-key-of-your-choice"}, 
+        ...             'aws_secret_access_key': "secret-key-of-your-choice"},
         ...         'resource_args': {
         ...             'endpoint_url':'http://localhost:8000/',
         ...             'region_name':'us-east-1'}
@@ -109,7 +111,7 @@ class APIConstructor(object):
         >>>
         >>> from datafs.managers.manager_dynamo import DynamoDBManager
         >>> assert isinstance(mgr, DynamoDBManager)
-        >>> 
+        >>>
         >>> mgr.table_names
         []
         >>> mgr.create_archive_table('data-from-yaml')
@@ -133,11 +135,11 @@ class APIConstructor(object):
         else:
             raise KeyError(
                 'Manager class "{}" not recognized. Choose from {}'.format(
-                mgr_class_name, 'MongoDBManager or DynamoDBManager'))
+                    mgr_class_name, 'MongoDBManager or DynamoDBManager'))
 
         manager = mgr_class(
-            *manager_config.get('args',[]), 
-            **manager_config.get('kwargs',{}))
+            *manager_config.get('args', []),
+            **manager_config.get('kwargs', {}))
 
         return manager
 
@@ -150,35 +152,35 @@ class APIConstructor(object):
         ----------
 
         service_config : dict
-            Configuration with keys service, args, and 
-            kwargs used to generate a new fs service  
+            Configuration with keys service, args, and
+            kwargs used to generate a new fs service
             object
 
         Returns
         -------
 
         service : object
-            fs service object initialized with *args, 
+            fs service object initialized with *args,
             **kwargs
-        
+
         Examples
         --------
 
-        Generate a temporary filesystem (no arguments 
+        Generate a temporary filesystem (no arguments
         required):
 
         .. code-block:: python
 
             >>> tmp = APIConstructor._generate_service(
             ...     {'service': 'TempFS'})
-            ... 
+            ...
             >>> from fs.tempfs import TempFS
             >>> assert isinstance(tmp, TempFS)
             >>> import os
             >>> assert os.path.isdir(tmp.getsyspath('/'))
             >>> tmp.close()
 
-        Generate a system filesystem in a temporary 
+        Generate a system filesystem in a temporary
         directory:
 
         .. code-block:: python
@@ -190,7 +192,7 @@ class APIConstructor(object):
             ...         'service': 'OSFS',
             ...         'args': [tempdir]
             ...     })
-            ... 
+            ...
             >>> from fs.osfs import OSFS
             >>> assert isinstance(local, OSFS)
             >>> import os
@@ -215,7 +217,7 @@ class APIConstructor(object):
             ...             'aws_secret_key':'MY_SECRET_KEY'
             ...         }
             ...     })
-            ... 
+            ...
             >>> from fs.s3fs import S3FS
             >>> assert isinstance(s3, S3FS)
             >>> m.stop()
@@ -231,13 +233,14 @@ class APIConstructor(object):
         service_mod_name = service_config['service'].lower()
 
         assert_msg = 'Filesystem "{}" not found in pyFilesystem {}'.format(
-                service_mod_name, fs.__version__)
+            service_mod_name, fs.__version__)
 
         assert service_mod_name in filesystems, assert_msg
-        
+
         svc_module = importlib.import_module('fs.{}'.format(service_mod_name))
         svc_class = svc_module.__dict__[service_config['service']]
 
-        service = svc_class(*service_config.get('args',[]), **service_config.get('kwargs',{}))
+        service = svc_class(*service_config.get('args', []),
+                            **service_config.get('kwargs', {}))
 
         return service

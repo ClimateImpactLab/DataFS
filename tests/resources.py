@@ -9,4 +9,3 @@ except NameError:
 
 def upload(tfs, fp):
     fs.utils.copyfile(tfs, fp, a, fp)
-

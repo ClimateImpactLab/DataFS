@@ -68,7 +68,7 @@ server running, then create a MongoDBManager instance:
     ...     table_name = 'DataFiles')
 
 
-If this is the first time you've set up this database, you'll need to create a 
+If this is the first time you've set up this database, you'll need to create a
 table:
 
 .. code-block:: python
@@ -161,7 +161,7 @@ Now we can add this file to the archive:
 
     >>> var.update('test.txt', remove=True)
 
-This file just got sent into our archive! And we deleted the 
+This file just got sent into our archive! And we deleted the
 local copy:
 
 .. code-block:: python
@@ -216,7 +216,7 @@ Cleaning up
     >>> var.delete()
     >>> api.manager.delete_table('DataFiles')
     >>> shutil.rmtree(temp)
-    
+
 
 Next steps
 ~~~~~~~~~~

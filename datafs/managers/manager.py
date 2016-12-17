@@ -49,7 +49,6 @@ class BaseDataManager(object):
             'algorithm': checksum['algorithm'],
             'checksum': checksum['checksum']}
 
-
         version_metadata.update(self.api.user_config)
 
         archive_data = metadata
@@ -92,7 +91,8 @@ class BaseDataManager(object):
         required |= set(self.api.REQUIRED_ARCHIVE_METADATA.keys())
 
         for attr in required:
-            assert attr in archive_metadata, 'Required attribute "{}" missing from metadata'.format(attr)
+            assert attr in archive_metadata, 'Required attribute "{}" missing from metadata'.format(
+                attr)
 
         if raise_if_exists:
             self._create_archive(
@@ -120,7 +120,7 @@ class BaseDataManager(object):
         try:
             authority_name = self._get_authority_name(archive_name)
             service_path = self._get_service_path(archive_name)
-            
+
         except KeyError:
             raise KeyError('Archive "{}" not found'.format(archive_name))
 
@@ -130,17 +130,16 @@ class BaseDataManager(object):
             authority=authority_name,
             service_path=service_path)
 
-
     def get_archives(self):
         '''
-        Returns a list of DataArchive objects 
+        Returns a list of DataArchive objects
 
         '''
         return [self.get_archive(arch) for arch in self._get_archive_names()]
 
     def get_archive_names(self):
         '''
-        Returns a list of DataArchive names 
+        Returns a list of DataArchive names
 
         '''
         return self._get_archive_names()

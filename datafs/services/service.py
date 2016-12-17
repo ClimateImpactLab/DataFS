@@ -13,20 +13,22 @@ class DataService(object):
         self.fs = fs
 
     def __repr__(self):
-        return "<{}:{} object at {}>".format(self.__class__.__name__, self.fs.__class__.__name__, hex(id(self)))
+        return "<{}:{} object at {}>".format(
+            self.__class__.__name__, self.fs.__class__.__name__, hex(id(self)))
 
     def upload(self, filepath, service_path, remove=False):
         local = OSFS(os.path.dirname(filepath))
 
         # Skip if source and dest are the same
         if self.fs.hassyspath(service_path) and (
-            self.fs.getsyspath(service_path) == local.getsyspath(os.path.basename(filepath))):
+            self.fs.getsyspath(service_path) == local.getsyspath(
+                os.path.basename(filepath))):
 
             if remove:
                 os.remove(filepath)
-                
+
             return
-        
+
         if not self.fs.isdir(fs.path.dirname(service_path)):
             self.fs.makedir(
                 fs.path.dirname(service_path),
@@ -46,4 +48,3 @@ class DataService(object):
                 os.path.basename(filepath),
                 self.fs,
                 service_path)
-

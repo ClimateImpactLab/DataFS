@@ -38,7 +38,7 @@ Create an archive
 
     >>> var = api.create_archive(
     ...     'caching_archive',
-    ...     metadata = dict(description = 'My cached remote archive'), 
+    ...     metadata = dict(description = 'My cached remote archive'),
     ...     authority_name='aws')
     >>>
     >>> with var.open('w+') as f:
@@ -54,7 +54,7 @@ Let's peek under the hood to see where this data is stored:
     >>> var.authority.fs.getpathurl('caching/archive') # doctest: +ELLIPSIS
     'https://test-bucket.s3.amazonaws.com/caching/archive?...AWSAccessKeyId=MY_KEY'
 
-Now let's set up a cache. This would typically be a local or networked directory 
+Now let's set up a cache. This would typically be a local or networked directory
 but we'll use a temporary filesystem for this example:
 
     >>> cache = TempFS()
@@ -77,4 +77,3 @@ Cleanup
     >>> var.delete()
 
 '''
-

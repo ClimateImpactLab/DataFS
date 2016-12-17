@@ -22,7 +22,6 @@ import pytest
 from tests.resources import string_types, u
 
 
-
 def test_delete_handling(api, auth1, cache):
 
     api.attach_authority('auth1', auth1)
@@ -50,8 +49,12 @@ def test_multi_api(api1, api2, auth1, cache1, cache2):
     api2.attach_authority('auth1', auth1)
     api2.attach_cache(cache2)
 
-    assert len(api1._authorities) == 1, 'api1 has more than 1 authority: "{}"'.format(api1._authorities.keys())
-    assert len(api2._authorities) == 1, 'api2 has more than 1 authority: "{}"'.format(api2._authorities.keys())
+    assert len(
+        api1._authorities) == 1, 'api1 has more than 1 authority: "{}"'.format(
+        api1._authorities.keys())
+    assert len(
+        api2._authorities) == 1, 'api2 has more than 1 authority: "{}"'.format(
+        api2._authorities.keys())
 
     arch1 = api1.create_archive('arch')
     arch1.cache = True
@@ -61,7 +64,7 @@ def test_multi_api(api1, api2, auth1, cache1, cache2):
     assert arch1.api.cache.fs.isfile('arch')
 
     with cache1.open('arch', 'r') as f1:
-        assert  u(f1.read()) == u('')
+        assert u(f1.read()) == u('')
 
     with arch1.open('w+') as f1:
         f1.write(u('test1'))
@@ -75,8 +78,7 @@ def test_multi_api(api1, api2, auth1, cache1, cache2):
 
     assert cache2.isfile('arch')
     with cache2.open('arch', 'r') as f2:
-        assert  u(f2.read()) == u('')
-
+        assert u(f2.read()) == u('')
 
     with arch1.open('r') as f1:
         with arch2.open('w+') as f2:

@@ -25,6 +25,7 @@ from tests.resources import (
 
 p = 'path/to/file/name.txt'
 
+
 @pytest.fixture
 def opener(open_func):
     '''
@@ -34,13 +35,21 @@ def opener(open_func):
     '''
 
     if open_func == 'open_file':
-        
+
         return data_file.open_file
 
     elif open_func == 'get_local_path':
 
         @contextmanager
-        def inner(auth, cache, update, service_path, version_check, hasher, *args, **kwargs):
+        def inner(
+                auth,
+                cache,
+                update,
+                service_path,
+                version_check,
+                hasher,
+                *args,
+                **kwargs):
             with data_file.get_local_path(auth, cache, update, service_path, version_check, hasher) as fp:
                 assert isinstance(fp, string_types)
 
@@ -64,6 +73,7 @@ def get_checker(service, service_path):
 
     return check
 
+
 def updater(checksum, metadata={}):
     pass
 
@@ -85,17 +95,16 @@ def test_file_io(local_auth, cache, opener):
     with open(a1.fs.getsyspath(p), 'r') as f:
         assert u('test data 1') == f.read()
 
-    # We expect that the csh was left empty, because no file was present on update.
+    # We expect that the csh was left empty, because no file was present on
+    # update.
     assert not os.path.isfile(csh.fs.getsyspath(p))
-
-
 
     # SUBTEST 2
 
     # Read from file and check contents multiple times
 
     for _ in range(5):
-        
+
         with opener(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'r') as f:
             assert u('test data 1') == f.read()
 
@@ -103,9 +112,9 @@ def test_file_io(local_auth, cache, opener):
         with open(a1.fs.getsyspath(p), 'r') as f:
             assert u('test data 1') == f.read()
 
-        # We expect that the csh was left empty, because no file was present on update.
+        # We expect that the csh was left empty, because no file was present on
+        # update.
         assert not os.path.isfile(csh.fs.getsyspath(p))
-
 
     # SUBTEST 3
 
@@ -118,9 +127,9 @@ def test_file_io(local_auth, cache, opener):
     with open(a1.fs.getsyspath(p), 'r') as f:
         assert u('test data 2') == f.read()
 
-    # We expect that the csh was left empty, because no file was present on update.
+    # We expect that the csh was left empty, because no file was present on
+    # update.
     assert not os.path.isfile(csh.fs.getsyspath(p))
-
 
     # SUBTEST 4
 
@@ -132,11 +141,11 @@ def test_file_io(local_auth, cache, opener):
 
         # We expect the contents to be left unchanged
         with open(a1.fs.getsyspath(p), 'r') as f:
-            assert u('test data 2' + 'appended data'*(i+1)) == f.read()
+            assert u('test data 2' + 'appended data' * (i + 1)) == f.read()
 
-        # We expect that the csh was left empty, because no file was present on update.
+        # We expect that the csh was left empty, because no file was present on
+        # update.
         assert not os.path.isfile(csh.fs.getsyspath(p))
-
 
 
 def test_file_caching(local_auth, cache, opener):
@@ -156,16 +165,17 @@ def test_file_caching(local_auth, cache, opener):
     with open(a1.fs.getsyspath(p), 'r') as f:
         assert u('test data 1') == f.read()
 
-    # We expect that the csh was left empty, because no file was present on update.
+    # We expect that the csh was left empty, because no file was present on
+    # update.
     assert not os.path.isfile(csh.fs.getsyspath(p))
-
 
     # SUBTEST 2
 
-    # Create a blank file in the csh location. Then test reading from authority.
+    # Create a blank file in the csh location. Then test reading from
+    # authority.
 
     # "touch" the csh file
-    csh.fs.makedir(fs.path.dirname(p),recursive=True,allow_recreate=True)
+    csh.fs.makedir(fs.path.dirname(p), recursive=True, allow_recreate=True)
     with open(csh.fs.getsyspath(p), 'w+') as f:
         f.write('')
 
@@ -181,7 +191,6 @@ def test_file_caching(local_auth, cache, opener):
     with open(csh.fs.getsyspath(p), 'r') as f:
         assert u('test data 1') == f.read()
 
-
     # SUBTEST 3
 
     # Write, and check consistency across authority and csh
@@ -196,7 +205,6 @@ def test_file_caching(local_auth, cache, opener):
     # We expect the contents to be written to the csh
     with open(csh.fs.getsyspath(p), 'r') as f:
         assert u('test data 2') == f.read()
-
 
     # SUBTEST 4
 
@@ -216,16 +224,16 @@ def test_file_caching(local_auth, cache, opener):
     with open(csh.fs.getsyspath(p), 'r') as f:
         assert u('test data 2') == f.read()
 
-
     # SUBTEST 5
 
-    # During read, manually modify the authority. Ensure updated data not overwritten
+    # During read, manually modify the authority. Ensure updated data not
+    # overwritten
     with opener(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'r') as f:
 
         # Overwrite a1
         with open(a1.fs.getsyspath(p), 'w+') as f2:
             f2.write(u('test data 3'))
-        
+
         assert u('test data 2') == f.read()
 
     # We expect authority to reflect changed made
@@ -246,16 +254,16 @@ def test_file_caching(local_auth, cache, opener):
     with open(csh.fs.getsyspath(p), 'r') as f:
         assert u('test data 3') == f.read()
 
-
     # SUBTEST 6
 
-    # During write, manually modify the authority. Overwrite the authority with new version.
+    # During write, manually modify the authority. Overwrite the authority
+    # with new version.
     with opener(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'w+') as f:
 
         # Overwrite a1
         with open(a1.fs.getsyspath(p), 'w+') as f2:
             f2.write(u('test data 4'))
-        
+
         f.write(u('test data 5'))
 
     # We expect authority to reflect the local change
@@ -273,7 +281,7 @@ def test_delete_handling(local_auth, cache):
     csh = DataService(cache)
 
     # "touch" the csh file
-    csh.fs.makedir(fs.path.dirname(p),recursive=True,allow_recreate=True)
+    csh.fs.makedir(fs.path.dirname(p), recursive=True, allow_recreate=True)
     with open(csh.fs.getsyspath(p), 'w+') as f:
         f.write('')
 
@@ -291,8 +299,7 @@ def test_delete_handling(local_auth, cache):
     with open(csh.fs.getsyspath(p), 'r') as f:
         assert u('test data 1') == f.read()
 
-
-    # Test error handling of file deletion within a 
+    # Test error handling of file deletion within a
     # get_local_path context manager
 
     with pytest.raises(OSError) as excinfo:
@@ -308,7 +315,7 @@ def test_delete_handling(local_auth, cache):
                 assert u('test data 2') == f.read()
 
             os.remove(fp)
-    
+
     assert "removed during execution" in str(excinfo.value)
 
     # We expect authority to be unchanged

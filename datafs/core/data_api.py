@@ -11,21 +11,23 @@ import time
 import hashlib
 
 
-
 try:
     PermissionError
 except:
     class PermissionError(NameError):
         pass
 
+
 def enforce_user_config_requirements(func):
     '''
     Method decorator for DataAPI enforcing user_config requirements
     '''
+
     def inner(self, *args, **kwargs):
         for kw in self.REQUIRED_USER_CONFIG.keys():
-            if not kw in self.user_config:
-                raise KeyError('Required API configuration item "{}" not found'.format(kw))
+            if kw not in self.user_config:
+                raise KeyError(
+                    'Required API configuration item "{}" not found'.format(kw))
 
         return func(self, *args, **kwargs)
     return inner
@@ -56,7 +58,6 @@ class DataAPI(object):
         self._authorities_locked = False
         self._manager_locked = False
 
-
     def attach_authority(self, service_name, service):
 
         if self._authorities_locked:
@@ -80,7 +81,7 @@ class DataAPI(object):
 
         if service in self._authorities.values():
             raise ValueError('Cannot attach an authority as a cache')
-        else:    
+        else:
             self._cache = DataService(service)
 
     @property
@@ -146,10 +147,10 @@ class DataAPI(object):
             Raise an error if the archive already exists (default True)
 
         **kwargs will be passed to the archive as metadata
-            
-    
 
-        
+
+
+
         '''
 
         if authority_name is None:
@@ -256,8 +257,6 @@ class DataAPI(object):
 
         archive.delete()
 
-
-
     @staticmethod
     def hash_file(f):
         '''
@@ -289,13 +288,10 @@ class DataAPI(object):
                 with open(f, 'rb') as f_obj:
                     yield f_obj
 
-
         md5 = hashlib.md5()
 
         with open_file(f) as f_obj:
-            for chunk in iter(lambda: f_obj.read(128*md5.block_size), b''): 
+            for chunk in iter(lambda: f_obj.read(128 * md5.block_size), b''):
                 md5.update(chunk)
-            
-        return {'algorithm': 'md5', 'checksum': md5.hexdigest()}
 
-    
+        return {'algorithm': 'md5', 'checksum': md5.hexdigest()}

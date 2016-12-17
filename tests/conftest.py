@@ -1,26 +1,6 @@
 
 from __future__ import absolute_import
 
-
-def pytest_generate_tests(metafunc):
-    '''
-    Build an API connection for use in testing
-    '''
-
-    if 'mgr_name' in metafunc.fixturenames:
-
-        metafunc.parametrize('mgr_name', ['mongo', 'dynamo'])
-        # metafunc.parametrize('mgr_name', ['mongo'])
-
-    if 'fs_name' in metafunc.fixturenames:
-
-        metafunc.parametrize('fs_name', ['OSFS', 'S3FS', 'OSFS', 'OSFS', 'S3FS'])
-        
-
-    if 'open_func' in metafunc.fixturenames:
-        metafunc.parametrize('open_func', ['open_file', 'get_local_path'])
-
-
 import pytest
 
 import tempfile
@@ -43,21 +23,42 @@ from datafs.managers.manager_dynamo import DynamoDBManager
 
 from contextlib import contextmanager
 
+
+def pytest_generate_tests(metafunc):
+    '''
+    Build an API connection for use in testing
+    '''
+
+    if 'mgr_name' in metafunc.fixturenames:
+
+        metafunc.parametrize('mgr_name', ['mongo', 'dynamo'])
+        # metafunc.parametrize('mgr_name', ['mongo'])
+
+    if 'fs_name' in metafunc.fixturenames:
+
+        metafunc.parametrize(
+            'fs_name', [
+                'OSFS', 'S3FS', 'OSFS', 'OSFS', 'S3FS'])
+
+    if 'open_func' in metafunc.fixturenames:
+        metafunc.parametrize('open_func', ['open_file', 'get_local_path'])
+
+
 @contextmanager
 def prep_manager(mgr_name):
 
     table_name = 'my-new-data-table'
-    
+
     if mgr_name == 'mongo':
 
         manager_mongo = MongoDBManager(
-                database_name='MyDatabase',
-                table_name=table_name)
+            database_name='MyDatabase',
+            table_name=table_name)
 
         manager_mongo.create_archive_table(
-            table_name, 
+            table_name,
             raise_if_exists=False)
-        
+
         try:
             yield manager_mongo
 
@@ -69,28 +70,29 @@ def prep_manager(mgr_name):
     elif mgr_name == 'dynamo':
 
         manager_dynamo = DynamoDBManager(
-            table_name, 
+            table_name,
             session_args={
                 'aws_access_key_id': "access-key-id-of-your-choice",
-                'aws_secret_access_key': "secret-key-of-your-choice"}, 
+                'aws_secret_access_key': "secret-key-of-your-choice"},
             resource_args={
-                'endpoint_url':'http://localhost:8000/',
-                'region_name':'us-east-1'})
+                'endpoint_url': 'http://localhost:8000/',
+                'region_name': 'us-east-1'})
 
         manager_dynamo.create_archive_table(
-            table_name, 
+            table_name,
             raise_if_exists=False)
 
         try:
             yield manager_dynamo
-    
+
         finally:
             manager_dynamo.delete_table(
-                table_name, 
+                table_name,
                 raise_if_exists=False)
 
     else:
         raise ValueError('Manager "{}" not recognized'.format(mgr_name))
+
 
 @contextmanager
 def prep_filesystem(fs_name):
@@ -113,7 +115,6 @@ def prep_filesystem(fs_name):
                 time.sleep(0.5)
                 shutil.rmtree(tmpdir)
 
-
     elif fs_name == 'TempFS':
 
         local = TempFS()
@@ -132,7 +133,7 @@ def prep_filesystem(fs_name):
         try:
 
             s3 = S3FS(
-                'test-bucket', 
+                'test-bucket',
                 aws_access_key='MY_KEY',
                 aws_secret_key='MY_SECRET_KEY')
 
@@ -141,7 +142,6 @@ def prep_filesystem(fs_name):
 
         finally:
             m.stop()
-
 
 
 @pytest.yield_fixture
@@ -195,6 +195,7 @@ def local_auth():
     with prep_filesystem('OSFS') as filesystem:
         yield filesystem
 
+
 @pytest.yield_fixture(scope='function')
 def auth1(fs_name):
 
@@ -208,11 +209,13 @@ def auth2(fs_name):
     with prep_filesystem(fs_name) as filesystem:
         yield filesystem
 
+
 @pytest.yield_fixture(scope='function')
 def cache():
 
     with prep_filesystem('OSFS') as filesystem:
         yield filesystem
+
 
 @pytest.yield_fixture(scope='function')
 def cache1():
@@ -220,9 +223,9 @@ def cache1():
     with prep_filesystem('OSFS') as filesystem:
         yield filesystem
 
+
 @pytest.yield_fixture(scope='function')
 def cache2():
 
     with prep_filesystem('OSFS') as filesystem:
         yield filesystem
-    

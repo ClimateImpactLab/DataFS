@@ -66,8 +66,8 @@ Attach Manager
 
 Next, we'll choose an archive manager. DataFS currently
 supports MongoDB and DynamoDB managers. In this example
-we'll use a local MongoDB manager. Make sure you have 
-a MongoDB server running, then create a 
+we'll use a local MongoDB manager. Make sure you have
+a MongoDB server running, then create a
 MongoDBManager instance:
 
 .. code-block:: python
@@ -76,7 +76,7 @@ MongoDBManager instance:
     ...     database_name = 'MyDatabase',
     ...     table_name = 'DataFiles')
 
-If this is the first time you've set up this database, you'll need to create a 
+If this is the first time you've set up this database, you'll need to create a
 table:
 
 .. code-block:: python
@@ -226,7 +226,7 @@ Cleaning up
 
     >>> var.delete()
     >>> api.manager.delete_table('DataFiles')
-    
+
 
 Next steps
 ~~~~~~~~~~

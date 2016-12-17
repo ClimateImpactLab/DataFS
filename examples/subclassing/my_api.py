@@ -41,7 +41,7 @@ class MyAPI(DataAPI):
         if 'project_data' in manager.table_names:
             manager.delete_table('project_data')
 
-        manager.create_archive_table('project_data', raise_if_exists=False)
+        manager.create_archive_table('project_data', raise_on_err=False)
 
         self.attach_manager(manager)
 

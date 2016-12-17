@@ -66,12 +66,12 @@ def get_api(profile=None, config_file=None):
         >>> api = get_api(profile='my-data', config_file=config_file)
         >>> api.manager.create_archive_table(
         ...     'DataFiles',
-        ...     raise_if_exists=False)
+        ...     raise_on_err=False)
         >>>
         >>> archive = api.create_archive(
         ...     'my_first_archive',
         ...     metadata = dict(description = 'My test data archive'),
-        ...     raise_if_exists=False)
+        ...     raise_on_err=False)
         >>>
         >>> with archive.open('w+') as f:
         ...     res = f.write(u'hello!')

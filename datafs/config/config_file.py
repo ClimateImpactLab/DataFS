@@ -177,7 +177,7 @@ class ConfigFile(object):
             >>>
             >>> manager.create_archive_table(
             ...     'DataFiles',
-            ...     raise_if_exists=False)
+            ...     raise_on_err=False)
             >>>
             >>> api.attach_manager(manager)
             >>>

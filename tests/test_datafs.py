@@ -180,7 +180,7 @@ class TestArchiveCreation(object):
             archive_name,
             metadata={
                 'testval': 'a different test value'},
-            raise_if_exists=False)
+            raise_on_err=False)
         var = api.get_archive(archive_name)
 
         assert testval == var.metadata[

@@ -57,7 +57,7 @@ def prep_manager(mgr_name):
 
         manager_mongo.create_archive_table(
             table_name,
-            raise_if_exists=False)
+            raise_on_err=False)
 
         try:
             yield manager_mongo
@@ -65,7 +65,7 @@ def prep_manager(mgr_name):
         finally:
             manager_mongo.delete_table(
                 table_name,
-                raise_if_exists=False)
+                raise_on_err=False)
 
     elif mgr_name == 'dynamo':
 
@@ -80,7 +80,7 @@ def prep_manager(mgr_name):
 
         manager_dynamo.create_archive_table(
             table_name,
-            raise_if_exists=False)
+            raise_on_err=False)
 
         try:
             yield manager_dynamo
@@ -88,7 +88,7 @@ def prep_manager(mgr_name):
         finally:
             manager_dynamo.delete_table(
                 table_name,
-                raise_if_exists=False)
+                raise_on_err=False)
 
     else:
         raise ValueError('Manager "{}" not recognized'.format(mgr_name))

@@ -27,7 +27,7 @@ Initialize the API
     ...     database_name = 'MyDatabase',
     ...     table_name = 'DataFiles')
     >>>
-    >>> manager.create_archive_table('DataFiles', raise_if_exists=False)
+    >>> manager.create_archive_table('DataFiles', raise_on_err=False)
     >>>
     >>> api.attach_manager(manager)
 

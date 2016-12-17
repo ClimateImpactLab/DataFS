@@ -23,6 +23,38 @@ import pytest
 from tests.resources import string_types, u
 
 
+
+@pytest.fixture
+def opener(open_func):
+    '''
+    Fixture for opening files using each of the available methods
+
+    open_func is parameterized in conftest.py
+    '''
+
+    if open_func == 'open_file':
+
+        @contextmanager
+        def inner(archive, *args, **kwargs):
+            with archive.open(*args, **kwargs) as f:
+                yield f
+
+        return inner
+
+    elif open_func == 'get_local_path':
+
+        @contextmanager
+        def inner(archive, *args, **kwargs):
+            with archive.get_local_path() as fp:
+                with open(fp, *args, **kwargs) as f:
+                    yield f
+
+        return inner
+
+    else:
+        raise NameError('open_func "{}" not recognized'.format(open_func))
+
+
 def test_delete_handling(api, auth1, cache):
 
     api.attach_authority('auth1', auth1)
@@ -42,7 +74,7 @@ def test_delete_handling(api, auth1, cache):
     assert not os.path.isfile('test_file.txt')
 
 
-def test_multi_api(api1, api2, auth1, cache1, cache2):
+def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
     '''
     Test upload/download/cache operations with two users
     '''
@@ -71,7 +103,7 @@ def test_multi_api(api1, api2, auth1, cache1, cache2):
     with cache1.open('myArchive', 'r') as f1:
         assert u(f1.read()) == u('')
 
-    with archive1.open('w+') as f1:
+    with opener(archive1, 'w+') as f1:
         f1.write(u('test1'))
 
     assert auth1.isfile('myArchive')
@@ -95,7 +127,7 @@ def test_multi_api(api1, api2, auth1, cache1, cache2):
 
     # When we open the archive, the data is correct:
 
-    with archive2.open('r') as f2:
+    with opener(archive2, 'r') as f2:
         assert u(f2.read()) == u('test1')
 
     # Furthermore, the cache has been updated:
@@ -113,13 +145,13 @@ def test_multi_api(api1, api2, auth1, cache1, cache2):
     # would not solve the problem, since that would have an 
     # identical result.
 
-    with archive1.open('r') as f1:
-        with archive2.open('w+') as f2:
+    with opener(archive1, 'r') as f1:
+        with opener(archive2, 'w+') as f2:
             f2.write(u('test2'))
 
         assert u(f1.read()) == u('test1')
 
-    with archive1.open('r') as f1:
+    with opener(archive1, 'r') as f1:
         assert u(f1.read()) == u('test2')
 
     # Turn off caching in archive 2, and do the same test. 
@@ -131,13 +163,13 @@ def test_multi_api(api1, api2, auth1, cache1, cache2):
     assert archive1.api.cache.fs.isfile('myArchive')
     assert not archive2.api.cache.fs.isfile('myArchive')
 
-    with archive1.open('r') as f1:
-        with archive2.open('w+') as f2:
+    with opener(archive1, 'r') as f1:
+        with opener(archive2, 'w+') as f2:
             f2.write(u('test3'))
 
         assert u(f1.read()) == u('test2')
 
-    with archive1.open('r') as f1:
+    with opener(archive1, 'r') as f1:
         assert u(f1.read()) == u('test3')
 
 
@@ -152,19 +184,63 @@ def test_multi_api(api1, api2, auth1, cache1, cache2):
     assert not archive1.api.cache.fs.isfile('myArchive')
     assert not archive2.api.cache.fs.isfile('myArchive')
 
+
+    # NOTE: Here, archive 1 uses the method 
+    #       `archive.open('r')` explicitly. This test would 
+    #       not pass on 
+    #       `open(archive.get_local_path(), 'r')`, which is 
+    #       tested below.
+
     with archive1.open('r') as f1:
-        with archive2.open('w+') as f2:
+        with opener(archive2, 'w+') as f2:
             f2.write(u('test4'))
 
         assert u(f1.read()) == u('test4')
 
-    with archive1.open('r') as f1:
+    with opener(archive1, 'r') as f1:
         assert u(f1.read()) == u('test4')
 
+    # NOTE: Here, archive 1 uses the method 
+    #       `archive.get_local_path('r')` explicitly. This 
+    #       test would not pass on 
+    #       `archive.open('r')`, which is tested above.
 
-    # This presents a problem. If someone is in the middle 
-    # of reading a file that is currently being written to, 
-    # they will get garbage.
+    with archive1.get_local_path() as fp1:
+        with open(fp1, 'r') as f1:
+            with opener(archive2, 'w+') as f2:
+                f2.write(u('test5'))
+
+            assert u(f1.read()) == u('test4')
+
+    with opener(archive1, 'r') as f1:
+        assert u(f1.read()) == u('test5')
+
+
+
+
+    # If we begin reading from the file, the file is locked, 
+    # and changes are not made until after the file has been 
+    # closed.
+
+    first_char = u('t').encode('utf-8')
+
+    with opener(archive1, 'r') as f1:
+        f1.read(len(first_char))
+
+        with opener(archive2, 'w+') as f2:
+            f2.write(u('test6'))
+
+        assert u(f1.read()) == u('est5')
+
+    with opener(archive1, 'r') as f1:
+        assert u(f1.read()) == u('test6')
+
+
+
+    # This prevents problems in simultaneous read/write by 
+    # different parties. If someone is in the middle of 
+    # reading a file that is currently being written to, 
+    # they will not get garbage.
 
     test_str_1 = u('1234567890')
     test_str_2 = u('abcdefghij')
@@ -172,21 +248,17 @@ def test_multi_api(api1, api2, auth1, cache1, cache2):
     str_length = len(test_str_1.encode('utf-8'))
     assert str_length == len(test_str_2.encode('utf-8'))
 
-    with archive1.open('w+') as f1:
+    with opener(archive1, 'w+') as f1:
         f1.write(test_str_1)
 
-    with archive1.open('r') as f1:
+    with opener(archive1, 'r') as f1:
 
-        assert len(archive1.versions) == 5
+        assert len(archive1.versions) == 7
         assert u('12345') == u(f1.read(str_length/2))
         
-        with archive2.open('w+') as f2:
+        with opener(archive2, 'w+') as f2:
             f2.write(test_str_2)
 
-        assert len(archive1.versions) == 6
-        assert u('67890') == u(f1.read())   # I expected this to fail
+        assert len(archive1.versions) == 8
+        assert u('67890') == u(f1.read())
 
-    warnings.warn('Test passage unexpected. More investegation into the FS backend needed!')
-
-    # This works for some reason. We need to look into FS's 
-    # read/write lock implementation!!!

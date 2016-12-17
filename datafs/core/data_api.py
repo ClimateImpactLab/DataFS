@@ -126,7 +126,7 @@ class DataAPI(object):
             archive_name,
             authority_name=None,
             service_path=None,
-            raise_if_exists=True,
+            raise_on_err=True,
             metadata={}):
         '''
         Create a DataFS archive
@@ -143,7 +143,7 @@ class DataAPI(object):
         service_path : str
             Path to use on the data services (optional)
 
-        raise_if_exists : bool
+        raise_on_err : bool
             Raise an error if the archive already exists (default True)
 
         **kwargs will be passed to the archive as metadata
@@ -163,7 +163,7 @@ class DataAPI(object):
             archive_name,
             authority_name,
             service_path=service_path,
-            raise_if_exists=raise_if_exists,
+            raise_on_err=raise_on_err,
             metadata=metadata)
 
     @enforce_user_config_requirements

@@ -73,10 +73,9 @@ def test_subclassing():
             'endpoint_url': 'http://localhost:8000/',
             'region_name': 'us-east-1'})
 
-    if table_name in manager.table_names:
-        manager.delete_table(table_name)
+    manager.delete_table(table_name, raise_on_err=False)
 
-    manager.create_archive_table(table_name, raise_if_exists=False)
+    manager.create_archive_table(table_name, raise_on_err=False)
 
     failures, tests = doctest.testmod(client, report=True)
     assert failures == 0

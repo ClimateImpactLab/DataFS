@@ -81,7 +81,7 @@ table:
 
 .. code-block:: python
 
-    >>> manager.create_archive_table('DataFiles', raise_if_exists=False)
+    >>> manager.create_archive_table('DataFiles', raise_on_err=False)
 
 
 All set. Now we can attach the manager to our DataAPI object:
@@ -113,7 +113,7 @@ Now we can create our first archive. An archive must
 have an archive_name. In addition, you can supply any
 additional keyword arguments, which will be stored as
 metadata. To suppress errors on re-creation, use the
-``raise_if_exists=False`` flag.
+``raise_on_err=False`` flag.
 
 .. code-block:: python
 

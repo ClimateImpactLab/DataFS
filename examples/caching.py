@@ -7,7 +7,6 @@ Setup
     >>> from datafs import DataAPI
     >>> from fs.tempfs import TempFS
     >>> from fs.s3fs import S3FS
-    >>> from ast import literal_eval
     >>> import os
     >>> import tempfile
     >>> import shutil

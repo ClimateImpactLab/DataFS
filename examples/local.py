@@ -27,7 +27,6 @@ We need a few things for this example:
     >>> from datafs.managers.manager_mongo import MongoDBManager
     >>> from datafs import DataAPI
     >>> from fs.osfs import OSFS
-    >>> from ast import literal_eval
     >>> import os
     >>> import tempfile
     >>> import shutil
@@ -160,13 +159,15 @@ Now we can add this file to the archive:
 
 .. code-block:: python
 
-    >>> var.update('test.txt')
+    >>> var.update('test.txt', remove=True)
 
-This file just got sent into our archive! Now we can delete the local copy:
+This file just got sent into our archive! And we deleted the 
+local copy:
 
 .. code-block:: python
 
-    >>> os.remove('test.txt')
+    >>> os.path.isfile('test.txt')
+    False
 
 Reading from the archive
 ~~~~~~~~~~~~~~~~~~~~~~~~

@@ -2,24 +2,12 @@
 
 from __future__ import absolute_import
 from datafs.core.data_api import DataAPI
-from datafs.config.parser import ConfigFile
+from datafs.config.config_file import ConfigFile
+from datafs.config.constructor import APIConstructor
 import os 
 import click
 import yaml
 import pprint
-
-def process_kwargs(kwarg_name):
-    def decorator(func):
-        def inner(*args, **kwargs):
-            keyword_arguments = kwargs.pop(kwarg_name, {})
-
-            assert len(keyword_arguments)%2==0
-            for i in range(0, len(keyword_arguments), 2):
-                kwargs[keyword_arguments[i].lstrip('-')] = keyword_arguments[i+1]
-
-            return func(*args, **kwargs)
-        return inner
-    return decorator
 
 
 def parse_args_as_kwargs(args):
@@ -71,11 +59,13 @@ def cli(ctx, config_file=None, profile=None):
 
     ctx.obj.profile = profile
 
-    api = config.generate_api_from_config(profile=ctx.obj.profile)
+    profile_config = ctx.config.get_profile_config(ctx.obj.profile)
+
+    api = APIConstructor.generate_api_from_config(profile_config)
     
-    config.attach_manager_from_config(api, profile=ctx.obj.profile)
-    config.attach_services_from_config(api, profile=ctx.obj.profile)
-    config.attach_cache_from_config(api, profile=ctx.obj.profile)
+    config.attach_manager_from_config(api, profile_config)
+    config.attach_services_from_config(api, profile_config)
+    config.attach_cache_from_config(api, profile_config)
 
     ctx.obj.api = api
 

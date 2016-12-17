@@ -8,6 +8,8 @@ test_datafs
 Tests for `datafs` module.
 """
 
+from __future__ import absolute_import
+
 import pytest
 
 from datafs.managers.manager_mongo import MongoDBManager
@@ -26,10 +28,6 @@ import itertools
 import time
 import boto
 import moto
-import moto
-from moto import mock_dynamodb
-from moto.dynamodb import dynamodb_backend
-
 
 from six import b
 
@@ -50,118 +48,6 @@ def get_counter():
         counter += 1
 
 counter = get_counter()
-
-
-
-
-
-
-
-
-
-@pytest.yield_fixture(scope='function')
-def manager(mgr_name):
-
-    table_name = 'my-new-table-name'
-    
-    if mgr_name == 'mongo':
-
-        manager_mongo = MongoDBManager(
-                database_name='MyDatabase',
-                table_name=table_name)
-
-        manager_mongo.create_archive_table(table_name, raise_if_exists=False)
-        
-        try:
-            yield manager_mongo
-
-        finally:
-            manager_mongo.delete_table(table_name)
-
-    elif mgr_name == 'dynamo':
-
-        manager_dynamo = DynamoDBManager(
-            table_name, 
-            session_args={
-                'aws_access_key_id': "access-key-id-of-your-choice",
-                'aws_secret_access_key': "secret-key-of-your-choice"}, 
-            resource_args={
-                'endpoint_url':'http://localhost:8000/',
-                'region_name':'us-east-1'})
-
-        manager_dynamo.create_archive_table(table_name, raise_if_exists=False)
-
-        try:
-            yield manager_dynamo
-    
-        finally:
-            manager_dynamo.delete_table(table_name)
-
-
-@pytest.yield_fixture(scope='function')
-def filesystem(fs_name):
-
-    if fs_name == 'OSFS':
-
-        tmpdir = tempfile.mkdtemp()
-
-        try:
-            local = OSFS(tmpdir)
-
-            yield local
-
-            local.close()
-
-        finally:
-            try:
-                shutil.rmtree(tmpdir)
-            except (WindowsError, OSError, IOError):
-                time.sleep(0.5)
-                shutil.rmtree(tmpdir)
-
-
-    elif fs_name == 'TempFS':
-
-        local = TempFS()
-
-        try:
-            yield local
-
-        finally:
-            local.close()
-
-    elif fs_name == 'S3FS':
-
-        m = moto.mock_s3()
-        m.start()
-
-        try:
-
-            s3 = S3FS(
-                'test-bucket', 
-                aws_access_key='MY_KEY',
-                aws_secret_key='MY_SECRET_KEY')
-
-            yield s3
-            s3.close()
-
-        finally:
-            m.stop()
-
-
-
-@pytest.fixture
-def api(manager, filesystem):
-
-    api = DataAPI(
-        username='My Name',
-        contact='my.email@example.com')
-
-    api.attach_manager(manager)
-
-    api.attach_authority('filesys', filesystem)
-
-    return api
 
 
 
@@ -308,6 +194,4 @@ class TestArchiveCreation(object):
 
         with pytest.raises(KeyError) as excinfo:
             api.get_archive(archive_name)
-
-
 

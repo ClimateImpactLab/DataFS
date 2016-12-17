@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
 
     datafs.core
+    datafs.config
     datafs.managers
     datafs.services
 

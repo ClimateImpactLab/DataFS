@@ -24,7 +24,7 @@ class DataService(object):
 
             if remove:
                 os.remove(filepath)
-
+                
             return
         
         if not self.fs.isdir(fs.path.dirname(service_path)):

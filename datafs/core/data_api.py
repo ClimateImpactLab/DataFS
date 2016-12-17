@@ -79,7 +79,7 @@ class DataAPI(object):
     def attach_cache(self, service):
 
         if service in self._authorities.values():
-            raise ValueError('Attach authority as a cache is prohibited')
+            raise ValueError('Cannot attach an authority as a cache')
         else:    
             self._cache = DataService(service)
 

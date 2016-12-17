@@ -81,10 +81,13 @@ class DataArchive(object):
 
             return
 
-        self.authority.upload(filepath, self.service_path)
 
         if self.cache:
+            self.authority.upload(filepath, self.service_path)
             self.api.cache.upload(filepath, self.service_path, remove=remove)
+
+        else:
+            self.authority.upload(filepath, self.service_path, remove=remove)
 
         self._update_manager(checksum, kwargs)
 

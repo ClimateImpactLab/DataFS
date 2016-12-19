@@ -144,7 +144,6 @@ def open_file(authority, cache, update, service_path, version_check, hasher, mod
         
         :py:mod:`pyFilesystem` filesystem object to use as the authoritative, 
         up-to-date source for the archive
->>>>>>> cil
 
     cache : object
 

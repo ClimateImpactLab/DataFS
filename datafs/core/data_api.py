@@ -295,3 +295,10 @@ class DataAPI(object):
                 md5.update(chunk)
 
         return {'algorithm': 'md5', 'checksum': md5.hexdigest()}
+
+    def close(self):
+        for service in self._authorities:
+            service.fs.close()
+
+        if self.cache:
+            self.cache.close()

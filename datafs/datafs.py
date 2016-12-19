@@ -60,15 +60,20 @@ def cli(ctx, config_file=None, profile=None):
 
     ctx.obj.profile = profile
 
-    profile_config = ctx.config.get_profile_config(ctx.obj.profile)
+    profile_config = ctx.obj.config.get_profile_config(ctx.obj.profile)
 
     api = APIConstructor.generate_api_from_config(profile_config)
 
-    config.attach_manager_from_config(api, profile_config)
-    config.attach_services_from_config(api, profile_config)
-    config.attach_cache_from_config(api, profile_config)
+    APIConstructor.attach_manager_from_config(api, profile_config)
+    APIConstructor.attach_services_from_config(api, profile_config)
+    APIConstructor.attach_cache_from_config(api, profile_config)
 
     ctx.obj.api = api
+
+
+    @ctx.call_on_close
+    def teardown():
+        ctx.obj.api.close()
 
 
 @cli.command(

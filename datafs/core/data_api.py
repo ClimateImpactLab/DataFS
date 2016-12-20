@@ -11,21 +11,23 @@ import time
 import hashlib
 
 
-
 try:
     PermissionError
 except:
     class PermissionError(NameError):
         pass
 
+
 def enforce_user_config_requirements(func):
     '''
     Method decorator for DataAPI enforcing user_config requirements
     '''
+
     def inner(self, *args, **kwargs):
         for kw in self.REQUIRED_USER_CONFIG.keys():
-            if not kw in self.user_config:
-                raise KeyError('Required API configuration item "{}" not found'.format(kw))
+            if kw not in self.user_config:
+                raise KeyError(
+                    'Required API configuration item "{}" not found'.format(kw))
 
         return func(self, *args, **kwargs)
     return inner
@@ -57,7 +59,6 @@ class DataAPI(object):
         self._authorities_locked = False
         self._manager_locked = False
 
-
     def attach_authority(self, service_name, service):
 
         if self._authorities_locked:
@@ -81,8 +82,8 @@ class DataAPI(object):
     def attach_cache(self, service):
 
         if service in self._authorities.values():
-            raise ValueError('Attach authority as a cache is prohibited')
-        else:    
+            raise ValueError('Cannot attach an authority as a cache')
+        else:
             self._cache = DataService(service)
 
     @property
@@ -128,7 +129,7 @@ class DataAPI(object):
             archive_name,
             authority_name=None,
             service_path=None,
-            raise_if_exists=True,
+            raise_on_err=True,
             metadata={}):
         '''
         Create a DataFS archive
@@ -145,14 +146,14 @@ class DataAPI(object):
         service_path : str
             Path to use on the data services (optional)
 
-        raise_if_exists : bool
+        raise_on_err : bool
             Raise an error if the archive already exists (default True)
 
         **kwargs will be passed to the archive as metadata
-            
-    
 
-        
+
+
+
         '''
 
         if authority_name is None:
@@ -165,7 +166,7 @@ class DataAPI(object):
             archive_name,
             authority_name,
             service_path=service_path,
-            raise_if_exists=raise_if_exists,
+            raise_on_err=raise_on_err,
             metadata=metadata)
 
     @enforce_user_config_requirements
@@ -259,8 +260,6 @@ class DataAPI(object):
 
         archive.delete()
 
-
-
     @staticmethod
     def hash_file(f):
         '''
@@ -292,13 +291,17 @@ class DataAPI(object):
                 with open(f, 'rb') as f_obj:
                     yield f_obj
 
-
         md5 = hashlib.md5()
 
         with open_file(f) as f_obj:
-            for chunk in iter(lambda: f_obj.read(128*md5.block_size), b''): 
+            for chunk in iter(lambda: f_obj.read(128 * md5.block_size), b''):
                 md5.update(chunk)
-            
+
         return {'algorithm': 'md5', 'checksum': md5.hexdigest()}
 
-    
+    def close(self):
+        for service in self._authorities:
+            self._authorities[service].fs.close()
+
+        if self.cache:
+            self.cache.close()

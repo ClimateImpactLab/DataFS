@@ -56,6 +56,9 @@ class DataArchive(object):
         cache : bool
             Turn on caching for this archive if not already on before upload
 
+        remove: bool
+            removes a file from your local directory
+
         **kwargs stored as update to metadata.
 
 

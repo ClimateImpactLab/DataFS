@@ -104,7 +104,7 @@ profiles:
         service: OSFS
     cache: {{}}
     manager:
-      class: DynamoDBManager
+      class: "DynamoDBManager"
       kwargs:
         resource_args: 
             endpoint_url: "http://localhost:8000/"
@@ -117,15 +117,18 @@ profiles:
     
     with open(temp_file, 'w+') as f:
         f.write(my_test_yaml)
-
+    
+    # print(tempfile)
+    # print(f)
     runner = CliRunner()
+    # print("{}".format(temp_file))
+    # print(my_test_yaml)
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'create_archive', 'my_first_archive', '--description', 'My test data archive'])
+    print result.exception
+    #assert result.exit_code == 0
 
-    result = runner.invoke(cli, ['--config-file', '"{}"'.format(temp_file), '--profile', 'myapi', 'create_archive', 'my_first_archive', '--description', 'My test data archive'])
-    print(result.output)
-    # assert result.exit_code == 0
-
-    result = runner.invoke(cli, ['--config-file', '"{}"'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
-    print(result.output)
+    #result = runner.invoke(cli, ['--config-file', '"{}"'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
+    #print(result.output)
     # assert result.exit_code == 0
     # assert result.output == "{'metadata': 'my_first_archive'}"
 

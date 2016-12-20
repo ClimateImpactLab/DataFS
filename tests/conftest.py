@@ -37,8 +37,7 @@ def pytest_generate_tests(metafunc):
     if 'fs_name' in metafunc.fixturenames:
 
         metafunc.parametrize(
-            'fs_name', [
-                'OSFS', 'S3FS', 'OSFS', 'OSFS', 'S3FS'])
+            'fs_name', ['OSFS', 'S3FS'])
 
     if 'open_func' in metafunc.fixturenames:
         metafunc.parametrize('open_func', ['open_file', 'get_local_path'])

@@ -156,19 +156,18 @@ profiles:
 
 
     #test upload
-    
-    update_temp = temp_update_file()
-    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'upload', 'my_first_archive', update_temp, '--source', 'Surfers Journal'])
+    with runner.isolated_filesystem():
+        with open('hello.txt', 'w') as f:
+            f.write('Hoo Yah! Stay Stoked!')
+
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'upload', 'my_first_archive', 'hello.txt', '--source', 'Surfers Journal'])
     assert 'uploaded data to <DataArchive local://my_first_archive>' in result.output
+    assert result.output == 'Hoo Yah! Stay Stoked!'
 
 
-    with api2.archives[0].open('r') as f:
-        test = f.read()
-        print test
-        assert test == 'some text to display'
+    
 
 
-    shutil.rm(update_temp)
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'versions', 'my_first_archive'])
     #print result.output
 

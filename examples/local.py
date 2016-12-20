@@ -27,7 +27,6 @@ We need a few things for this example:
     >>> from datafs.managers.manager_mongo import MongoDBManager
     >>> from datafs import DataAPI
     >>> from fs.osfs import OSFS
-    >>> from ast import literal_eval
     >>> import os
     >>> import tempfile
     >>> import shutil
@@ -69,12 +68,12 @@ server running, then create a MongoDBManager instance:
     ...     table_name = 'DataFiles')
 
 
-If this is the first time you've set up this database, you'll need to create a 
+If this is the first time you've set up this database, you'll need to create a
 table:
 
 .. code-block:: python
 
-    >>> manager.create_archive_table('DataFiles', raise_if_exists=False)
+    >>> manager.create_archive_table('DataFiles', raise_on_err=False)
 
 All set. Now we can attach the manager to our DataAPI object:
 
@@ -112,7 +111,7 @@ Next we'll create our first archive. An archive must
 have an archive_name. In addition, you can supply any
 additional keyword arguments, which will be stored as
 metadata. To suppress errors on re-creation, use the
-``raise_if_exists=False`` flag.
+``raise_on_err=False`` flag.
 
 .. code-block:: python
 
@@ -160,13 +159,15 @@ Now we can add this file to the archive:
 
 .. code-block:: python
 
-    >>> var.update('test.txt')
+    >>> var.update('test.txt', remove=True)
 
-This file just got sent into our archive! Now we can delete the local copy:
+This file just got sent into our archive! And we deleted the
+local copy:
 
 .. code-block:: python
 
-    >>> os.remove('test.txt')
+    >>> os.path.isfile('test.txt')
+    False
 
 Reading from the archive
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -215,7 +216,7 @@ Cleaning up
     >>> var.delete()
     >>> api.manager.delete_table('DataFiles')
     >>> shutil.rmtree(temp)
-    
+
 
 Next steps
 ~~~~~~~~~~

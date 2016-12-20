@@ -12,7 +12,6 @@ from fs.errors import (ResourceLockedError, ResourceInvalidError)
 from contextlib import contextmanager
 
 
-
 # HELPER FUNCTIONS
 
 def _close(filesys):
@@ -29,10 +28,11 @@ def _close(filesys):
 
     if not closed:
         raise e
-        
+
 
 def _makedirs(filesystem, path):
-    filesystem.makedir(path,recursive=True,allow_recreate=True)
+    filesystem.makedir(path, recursive=True, allow_recreate=True)
+
 
 def _touch(filesystem, path):
     _makedirs(filesystem, fs.path.dirname(path))
@@ -48,9 +48,9 @@ def _choose_read_fs(authority, cache, service_path, version_check, hasher):
     '''
     Context manager returning the appropriate up-to-date readable filesystem
 
-    Use ``cache`` if it is a valid filessystem and has a file at 
-    ``service_path``, otherwise use ``authority``. If the file at 
-    ``service_path`` is out of date, update the file in ``cache`` before 
+    Use ``cache`` if it is a valid filessystem and has a file at
+    ``service_path``, otherwise use ``authority``. If the file at
+    ``service_path`` is out of date, update the file in ``cache`` before
     returning it.
     '''
 
@@ -59,7 +59,11 @@ def _choose_read_fs(authority, cache, service_path, version_check, hasher):
             yield cache.fs
 
         elif authority.fs.isfile(service_path):
-            fs.utils.copyfile(authority.fs, service_path, cache.fs, service_path)
+            fs.utils.copyfile(
+                authority.fs,
+                service_path,
+                cache.fs,
+                service_path)
             yield cache.fs
 
         else:
@@ -70,9 +74,8 @@ def _choose_read_fs(authority, cache, service_path, version_check, hasher):
     else:
         if not authority.fs.isfile(service_path):
             _touch(authority.fs, service_path)
-    
-        yield authority.fs
 
+        yield authority.fs
 
 
 @contextmanager
@@ -80,15 +83,15 @@ def _choose_write_fs(cache, service_path):
     '''
     Context manager returning a writable filesystem
 
-    Use the cache if the cache is a valid filessystem and caching is enabled for 
+    Use the cache if the cache is a valid filessystem and caching is enabled for
     this archive, otherwise use a temporary directory and clean on exit.
 
     .. todo::
 
-        Evaluate options for using a cached memoryFS or streaming object instead 
-        of an OSFS(tmp). This could offer significant performance improvements. 
-        Writing to the cache is less of a problem since this would be done in 
-        any case, though performance could be improved by writing to an 
+        Evaluate options for using a cached memoryFS or streaming object instead
+        of an OSFS(tmp). This could offer significant performance improvements.
+        Writing to the cache is less of a problem since this would be done in
+        any case, though performance could be improved by writing to an
         in-memory filesystem and then writing to both cache and auth.
 
     '''
@@ -115,13 +118,14 @@ def _prepare_write_fs(read_fs, cache, service_path, readwrite_mode=True):
 
     with _choose_write_fs(cache, service_path) as write_fs:
 
-        # If opening in read/write or append mode, make sure file data is 
+        # If opening in read/write or append mode, make sure file data is
         # accessible
         if readwrite_mode:
 
             if not write_fs.isfile(service_path):
                 _touch(write_fs, service_path)
-                fs.utils.copyfile(read_fs, service_path, write_fs, service_path)
+                fs.utils.copyfile(
+                    read_fs, service_path, write_fs, service_path)
 
         else:
             _touch(write_fs, service_path)
@@ -129,25 +133,33 @@ def _prepare_write_fs(read_fs, cache, service_path, readwrite_mode=True):
         yield write_fs
 
 
-
 # AVAILABLE I/O CONTEXT MANAGERS
 
 @contextmanager
-def open_file(authority, cache, update, service_path, version_check, hasher, mode='r', *args, **kwargs):
+def open_file(
+        authority,
+        cache,
+        update,
+        service_path,
+        version_check,
+        hasher,
+        mode='r',
+        *args,
+        **kwargs):
     '''
 
     Context manager for reading/writing from an archive and uploading on changes
-    
+
     Parameters
     ----------
     authority : object
-        
-        :py:mod:`pyFilesystem` filesystem object to use as the authoritative, 
+
+        :py:mod:`pyFilesystem` filesystem object to use as the authoritative,
         up-to-date source for the archive
 
     cache : object
 
-        :py:mod:`pyFilesystem` filesystem object to use as the cache. Default 
+        :py:mod:`pyFilesystem` filesystem object to use as the cache. Default
         ``None``.
 
     use_cache : bool
@@ -157,12 +169,14 @@ def open_file(authority, cache, update, service_path, version_check, hasher, mod
 
     with _choose_read_fs(authority, cache, service_path, version_check, hasher) as read_fs:
 
-
         write_mode = ('w' in mode) or ('a' in mode) or ('+' in mode)
 
         if write_mode:
 
-            readwrite_mode = (('a' in mode) or (('r' in mode) and ('+' in mode)))
+            readwrite_mode = (
+                ('a' in mode) or (
+                    ('r' in mode) and (
+                        '+' in mode)))
 
             with _prepare_write_fs(read_fs, cache, service_path, readwrite_mode) as write_fs:
 
@@ -178,18 +192,25 @@ def open_file(authority, cache, update, service_path, version_check, hasher, mod
                     checksum = hasher(f)
 
                 if not version_check(checksum):
-                    fs.utils.copyfile(write_fs, service_path, authority.fs, service_path)
+                    fs.utils.copyfile(
+                        write_fs, service_path, authority.fs, service_path)
                     update(checksum=checksum)
 
         else:
 
             with read_fs.open(service_path, mode, *args, **kwargs) as f:
-               
+
                 yield f
 
 
 @contextmanager
-def get_local_path(authority, cache, update, service_path, version_check, hasher):
+def get_local_path(
+        authority,
+        cache,
+        update,
+        service_path,
+        version_check,
+        hasher):
     '''
     Context manager for retrieving a system path for I/O and updating on changes
 
@@ -197,13 +218,13 @@ def get_local_path(authority, cache, update, service_path, version_check, hasher
     Parameters
     ----------
     authority : object
-        
-        :py:mod:`pyFilesystem` filesystem object to use as the authoritative, 
+
+        :py:mod:`pyFilesystem` filesystem object to use as the authoritative,
         up-to-date source for the archive
- 
+
     cache : object
 
-        :py:mod:`pyFilesystem` filesystem object to use as the cache. Default 
+        :py:mod:`pyFilesystem` filesystem object to use as the cache. Default
         ``None``.
 
     use_cache : bool
@@ -211,7 +232,6 @@ def get_local_path(authority, cache, update, service_path, version_check, hasher
          update, service_path, version_check, **kwargs
     '''
 
-    
     with _choose_read_fs(authority, cache, service_path, version_check, hasher) as read_fs:
 
         with _prepare_write_fs(read_fs, cache, service_path, readwrite_mode=True) as write_fs:
@@ -224,9 +244,11 @@ def get_local_path(authority, cache, update, service_path, version_check, hasher
                     checksum = hasher(f)
 
                 if not version_check(checksum):
-                    fs.utils.copyfile(write_fs, service_path, authority.fs, service_path)
+                    fs.utils.copyfile(
+                        write_fs, service_path, authority.fs, service_path)
                     update(checksum=checksum)
 
             else:
                 _touch(write_fs, service_path)
-                raise OSError('Local file removed during execution. Archive not updated.') 
+                raise OSError(
+                    'Local file removed during execution. Archive not updated.')

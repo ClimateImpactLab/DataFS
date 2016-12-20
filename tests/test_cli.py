@@ -142,7 +142,7 @@ profiles:
 
 
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'list'])
-    print result.output
+    assert result.output == u'my_first_archive'
 
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
 

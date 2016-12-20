@@ -121,17 +121,33 @@ profiles:
 
     runner = CliRunner()
 
+
+    #test for configure and create archive
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'create_archive', 'my_first_archive', '--description', 'My test data archive'])
     assert result.exit_code == 0
     assert result.output.strip() == 'created archive <DataArchive local://my_first_archive>'
 
+    #test the actual creation of the object from the api side
     assert len(api2.archives) == 1
     assert api2.archives[0].archive_name == 'my_first_archive'
 
-
+    #testing the `metadata` option
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
     assert result.exit_code == 0
     assert "'description': 'My test data archive'" in result.output or "u'description': u'My test data archive'" in result.output
+
+    #test the api side of the operation
+    assert u'My test data archive' in api2.archives[0].metadata.values()
+
+
+
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'list'])
+    print result.output
+
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
+
+
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
 
 
 

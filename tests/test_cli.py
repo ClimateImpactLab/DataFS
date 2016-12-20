@@ -86,6 +86,15 @@ def temp_file():
         _close(tmp.name)
 
 
+def temp_update_file():
+    tmp = tempfile.NamedTemporaryFile(delete=False).name.replace(os.sep, '/')
+
+    with open(tmp, 'w+') as f:
+        f.write('some text to display')
+
+    return tmp
+
+
 def test_cli_local(manager_table, temp_dir, temp_file):
 
     my_test_yaml = r'''
@@ -135,17 +144,33 @@ profiles:
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
     assert result.exit_code == 0
     assert "'description': 'My test data archive'" in result.output or "u'description': u'My test data archive'" in result.output
-
     #test the api side of the operation
     assert u'My test data archive' in api2.archives[0].metadata.values()
 
 
 
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'list'])
-    assert result.output == u'my_first_archive'
+    #print result.output
+    assert 'my_first_archive' in result.output
+    assert api2.archives[0].archive_name == 'my_first_archive'
 
-    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
 
+    #test upload
+    
+    update_temp = temp_update_file()
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'upload', 'my_first_archive', update_temp, '--source', 'Surfers Journal'])
+    assert 'uploaded data to <DataArchive local://my_first_archive>' in result.output
+
+
+    with api2.archives[0].open('r') as f:
+        test = f.read()
+        print test
+        assert test == 'some text to display'
+
+
+    shutil.rm(update_temp)
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'versions', 'my_first_archive'])
+    #print result.output
 
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
 

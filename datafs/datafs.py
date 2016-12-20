@@ -49,6 +49,7 @@ class DataFSInterface(object):
 @click.option('--profile', envvar='PROFILE', type=str, default=None)
 @click.pass_context
 def cli(ctx, config_file=None, profile=None):
+
     ctx.obj = DataFSInterface()
 
     ctx.obj.config_file = config_file

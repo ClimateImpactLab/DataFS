@@ -60,8 +60,6 @@ def manager_table():
         manager.delete_table(table_name)
 
 
-
-
 @pytest.yield_fixture(scope='function')
 def temp_dir():
 
@@ -144,3 +142,4 @@ if __name__ == '__main__':
 
     with ctx_manager_table() as m, ctx_temp_dir() as tempdir, ctx_temp_file() as tmp:
         test_cli_local(m, tempdir, tmp)
+

@@ -36,7 +36,7 @@ def _close(path):
         raise e
 
 
-@pytest.yield_fixture
+@pytest.yield_fixture(scope='function')
 def manager_table():
 
     # setup manager table
@@ -62,7 +62,7 @@ def manager_table():
 
 
 
-@pytest.yield_fixture
+@pytest.yield_fixture(scope='function')
 def temp_dir():
 
     # setup data directory
@@ -76,12 +76,12 @@ def temp_dir():
         _close(temp)
 
 
-@pytest.yield_fixture
+@pytest.yield_fixture(scope='function')
 def temp_file():
     tmp = tempfile.NamedTemporaryFile(delete=False)
 
     try:
-        yield tmp.name
+        yield tmp.name.replace(os.sep, '/')
 
     finally:
         tmp.close()
@@ -119,16 +119,21 @@ profiles:
     with open(temp_file, 'w+') as f:
         f.write(my_test_yaml)
 
+    api2 = get_api(profile='myapi', config_file=temp_file)
+
     runner = CliRunner()
 
-    result = runner.invoke(cli, ['--config-file', '"{}"'.format(temp_file), '--profile', 'myapi', 'create_archive', 'my_first_archive', '--description', 'My test data archive'])
-    print(result.output)
-    # assert result.exit_code == 0
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'create_archive', 'my_first_archive', '--description', 'My test data archive'])
+    assert result.exit_code == 0
+    assert result.output.strip() == 'created archive <DataArchive local://my_first_archive>'
 
-    result = runner.invoke(cli, ['--config-file', '"{}"'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
-    print(result.output)
-    # assert result.exit_code == 0
-    # assert result.output == "{'metadata': 'my_first_archive'}"
+    assert len(api2.archives) == 1
+    assert api2.archives[0].archive_name == 'my_first_archive'
+
+
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
+    assert result.exit_code == 0
+    assert "'description': 'My test data archive'" in result.output or "u'description': u'My test data archive'" in result.output
 
 
 

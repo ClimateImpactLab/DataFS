@@ -301,7 +301,7 @@ class DataAPI(object):
 
     def close(self):
         for service in self._authorities:
-            service.fs.close()
+            self._authorities[service].fs.close()
 
         if self.cache:
             self.cache.close()

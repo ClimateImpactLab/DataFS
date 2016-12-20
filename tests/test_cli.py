@@ -36,7 +36,7 @@ def _close(path):
         raise e
 
 
-@pytest.yield_fixture
+@pytest.yield_fixture(scope='function')
 def manager_table():
 
     # setup manager table
@@ -44,13 +44,12 @@ def manager_table():
     table_name = 'my-cli-test-table'
 
     manager = DynamoDBManager(table_name, 
-
-    						session_args={ 
-            								'aws_access_key_id': "access-key-id-of-your-choice",
-    										'aws_secret_access_key': "secret-key-of-your-choice",}, 
-            				resource_args={ 
-            								'endpoint_url':'http://localhost:8000/','region_name':'us-east-1'}
-        					)
+                            session_args={ 
+                                            'aws_access_key_id': "access-key-id-of-your-choice",
+                                            'aws_secret_access_key': "secret-key-of-your-choice"}, 
+                            resource_args={ 
+                                            'endpoint_url':'http://localhost:8000/','region_name':'us-east-1'}
+                            )
 
     manager.create_archive_table(table_name, raise_on_err=False)
 
@@ -60,13 +59,13 @@ def manager_table():
     finally:
         manager.delete_table(table_name)
 
-@pytest.yield_fixture
+
+@pytest.yield_fixture(scope='function')
 def temp_dir():
 
     # setup data directory
 
     temp = tempfile.mkdtemp()
-
 
     try:
         yield temp.replace(os.sep, '/')
@@ -75,12 +74,12 @@ def temp_dir():
         _close(temp)
 
 
-@pytest.yield_fixture
+@pytest.yield_fixture(scope='function')
 def temp_file():
     tmp = tempfile.NamedTemporaryFile(delete=False)
 
     try:
-        yield tmp.name
+        yield tmp.name.replace(os.sep, '/')
 
     finally:
         tmp.close()
@@ -117,20 +116,22 @@ profiles:
     
     with open(temp_file, 'w+') as f:
         f.write(my_test_yaml)
-    
-    # print(tempfile)
-    # print(f)
-    runner = CliRunner()
-    # print("{}".format(temp_file))
-    # print(my_test_yaml)
-    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'create_archive', 'my_first_archive', '--description', 'My test data archive'])
-    print result.exception
-    #assert result.exit_code == 0
 
-    #result = runner.invoke(cli, ['--config-file', '"{}"'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
-    #print(result.output)
-    # assert result.exit_code == 0
-    # assert result.output == "{'metadata': 'my_first_archive'}"
+    api2 = get_api(profile='myapi', config_file=temp_file)
+
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'create_archive', 'my_first_archive', '--description', 'My test data archive'])
+    assert result.exit_code == 0
+    assert result.output.strip() == 'created archive <DataArchive local://my_first_archive>'
+
+    assert len(api2.archives) == 1
+    assert api2.archives[0].archive_name == 'my_first_archive'
+
+
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
+    assert result.exit_code == 0
+    assert "'description': 'My test data archive'" in result.output or "u'description': u'My test data archive'" in result.output
 
 
 

@@ -250,4 +250,4 @@ class DynamoDBManager(BaseDataManager):
 
     def _delete_archive_record(self, archive_name):
 
-        return self._table.delete_item(Key={'_id': archive_name})        
+        return self._table.delete_item(Key={'_id': archive_name})

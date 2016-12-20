@@ -10,14 +10,13 @@ import yaml
 import pprint
 
 
-
-
 def parse_args_as_kwargs(args):
     assert len(args) % 2 == 0
     kwargs = {}
     for i in range(0, len(args), 2):
         kwargs[args[i].lstrip('-')] = args[i + 1]
     return kwargs
+
 
 def interactive_configuration(api, config, profile=None):
     profile_config = config.get_profile_config(profile)
@@ -50,7 +49,7 @@ class DataFSInterface(object):
 @click.option('--profile', envvar='PROFILE', type=str, default=None)
 @click.pass_context
 def cli(ctx, config_file=None, profile=None):
-    
+
     ctx.obj = DataFSInterface()
 
     ctx.obj.config_file = config_file

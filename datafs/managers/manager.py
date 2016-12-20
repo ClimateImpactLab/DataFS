@@ -16,8 +16,8 @@ class BaseDataManager(object):
     def table_names(self):
         return self._get_table_names()
 
-    def create_archive_table(self, table_name, raise_if_exists=True):
-        if raise_if_exists:
+    def create_archive_table(self, table_name, raise_on_err=True):
+        if raise_on_err:
             self._create_archive_table(table_name)
 
         else:
@@ -26,8 +26,14 @@ class BaseDataManager(object):
             except KeyError:
                 pass
 
-    def delete_table(self, table_name):
-        self._delete_table(table_name)
+    def delete_table(self, table_name, raise_on_err=True):
+        if raise_on_err:
+            self._delete_table(table_name)
+        else:
+            try:
+                self._delete_table(table_name)
+            except KeyError:
+                pass
 
     def update(self, archive_name, checksum, metadata):
         '''
@@ -42,7 +48,6 @@ class BaseDataManager(object):
             'updated': self.api.create_timestamp(),
             'algorithm': checksum['algorithm'],
             'checksum': checksum['checksum']}
-
 
         version_metadata.update(self.api.user_config)
 
@@ -63,7 +68,7 @@ class BaseDataManager(object):
             archive_name,
             authority_name,
             service_path,
-            raise_if_exists=True,
+            raise_on_err=True,
             metadata={}):
         '''
         Create a new data archive
@@ -86,9 +91,10 @@ class BaseDataManager(object):
         required |= set(self.api.REQUIRED_ARCHIVE_METADATA.keys())
 
         for attr in required:
-            assert attr in archive_metadata, 'Required attribute "{}" missing from metadata'.format(attr)
+            assert attr in archive_metadata, 'Required attribute "{}" missing from metadata'.format(
+                attr)
 
-        if raise_if_exists:
+        if raise_on_err:
             self._create_archive(
                 archive_name,
                 authority_name,
@@ -114,7 +120,7 @@ class BaseDataManager(object):
         try:
             authority_name = self._get_authority_name(archive_name)
             service_path = self._get_service_path(archive_name)
-            
+
         except KeyError:
             raise KeyError('Archive "{}" not found'.format(archive_name))
 
@@ -124,17 +130,16 @@ class BaseDataManager(object):
             authority=authority_name,
             service_path=service_path)
 
-
     def get_archives(self):
         '''
-        Returns a list of DataArchive objects 
+        Returns a list of DataArchive objects
 
         '''
-        return [self.get_archive(arch) for arch in self._get_archive_names()]
+        return [self.get_archive(arch) for arch in self.get_archive_names()]
 
     def get_archive_names(self):
         '''
-        Returns a list of DataArchive names 
+        Returns a list of DataArchive names
 
         '''
         return self._get_archive_names()

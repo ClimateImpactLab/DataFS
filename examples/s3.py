@@ -28,7 +28,6 @@ We need a few things for this example:
     >>> from datafs.managers.manager_mongo import MongoDBManager
     >>> from datafs import DataAPI
     >>> from fs.tempfs import TempFS
-    >>> from ast import literal_eval
     >>> import os
     >>> import tempfile
     >>> import shutil
@@ -67,8 +66,8 @@ Attach Manager
 
 Next, we'll choose an archive manager. DataFS currently
 supports MongoDB and DynamoDB managers. In this example
-we'll use a local MongoDB manager. Make sure you have 
-a MongoDB server running, then create a 
+we'll use a local MongoDB manager. Make sure you have
+a MongoDB server running, then create a
 MongoDBManager instance:
 
 .. code-block:: python
@@ -77,12 +76,12 @@ MongoDBManager instance:
     ...     database_name = 'MyDatabase',
     ...     table_name = 'DataFiles')
 
-If this is the first time you've set up this database, you'll need to create a 
+If this is the first time you've set up this database, you'll need to create a
 table:
 
 .. code-block:: python
 
-    >>> manager.create_archive_table('DataFiles', raise_if_exists=False)
+    >>> manager.create_archive_table('DataFiles', raise_on_err=False)
 
 
 All set. Now we can attach the manager to our DataAPI object:
@@ -114,7 +113,7 @@ Now we can create our first archive. An archive must
 have an archive_name. In addition, you can supply any
 additional keyword arguments, which will be stored as
 metadata. To suppress errors on re-creation, use the
-``raise_if_exists=False`` flag.
+``raise_on_err=False`` flag.
 
 .. code-block:: python
 
@@ -227,7 +226,7 @@ Cleaning up
 
     >>> var.delete()
     >>> api.manager.delete_table('DataFiles')
-    
+
 
 Next steps
 ~~~~~~~~~~

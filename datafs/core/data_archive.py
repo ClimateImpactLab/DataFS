@@ -1,9 +1,10 @@
 from __future__ import absolute_import
 
 from datafs.core import data_file
-import fs.utils
 from contextlib import contextmanager
-    
+import fs.utils
+import os
+
 
 class DataArchive(object):
 
@@ -15,7 +16,8 @@ class DataArchive(object):
         self._service_path = service_path
 
     def __repr__(self):
-        return "<{} {}://{}>".format(self.__class__.__name__, self.authority_name, self.archive_name)
+        return "<{} {}://{}>".format(self.__class__.__name__,
+                                     self.authority_name, self.archive_name)
 
     @property
     def authority_name(self):
@@ -71,20 +73,26 @@ class DataArchive(object):
 
         if checksum['checksum'] == self.latest_hash:
             self.update_metadata(kwargs)
-            
+
             if self.cache:
                 cache_loc = self.api.cache.fs.getsyspath(self.service_path)
                 cache_hash = self.api.hash_file(cache_loc)['checksum']
-    
+
                 if self.latest_hash != cache_hash:
-                    self.api.cache.upload(filepath, self.service_path, remove=remove)
+                    self.api.cache.upload(
+                        filepath, self.service_path, remove=remove)
+
+            if remove and os.path.isfile(filepath):
+                os.remove(filepath)
 
             return
 
-        self.authority.upload(filepath, self.service_path)
-
-        if self.cache:
+        elif self.cache:
+            self.authority.upload(filepath, self.service_path)
             self.api.cache.upload(filepath, self.service_path, remove=remove)
+
+        else:
+            self.authority.upload(filepath, self.service_path, remove=remove)
 
         self._update_manager(checksum, kwargs)
 
@@ -116,42 +124,40 @@ class DataArchive(object):
         version_check = lambda chk: chk['checksum'] == latest_hash
 
         opener = data_file.open_file(
-            self.authority, 
-            self.api.cache, 
-            self._update_manager, 
-            self.service_path, 
+            self.authority,
+            self.api.cache,
+            self._update_manager,
+            self.service_path,
             version_check,
             self.api.hash_file,
             mode,
-            *args, 
+            *args,
             **kwargs)
 
         with opener as f:
             yield f
-
 
     @contextmanager
     def get_local_path(self):
         '''
         Returns a local path for read/write
         '''
-        
+
         latest_hash = self.latest_hash
 
         # version_check returns true if fp's hash is current as of read
         version_check = lambda chk: chk['checksum'] == latest_hash
 
         path = data_file.get_local_path(
-            self.authority, 
-            self.api.cache, 
-            self._update_manager, 
-            self.service_path, 
+            self.authority,
+            self.api.cache,
+            self._update_manager,
+            self.service_path,
             version_check,
             self.api.hash_file)
 
         with path as fp:
             yield fp
-
 
     def delete(self):
         '''
@@ -160,10 +166,10 @@ class DataArchive(object):
         .. warning::
 
             Deleting an archive will erase all data and metadata permanently.
-            This functionality can be removed by subclassing and overloading 
-            this method. For help subclassing DataFS see 
+            This functionality can be removed by subclassing and overloading
+            this method. For help subclassing DataFS see
             :ref:`Subclassing DataFS <tutorial-subclassing>`
-        
+
         '''
 
         if self.authority.fs.exists(self.archive_name):
@@ -174,7 +180,6 @@ class DataArchive(object):
                 self.api.cache.fs.delete(self.archive_name)
 
         self.api.manager.delete_archive_record(self.archive_name)
-
 
     def isfile(self, *args, **kwargs):
         '''
@@ -221,7 +226,7 @@ class DataArchive(object):
         '''
         Set the cache property to start/stop file caching for this archive
         '''
-        
+
         if self.api.cache and self.api.cache.fs.isfile(self.service_path):
             return True
 
@@ -233,18 +238,13 @@ class DataArchive(object):
         if not self.api.cache:
             raise ValueError('No cache attached')
 
-        if bool(value):
+        if value:
 
             if not self.api.cache.fs.isfile(self.service_path):
-                self.api.cache.fs.makedir(
-                    fs.path.dirname(self.service_path),
-                    recursive=True,
-                    allow_recreate=True)
-                self.api.cache.fs.createfile(self.service_path)
+                data_file._touch(self.api.cache.fs, self.service_path)
 
-            else:
-                # cache exists
-                pass
+            assert self.api.cache.fs.isfile(
+                self.service_path), "Cache creation failed"
 
         else:
 

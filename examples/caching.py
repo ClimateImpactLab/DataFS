@@ -7,7 +7,6 @@ Setup
     >>> from datafs import DataAPI
     >>> from fs.tempfs import TempFS
     >>> from fs.s3fs import S3FS
-    >>> from ast import literal_eval
     >>> import os
     >>> import tempfile
     >>> import shutil
@@ -22,7 +21,7 @@ Create an API and attach a manager
     ...     database_name = 'MyDatabase',
     ...     table_name = 'DataFiles')
     >>>
-    >>> manager.create_archive_table('DataFiles', raise_if_exists=False)
+    >>> manager.create_archive_table('DataFiles', raise_on_err=False)
     >>> api.attach_manager(manager)
     >>>
 
@@ -39,7 +38,7 @@ Create an archive
 
     >>> var = api.create_archive(
     ...     'caching_archive',
-    ...     metadata = dict(description = 'My cached remote archive'), 
+    ...     metadata = dict(description = 'My cached remote archive'),
     ...     authority_name='aws')
     >>>
     >>> with var.open('w+') as f:
@@ -55,7 +54,7 @@ Let's peek under the hood to see where this data is stored:
     >>> var.authority.fs.getpathurl('caching/archive') # doctest: +ELLIPSIS
     'https://test-bucket.s3.amazonaws.com/caching/archive?...AWSAccessKeyId=MY_KEY'
 
-Now let's set up a cache. This would typically be a local or networked directory 
+Now let's set up a cache. This would typically be a local or networked directory
 but we'll use a temporary filesystem for this example:
 
     >>> cache = TempFS()
@@ -78,4 +77,3 @@ Cleanup
     >>> var.delete()
 
 '''
-

@@ -16,7 +16,12 @@ class DynamoDBManager(BaseDataManager):
 
     """
 
-    def __init__(self, table_name, api=None, session_args={}, resource_args={}):
+    def __init__(
+            self,
+            table_name,
+            api=None,
+            session_args={},
+            resource_args={}):
         super(DynamoDBManager, self).__init__(api)
 
         self._table_name = table_name
@@ -27,14 +32,13 @@ class DynamoDBManager(BaseDataManager):
         self._resource = self._session.resource('dynamodb', **resource_args)
         self._table = self._resource.Table(table_name)
 
-
     @property
     def config(self):
         config = {
             'table_name': self._table_name,
             'session_args': self._session_args,
             'resource_args': self._resource_args
-            }
+        }
 
         return config
 
@@ -45,7 +49,8 @@ class DynamoDBManager(BaseDataManager):
         if len(self._table.scan(AttributesToGet=['_id'])['Items']) == 0:
             return []
         else:
-            res = [str(archive['_id']) for archive in self._table.scan(AttributesToGet=['_id'])['Items']]
+            res = [str(archive['_id']) for archive in self._table.scan(
+                AttributesToGet=['_id'])['Items']]
             return res
 
     def _update(self, archive_name, version_metadata):
@@ -64,15 +69,15 @@ class DynamoDBManager(BaseDataManager):
         Returns
         -------
         dict
-            list of dictionaries of version_metadata 
+            list of dictionaries of version_metadata
         '''
         self._table.update_item(
-                    Key={'_id': archive_name},
-                    UpdateExpression="SET version_metadata = list_append(:v, version_metadata)",
-                    ExpressionAttributeValues={ ':v': [version_metadata]
-                    },
-                    ReturnValues='ALL_NEW'
-                )
+            Key={
+                '_id': archive_name},
+            UpdateExpression="SET version_metadata = list_append(:v, version_metadata)",
+            ExpressionAttributeValues={
+                ':v': [version_metadata]},
+            ReturnValues='ALL_NEW')
 
     def _get_table_names(self):
         return [t.name for t in self._resource.tables.all()]
@@ -82,10 +87,15 @@ class DynamoDBManager(BaseDataManager):
             raise KeyError('Table "{}" already exists'.format(table_name))
 
         try:
-            self._resource.create_table(TableName=table_name, 
-                    KeySchema=[{'AttributeName': '_id', 'KeyType': 'HASH'},],
-                    AttributeDefinitions=[{'AttributeName': '_id', 'AttributeType': 'S'},], 
-                    ProvisionedThroughput={'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123})
+            self._resource.create_table(TableName=table_name,
+                                        KeySchema=[{'AttributeName': '_id',
+                                                    'KeyType': 'HASH'},
+                                                   ],
+                                        AttributeDefinitions=[{'AttributeName': '_id',
+                                                               'AttributeType': 'S'},
+                                                              ],
+                                        ProvisionedThroughput={'ReadCapacityUnits': 123,
+                                                               'WriteCapacityUnits': 123})
 
         except ValueError:
             # Error handling for windows incompatability issue
@@ -102,7 +112,6 @@ class DynamoDBManager(BaseDataManager):
         except ValueError:
             # Error handling for windows incompatability issue
             assert table_name not in self._get_table_names(), 'Table deletion failed'
-
 
     def _update_metadata(self, archive_name, metadata):
         """
@@ -121,61 +130,74 @@ class DynamoDBManager(BaseDataManager):
 
         """
 
-        #keep the current state in memory
+        # keep the current state in memory
         archive_data_current = self._get_archive_metadata(archive_name)
         archive_data_current.update(metadata)
-        #add the updated archive_data object to Dynamo
-        updated = self._table.update_item(Key={'_id': archive_name},
-                    UpdateExpression="SET archive_data = :v",
-                    ExpressionAttributeValues={
-                    ':v': archive_data_current
-                    },
-                    ReturnValues='ALL_NEW'
-                    )
+        # add the updated archive_data object to Dynamo
+        updated = self._table.update_item(
+            Key={
+                '_id': archive_name},
+            UpdateExpression="SET archive_data = :v",
+            ExpressionAttributeValues={
+                ':v': archive_data_current},
+            ReturnValues='ALL_NEW')
 
-    def _create_archive(self, archive_name, authority_name, service_path, metadata):
-
+    def _create_archive(
+            self,
+            archive_name,
+            authority_name,
+            service_path,
+            metadata):
         '''
         This adds an item in a DynamoDB table corresponding to a S3 object
-        
+
         Args
         ----
-        arhive_name: str 
+        arhive_name: str
             corresponds to the name of the Archive (e.g. )
 
-        
+
         Returns
         -------
         Dictionary with confirmation of upload
-        
+
         Note
         ----
         versioning is handled by s3
-        
+
         Todo
         -----
         Coerce underscores to dashes
         '''
 
         item = {
-                '_id': archive_name, 
-                'authority_name': authority_name, 
-                'service_path': service_path, 
-                'version_metadata' : [],
-                'archive_data':metadata
-                }
+            '_id': archive_name,
+            'authority_name': authority_name,
+            'service_path': service_path,
+            'version_metadata': [],
+            'archive_data': metadata
+        }
 
         if archive_name in self._get_archive_names():
 
-            raise KeyError("{} already exists. Use get_archive() to view".format(archive_name))
-        
+            raise KeyError(
+                "{} already exists. Use get_archive() to view".format(archive_name))
+
         else:
             self._table.put_item(Item=item)
 
-             
-    def _create_if_not_exists(self, archive_name, authority_name, service_name, metadata):
+    def _create_if_not_exists(
+            self,
+            archive_name,
+            authority_name,
+            service_name,
+            metadata):
         try:
-            self._create_archive(archive_name, authority_name, service_name, metadata)
+            self._create_archive(
+                archive_name,
+                authority_name,
+                service_name,
+                metadata)
         except KeyError:
             pass
 
@@ -225,5 +247,4 @@ class DynamoDBManager(BaseDataManager):
 
     def _delete_archive_record(self, archive_name):
 
-
-        return self._table.delete_item(Key={'_id': archive_name})        
+        return self._table.delete_item(Key={'_id': archive_name})

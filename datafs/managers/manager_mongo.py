@@ -61,7 +61,7 @@ class MongoDBManager(BaseDataManager):
             'database_name': self._database_name,
             'table_name': self._table_name,
             'client_kwargs': self._client_kwargs
-            }
+        }
 
         return config
 
@@ -85,9 +85,8 @@ class MongoDBManager(BaseDataManager):
     def _delete_table(self, table_name):
         if table_name not in self._get_table_names():
             raise KeyError('Table "{}" not found'.format(table_name))
-        
-        self.db.drop_collection(table_name)
 
+        self.db.drop_collection(table_name)
 
     @property
     def collection(self):
@@ -95,7 +94,6 @@ class MongoDBManager(BaseDataManager):
             self._connect()
 
         return self._coll
-
 
     @property
     def db(self):
@@ -189,7 +187,6 @@ class MongoDBManager(BaseDataManager):
 
         return res['service_path']
 
-
     def _get_archive_metadata(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
@@ -221,9 +218,9 @@ class MongoDBManager(BaseDataManager):
     def _delete_archive_record(self, archive_name):
 
         return self.collection.remove({'_id': archive_name})
-        
+
     def _get_archive_names(self):
 
         res = self.collection.find({}, {"_id": 1})
-        
+
         return [r['_id'] for r in res]

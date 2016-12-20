@@ -1,9 +1,9 @@
 '''
 
-This tutorial demonstrates reading and writing files to remote archives using 
+This tutorial demonstrates reading and writing files to remote archives using
 on-disk I/O operations.
 
-To demonstrate this, we make use of the :py:mod:`xarray` module, which cannot 
+To demonstrate this, we make use of the :py:mod:`xarray` module, which cannot
 read from a streaming object.
 
 Set up the workspace
@@ -27,7 +27,7 @@ Initialize the API
     ...     database_name = 'MyDatabase',
     ...     table_name = 'DataFiles')
     >>>
-    >>> manager.create_archive_table('DataFiles', raise_if_exists=False)
+    >>> manager.create_archive_table('DataFiles', raise_on_err=False)
     >>>
     >>> api.attach_manager(manager)
 
@@ -35,7 +35,7 @@ Initialize the API
 Attach a remote service
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-In this example we'll use a remote file system, in this case AWS S3. This 
+In this example we'll use a remote file system, in this case AWS S3. This
 filesystem returns streaming objects returned by ``boto`` or ``request`` calls.
 
 
@@ -135,14 +135,14 @@ We can update file in the same way:
 
     >>> with var.get_local_path() as f:
     ...     with xr.open_dataset(f) as ds:
-    ...     
+    ...
     ...         # Load the dataset fully into memory and then close the file
-    ...         
+    ...
     ...         dsmem = ds.load()
     ...         ds.close()
-    ...     
+    ...
     ...     # Update the version and save the file
-    ...     
+    ...
     ...     dsmem.attrs['version'] = 'version 2'
     ...     dsmem.to_netcdf(f)
     ...
@@ -176,5 +176,5 @@ Cleaning up
 
     >>> var.delete()
     >>> api.manager.delete_table('DataFiles')
-    
+
 '''

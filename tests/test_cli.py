@@ -142,6 +142,7 @@ profiles:
 
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'list'])
     #print result.output
+    assert result.exit_code == 0
     assert 'my_first_archive' in result.output
     assert api2.archives[0].archive_name == 'my_first_archive'
 
@@ -154,6 +155,7 @@ profiles:
 
         #use testing suite to make command line update
         result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'upload', 'my_first_archive', 'hello.txt', '--source', 'Surfers Journal'])
+        assert result.exit_code == 0
         #assert that we get upload feedback
         assert 'uploaded data to <DataArchive local://my_first_archive>' in result.output
         #lets read the file to make sure it says what we want
@@ -176,10 +178,19 @@ profiles:
 
     
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'versions', 'my_first_archive'])
+    assert result.exit_code == 0
     
     assert api2.archives[0].versions[0]['checksum'] in result.output
 
-    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'download', 'my_first_archive'])
+    with runner.isolated_filesystem():
+
+        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'download', 'my_first_archive', 'here.txt'])
+        assert result.exit_code == 0
+
+        with open('here.txt', 'r') as downloaded:
+            assert downloaded.read() == 'Hoo Yah! Stay Stoked!'
+
+
 
 
     #teardown

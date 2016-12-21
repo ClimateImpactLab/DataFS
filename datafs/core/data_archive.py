@@ -173,32 +173,37 @@ class DataArchive(object):
         3. If not break
         '''
 
+        dirname, filename= os.path.split(
+            os.path.abspath(os.path.expanduser(filepath)))
+        
+        # We could either make sure the directory exists by 
+        # assertion or just create the directory. I don't 
+        # really have a preference, though assertion seems 
+        # cleaner. I suppose this isn't very pythoninc 
 
-        local = OSFS(os.path.dirname(filepath))
-        print(local)
+        assert os.path.isdir(dirname), 'Directory  not found: "{}"'.format(dirname)
+        # # == or ==
+        # if not os.path.isdir(dirname):
+        #     os.makedirs(dirname)
+
+        local = OSFS(dirname)
 
         latest_hash = self.latest_hash
-        print(latest_hash)
 
         # version_check returns true if fp's hash is current as of read
         version_check = lambda chk: chk['checksum'] == latest_hash
-        print(version_check)
-
 
         if os.path.exists(filepath):
-            if version_check(filepath):
+            if version_check(self.api.hash_file(filepath)):
                 return
 
         with data_file._choose_read_fs(self.authority, self.cache, self.service_path, version_check, self.api.hash_file) as read_fs:
-
-            print(self.authority, self.cache, self.service_path, version_check, self.api.hash_file)
-            #print read_fs, self.service_path, local, os.path.basename(filepath)
 
             fs.utils.copyfile(
                 read_fs,
                 self.service_path,
                 local,
-                os.path.basename(filepath))
+                filename)
 
     def delete(self):
         '''

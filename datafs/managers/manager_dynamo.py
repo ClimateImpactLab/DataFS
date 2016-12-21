@@ -42,6 +42,9 @@ class DynamoDBManager(BaseDataManager):
 
         return config
 
+    # Private methods 
+    
+
     def _get_archive_names(self):
         """
         Returns a list of Archives in the table on Dynamo

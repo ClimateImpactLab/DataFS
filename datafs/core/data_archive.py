@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from datafs.core import data_file
 from contextlib import contextmanager
 import fs.utils
+from fs.osfs import OSFS
 import os
 
 
@@ -55,6 +56,9 @@ class DataArchive(object):
 
         cache : bool
             Turn on caching for this archive if not already on before upload
+
+        remove: bool
+            removes a file from your local directory
 
         **kwargs stored as update to metadata.
 
@@ -158,6 +162,49 @@ class DataArchive(object):
 
         with path as fp:
             yield fp
+
+
+
+    def download(self,filepath):
+        '''
+        Downloads a file from authority to local path
+        1. First checks in cache to check if file is there and if it is, is it up to date
+        2. If it is not up to date, it will download the file to cache
+        3. If not break
+        '''
+
+        dirname, filename= os.path.split(
+            os.path.abspath(os.path.expanduser(filepath)))
+        
+        # We could either make sure the directory exists by 
+        # assertion or just create the directory. I don't 
+        # really have a preference, though assertion seems 
+        # cleaner. I suppose this isn't very pythonic but 
+        # I like giving users more specific error messages.
+
+        assert os.path.isdir(dirname), 'Directory  not found: "{}"'.format(dirname)
+        # # == or ==
+        # if not os.path.isdir(dirname):
+        #     os.makedirs(dirname)
+
+        local = OSFS(dirname)
+
+        latest_hash = self.latest_hash
+
+        # version_check returns true if fp's hash is current as of read
+        version_check = lambda chk: chk['checksum'] == latest_hash
+
+        if os.path.exists(filepath):
+            if version_check(self.api.hash_file(filepath)):
+                return
+
+        with data_file._choose_read_fs(self.authority, self.cache, self.service_path, version_check, self.api.hash_file) as read_fs:
+
+            fs.utils.copyfile(
+                read_fs,
+                self.service_path,
+                local,
+                filename)
 
     def delete(self):
         '''

@@ -35,6 +35,7 @@ def enforce_user_config_requirements(func):
 
 class DataAPI(object):
 
+
     TimestampFormat = '%Y%m%d-%H%M%S'
 
     DefaultAuthorityName = None
@@ -65,6 +66,7 @@ class DataAPI(object):
 
         self._authorities[service_name] = DataService(service)
 
+
     def lock_authorities(self):
         self._authorities_locked = True
 
@@ -87,11 +89,11 @@ class DataAPI(object):
     @property
     def manager(self):
         return self._manager
-
+    #set cache attr
     @property
     def cache(self):
         return self._cache
-
+    #get the default athority setting 
     @property
     def default_authority_name(self):
 
@@ -105,13 +107,14 @@ class DataAPI(object):
         if len(self._authorities) > 1:
             raise ValueError(
                 'Authority ambiguous. Set authority or DefaultAuthorityName.')
-
+        #get the zeroth key
         return list(self._authorities.keys())[0]
 
+    #Do we want to provide a method for setting authorities
     @property
     def default_authority(self):
         return self._authorities[self.default_authority_name]
-
+    #attach a metadata index
     def attach_manager(self, manager):
 
         if self._manager_locked:
@@ -298,7 +301,7 @@ class DataAPI(object):
 
     def close(self):
         for service in self._authorities:
-            service.fs.close()
+            self._authorities[service].fs.close()
 
         if self.cache:
-            self.cache.close()
+            self.cache.fs.close()

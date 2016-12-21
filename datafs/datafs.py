@@ -21,6 +21,7 @@ def parse_args_as_kwargs(args):
 def interactive_configuration(api, config, profile=None):
     profile_config = config.get_profile_config(profile)
 
+    #read from the required config settings in DataAPI
     for kw in api.REQUIRED_USER_CONFIG:
         if kw not in api.user_config:
             profile_config['api']['user_config'][kw] = click.prompt(
@@ -40,6 +41,9 @@ class DataFSInterface(object):
         self.config_file = config_file
 
 
+
+
+#this sets the command line environment for 
 @click.group()
 @click.option('--config-file', envvar='CONFIG_FILE', type=str)
 @click.option('--profile', envvar='PROFILE', type=str, default=None)

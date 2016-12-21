@@ -179,7 +179,8 @@ class DataArchive(object):
         # We could either make sure the directory exists by 
         # assertion or just create the directory. I don't 
         # really have a preference, though assertion seems 
-        # cleaner. I suppose this isn't very pythoninc 
+        # cleaner. I suppose this isn't very pythonic but 
+        # I like giving users more specific error messages.
 
         assert os.path.isdir(dirname), 'Directory  not found: "{}"'.format(dirname)
         # # == or ==

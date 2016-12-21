@@ -168,10 +168,11 @@ profiles:
         assert data == 'Hoo Yah! Stay Stoked!'
 
     #lets check to make sure our metadata update also passed through
-    assert 'Surfers Journal' in api2.archives[0].metadata.values()
+    assert 'Surfers Journal' ==  api2.archives[0].metadata['source']
 
     
-
+    #test to assert metadata update
+    #test to assert file content change
 
     
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'versions', 'my_first_archive'])

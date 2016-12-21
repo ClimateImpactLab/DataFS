@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from datafs.core import data_file
 from contextlib import contextmanager
 import fs.utils
+from fs.osfs import OSFS
 import os
 
 
@@ -161,6 +162,43 @@ class DataArchive(object):
 
         with path as fp:
             yield fp
+
+
+
+    def download(self,filepath):
+        '''
+        Downloads a file from authority to local path
+        1. First checks in cache to check if file is there and if it is, is it up to date
+        2. If it is not up to date, it will download the file to cache
+        3. If not break
+        '''
+
+
+        local = OSFS(os.path.dirname(filepath))
+        print(local)
+
+        latest_hash = self.latest_hash
+        print(latest_hash)
+
+        # version_check returns true if fp's hash is current as of read
+        version_check = lambda chk: chk['checksum'] == latest_hash
+        print(version_check)
+
+
+        if os.path.exists(filepath):
+            if version_check(filepath):
+                return
+
+        with data_file._choose_read_fs(self.authority, self.cache, self.service_path, version_check, self.api.hash_file) as read_fs:
+
+            print(self.authority, self.cache, self.service_path, version_check, self.api.hash_file)
+            #print read_fs, self.service_path, local, os.path.basename(filepath)
+
+            fs.utils.copyfile(
+                read_fs,
+                self.service_path,
+                local,
+                os.path.basename(filepath))
 
     def delete(self):
         '''

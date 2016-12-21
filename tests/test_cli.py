@@ -86,15 +86,6 @@ def temp_file():
         _close(tmp.name)
 
 
-def temp_update_file():
-    tmp = tempfile.NamedTemporaryFile(delete=False).name.replace(os.sep, '/')
-
-    with open(tmp, 'w+') as f:
-        f.write('some text to display')
-
-    return tmp
-
-
 def test_cli_local(manager_table, temp_dir, temp_file):
 
     my_test_yaml = r'''
@@ -156,24 +147,42 @@ profiles:
 
 
     #test upload
+    #this feels so gnarly
     with runner.isolated_filesystem():
         with open('hello.txt', 'w') as f:
             f.write('Hoo Yah! Stay Stoked!')
 
-    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'upload', 'my_first_archive', 'hello.txt', '--source', 'Surfers Journal'])
-    assert 'uploaded data to <DataArchive local://my_first_archive>' in result.output
-    assert result.output == 'Hoo Yah! Stay Stoked!'
+        #use testing suite to make command line update
+        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'upload', 'my_first_archive', 'hello.txt', '--source', 'Surfers Journal'])
+        #assert that we get upload feedback
+        assert 'uploaded data to <DataArchive local://my_first_archive>' in result.output
+        #lets read the file to make sure it says what we want
+        with open('hello.txt','r') as f:
+            data = f.read()
+            assert data == 'Hoo Yah! Stay Stoked!'
+        print result.output
 
+    #this is testing the feed through on the api
+    with api2.archives[0].open('r') as f:
+        data = f.read()
+        assert data == 'Hoo Yah! Stay Stoked!'
+
+    #lets check to make sure our metadata update also passed through
+    assert 'Surfers Journal' in api2.archives[0].metadata.values()
 
     
 
 
+    
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'versions', 'my_first_archive'])
-    #print result.output
+    
+    assert api2.archives[0].versions[0]['checksum'] in result.output
 
-    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'download', 'my_first_archive'])
 
 
+    #teardown
+    api2.archives[0].delete()
 
 if __name__ == '__main__':
     ctx_manager_table = contextmanager(manager_table)

@@ -112,6 +112,7 @@ def _choose_write_fs(cache, service_path):
         shutil.rmtree(tmp)
 
 
+
 @contextmanager
 def _prepare_write_fs(read_fs, cache, service_path, readwrite_mode=True):
 

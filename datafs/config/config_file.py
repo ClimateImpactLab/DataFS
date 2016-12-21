@@ -34,18 +34,15 @@ class ConfigFile(object):
 
     def read_config(self):
 
-        try:
-            if hasattr(self.config_file, 'read'):
-                config = yaml.load(self.config_file)
+        if hasattr(self.config_file, 'read'):
+            config = yaml.load(self.config_file)
 
-            else:
-                with open(self.config_file, 'r') as y:
-                    config = yaml.load(y)
+        else:
+            with open(self.config_file, 'r') as y:
+                config = yaml.load(y)
 
-            self.parse_configfile_contents(config)
+        self.parse_configfile_contents(config)
 
-        except IOError:
-            pass
 
     def edit_config_file(self):
         self.write_config()

@@ -36,7 +36,7 @@ def _close(path):
         raise e
 
 
-@pytest.yield_fixture
+@pytest.yield_fixture(scope='function')
 def manager_table():
 
     # setup manager table
@@ -60,9 +60,7 @@ def manager_table():
         manager.delete_table(table_name)
 
 
-
-
-@pytest.yield_fixture
+@pytest.yield_fixture(scope='function')
 def temp_dir():
 
     # setup data directory
@@ -76,12 +74,12 @@ def temp_dir():
         _close(temp)
 
 
-@pytest.yield_fixture
+@pytest.yield_fixture(scope='function')
 def temp_file():
     tmp = tempfile.NamedTemporaryFile(delete=False)
 
     try:
-        yield tmp.name
+        yield tmp.name.replace(os.sep, '/')
 
     finally:
         tmp.close()
@@ -105,7 +103,7 @@ profiles:
         service: OSFS
     cache: {{}}
     manager:
-      class: DynamoDBManager
+      class: "DynamoDBManager"
       kwargs:
         resource_args: 
             endpoint_url: "http://localhost:8000/"
@@ -119,18 +117,84 @@ profiles:
     with open(temp_file, 'w+') as f:
         f.write(my_test_yaml)
 
+    api2 = get_api(profile='myapi', config_file=temp_file)
+
     runner = CliRunner()
 
-    result = runner.invoke(cli, ['--config-file', '"{}"'.format(temp_file), '--profile', 'myapi', 'create_archive', 'my_first_archive', '--description', 'My test data archive'])
-    print(result.output)
-    # assert result.exit_code == 0
 
-    result = runner.invoke(cli, ['--config-file', '"{}"'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
-    print(result.output)
-    # assert result.exit_code == 0
-    # assert result.output == "{'metadata': 'my_first_archive'}"
+    #test for configure and create archive
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'create_archive', 'my_first_archive', '--description', 'My test data archive'])
+    assert result.exit_code == 0
+    assert result.output.strip() == 'created archive <DataArchive local://my_first_archive>'
+
+    #test the actual creation of the object from the api side
+    assert len(api2.archives) == 1
+    assert api2.archives[0].archive_name == 'my_first_archive'
+
+    #testing the `metadata` option
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
+    assert result.exit_code == 0
+    assert "'description': 'My test data archive'" in result.output or "u'description': u'My test data archive'" in result.output
+    #test the api side of the operation
+    assert u'My test data archive' in api2.archives[0].metadata.values()
 
 
+
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'list'])
+    #print result.output
+    assert result.exit_code == 0
+    assert 'my_first_archive' in result.output
+    assert api2.archives[0].archive_name == 'my_first_archive'
+
+
+    #test upload
+    #this feels so gnarly
+    with runner.isolated_filesystem():
+        with open('hello.txt', 'w') as f:
+            f.write('Hoo Yah! Stay Stoked!')
+
+        #use testing suite to make command line update
+        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'upload', 'my_first_archive', 'hello.txt', '--source', 'Surfers Journal'])
+        assert result.exit_code == 0
+        #assert that we get upload feedback
+        assert 'uploaded data to <DataArchive local://my_first_archive>' in result.output
+        #lets read the file to make sure it says what we want
+        with open('hello.txt','r') as f:
+            data = f.read()
+            assert data == 'Hoo Yah! Stay Stoked!'
+        print result.output
+
+    #this is testing the feed through on the api
+    with api2.archives[0].open('r') as f:
+        data = f.read()
+        assert data == 'Hoo Yah! Stay Stoked!'
+
+    #lets check to make sure our metadata update also passed through
+    assert 'Surfers Journal' ==  api2.archives[0].metadata['source']
+
+    
+    #test to assert metadata update
+    #test to assert file content change
+
+    
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'versions', 'my_first_archive'])
+    assert result.exit_code == 0
+    
+    assert api2.archives[0].versions[0]['checksum'] in result.output
+
+    with runner.isolated_filesystem():
+
+        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'download', 'my_first_archive', 'here.txt'])
+        assert result.exit_code == 0
+
+        with open('here.txt', 'r') as downloaded:
+            assert downloaded.read() == 'Hoo Yah! Stay Stoked!'
+
+
+
+
+    #teardown
+    api2.archives[0].delete()
 
 if __name__ == '__main__':
     ctx_manager_table = contextmanager(manager_table)
@@ -139,3 +203,4 @@ if __name__ == '__main__':
 
     with ctx_manager_table() as m, ctx_temp_dir() as tempdir, ctx_temp_file() as tmp:
         test_cli_local(m, tempdir, tmp)
+

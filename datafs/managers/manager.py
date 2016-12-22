@@ -30,10 +30,12 @@ class BaseDataManager(object):
     def create_archive_table(self, table_name, raise_on_err=True):
         if raise_on_err:
             self._create_archive_table(table_name)
+            self._create_spec_table(table_name)
 
         else:
             try:
                 self._create_archive_table(table_name)
+                self._create_spec_table(table_name)
             except KeyError:
                 pass
 
@@ -266,6 +268,9 @@ class BaseDataManager(object):
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _create_archive_table(self, table_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+    def _create_spec_table(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 

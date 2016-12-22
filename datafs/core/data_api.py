@@ -7,7 +7,6 @@ from contextlib import contextmanager
 import fs.path
 
 import os
-import time
 import hashlib
 
 
@@ -18,25 +17,9 @@ except:
         pass
 
 
-def enforce_user_config_requirements(func):
-    '''
-    Method decorator for DataAPI enforcing user_config requirements
-    '''
-
-    def inner(self, *args, **kwargs):
-        for kw in self.REQUIRED_USER_CONFIG.keys():
-            if kw not in self.user_config:
-                raise KeyError(
-                    'Required API configuration item "{}" not found'.format(kw))
-
-        return func(self, *args, **kwargs)
-    return inner
-
-
 class DataAPI(object):
 
 
-    TimestampFormat = '%Y%m%d-%H%M%S'
 
     DefaultAuthorityName = None
 
@@ -117,7 +100,6 @@ class DataAPI(object):
 
         self._manager = manager
 
-    @enforce_user_config_requirements
     def create_archive(
             self,
             archive_name,
@@ -156,7 +138,7 @@ class DataAPI(object):
         if service_path is None:
             service_path = self.create_service_path(archive_name)
 
-        return self.manager.create_archive(
+        res = self.manager.create_archive(
             archive_name,
             authority_name,
             service_path=service_path,
@@ -164,18 +146,18 @@ class DataAPI(object):
             metadata=metadata,
             user_config=self.user_config)
 
-    @enforce_user_config_requirements
+        return self._ArchiveConstructor(api=self, **res)
+
     def get_archive(self, archive_name):
 
         spec = self.manager.get_archive(archive_name)
-        return self._ArchiveConstructor(api=self.api, **spec)
+        return self._ArchiveConstructor(api=self, **spec)
 
 
     @property
-    @enforce_user_config_requirements
     def archives(self):
 
-        return self.manager.get_archives()
+        return list(map(self.get_archive, self.manager.get_archive_names()))
 
 
     @classmethod

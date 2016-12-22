@@ -1,6 +1,9 @@
 
 from __future__ import absolute_import
 
+import time
+
+
 
 class BaseDataManager(object):
     '''
@@ -15,6 +18,7 @@ class BaseDataManager(object):
     REQUIRED_ARCHIVE_METADATA = {
     }
 
+    TimestampFormat = '%Y%m%d-%H%M%S'
 
     def __init__(self):
         pass
@@ -137,13 +141,6 @@ class BaseDataManager(object):
             archive_name=archive_name,
             authority=authority_name,
             service_path=service_path)
-
-    def get_archives(self):
-        '''
-        Returns a list of DataArchive objects
-
-        '''
-        return [self.get_archive(arch) for arch in self.get_archive_names()]
 
     def get_archive_names(self):
         '''

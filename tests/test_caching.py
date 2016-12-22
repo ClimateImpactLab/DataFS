@@ -19,6 +19,7 @@ from datafs.services.service import DataService
 from contextlib import contextmanager
 
 import pytest
+from fs.errors import (ResourceLockedError, ResourceInvalidError)
 
 from tests.resources import string_types, u
 

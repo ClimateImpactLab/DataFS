@@ -132,10 +132,10 @@ class DataArchive(object):
             self.authority,
             self.api.cache,
             self._update_manager,
-            self.service_path,
             version_check,
             self.api.hash_file,
-            mode,
+            self.service_path,
+            mode=mode,
             *args,
             **kwargs)
 
@@ -157,9 +157,9 @@ class DataArchive(object):
             self.authority,
             self.api.cache,
             self._update_manager,
-            self.service_path,
             version_check,
-            self.api.hash_file)
+            self.api.hash_file,
+            self.service_path)
 
         with path as fp:
             yield fp

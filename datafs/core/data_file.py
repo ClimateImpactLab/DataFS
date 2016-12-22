@@ -97,13 +97,19 @@ def _get_write_fs():
     
     tmp = tempfile.mkdtemp()
 
-    # Create a writeFS and path to the directory containing the archive
-    write_fs = OSFS(tmp)
+    try:
+        # Create a writeFS and path to the directory containing the archive
+        write_fs = OSFS(tmp)
 
-    yield write_fs
+        try:
 
-    _close(write_fs)
-    shutil.rmtree(tmp)
+            yield write_fs
+
+        finally:
+            _close(write_fs)
+    
+    finally:
+        shutil.rmtree(tmp)
 
 
 
@@ -196,9 +202,17 @@ def open_file(
                     checksum = hasher(f)
 
                 if not version_check(checksum):
-                    if cache_on_write:
+                    if (
+                            cache_on_write or 
+                            (
+                                cache 
+                                and (
+                                    fs.path.abspath(read_path) == fs.path.abspath(write_path))
+                                and cache.fs.isfile(read_path)
+                            )
+                        ):
                         _makedirs(cache.fs, fs.path.dirname(write_path))
-                        fs.utils.movefile(
+                        fs.utils.copyfile(
                             write_fs, read_path, cache.fs, write_path)
 
                         _makedirs(authority.fs, fs.path.dirname(write_path))
@@ -207,7 +221,7 @@ def open_file(
                         
                     else:
                         _makedirs(authority.fs, fs.path.dirname(write_path))
-                        fs.utils.movefile(
+                        fs.utils.copyfile(
                             write_fs, read_path, authority.fs, write_path)
 
                     update(checksum=checksum)
@@ -277,19 +291,18 @@ def get_local_path(
                         ):
 
                         _makedirs(cache.fs, fs.path.dirname(write_path))
-                        fs.utils.movefile(
+                        fs.utils.copyfile(
                             write_fs, read_path, cache.fs, write_path)
 
                         _makedirs(authority.fs, fs.path.dirname(write_path))
                         fs.utils.copyfile(
-                            write_fs, read_path, authority.fs, write_path)
+                            cache.fs, write_path, authority.fs, write_path)
                     else:
                         _makedirs(authority.fs, fs.path.dirname(write_path))
-                        fs.utils.movefile(
+                        fs.utils.copyfile(
                             write_fs, read_path, authority.fs, write_path)
                     update(checksum=checksum)
 
             else:
-                _touch(write_fs, service_path)
                 raise OSError(
                     'Local file removed during execution. Archive not updated.')

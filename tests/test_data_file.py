@@ -75,12 +75,12 @@ def opener(open_func):
 
 def get_checker(service, filepath):
     if service.fs.isfile(filepath):
-        checksum = DataAPI.hash_file(service.fs.getsyspath(filepath))
+        checksum = DataAPI.hash_file(service.fs.getsyspath(filepath))['checksum']
     else:
         checksum = None
 
     def check(chk):
-        return chk == checksum['checksum']
+        return chk == checksum
 
     return check
 

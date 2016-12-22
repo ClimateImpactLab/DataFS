@@ -9,8 +9,15 @@ class BaseDataManager(object):
     Should be subclassed. Not intended to be used directly.
     '''
 
-    def __init__(self, api=None):
-        self.api = api
+    REQUIRED_USER_CONFIG = {
+    }
+
+    REQUIRED_ARCHIVE_METADATA = {
+    }
+
+
+    def __init__(self):
+        pass
 
     @property
     def table_names(self):
@@ -35,7 +42,7 @@ class BaseDataManager(object):
             except KeyError:
                 pass
 
-    def update(self, archive_name, checksum, metadata):
+    def update(self, archive_name, checksum, metadata, user_config={}):
         '''
         Register a new version for archive ``archive_name``
 
@@ -45,11 +52,11 @@ class BaseDataManager(object):
 
         '''
         version_metadata = {
-            'updated': self.api.create_timestamp(),
+            'updated': self.create_timestamp(),
             'algorithm': checksum['algorithm'],
             'checksum': checksum['checksum']}
 
-        version_metadata.update(self.api.user_config)
+        version_metadata.update(user_config)
 
         archive_data = metadata
 
@@ -69,7 +76,8 @@ class BaseDataManager(object):
             authority_name,
             service_path,
             raise_on_err=True,
-            metadata={}):
+            metadata={},
+            user_config={}):
         '''
         Create a new data archive
 
@@ -81,14 +89,14 @@ class BaseDataManager(object):
         '''
 
         archive_metadata = {}
-        archive_metadata.update(self.api.user_config)
+        archive_metadata.update(user_config)
         archive_metadata.update(metadata)
 
         archive_metadata['creation_date'] = archive_metadata.get(
-            'creation_date', self.api.create_timestamp())
+            'creation_date', self.create_timestamp())
 
-        required = set(self.api.REQUIRED_USER_CONFIG.keys())
-        required |= set(self.api.REQUIRED_ARCHIVE_METADATA.keys())
+        required = set(self.REQUIRED_USER_CONFIG.keys())
+        required |= set(self.REQUIRED_ARCHIVE_METADATA.keys())
 
         for attr in required:
             assert attr in archive_metadata, 'Required attribute "{}" missing from metadata'.format(
@@ -112,9 +120,10 @@ class BaseDataManager(object):
 
         Returns
         -------
-        archive_name : str
-            name of the archive to be retrieved
-
+        archive_specification : dict
+            archive_name: name of the archive to be retrieved
+            authority: name of the archive's authority
+            service_path: service path of archive 
         '''
 
         try:
@@ -124,8 +133,7 @@ class BaseDataManager(object):
         except KeyError:
             raise KeyError('Archive "{}" not found'.format(archive_name))
 
-        return self.api._ArchiveConstructor(
-            api=self.api,
+        return dict(
             archive_name=archive_name,
             authority=authority_name,
             service_path=service_path)
@@ -195,6 +203,18 @@ class BaseDataManager(object):
 
     def get_versions(self, archive_name):
         return self._get_versions(archive_name)
+
+
+    @classmethod
+    def create_timestamp(cls):
+        '''
+        Utility function for formatting timestamps
+
+        Overload this function to change timestamp formats
+        '''
+
+        return time.strftime(cls.TimestampFormat, time.gmtime())
+
 
     # Private methods (to be implemented by subclasses of DataManager)
 

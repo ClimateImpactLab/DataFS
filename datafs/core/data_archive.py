@@ -106,7 +106,8 @@ class DataArchive(object):
         self.api.manager.update(
             archive_name=self.archive_name,
             checksum=checksum,
-            metadata=metadata)
+            metadata=metadata,
+            user_config=self.api.user_config)
 
     def update_metadata(self, metadata):
 

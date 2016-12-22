@@ -42,11 +42,6 @@ class DataAPI(object):
 
     _ArchiveConstructor = DataArchive
 
-    REQUIRED_USER_CONFIG = {
-    }
-
-    REQUIRED_ARCHIVE_METADATA = {
-    }
 
     def __init__(self, **kwargs):
 
@@ -121,7 +116,6 @@ class DataAPI(object):
             raise PermissionError('Manager locked')
 
         self._manager = manager
-        self.manager.api = self
 
     @enforce_user_config_requirements
     def create_archive(
@@ -167,12 +161,15 @@ class DataAPI(object):
             authority_name,
             service_path=service_path,
             raise_on_err=raise_on_err,
-            metadata=metadata)
+            metadata=metadata,
+            user_config=self.user_config)
 
     @enforce_user_config_requirements
     def get_archive(self, archive_name):
 
-        return self.manager.get_archive(archive_name)
+        spec = self.manager.get_archive(archive_name)
+        return self._ArchiveConstructor(api=self.api, **spec)
+
 
     @property
     @enforce_user_config_requirements
@@ -180,15 +177,6 @@ class DataAPI(object):
 
         return self.manager.get_archives()
 
-    @classmethod
-    def create_timestamp(cls):
-        '''
-        Utility function for formatting timestamps
-
-        Overload this function to change timestamp formats
-        '''
-
-        return time.strftime(cls.TimestampFormat, time.gmtime())
 
     @classmethod
     def create_service_path(cls, archive_name):

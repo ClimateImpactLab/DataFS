@@ -9,8 +9,6 @@ class DynamoDBManager(BaseDataManager):
     """
     Parameters
     ----------
-    api : object
-        :py:class:`~datafs.core.data_api.DataAPI` object
     table_name: str
         For Climate Impact Lab table_name = "cil-data"
 
@@ -19,10 +17,9 @@ class DynamoDBManager(BaseDataManager):
     def __init__(
             self,
             table_name,
-            api=None,
             session_args={},
             resource_args={}):
-        super(DynamoDBManager, self).__init__(api)
+        super(DynamoDBManager, self).__init__()
 
         self._table_name = table_name
         self._session_args = session_args

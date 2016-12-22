@@ -35,14 +35,15 @@ class MongoDBManager(BaseDataManager):
     '''
     Parameters
     ----------
-    api : object
-        :py:class:`~datafs.core.data_api.DataAPI` object
+
+    table_name: str
+        For Climate Impact Lab table_name = "cil-data"
 
     *args, **kwargs passed to :py:class:`pymongo.MongoClient`
     '''
 
-    def __init__(self, database_name, table_name, api=None, client_kwargs={}):
-        super(MongoDBManager, self).__init__(api)
+    def __init__(self, database_name, table_name, client_kwargs={}):
+        super(MongoDBManager, self).__init__()
 
         # setup MongoClient
         # Arguments can be passed to the client

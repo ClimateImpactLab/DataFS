@@ -147,6 +147,7 @@ class DynamoDBManager(BaseDataManager):
             archive_name,
             authority_name,
             service_path,
+            versioned,
             metadata):
         '''
         This adds an item in a DynamoDB table corresponding to a S3 object
@@ -174,6 +175,7 @@ class DynamoDBManager(BaseDataManager):
             '_id': archive_name,
             'authority_name': authority_name,
             'service_path': service_path,
+            'versioned': versioned,
             'version_metadata': [],
             'archive_data': metadata
         }
@@ -190,13 +192,15 @@ class DynamoDBManager(BaseDataManager):
             self,
             archive_name,
             authority_name,
-            service_name,
+            service_path,
+            versioned,
             metadata):
         try:
             self._create_archive(
                 archive_name,
                 authority_name,
-                service_name,
+                service_path,
+                versioned,
                 metadata)
         except KeyError:
             pass
@@ -216,6 +220,16 @@ class DynamoDBManager(BaseDataManager):
         res = self._get_archive_listing(archive_name)
 
         return res['archive_data']
+
+    def _get_archive_spec(self, archive_name):
+        res = self._get_archive_listing(archive_name)
+
+        if res is None:
+            raise KeyError
+
+        spec = ['authority_name', 'service_path', 'versioned']
+
+        return {k:v for k,v in res.items() if k in spec}
 
     def _get_authority_name(self, archive_name):
 

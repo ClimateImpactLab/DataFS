@@ -128,12 +128,14 @@ class MongoDBManager(BaseDataManager):
             archive_name,
             authority_name,
             service_path,
+            versioned,
             metadata):
 
         doc = {
             '_id': archive_name,
             'authority_name': authority_name,
             'service_path': service_path,
+            'versioned': versioned,
             'versions': []}
         doc['metadata'] = metadata
 
@@ -147,6 +149,7 @@ class MongoDBManager(BaseDataManager):
             archive_name,
             authority_name,
             service_path,
+            versioned,
             metadata):
 
         try:
@@ -154,9 +157,12 @@ class MongoDBManager(BaseDataManager):
                 archive_name,
                 authority_name,
                 service_path,
+                versioned,
                 metadata)
+
         except KeyError:
             pass
+
 
     @catch_timeout
     def _get_archive_listing(self, archive_name):
@@ -169,6 +175,16 @@ class MongoDBManager(BaseDataManager):
         '''
 
         return self.collection.find_one({'_id': archive_name})
+
+    def _get_archive_spec(self, archive_name):
+        res = self._get_archive_listing(archive_name)
+
+        if res is None:
+            raise KeyError
+
+        spec = ['authority_name', 'service_path', 'versioned']
+        
+        return {k:v for k,v in res.items() if k in spec}
 
     def _get_authority_name(self, archive_name):
 

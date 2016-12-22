@@ -21,6 +21,7 @@ def test_create_archive(base_manager, auth1):
             'archive_1',
             auth1,
             'archive/1',
+            True,
             {})
 
 def test_create_if_not_exists(base_manager, auth1):
@@ -29,6 +30,7 @@ def test_create_if_not_exists(base_manager, auth1):
             'archive_1',
             auth1,
             'archive/1',
+            True,
             {})
 
 def test_get_archives(base_manager):

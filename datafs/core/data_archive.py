@@ -9,12 +9,14 @@ import os
 
 class DataArchive(object):
 
-    def __init__(self, api, archive_name, authority, service_path):
+    def __init__(self, api, archive_name, authority_name, service_path, versioned=False):
         self.api = api
         self.archive_name = archive_name
 
-        self._authority_name = authority
+        self._authority_name = authority_name
         self._service_path = service_path
+
+        self._versioned = versioned
 
     def __repr__(self):
         return "<{} {}://{}>".format(self.__class__.__name__,

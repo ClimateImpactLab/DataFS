@@ -79,6 +79,7 @@ class BaseDataManager(object):
             archive_name,
             authority_name,
             service_path,
+            versioned,
             raise_on_err=True,
             metadata={},
             user_config={}):
@@ -111,10 +112,15 @@ class BaseDataManager(object):
                 archive_name,
                 authority_name,
                 service_path,
+                versioned,
                 archive_metadata)
         else:
             self._create_if_not_exists(
-                archive_name, authority_name, service_path, archive_metadata)
+                archive_name, 
+                authority_name, 
+                service_path, 
+                versioned, 
+                archive_metadata)
 
         return self.get_archive(archive_name)
 
@@ -131,16 +137,13 @@ class BaseDataManager(object):
         '''
 
         try:
-            authority_name = self._get_authority_name(archive_name)
-            service_path = self._get_service_path(archive_name)
+            spec = self._get_archive_spec(archive_name)
+            spec['archive_name'] = archive_name
+            return spec
 
         except KeyError:
             raise KeyError('Archive "{}" not found'.format(archive_name))
 
-        return dict(
-            archive_name=archive_name,
-            authority=authority_name,
-            service_path=service_path)
 
     def get_archive_names(self):
         '''
@@ -224,6 +227,7 @@ class BaseDataManager(object):
             archive_name,
             authority_name,
             service_path,
+            versioned,
             metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
@@ -233,6 +237,7 @@ class BaseDataManager(object):
             archive_name,
             authority_name,
             service_path,
+            versioned,
             metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')

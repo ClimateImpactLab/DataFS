@@ -105,6 +105,7 @@ class DataAPI(object):
             archive_name,
             authority_name=None,
             service_path=None,
+            versioned=False,
             raise_on_err=True,
             metadata={}):
         '''
@@ -142,6 +143,7 @@ class DataAPI(object):
             archive_name,
             authority_name,
             service_path=service_path,
+            versioned=versioned,
             raise_on_err=raise_on_err,
             metadata=metadata,
             user_config=self.user_config)
@@ -150,8 +152,8 @@ class DataAPI(object):
 
     def get_archive(self, archive_name):
 
-        spec = self.manager.get_archive(archive_name)
-        return self._ArchiveConstructor(api=self, **spec)
+        res = self.manager.get_archive(archive_name)
+        return self._ArchiveConstructor(api=self, **res)
 
 
     @property

@@ -1,7 +1,7 @@
 
 from __future__ import absolute_import
 
-import time
+import time, threading
 
 
 
@@ -28,16 +28,37 @@ class BaseDataManager(object):
         return self._get_table_names()
 
     def create_archive_table(self, table_name, raise_on_err=True):
+        
+        def do_create():
+            def setup_archive_table():
+                self._create_archive_table(table_name)
+        
+            def setup_spec_table():
+                self._create_spec_table(table_name)
+                self._create_archive_spec(table_name)
+
+            t1 = threading.Thread(target=setup_archive_table)
+            t1.start()
+
+            t2 = threading.Thread(target=setup_spec_table)
+            t2.start()
+
+            t1.join()
+            t2.join()
+
+        
         if raise_on_err:
-            self._create_archive_table(table_name)
-            self._create_spec_table(table_name)
+            do_create()
 
         else:
             try:
-                self._create_archive_table(table_name)
-                self._create_spec_table(table_name)
+                do_create()
             except KeyError:
                 pass
+
+    def update_spec_document(self,table_name):
+        self._update_spec_document(table_name)
+
 
     def delete_table(self, table_name, raise_on_err=True):
         if raise_on_err:
@@ -271,6 +292,14 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
     def _create_spec_table(self, table_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _update_spec_document(self, table_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')        
+
+    def _create_archive_spec(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 

@@ -83,6 +83,14 @@ class MongoDBManager(BaseDataManager):
 
         self.db.create_collection(self.table_name)
 
+        spec_table_name = table_name + '.spec'
+
+        if spec_table_name in self._get_table_names():
+            raise KeyError('Table "{}" already exists'.format(spec_table_name))
+
+        # something like create_archive for both docs
+
+
     def _delete_table(self, table_name):
         if table_name not in self._get_table_names():
             raise KeyError('Table "{}" not found'.format(table_name))
@@ -97,18 +105,28 @@ class MongoDBManager(BaseDataManager):
         return self._coll
 
     @property
+    def _spec_collection(self):
+        if self._spec_coll is None:
+            self._connect(self.table_name + '.spec')
+
+        return self._spec_coll
+
+    @property
     def db(self):
         if self._db is None:
             self._db = self._client[self.database_name]
 
         return self._db
 
-    def _connect(self):
+    def _connect(self, table_name = None):
 
-        if self.table_name not in self._get_table_names():
-            raise KeyError('Table "{}" not found'.format(self.table_name))
+        if table_name is None:
+            table_name = self.table_name
 
-        self._coll = self.db[self.table_name]
+        if table_name not in self._get_table_names():
+            raise KeyError('Table "{}" not found'.format(table_name))
+
+        self._coll = self.db[table_name]
 
     # Private methods (to be implemented!)
 
@@ -121,6 +139,11 @@ class MongoDBManager(BaseDataManager):
         for key, val in metadata.items():
             self.collection.update({"_id": archive_name},
                                    {"$set": {"metadata.{}".format(key): val}})
+
+    def _update_spec_document(self, document_name, attribute_name, contents):
+
+        self._spec_collection.update({"_id": document_name},
+                               {"$set": {attribute_name: contents}})
 
     @catch_timeout
     def _create_archive(

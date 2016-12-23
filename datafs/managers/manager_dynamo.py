@@ -29,6 +29,8 @@ class DynamoDBManager(BaseDataManager):
         self._resource = self._session.resource('dynamodb', **resource_args)
         self._table = self._resource.Table(table_name)
 
+
+
     @property
     def config(self):
         config = {
@@ -87,7 +89,33 @@ class DynamoDBManager(BaseDataManager):
             raise KeyError('Table "{}" already exists'.format(table_name))
 
         try:
-            self._resource.create_table(TableName=table_name,
+            table = self._resource.create_table(TableName=table_name,
+                                        KeySchema=[{'AttributeName': '_id',
+                                                    'KeyType': 'HASH'},
+                                                   ],
+                                        AttributeDefinitions=[{'AttributeName': '_id',
+                                                               'AttributeType': 'S'},
+                                                              ],
+                                        ProvisionedThroughput={'ReadCapacityUnits': 123,
+                                                               'WriteCapacityUnits': 123})
+            table.meta.client.get_waiter('table_exists').wait(TableName=table_name)
+
+
+        except ValueError:
+            # Error handling for windows incompatability issue
+            assert table_name in self._get_table_names(), 'Table creation failed'
+
+
+    def _create_spec_table(self, table_name):
+
+        spec_table = table_name + '.spec'
+        
+
+        if spec_table in self._get_table_names():
+            raise KeyError('Table "{}" already exists'.format(spec_table))
+
+        try:
+            table = self._resource.create_table(TableName=spec_table,
                                         KeySchema=[{'AttributeName': '_id',
                                                     'KeyType': 'HASH'},
                                                    ],
@@ -97,9 +125,36 @@ class DynamoDBManager(BaseDataManager):
                                         ProvisionedThroughput={'ReadCapacityUnits': 123,
                                                                'WriteCapacityUnits': 123})
 
+            table.meta.client.get_waiter('table_exists').wait(TableName=spec_table)
+
+
         except ValueError:
             # Error handling for windows incompatability issue
-            assert table_name in self._get_table_names(), 'Table creation failed'
+            assert spec_table in self._get_table_names(), 'Table creation failed'
+
+    def _create_archive_spec(self, table_name):
+
+        spec_table = self._resource.Table(table_name + '.spec')
+
+
+
+        user_config = {
+            '_id': 'required_user_config',
+            'config': {}
+        }
+
+        archive_config = {
+            '_id': 'required_archive_config',
+            'config': {}
+        }
+
+        
+
+        spec_table.put_item(Item=user_config)
+        spec_table.put_item(Item=archive_config)
+
+
+
 
     def _delete_table(self, table_name):
         if table_name not in self._get_table_names():

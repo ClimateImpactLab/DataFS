@@ -199,7 +199,7 @@ class DynamoDBManager(BaseDataManager):
         spec_table.put_item(Item=archive_config)
 
 
-    def _update_spec_config(self, table_name, document_name **spec):
+    def _update_spec_config(self, table_name, document_name, **spec):
         '''
         Dynamo implementation of project specific metadata spec
 

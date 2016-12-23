@@ -56,7 +56,7 @@ class BaseDataManager(object):
             except KeyError:
                 pass
 
-    def update_spec_config(self,table_name, document_name **spec):
+    def update_spec_config(self,table_name, document_name,**spec):
         '''
         Allows update to default setting of either user config or metadata config
         One or the other must be selected as True.
@@ -70,8 +70,7 @@ class BaseDataManager(object):
         >>> from datafs import get_api
         >>> api = get_api()
         >>> api.manager.update_spec_config('test_table', 
-        ...                      user_config=False,
-        ...                      metadata_config=True, 
+        ...                      'required_metadata_config',
         ...                      source='Climate Impact Lab', 
         ...                      dependencies='UNDATA', 
         ...                      description='Some helpful description')

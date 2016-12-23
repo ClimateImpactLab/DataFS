@@ -150,7 +150,7 @@ class MongoDBManager(BaseDataManager):
 
 
         self._spec_coll.update({"_id": document_name},
-                               {"$set": {**spec}})
+                               {"$set": {spec}})
 
     @catch_timeout
     def _create_archive(

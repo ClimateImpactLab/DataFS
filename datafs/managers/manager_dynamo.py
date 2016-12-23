@@ -154,6 +154,27 @@ class DynamoDBManager(BaseDataManager):
         spec_table.put_item(Item=archive_config)
 
 
+    def _update_spec_document(self, table_name, **spec):
+
+        #spec_table = table_name + '.spec'
+        spec_table = self._resource.Table(table_name +'.spec')
+
+        
+        spec_data_current  = spec_table.get_item(
+                                Key={'_id': 'required_archive_config'})['Item']['config']
+
+        # keep the current state in memory
+        
+        spec_data_current.update(**spec)
+        # add the updated archive_data object to Dynamo
+        updated = spec_table.update_item(
+            Key={
+                '_id': 'required_archive_config'},
+            UpdateExpression="SET config = :v",
+            ExpressionAttributeValues={
+                ':v': spec_data_current},
+            ReturnValues='ALL_NEW')
+
 
 
     def _delete_table(self, table_name):
@@ -163,6 +184,8 @@ class DynamoDBManager(BaseDataManager):
         try:
 
             self._resource.Table(table_name).delete()
+            self._resource.Table(table_name + '.spec').delete()
+
 
         except ValueError:
             # Error handling for windows incompatability issue

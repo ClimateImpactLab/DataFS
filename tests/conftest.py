@@ -20,6 +20,7 @@ from datafs.core import data_file
 from datafs.services.service import DataService
 from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
+from tests.resources import prep_manager
 
 from contextlib import contextmanager
 
@@ -42,55 +43,6 @@ def pytest_generate_tests(metafunc):
     if 'open_func' in metafunc.fixturenames:
         metafunc.parametrize('open_func', ['open_file', 'get_local_path'])
 
-
-@contextmanager
-def prep_manager(mgr_name):
-
-    table_name = 'my-new-data-table'
-
-    if mgr_name == 'mongo':
-
-        manager_mongo = MongoDBManager(
-            database_name='MyDatabase',
-            table_name=table_name)
-
-        manager_mongo.create_archive_table(
-            table_name,
-            raise_on_err=False)
-
-        try:
-            yield manager_mongo
-
-        finally:
-            manager_mongo.delete_table(
-                table_name,
-                raise_on_err=False)
-
-    elif mgr_name == 'dynamo':
-
-        manager_dynamo = DynamoDBManager(
-            table_name,
-            session_args={
-                'aws_access_key_id': "access-key-id-of-your-choice",
-                'aws_secret_access_key': "secret-key-of-your-choice"},
-            resource_args={
-                'endpoint_url': 'http://localhost:8000/',
-                'region_name': 'us-east-1'})
-
-        manager_dynamo.create_archive_table(
-            table_name,
-            raise_on_err=False)
-
-        try:
-            yield manager_dynamo
-
-        finally:
-            manager_dynamo.delete_table(
-                table_name,
-                raise_on_err=False)
-
-    else:
-        raise ValueError('Manager "{}" not recognized'.format(mgr_name))
 
 
 @contextmanager
@@ -141,6 +93,8 @@ def prep_filesystem(fs_name):
 
         finally:
             m.stop()
+
+
 
 
 @pytest.yield_fixture

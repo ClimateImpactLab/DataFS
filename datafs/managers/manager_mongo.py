@@ -55,6 +55,7 @@ class MongoDBManager(BaseDataManager):
 
         self._db = None
         self._coll = None
+        self._spec_coll = None
 
     @property
     def config(self):
@@ -87,6 +88,8 @@ class MongoDBManager(BaseDataManager):
 
         if spec_table_name in self._get_table_names():
             raise KeyError('Table "{}" already exists'.format(spec_table_name))
+
+        self.db.create_collection(spec_table_name)
 
         # something like create_archive for both docs
 
@@ -140,10 +143,14 @@ class MongoDBManager(BaseDataManager):
             self.collection.update({"_id": archive_name},
                                    {"$set": {"metadata.{}".format(key): val}})
 
-    def _update_spec_document(self, document_name, attribute_name, contents):
+    def _update_spec_config(self, table_name, document_name, **spec):
 
-        self._spec_collection.update({"_id": document_name},
-                               {"$set": {attribute_name: contents}})
+        if self._spec_coll is None:
+            self._spec_coll = self._db[table_name]
+
+
+        self._spec_coll.update({"_id": document_name},
+                               {"$set": {**spec}})
 
     @catch_timeout
     def _create_archive(
@@ -180,6 +187,25 @@ class MongoDBManager(BaseDataManager):
                 metadata)
         except KeyError:
             pass
+
+    @catch_timeout
+    def _create_spec_config(self, table_name):
+        
+
+        itrbl = [{'_id': x, 'config': ''} 
+                        for x in ('required_user_config', 'required_metadata_config')]
+
+
+
+        try:
+            self._spec_coll.insert_many(itrbl)
+            #self.collection.insert_one()
+        except DuplicateKeyError:
+            raise KeyError('Spec config files already created for {}'.format(table_name))
+
+    @catch_timeout
+    def _update_spec_config(self, table_name, user_config, metadata_config, **spec):
+        raise NotImplementedError
 
     @catch_timeout
     def _get_archive_listing(self, archive_name):

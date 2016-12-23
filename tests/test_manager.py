@@ -24,6 +24,12 @@ def test_spec_table_creation(standalone_manager):
     assert len(standalone_manager._resource.Table('standalone-test-table.spec').scan()) != 0
 
 
+# def test_spec_config_creation(standalone_manager):
+    
+
+    
+
+
 class TestBaseManager(object):
 
     @staticmethod

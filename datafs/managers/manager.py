@@ -56,7 +56,7 @@ class BaseDataManager(object):
             except KeyError:
                 pass
 
-    def update_spec_config(self,table_name, user_config=False, metadata_config=False, **spec):
+    def update_spec_config(self,table_name, document_name **spec):
         '''
         Allows update to default setting of either user config or metadata config
         One or the other must be selected as True.
@@ -67,15 +67,18 @@ class BaseDataManager(object):
         metadata_config: bool
         **spec: kwargs
 
-        >>>manager.update_spec_config(
-                    'test_table', 
-                    user_config=False,
-                    metadata_config=True, 
-                    source='Climate Impact Lab', dependencies='UNDATA', description='Some helpful description')
+        >>> from datafs import get_api
+        >>> api = get_api()
+        >>> api.manager.update_spec_config('test_table', 
+        ...                      user_config=False,
+        ...                      metadata_config=True, 
+        ...                      source='Climate Impact Lab', 
+        ...                      dependencies='UNDATA', 
+        ...                      description='Some helpful description')
         '''
 
 
-        self._update_spec_config(table_name, user_config=False, metadata_config=False, **spec)
+        self._update_spec_config(table_name, document_name, **spec)
 
 
     def delete_table(self, table_name, raise_on_err=True):
@@ -313,13 +316,13 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _update_spec_config(self, table_name):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')        
-
-    def _create_archive_spec(self, table_name):
+    def _create_spec_config(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _update_spec_config(self,table_name, document_name, **spec):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')        
 
     def _delete_table(self, table_name):
         raise NotImplementedError(

@@ -199,38 +199,31 @@ class DynamoDBManager(BaseDataManager):
         spec_table.put_item(Item=archive_config)
 
 
-    def _update_spec_config(self, table_name, user_config=False, metadata_config=False, **spec):
+    def _update_spec_config(self, table_name, document_name **spec):
         '''
         Dynamo implementation of project specific metadata spec
 
         
         '''
 
-        config_option = None
-        if user_config:
-            config_option = 'required_user_config'
-
-        else: 
-            config_option = 'required_metadata_config'
-
-        print(config_option)
+    
 
         #spec_table = table_name + '.spec'
         spec_table = self._resource.Table(table_name +'.spec')
 
         
         spec_data_current  = spec_table.get_item(
-                                Key={'_id': '{}'.format(config_option)})['Item']['config']
+                                Key={'_id': '{}'.format(document_name)})['Item']['config']
 
-        print(spec_data_current)
+        #print(spec_data_current)
         # keep the current state in memory
         
         spec_data_current.update(**spec)
-        print(spec_data_current)
+        #print(spec_data_current)
         # add the updated archive_data object to Dynamo
         updated = spec_table.update_item(
             Key={
-                '_id': '{}'.format(config_option)},
+                '_id': '{}'.format(document_name)},
             UpdateExpression="SET config = :v",
             ExpressionAttributeValues={
                 ':v': spec_data_current},

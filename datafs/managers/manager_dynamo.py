@@ -85,6 +85,22 @@ class DynamoDBManager(BaseDataManager):
         return [t.name for t in self._resource.tables.all()]
 
     def _create_archive_table(self, table_name):
+        '''
+        Dynamo implementation of BaseDataManager create_archive_table
+
+        waiter object is implemented to ensure table creation before moving on
+        this will slow down table creation. However, since we are only creating table once
+        this should no impact users. 
+
+        Parameters
+        ----------
+        table_name: str
+
+        Returns
+        -------
+        None
+
+        '''
         if table_name in self._get_table_names():
             raise KeyError('Table "{}" already exists'.format(table_name))
 
@@ -107,6 +123,21 @@ class DynamoDBManager(BaseDataManager):
 
 
     def _create_spec_table(self, table_name):
+        '''
+        Dynamo implementation of User and Metadata Spec configuration
+        Called by `create_archive_table()` in :py:class:`manager.BaseDataManager`. 
+        This table will additional table will be aliased by 'table_name.spec'
+
+        A waiter is implemented on Dynamo to ensure table exists before executing any subsequent operations
+
+        Paramters
+        ---------
+        table_name: str
+
+        Returns
+        -------
+        None
+        '''
 
         spec_table = table_name + '.spec'
         
@@ -132,7 +163,21 @@ class DynamoDBManager(BaseDataManager):
             # Error handling for windows incompatability issue
             assert spec_table in self._get_table_names(), 'Table creation failed'
 
-    def _create_archive_spec(self, table_name):
+    def _create_spec_config(self, table_name):
+        '''
+        Dynamo implementation of spec config creation
+        Called by `create_archive_table()` in :py:class:`manager.BaseDataManager`
+        Simply adds two rows to the spec table
+
+        Parameters
+        ----------
+        table_name
+
+        Returns
+        -------
+        None
+
+        '''
 
         spec_table = self._resource.Table(table_name + '.spec')
 
@@ -144,7 +189,7 @@ class DynamoDBManager(BaseDataManager):
         }
 
         archive_config = {
-            '_id': 'required_archive_config',
+            '_id': 'required_metadata_config',
             'config': {}
         }
 
@@ -154,22 +199,38 @@ class DynamoDBManager(BaseDataManager):
         spec_table.put_item(Item=archive_config)
 
 
-    def _update_spec_document(self, table_name, **spec):
+    def _update_spec_config(self, table_name, user_config=False, metadata_config=False, **spec):
+        '''
+        Dynamo implementation of project specific metadata spec
+
+        
+        '''
+
+        config_option = None
+        if user_config:
+            config_option = 'required_user_config'
+
+        else: 
+            config_option = 'required_metadata_config'
+
+        print(config_option)
 
         #spec_table = table_name + '.spec'
         spec_table = self._resource.Table(table_name +'.spec')
 
         
         spec_data_current  = spec_table.get_item(
-                                Key={'_id': 'required_archive_config'})['Item']['config']
+                                Key={'_id': '{}'.format(config_option)})['Item']['config']
 
+        print(spec_data_current)
         # keep the current state in memory
         
         spec_data_current.update(**spec)
+        print(spec_data_current)
         # add the updated archive_data object to Dynamo
         updated = spec_table.update_item(
             Key={
-                '_id': 'required_archive_config'},
+                '_id': '{}'.format(config_option)},
             UpdateExpression="SET config = :v",
             ExpressionAttributeValues={
                 ':v': spec_data_current},

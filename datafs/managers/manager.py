@@ -35,7 +35,7 @@ class BaseDataManager(object):
         
             def setup_spec_table():
                 self._create_spec_table(table_name)
-                self._create_archive_spec(table_name)
+                self._create_spec_config(table_name)
 
             t1 = threading.Thread(target=setup_archive_table)
             t1.start()
@@ -56,8 +56,26 @@ class BaseDataManager(object):
             except KeyError:
                 pass
 
-    def update_spec_document(self,table_name):
-        self._update_spec_document(table_name)
+    def update_spec_config(self,table_name, user_config=False, metadata_config=False, **spec):
+        '''
+        Allows update to default setting of either user config or metadata config
+        One or the other must be selected as True.
+
+        Parameters:
+        table_name: str
+        user_config: bool
+        metadata_config: bool
+        **spec: kwargs
+
+        >>>manager.update_spec_config(
+                    'test_table', 
+                    user_config=False,
+                    metadata_config=True, 
+                    source='Climate Impact Lab', dependencies='UNDATA', description='Some helpful description')
+        '''
+
+
+        self._update_spec_config(table_name, user_config=False, metadata_config=False, **spec)
 
 
     def delete_table(self, table_name, raise_on_err=True):
@@ -295,7 +313,7 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _update_spec_document(self, table_name):
+    def _update_spec_config(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')        
 

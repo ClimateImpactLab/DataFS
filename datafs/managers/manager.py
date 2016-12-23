@@ -67,13 +67,6 @@ class BaseDataManager(object):
         metadata_config: bool
         **spec: kwargs
 
-        >>> from datafs import get_api
-        >>> api = get_api()
-        >>> api.manager.update_spec_config('test_table', 
-        ...                      'required_metadata_config',
-        ...                      source='Climate Impact Lab', 
-        ...                      dependencies='UNDATA', 
-        ...                      description='Some helpful description')
         '''
 
 

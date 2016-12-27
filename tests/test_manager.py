@@ -21,7 +21,10 @@ def standalone_manager(mgr_name):
 
 def test_spec_table_creation(standalone_manager):
     assert 'standalone-test-table.spec' in standalone_manager.table_names
-    
+
+def test_spec_config_creation(standalone_manager):
+    assert len(standalone_manager._resource.Table('standalone-test-table.spec').scan()) == 2
+
 
 # def test_spec_config_creation(standalone_manager):
     

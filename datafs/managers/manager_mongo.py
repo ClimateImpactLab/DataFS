@@ -203,6 +203,8 @@ class MongoDBManager(BaseDataManager):
         except DuplicateKeyError:
             raise KeyError('Spec config files already created for {}'.format(table_name))
 
+
+
     @catch_timeout
     def _update_spec_config(self, table_name, user_config, metadata_config, **spec):
         raise NotImplementedError

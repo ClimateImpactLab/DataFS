@@ -154,13 +154,13 @@ class MongoDBManager(BaseDataManager):
     def _update_spec_config(self, table_name, document_name, spec):
 
         if self._spec_coll is None:
-            self._spec_coll = self._db[table_name + '.spec']
+            self._spec_coll = self.db[table_name + '.spec']
 
 
 
-
-        self._spec_coll.update({"_id": document_name},
-                               {"$set": {spec}})
+        for k,v in spec.items():
+            self._spec_coll.update({"_id": document_name},
+                                    {"$set": {'config.{}'.format(k): v}})
 
     @catch_timeout
     def _create_archive(
@@ -285,6 +285,10 @@ class MongoDBManager(BaseDataManager):
         res = self.collection.find({}, {"_id": 1})
 
         return [r['_id'] for r in res]
+
+    def _get_document_count(self, table_name):
+
+        return self._spec_coll.count()
 
     def _create_spec_table(self, table_name):
         #Not implemented

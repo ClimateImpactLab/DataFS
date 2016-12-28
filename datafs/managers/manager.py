@@ -310,3 +310,7 @@ class BaseDataManager(object):
     def _get_versions(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
+    def _get_document_count(self, table_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+

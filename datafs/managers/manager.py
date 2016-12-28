@@ -314,3 +314,4 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
+

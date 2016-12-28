@@ -206,6 +206,10 @@ class DynamoDBManager(BaseDataManager):
         
         '''
 
+        # if document_name == 'required_user_config':
+        #     self.REQUIRED_USER_CONFIG = spec
+
+        # self.REQUIRED_ARCHIVE_METADATA = spec
     
 
         #spec_table = table_name + '.spec'
@@ -381,5 +385,10 @@ class DynamoDBManager(BaseDataManager):
 
         return self._table.delete_item(Key={'_id': archive_name})
 
+    def _get_spec_documents(self, table_name):
+        return self._resource.Table(table_name + '.spec').scan()['Items']
+
     def _get_document_count(self, table_name):
-        return self._resource.Table(table_name + '.spec').scan()['Count']
+        return len(self._get_spec_documents(table_name))
+
+    

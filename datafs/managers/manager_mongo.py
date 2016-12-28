@@ -84,15 +84,20 @@ class MongoDBManager(BaseDataManager):
 
         self.db.create_collection(self.table_name)
 
+        
+
+        # something like create_archive for both docs
+
+
+    def _create_spec_table(self, table_name):
+
+
         spec_table_name = table_name + '.spec'
 
         if spec_table_name in self._get_table_names():
             raise KeyError('Table "{}" already exists'.format(spec_table_name))
 
         self.db.create_collection(spec_table_name)
-
-        # something like create_archive for both docs
-
 
     def _delete_table(self, table_name):
         if table_name not in self._get_table_names():
@@ -119,8 +124,6 @@ class MongoDBManager(BaseDataManager):
 
         return self._spec_coll
             
-
-        
 
     @property
     def db(self):
@@ -290,6 +293,7 @@ class MongoDBManager(BaseDataManager):
 
         return self._spec_coll.count()
 
-    def _create_spec_table(self, table_name):
-        #Not implemented
-        pass
+    def _get_spec_documents(self, table_name):
+        return self._spec_coll.find({})
+
+    

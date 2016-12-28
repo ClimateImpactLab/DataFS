@@ -27,30 +27,35 @@ class BaseDataManager(object):
 
     def create_archive_table(self, table_name, raise_on_err=True):
         
-        def do_create():
-            def setup_archive_table():
-                self._create_archive_table(table_name)
+        # def do_create():
+        #     def setup_archive_table():
+        #         self._create_archive_table(table_name)
         
-            def setup_spec_table():
-                self._create_spec_table(table_name)
-                self._create_spec_config(table_name)
+        #     def setup_spec_table():
+        #         self._create_spec_table(table_name)
+        #         self._create_spec_config(table_name)
 
-            t1 = threading.Thread(target=setup_archive_table)
-            t1.start()
+        #     t1 = threading.Thread(target=setup_archive_table)
+        #     t1.start()
 
-            t2 = threading.Thread(target=setup_spec_table)
-            t2.start()
+        #     t2 = threading.Thread(target=setup_spec_table)
+        #     t2.start()
 
-            t1.join()
-            t2.join()
+        #     t1.join()
+        #     t2.join()
 
         
         if raise_on_err:
-            do_create()
+            self._create_archive_table(table_name)
+            self._create_spec_table(table_name)
+            self._create_spec_config(table_name)
+            
 
         else:
             try:
-                do_create()
+                self._create_archive_table(table_name)
+                self._create_spec_table(table_name)
+                self._create_spec_config(table_name)
             except KeyError:
                 pass
 

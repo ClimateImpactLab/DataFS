@@ -49,9 +49,9 @@ def test_get_authority_name(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._get_authority_name('archive 1')
 
-def test_get_service_path(base_manager):
+def test_get_archive_path(base_manager):
     with pytest.raises(NotImplementedError):
-        base_manager._get_service_path('archive 1')
+        base_manager._get_archive_path('archive 1')
 
 def test_delete_archive_record(base_manager):
     with pytest.raises(NotImplementedError):

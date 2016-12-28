@@ -79,6 +79,7 @@ class MongoDBManager(BaseDataManager):
     def table_name(self):
         return self._table_name
 
+    @catch_timeout
     def _get_table_names(self):
         return self.db.collection_names(include_system_collections=False)
 
@@ -132,14 +133,14 @@ class MongoDBManager(BaseDataManager):
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
             versioned,
             metadata):
 
         doc = {
             '_id': archive_name,
             'authority_name': authority_name,
-            'service_path': service_path,
+            'archive_path': archive_path,
             'versioned': versioned,
             'versions': []}
         doc['metadata'] = metadata
@@ -153,7 +154,7 @@ class MongoDBManager(BaseDataManager):
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
             versioned,
             metadata):
 
@@ -161,7 +162,7 @@ class MongoDBManager(BaseDataManager):
             self._create_archive(
                 archive_name,
                 authority_name,
-                service_path,
+                archive_path,
                 versioned,
                 metadata)
 
@@ -187,7 +188,7 @@ class MongoDBManager(BaseDataManager):
         if res is None:
             raise KeyError
 
-        spec = ['authority_name', 'service_path', 'versioned']
+        spec = ['authority_name', 'archive_path', 'versioned']
         
         return {k:v for k,v in res.items() if k in spec}
 
@@ -200,14 +201,14 @@ class MongoDBManager(BaseDataManager):
 
         return res['authority_name']
 
-    def _get_service_path(self, archive_name):
+    def _get_archive_path(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
 
         if res is None:
             raise KeyError
 
-        return res['service_path']
+        return res['archive_path']
 
     def _get_archive_metadata(self, archive_name):
 

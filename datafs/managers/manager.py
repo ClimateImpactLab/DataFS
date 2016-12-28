@@ -78,7 +78,7 @@ class BaseDataManager(object):
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
             versioned,
             raise_on_err=True,
             metadata={},
@@ -111,14 +111,14 @@ class BaseDataManager(object):
             self._create_archive(
                 archive_name,
                 authority_name,
-                service_path,
+                archive_path,
                 versioned,
                 archive_metadata)
         else:
             self._create_if_not_exists(
                 archive_name, 
                 authority_name, 
-                service_path, 
+                archive_path, 
                 versioned, 
                 archive_metadata)
 
@@ -133,7 +133,7 @@ class BaseDataManager(object):
         archive_specification : dict
             archive_name: name of the archive to be retrieved
             authority: name of the archive's authority
-            service_path: service path of archive 
+            archive_path: service path of archive 
         '''
 
         try:
@@ -226,7 +226,7 @@ class BaseDataManager(object):
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
             versioned,
             metadata):
         raise NotImplementedError(
@@ -236,7 +236,7 @@ class BaseDataManager(object):
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
             versioned,
             metadata):
         raise NotImplementedError(
@@ -258,7 +258,7 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_service_path(self, archive_name):
+    def _get_archive_path(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 

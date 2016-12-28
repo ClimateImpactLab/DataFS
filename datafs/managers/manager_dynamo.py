@@ -154,7 +154,7 @@ class DynamoDBManager(BaseDataManager):
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
             versioned,
             metadata):
         '''
@@ -182,7 +182,7 @@ class DynamoDBManager(BaseDataManager):
         item = {
             '_id': archive_name,
             'authority_name': authority_name,
-            'service_path': service_path,
+            'archive_path': archive_path,
             'versioned': versioned,
             'version_metadata': [],
             'archive_data': metadata
@@ -200,14 +200,14 @@ class DynamoDBManager(BaseDataManager):
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
             versioned,
             metadata):
         try:
             self._create_archive(
                 archive_name,
                 authority_name,
-                service_path,
+                archive_path,
                 versioned,
                 metadata)
         except KeyError:
@@ -235,7 +235,7 @@ class DynamoDBManager(BaseDataManager):
         if res is None:
             raise KeyError
 
-        spec = ['authority_name', 'service_path', 'versioned']
+        spec = ['authority_name', 'archive_path', 'versioned']
 
         return {k:v for k,v in res.items() if k in spec}
 
@@ -245,11 +245,11 @@ class DynamoDBManager(BaseDataManager):
 
         return res['authority_name']
 
-    def _get_service_path(self, archive_name):
+    def _get_archive_path(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
 
-        return res['service_path']
+        return res['archive_path']
 
     def _get_versions(self, archive_name):
 

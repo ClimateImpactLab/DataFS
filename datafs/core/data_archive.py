@@ -9,12 +9,12 @@ import os
 
 class DataArchive(object):
 
-    def __init__(self, api, archive_name, authority_name, service_path, versioned=False):
+    def __init__(self, api, archive_name, authority_name, archive_path, versioned=False):
         self.api = api
         self.archive_name = archive_name
 
         self._authority_name = authority_name
-        self._service_path = service_path
+        self._archive_path = archive_path
 
         self._versioned = versioned
 
@@ -31,8 +31,8 @@ class DataArchive(object):
         return self.api._authorities[self.authority_name]
 
     @property
-    def service_path(self):
-        return self._service_path
+    def archive_path(self):
+        return self._archive_path
 
     @property
     def metadata(self):
@@ -81,12 +81,12 @@ class DataArchive(object):
             self.update_metadata(kwargs)
 
             if self.cache:
-                cache_loc = self.api.cache.fs.getsyspath(self.service_path)
+                cache_loc = self.api.cache.fs.getsyspath(self.archive_path)
                 cache_hash = self.api.hash_file(cache_loc)['checksum']
 
                 if self.latest_hash != cache_hash:
                     self.api.cache.upload(
-                        filepath, self.service_path, remove=remove)
+                        filepath, self.archive_path, remove=remove)
 
             if remove and os.path.isfile(filepath):
                 os.remove(filepath)
@@ -94,11 +94,11 @@ class DataArchive(object):
             return
 
         elif self.cache:
-            self.authority.upload(filepath, self.service_path)
-            self.api.cache.upload(filepath, self.service_path, remove=remove)
+            self.authority.upload(filepath, self.archive_path)
+            self.api.cache.upload(filepath, self.archive_path, remove=remove)
 
         else:
-            self.authority.upload(filepath, self.service_path, remove=remove)
+            self.authority.upload(filepath, self.archive_path, remove=remove)
 
         self._update_manager(checksum, kwargs)
 
@@ -136,7 +136,7 @@ class DataArchive(object):
             self._update_manager,
             version_check,
             self.api.hash_file,
-            self.service_path,
+            self.archive_path,
             mode=mode,
             *args,
             **kwargs)
@@ -161,7 +161,7 @@ class DataArchive(object):
             self._update_manager,
             version_check,
             self.api.hash_file,
-            self.service_path)
+            self.archive_path)
 
         with path as fp:
             yield fp
@@ -201,11 +201,11 @@ class DataArchive(object):
             if version_check(self.api.hash_file(filepath)):
                 return
 
-        with data_file._choose_read_fs(self.authority, self.cache, self.service_path, version_check, self.api.hash_file) as read_fs:
+        with data_file._choose_read_fs(self.authority, self.cache, self.archive_path, version_check, self.api.hash_file) as read_fs:
 
             fs.utils.copyfile(
                 read_fs,
-                self.service_path,
+                self.archive_path,
                 local,
                 filename)
 
@@ -277,7 +277,7 @@ class DataArchive(object):
         Set the cache property to start/stop file caching for this archive
         '''
 
-        if self.api.cache and self.api.cache.fs.isfile(self.service_path):
+        if self.api.cache and self.api.cache.fs.isfile(self.archive_path):
             return True
 
         return False
@@ -290,13 +290,13 @@ class DataArchive(object):
 
         if value:
 
-            if not self.api.cache.fs.isfile(self.service_path):
-                data_file._touch(self.api.cache.fs, self.service_path)
+            if not self.api.cache.fs.isfile(self.archive_path):
+                data_file._touch(self.api.cache.fs, self.archive_path)
 
             assert self.api.cache.fs.isfile(
-                self.service_path), "Cache creation failed"
+                self.archive_path), "Cache creation failed"
 
         else:
 
-            if self.api.cache.fs.isfile(self.service_path):
-                self.api.cache.fs.remove(self.service_path)
+            if self.api.cache.fs.isfile(self.archive_path):
+                self.api.cache.fs.remove(self.archive_path)

@@ -35,11 +35,16 @@ class MongoDBManager(BaseDataManager):
     '''
     Parameters
     ----------
+    
+    database_name : str
+        Name of the database containing the DataFS tables
 
     table_name: str
-        For Climate Impact Lab table_name = "cil-data"
+        Name of the data archive table
 
-    *args, **kwargs passed to :py:class:`pymongo.MongoClient`
+    client_kwargs : dict
+        Keyword arguments used in initializing a :py:class:`pymongo.MongoClient`
+        object
     '''
 
     def __init__(self, database_name, table_name, client_kwargs={}):

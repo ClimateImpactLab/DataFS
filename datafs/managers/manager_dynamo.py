@@ -10,7 +10,15 @@ class DynamoDBManager(BaseDataManager):
     Parameters
     ----------
     table_name: str
-        For Climate Impact Lab table_name = "cil-data"
+        Name of the data archive table
+
+    session_args: dict
+        Keyword arguments used in initializing a :py:class:`boto3.Session` 
+        object
+
+    resource_args: dict
+        Keyword arguments used in initializing a dynamodb 
+        :py:class:`~boto3.resources.factory.dynamodb.ServiceResource` object
 
     """
 

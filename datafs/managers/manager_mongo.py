@@ -110,9 +110,17 @@ class MongoDBManager(BaseDataManager):
     @property
     def _spec_collection(self):
         if self._spec_coll is None:
-            self._connect(self.table_name + '.spec')
+            _spec_coll = self.table_name + '.spec'
+
+        print(_spec_coll)
+
+        if self._spec_coll not in self._get_table_names():
+            self._spec_coll = self.db.get_collection(_spec_coll)
 
         return self._spec_coll
+            
+
+        
 
     @property
     def db(self):
@@ -146,7 +154,9 @@ class MongoDBManager(BaseDataManager):
     def _update_spec_config(self, table_name, document_name, **spec):
 
         if self._spec_coll is None:
-            self._spec_coll = self._db[table_name]
+            self._spec_coll = self._db[table_name + '.spec']
+
+
 
 
         self._spec_coll.update({"_id": document_name},
@@ -190,7 +200,9 @@ class MongoDBManager(BaseDataManager):
 
     @catch_timeout
     def _create_spec_config(self, table_name):
-        
+
+        if self._spec_coll == None:
+            self._spec_coll = self.db[table_name + '.spec']
 
         itrbl = [{'_id': x, 'config': ''} 
                         for x in ('required_user_config', 'required_metadata_config')]
@@ -200,14 +212,11 @@ class MongoDBManager(BaseDataManager):
         try:
             self._spec_coll.insert_many(itrbl)
             #self.collection.insert_one()
-        except DuplicateKeyError:
-            raise KeyError('Spec config files already created for {}'.format(table_name))
+        except TypeError as e:
+            print(e)
+            #raise KeyError('Spec config files already created for {}'.format(table_name))
 
 
-
-    @catch_timeout
-    def _update_spec_config(self, table_name, user_config, metadata_config, **spec):
-        raise NotImplementedError
 
     @catch_timeout
     def _get_archive_listing(self, archive_name):

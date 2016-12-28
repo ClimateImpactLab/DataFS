@@ -99,6 +99,7 @@ class MongoDBManager(BaseDataManager):
             raise KeyError('Table "{}" not found'.format(table_name))
 
         self.db.drop_collection(table_name)
+        self.db.drop_collection(table_name +'.spec')
 
     @property
     def collection(self):
@@ -112,7 +113,6 @@ class MongoDBManager(BaseDataManager):
         if self._spec_coll is None:
             _spec_coll = self.table_name + '.spec'
 
-        print(_spec_coll)
 
         if self._spec_coll not in self._get_table_names():
             self._spec_coll = self.db.get_collection(_spec_coll)
@@ -285,3 +285,7 @@ class MongoDBManager(BaseDataManager):
         res = self.collection.find({}, {"_id": 1})
 
         return [r['_id'] for r in res]
+
+    def _create_spec_table(self, table_name):
+        #Not implemented
+        pass

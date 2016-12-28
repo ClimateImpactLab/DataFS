@@ -12,9 +12,9 @@ class BaseDataManager(object):
     Should be subclassed. Not intended to be used directly.
     '''
 
-    REQUIRED_USER_CONFIG = None
+    REQUIRED_USER_CONFIG = {}
 
-    REQUIRED_ARCHIVE_METADATA = None
+    REQUIRED_ARCHIVE_METADATA = {}
 
     TimestampFormat = '%Y%m%d-%H%M%S'
 
@@ -74,7 +74,6 @@ class BaseDataManager(object):
     def delete_table(self, table_name, raise_on_err=True):
         if raise_on_err:
             self._delete_table(table_name)
-            self._delete_table(table_name + '.spec')
         else:
             try:
                 self._delete_table(table_name)

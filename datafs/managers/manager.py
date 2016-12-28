@@ -27,22 +27,6 @@ class BaseDataManager(object):
 
     def create_archive_table(self, table_name, raise_on_err=True):
         
-        # def do_create():
-        #     def setup_archive_table():
-        #         self._create_archive_table(table_name)
-        
-        #     def setup_spec_table():
-        #         self._create_spec_table(table_name)
-        #         self._create_spec_config(table_name)
-
-        #     t1 = threading.Thread(target=setup_archive_table)
-        #     t1.start()
-
-        #     t2 = threading.Thread(target=setup_spec_table)
-        #     t2.start()
-
-        #     t1.join()
-        #     t2.join()
 
         
         if raise_on_err:
@@ -59,7 +43,7 @@ class BaseDataManager(object):
             except KeyError:
                 pass
 
-    def update_spec_config(self,table_name, document_name,**spec):
+    def update_spec_config(self,table_name, document_name,spec):
         '''
         Allows update to default setting of either user config or metadata config
         One or the other must be selected as True.
@@ -73,7 +57,7 @@ class BaseDataManager(object):
         '''
 
 
-        self._update_spec_config(table_name, document_name, **spec)
+        self._update_spec_config(table_name, document_name, spec)
 
 
     def delete_table(self, table_name, raise_on_err=True):

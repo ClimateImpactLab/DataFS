@@ -151,7 +151,7 @@ class MongoDBManager(BaseDataManager):
             self.collection.update({"_id": archive_name},
                                    {"$set": {"metadata.{}".format(key): val}})
 
-    def _update_spec_config(self, table_name, document_name, **spec):
+    def _update_spec_config(self, table_name, document_name, spec):
 
         if self._spec_coll is None:
             self._spec_coll = self._db[table_name + '.spec']

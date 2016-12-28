@@ -199,7 +199,7 @@ class DynamoDBManager(BaseDataManager):
         spec_table.put_item(Item=archive_config)
 
 
-    def _update_spec_config(self, table_name, document_name, **spec):
+    def _update_spec_config(self, table_name, document_name, spec={}):
         '''
         Dynamo implementation of project specific metadata spec
 
@@ -218,7 +218,7 @@ class DynamoDBManager(BaseDataManager):
         #print(spec_data_current)
         # keep the current state in memory
         
-        spec_data_current.update(**spec)
+        spec_data_current.update(spec)
         #print(spec_data_current)
         # add the updated archive_data object to Dynamo
         updated = spec_table.update_item(

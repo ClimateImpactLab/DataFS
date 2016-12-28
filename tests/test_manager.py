@@ -30,8 +30,10 @@ def test_spec_config_creation_dynamo(standalone_manager):
     except AttributeError:
         assert standalone_manager.db['standalone-test-table.spec'].count() == 2 
 
+#def test_spec_config_update(standalone_manager):
 
-# def test_spec_config_creation(standalone_manager):
+
+
     
 
     

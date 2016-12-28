@@ -22,15 +22,22 @@ def standalone_manager(mgr_name):
 def test_spec_table_creation(standalone_manager):
     assert 'standalone-test-table.spec' in standalone_manager.table_names
 
-def test_spec_config_creation_dynamo(standalone_manager):
+def test_spec_config_creation(standalone_manager):
     
+    #test for dynamo
     try:
         assert standalone_manager._resource.Table('standalone-test-table.spec').scan()['Count'] == 2
 
+    #test for mongo
     except AttributeError:
         assert standalone_manager.db['standalone-test-table.spec'].count() == 2 
 
-#def test_spec_config_update(standalone_manager):
+def test_spec_config_update(standalone_manager):
+
+    try:
+        assert len(standalone_manager._resource.Table('standalone-test-table.spec').scan()['Items'][0]['config']) == 3
+        assert len(standalone_manager._resource.Table('standalone-test-table.spec').scan()['Items'][1]['config']) == 2
+
 
 
 

@@ -105,7 +105,7 @@ class DataAPI(object):
             archive_name,
             authority_name=None,
             archive_path=None,
-            versioned=False,
+            versioned=True,
             raise_on_err=True,
             metadata={}):
         '''

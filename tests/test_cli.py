@@ -180,7 +180,7 @@ profiles:
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'history', 'my_first_archive'])
     assert result.exit_code == 0
     
-    assert api2.archives[0].history[0]['checksum'] in result.output
+    assert api2.archives[0].history[-1]['checksum'] in result.output
 
     with runner.isolated_filesystem():
 
@@ -190,6 +190,9 @@ profiles:
         with open('here.txt', 'r') as downloaded:
             assert downloaded.read() == 'Hoo Yah! Stay Stoked!'
 
+        # Test re-download
+        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'download', 'my_first_archive', 'here.txt'])
+        assert result.exit_code == 0
 
 
 

@@ -21,39 +21,7 @@ from contextlib import contextmanager
 import pytest
 from fs.errors import (ResourceLockedError, ResourceInvalidError)
 
-from tests.resources import string_types, u
-
-
-
-@pytest.fixture
-def opener(open_func):
-    '''
-    Fixture for opening files using each of the available methods
-
-    open_func is parameterized in conftest.py
-    '''
-
-    if open_func == 'open_file':
-
-        @contextmanager
-        def inner(archive, *args, **kwargs):
-            with archive.open(*args, **kwargs) as f:
-                yield f
-
-        return inner
-
-    elif open_func == 'get_local_path':
-
-        @contextmanager
-        def inner(archive, *args, **kwargs):
-            with archive.get_local_path() as fp:
-                with open(fp, *args, **kwargs) as f:
-                    yield f
-
-        return inner
-
-    else:
-        raise NameError('open_func "{}" not recognized'.format(open_func))
+from datafs._compat import string_types, u
 
 
 def test_delete_handling(api, auth1, cache):
@@ -64,7 +32,7 @@ def test_delete_handling(api, auth1, cache):
     with open('test_file.txt', 'w+') as f:
         f.write('this is an upload test')
 
-    var = api.create_archive('archive1', authority_name='auth1')
+    var = api.create_archive('archive1', authority_name='auth1', versioned=False)
     var.update('test_file.txt', cache=True)
 
     assert os.path.isfile(api.cache.fs.getsyspath('archive1'))
@@ -92,7 +60,7 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
     api2.attach_authority('auth1', auth1)
     api2.attach_cache(cache2)
 
-    archive1 = api1.create_archive('myArchive')
+    archive1 = api1.create_archive('myArchive', versioned=False)
     
     # Turn on caching in archive 1 and assert creation
     

@@ -67,13 +67,13 @@ def _choose_read_fs(authority, cache, read_path, version_check, hasher):
             yield cache.fs
 
         else:
-            _touch(authority.fs, read_path)
-            _touch(cache.fs, read_path)
+            _makedirs(authority.fs, fs.path.dirname(read_path))
+            _makedirs(cache.fs, fs.path.dirname(read_path))
             yield cache.fs
 
     else:
         if not authority.fs.isfile(read_path):
-            _touch(authority.fs, read_path)
+            _makedirs(authority.fs, fs.path.dirname(read_path))
 
         yield authority.fs
 
@@ -129,8 +129,10 @@ def _prepare_write_fs(read_fs, cache, read_path, readwrite_mode=True):
 
             if not write_fs.isfile(read_path):
                 _touch(write_fs, read_path)
-                fs.utils.copyfile(
-                    read_fs, read_path, write_fs, read_path)
+
+                if read_fs.isfile(read_path):
+                    fs.utils.copyfile(
+                        read_fs, read_path, write_fs, read_path)
 
         else:
             _touch(write_fs, read_path)

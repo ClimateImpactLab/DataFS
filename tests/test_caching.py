@@ -254,12 +254,12 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
 
     with opener(archive1, 'r') as f1:
 
-        assert len(archive1.versions) == 7
+        assert len(archive1.history) == 7
         assert u('12345') == u(f1.read(str_length/2))
         
         with opener(archive2, 'w+') as f2:
             f2.write(test_str_2)
 
-        assert len(archive1.versions) == 8
+        assert len(archive1.history) == 8
         assert u('67890') == u(f1.read())
 

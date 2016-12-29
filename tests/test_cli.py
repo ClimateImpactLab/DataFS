@@ -177,10 +177,10 @@ profiles:
     #test to assert file content change
 
     
-    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'versions', 'my_first_archive'])
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'history', 'my_first_archive'])
     assert result.exit_code == 0
     
-    assert api2.archives[0].versions[0]['checksum'] in result.output
+    assert api2.archives[0].history[0]['checksum'] in result.output
 
     with runner.isolated_filesystem():
 

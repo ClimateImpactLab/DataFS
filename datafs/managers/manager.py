@@ -46,7 +46,7 @@ class BaseDataManager(object):
             except KeyError:
                 pass
 
-    def update(self, archive_name, checksum, metadata, user_config={}):
+    def update(self, archive_name, checksum, metadata, user_config={}, **kwargs):
         '''
         Register a new version for archive ``archive_name``
 
@@ -61,6 +61,7 @@ class BaseDataManager(object):
             'checksum': checksum['checksum']}
 
         version_metadata.update(user_config)
+        version_metadata.update(kwargs)
 
         archive_data = metadata
 
@@ -278,6 +279,6 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_versions(self, archive_name):
+    def _get_history(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')

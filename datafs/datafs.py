@@ -166,9 +166,9 @@ def metadata(ctx, archive_name):
 @cli.command()
 @click.argument('archive_name')
 @click.pass_context
-def versions(ctx, archive_name):
+def history(ctx, archive_name):
     var = ctx.obj.api.get_archive(archive_name)
-    click.echo(var.versions)
+    click.echo(var.history)
 
 
 @cli.command()

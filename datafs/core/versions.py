@@ -1,6 +1,8 @@
 
-import distutils.version
+from __future__ import absolute_import
 
+import distutils.version
+from datafs._compat import string_types
 
 class BumpableVersion(distutils.version.StrictVersion):
     '''
@@ -311,3 +313,11 @@ class BumpableVersion(distutils.version.StrictVersion):
 
         return new_prerelease
 
+    def __cmp__(self, other):
+        if other is None:
+            return False
+        elif isinstance(other, string_types):
+            other = distutils.version.StrictVersion(other)
+            return distutils.version.StrictVersion.__cmp__(self, other)
+        else:
+            return distutils.version.StrictVersion.__cmp__(self, other)

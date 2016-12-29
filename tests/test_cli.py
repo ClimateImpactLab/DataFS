@@ -86,8 +86,8 @@ def temp_file():
         _close(tmp.name)
 
 
-def test_cli_local(manager_table, temp_dir, temp_file):
-
+@pytest.yield_fixture(scope='function')
+def test_config(manager_table, temp_dir, temp_file):
     my_test_yaml = r'''
 default-profile: myapi
 profiles:
@@ -117,7 +117,15 @@ profiles:
     with open(temp_file, 'w+') as f:
         f.write(my_test_yaml)
 
-    api2 = get_api(profile='myapi', config_file=temp_file)
+    yield 'myapi', temp_file
+
+
+
+def test_cli_local(test_config):
+
+    profile, temp_file = test_config
+
+    api2 = get_api(profile=profile, config_file=temp_file)
 
     runner = CliRunner()
 
@@ -125,7 +133,7 @@ profiles:
     #test for configure and create archive
     result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'create_archive', 'my_first_archive', '--description', 'My test data archive'])
     assert result.exit_code == 0
-    assert result.output.strip() == 'created archive <DataArchive local://my_first_archive>'
+    assert result.output.strip() == 'created versioned archive <DataArchive local://my_first_archive>'
 
     #test the actual creation of the object from the api side
     assert len(api2.archives) == 1
@@ -147,8 +155,6 @@ profiles:
     assert api2.archives[0].archive_name == 'my_first_archive'
 
 
-    #test upload
-    #this feels so gnarly
     with runner.isolated_filesystem():
         with open('hello.txt', 'w') as f:
             f.write('Hoo Yah! Stay Stoked!')
@@ -177,22 +183,37 @@ profiles:
     #test to assert file content change
 
     
-    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'history', 'my_first_archive'])
-    assert result.exit_code == 0
-    
-    assert api2.archives[0].history[-1]['checksum'] in result.output
-
     with runner.isolated_filesystem():
+
+        with open('here.txt', 'w+') as to_upload:
+            to_upload.write('new version data')
+
+        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'upload', 'my_first_archive', 'here.txt', '--bumpversion', 'minor'])
+        assert result.exit_code == 0
+
+        os.remove('here.txt')
 
         result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'download', 'my_first_archive', 'here.txt'])
         assert result.exit_code == 0
 
         with open('here.txt', 'r') as downloaded:
+            assert downloaded.read() == 'new version data'
+
+        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'download', 'my_first_archive', 'here.txt', '--version', '0.0.1'])
+        assert result.exit_code == 0
+
+        with open('here.txt', 'r') as downloaded:
             assert downloaded.read() == 'Hoo Yah! Stay Stoked!'
 
-        # Test re-download
-        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'download', 'my_first_archive', 'here.txt'])
-        assert result.exit_code == 0
+        # test download of nonexistant version (should fail without overwriting file)
+        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'download', 'my_first_archive', 'here.txt', '--version', '3.0'])
+        assert result.exit_code != 0
+
+        with open('here.txt', 'r') as downloaded:
+            assert downloaded.read() == 'Hoo Yah! Stay Stoked!'
+
+        os.remove('here.txt')
+
 
 
 
@@ -203,7 +224,10 @@ if __name__ == '__main__':
     ctx_manager_table = contextmanager(manager_table)
     ctx_temp_dir = contextmanager(temp_dir)
     ctx_temp_file = contextmanager(temp_file)
+    ctx_test_config = contextmanager(test_config)
 
     with ctx_manager_table() as m, ctx_temp_dir() as tempdir, ctx_temp_file() as tmp:
-        test_cli_local(m, tempdir, tmp)
+        with ctx_test_config(m, tempdir, tmp) as config:
+            profile, fp = config
+            test_cli_local(profile, fp)
 

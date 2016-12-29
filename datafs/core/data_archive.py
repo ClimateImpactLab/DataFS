@@ -29,7 +29,7 @@ class DataArchive(object):
 
     @property
     def latest_version(self):
-        
+
         versions = self.versions
     
         if len(versions) == 0:
@@ -50,7 +50,7 @@ class DataArchive(object):
             return []
     
         else:
-            return [BumpableVersion(v['version']) for v in versions]
+            return sorted(map(BumpableVersion, set([v['version'] for v in versions])))
 
 
     def get_version_path(self, version=None):

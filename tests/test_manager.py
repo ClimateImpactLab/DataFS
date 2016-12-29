@@ -24,16 +24,16 @@ def test_spec_table_creation(standalone_manager):
 
 def test_spec_config_creation(standalone_manager):
     
-    assert standalone_manager._get_document_count('standalone-test-table') == 2
+    assert len(standalone_manager._get_spec_documents('standalone-test-table')) == 2
 
 
-# def test_spec_config_update(standalone_manager):
+def test_spec_config_update_metadata(standalone_manager):
 
-#     #dyanmo
-#         #metadata config test
-#     assert len(standalone_manager._resource.Table('standalone-test-table.spec').scan()['Items'][0]['config']) == 3
-#     #user config test
-#     assert len(standalone_manager._resource.Table('standalone-test-table.spec').scan()['Items'][1]['config']) == 2
+    assert len(standalone_manager._get_spec_documents('standalone-test-table')[0]['config']) == 2
+
+def test_spec_config_update_user_config(standalone_manager):
+
+    assert len(standalone_manager._get_spec_documents('standalone-test-table')[1]['config']) == 2
 
 class TestBaseManager(object):
 

@@ -108,21 +108,23 @@ class MongoDBManager(BaseDataManager):
 
     @property
     def collection(self):
-        if self._coll is None:
-            self._connect()
+        table_name = self.table_name
 
-        return self._coll
+        if table_name not in self._get_table_names():
+            raise KeyError('Table "{}" not found'.format(table_name))
+
+
+        return self.db[table_name]
 
     @property
-    def _spec_collection(self):
-        if self._spec_coll is None:
-            _spec_coll = self.table_name + '.spec'
+    def spec_collection(self):
+        spec_table_name = self.table_name + '.spec'
 
 
-        if self._spec_coll not in self._get_table_names():
-            self._spec_coll = self.db.get_collection(_spec_coll)
+        if spec_table_name not in self._get_table_names():
+            raise KeyError('Table "{}" not found'.format(spec_table_name))
 
-        return self._spec_coll
+        return self.db[spec_table_name]
             
 
     @property
@@ -132,15 +134,7 @@ class MongoDBManager(BaseDataManager):
 
         return self._db
 
-    def _connect(self, table_name = None):
 
-        if table_name is None:
-            table_name = self.table_name
-
-        if table_name not in self._get_table_names():
-            raise KeyError('Table "{}" not found'.format(table_name))
-
-        self._coll = self.db[table_name]
 
     # Private methods (to be implemented!)
 
@@ -161,9 +155,7 @@ class MongoDBManager(BaseDataManager):
 
 
 
-        for k,v in spec.items():
-            self._spec_coll.update({"_id": document_name},
-                                    {"$set": {'config.{}'.format(k): v}})
+        self.spec_collection.update_many({"_id": document_name}, {"$set": {'config': spec}}, upsert=True)
 
     @catch_timeout
     def _create_archive(
@@ -213,7 +205,7 @@ class MongoDBManager(BaseDataManager):
 
 
         try:
-            self._spec_coll.insert_many(itrbl)
+            self.spec_collection.insert_many(itrbl)
             #self.collection.insert_one()
         except TypeError as e:
             print(e)
@@ -289,11 +281,11 @@ class MongoDBManager(BaseDataManager):
 
         return [r['_id'] for r in res]
 
-    def _get_document_count(self, table_name):
+    def _get_document_count(self):
 
-        return self._spec_coll.count()
+        return self.spec_collection.count()
 
     def _get_spec_documents(self, table_name):
-        return self._spec_coll.find({})
+        return [item for item in self.spec_collection.find({})]
 
     

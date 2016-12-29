@@ -19,7 +19,6 @@ def prep_manager(mgr_name, table_name = 'my-new-data-table'):
     metadata_config = {
         'item1': 'test_string1',
         'item2': 'test_string2',
-        'item3': 'test_string3'
     }
 
     user_config = {
@@ -38,6 +37,8 @@ def prep_manager(mgr_name, table_name = 'my-new-data-table'):
             table_name,
             raise_on_err=False)
 
+        manager_mongo.update_spec_config(table_name, 'required_metadata_config', metadata_config)
+        manager_mongo.update_spec_config(table_name, 'required_user_config', user_config)
 
         try:
             yield manager_mongo

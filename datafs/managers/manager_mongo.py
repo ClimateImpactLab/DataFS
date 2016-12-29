@@ -43,7 +43,7 @@ class MongoDBManager(BaseDataManager):
     '''
 
     def __init__(self, database_name, table_name, client_kwargs={}):
-        super(MongoDBManager, self).__init__()
+        super(MongoDBManager, self).__init__(table_name)
 
         # setup MongoClient
         # Arguments can be passed to the client
@@ -51,7 +51,6 @@ class MongoDBManager(BaseDataManager):
         self._client = MongoClient(**client_kwargs)
 
         self._database_name = database_name
-        self._table_name = table_name
 
         self._db = None
         self._coll = None

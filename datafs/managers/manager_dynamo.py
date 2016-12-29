@@ -19,15 +19,16 @@ class DynamoDBManager(BaseDataManager):
             table_name,
             session_args={},
             resource_args={}):
-        super(DynamoDBManager, self).__init__()
 
-        self._table_name = table_name
+        super(DynamoDBManager, self).__init__(table_name)
+
         self._session_args = session_args
         self._resource_args = resource_args
 
         self._session = boto3.Session(**session_args)
         self._resource = self._session.resource('dynamodb', **resource_args)
-        self._table = self._resource.Table(table_name)
+        self._table = self._resource.Table(self._table_name)
+        self._spec_table = self._resource.Table(self._spec_table_name)
 
 
 
@@ -179,9 +180,7 @@ class DynamoDBManager(BaseDataManager):
 
         '''
 
-        spec_table = self._resource.Table(table_name + '.spec')
-
-
+        _spec_table = self._resource.Table(table_name + '.spec')
 
         user_config = {
             '_id': 'required_user_config',
@@ -195,28 +194,21 @@ class DynamoDBManager(BaseDataManager):
 
         
 
-        spec_table.put_item(Item=user_config)
-        spec_table.put_item(Item=archive_config)
+        _spec_table.put_item(Item=user_config)
+        _spec_table.put_item(Item=archive_config)
 
 
-    def _update_spec_config(self, table_name, document_name, spec={}):
+    def _update_spec_config(self, document_name, spec={}):
         '''
         Dynamo implementation of project specific metadata spec
 
         
         '''
 
-        # if document_name == 'required_user_config':
-        #     self.REQUIRED_USER_CONFIG = spec
-
-        # self.REQUIRED_ARCHIVE_METADATA = spec
-    
-
-        #spec_table = table_name + '.spec'
-        spec_table = self._resource.Table(table_name +'.spec')
 
         
-        spec_data_current  = spec_table.get_item(
+        
+        spec_data_current  = self._spec_table.get_item(
                                 Key={'_id': '{}'.format(document_name)})['Item']['config']
 
         #print(spec_data_current)
@@ -225,7 +217,7 @@ class DynamoDBManager(BaseDataManager):
         spec_data_current.update(spec)
         #print(spec_data_current)
         # add the updated archive_data object to Dynamo
-        updated = spec_table.update_item(
+        updated = self._spec_table.update_item(
             Key={
                 '_id': '{}'.format(document_name)},
             UpdateExpression="SET config = :v",
@@ -381,9 +373,24 @@ class DynamoDBManager(BaseDataManager):
         else:
             return versions[0]['checksum']
 
+    def _get_user_config(self):
+
+
+
+        return self._spec_table.get_item(Key={
+                            '_id': '{}'.format('required_user_config')})['Item']['config']
+
+
+    def _get_metadata_config(self):
+
+        return self._spec_table.get_item(Key={
+                            '_id': '{}'.format('required_metadata_config')})['Item']['config']
+
+
     def _delete_archive_record(self, archive_name):
 
         return self._table.delete_item(Key={'_id': archive_name})
+
 
     def _get_spec_documents(self, table_name):
         return self._resource.Table(table_name + '.spec').scan()['Items']
@@ -391,4 +398,4 @@ class DynamoDBManager(BaseDataManager):
     def _get_document_count(self, table_name):
         return len(self._get_spec_documents(table_name))
 
-    
+

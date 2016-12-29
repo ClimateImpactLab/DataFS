@@ -18,14 +18,65 @@ class BaseDataManager(object):
 
     TimestampFormat = '%Y%m%d-%H%M%S'
 
-    def __init__(self):
-        pass
+    def __init__(self, table_name):
+        
+        self._table_name = table_name
+        self._spec_table_name = table_name + '.spec'
+
+        self._required_user_config = None
+        self._required_archive_metadata = None
 
     @property
     def table_names(self):
         return self._get_table_names()
 
+    @property
+    def required_user_config(self):
+        if self._required_user_config is None:
+            try:
+                user_config = self._get_user_config()
+                assert type(user_config) == dict
+
+                self._required_user_config = user_config
+
+            except TypeError as e:
+                print(e)
+
+
+        return self._required_user_config
+
+
+    @property
+    def required_archive_metadata(self):
+        if self._required_archive_metadata is None:
+            try:
+                archive_metadata = self._get_metadata_config()
+                assert type(archive_metadata) == dict
+
+                self._required_archive_metadata = archive_metadata
+
+            except TypeError as e:
+                print(e)
+
+        return self._required_archive_metadata
+
+
     def create_archive_table(self, table_name, raise_on_err=True):
+        '''
+
+        Parameters
+        -----------
+        table_name: str
+
+        Creates a table to store archives for your project
+        Also creates and populates a table with basic spec for user and metadata config
+
+        Returns
+        -------
+        None
+
+
+        '''
         
 
         
@@ -43,7 +94,7 @@ class BaseDataManager(object):
             except KeyError:
                 pass
 
-    def update_spec_config(self,table_name, document_name,spec):
+    def update_spec_config(self, document_name,spec):
         '''
         Allows update to default setting of either user config or metadata config
         One or the other must be selected as True.
@@ -57,7 +108,7 @@ class BaseDataManager(object):
         '''
 
 
-        self._update_spec_config(table_name, document_name, spec)
+        self._update_spec_config(document_name, spec)
 
 
     def delete_table(self, table_name, raise_on_err=True):
@@ -122,8 +173,8 @@ class BaseDataManager(object):
         archive_metadata['creation_date'] = archive_metadata.get(
             'creation_date', self.create_timestamp())
 
-        required = set(self.REQUIRED_USER_CONFIG.keys())
-        required |= set(self.REQUIRED_ARCHIVE_METADATA.keys())
+        required = set(self.required_user_config.keys())
+        required |= set(self.required_archive_metadata.keys())
 
         for attr in required:
             assert attr in archive_metadata, 'Required attribute "{}" missing from metadata'.format(
@@ -299,11 +350,19 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _update_spec_config(self,table_name, document_name, **spec):
+    def _update_spec_config(self, document_name, spec):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')        
 
     def _delete_table(self, table_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_user_config(self):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_metadata_config(self):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 

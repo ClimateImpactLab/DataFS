@@ -31,10 +31,7 @@ import moto
 
 from six import b
 
-try:
-    unicode
-except NameError:
-    unicode = str
+from datafs._compat import string_types, u
 
 
 def get_counter():
@@ -105,7 +102,7 @@ class TestHashFunction(object):
         Run through a number of iterations of the hash functions
         '''
 
-        contents = unicode(contents)
+        contents = u(contents)
 
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
         apihash = self.update_and_hash(archive, contents)
@@ -125,7 +122,7 @@ class TestHashFunction(object):
 
         # Update and test again!
 
-        contents = unicode((os.linesep).join(
+        contents = u((os.linesep).join(
             [contents, contents, 'line 3!' + contents]))
 
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
@@ -144,7 +141,7 @@ class TestHashFunction(object):
 
         # Update and test a different way!
 
-        contents = unicode((os.linesep).join([contents, 'more!!!', contents]))
+        contents = u((os.linesep).join([contents, 'more!!!', contents]))
 
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
 

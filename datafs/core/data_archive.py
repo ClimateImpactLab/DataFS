@@ -186,7 +186,7 @@ class DataArchive(object):
         '''
 
         if cache:
-            self.cache = True
+            self.cache()
 
         latest_version = self.latest_version
 
@@ -420,16 +420,18 @@ class DataArchive(object):
             if version_check(self.api.hash_file(filepath)):
                 return
 
+        read_path = self.get_version_path(version)
+
         with data_file._choose_read_fs(
             self.authority, 
-            self.cache, 
-            self.archive_path, 
+            self.api.cache, 
+            read_path, 
             version_check, 
             self.api.hash_file) as read_fs:
 
             fs.utils.copyfile(
                 read_fs,
-                self.archive_path,
+                read_path,
                 local,
                 filename)
 

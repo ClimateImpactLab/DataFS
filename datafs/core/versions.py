@@ -7,27 +7,117 @@ class StrictDataVersion(StrictVersion):
     Examples
     --------
 
+    StrictDataVersion employs python's strict data versioning scheme, using 
+    major, minor, and patch segments to the version, with an optional alpha and 
+    beta pre-release segment:
+
     .. code-block:: python
 
-        >>> v = StrictDataVersion()
-        >>> v
+        >>> StrictDataVersion()
         StrictDataVersion ('0.0')
-        >>> v.bump(prerelease='alpha')
-        >>> v
-        StrictDataVersion ('0.0.1a1')
         >>>
-        >>> v.bump(prerelease='alpha')
+        >>> StrictDataVersion('1.0.1')
+        StrictDataVersion ('1.0.1')
+        >>>
+        >>> StrictDataVersion('1.a.f')   # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+        ValueError: invalid version number '1.a.f'
+
+    The :py:meth:`~StrictDataVersion.bump` method allows the user to increment 
+    the version using the ``kind`` arugment, which can take the values 
+    ``'major'``, ``'minor'``, or ``'patch'``, and the pre-release value, which 
+    accepts ``'alpha'`` and ``'beta'``. Both have a default value None.
+
+    The ``kind`` argument increments the version:
+
+    .. code-block:: python
+
+        >>> v = StrictDataVersion('1.0.1')
+        >>> v.bump('patch')
         >>> v
-        StrictDataVersion ('0.0.1a2')
+        StrictDataVersion ('1.0.2')
         >>>
         >>> v.bump('minor')
         >>> v
-        StrictDataVersion ('0.1')
+        StrictDataVersion ('1.1')
+        >>>
+        >>> v.bump('minor')
+        >>> v
+        StrictDataVersion ('1.2')
+        >>>
+        >>> v.bump('major')
+        >>> v
+        StrictDataVersion ('2.0')
+        >>>
+        >>> v.bump('release')   # doctest: +ELLIPSIS
+        Traceback (most recent call last): 
+        ValueError: Bump kind "release" not understood
+
+    The prerelease argument increments the pre-release value. If ``kind`` is not 
+    supplied simultaneously the version is bumped with a patch before entering 
+    pre-release:
+
+    .. code-block:: python
+
+        >>> v = StrictDataVersion('1.0.0')
+        >>> v.bump(prerelease='alpha')
+        >>> v
+        StrictDataVersion ('1.0.1a1')
+        >>>
+        >>> v.bump(prerelease='alpha')
+        >>> v
+        StrictDataVersion ('1.0.1a2')
+        >>>
+        >>> v.bump(prerelease='beta')
+        >>> v
+        StrictDataVersion ('1.0.1b1')
+        >>>
+        >>> v.bump('minor')
+        >>> v
+        StrictDataVersion ('1.1')
         >>>
         >>> v.bump('minor', prerelease='beta')
         >>> v
-        StrictDataVersion ('0.2b1')
+        StrictDataVersion ('1.2b1')
         >>>
+        >>> v.bump(prerelease='beta')
+        >>> v
+        StrictDataVersion ('1.2b2')
+        >>>
+        >>> v.bump('minor')
+        >>> v
+        StrictDataVersion ('1.2')
+        >>>
+        >>> v.bump('minor', prerelease='beta')
+        >>> v
+        StrictDataVersion ('1.3b1')
+        >>>
+        >>> v.bump('major', prerelease='alpha')
+        >>> v
+        StrictDataVersion ('2.0a1')
+        >>>
+        >>> v.bump('major')
+        >>> v
+        StrictDataVersion ('3.0')
+        >>>
+        >>> v.bump('patch', prerelease='beta')
+        >>> v
+        StrictDataVersion ('3.0.1b1')
+        >>>
+        >>> v.bump('patch')
+        >>> v
+        StrictDataVersion ('3.0.1')
+        >>>
+        >>> v.bump(prerelease='gamma')   # doctest: +ELLIPSIS
+        Traceback (most recent call last): 
+        ValueError: Prerelease type "gamma" not understood
+
+    Releases cannot move from beta to alpha without a new major/minor/patch 
+    bump:
+
+    .. code-block:: python
+
+        >>> v = StrictDataVersion('0.2b1')
         >>> v.bump(prerelease='alpha')    # doctest: +ELLIPSIS
         Traceback (most recent call last):
         ...
@@ -36,6 +126,13 @@ class StrictDataVersion(StrictVersion):
         >>> v
         StrictDataVersion ('0.2')
         >>>
+
+    StrictDataVersion subclasses python's native 
+    :py:class:`distutils.version.StrictVersion`, which handles all comparisons:
+
+    .. code-block:: python
+
+        >>> v = StrictDataVersion('0.2')
         >>> v < StrictDataVersion('0.03')
         True
         >>> v > StrictDataVersion('0.1.5a13')
@@ -43,6 +140,16 @@ class StrictDataVersion(StrictVersion):
         >>>
         >>> StrictDataVersion('0.2.0') > StrictDataVersion('0.2.0a1')
         True
+
+    Versions can return a new version or can be bumped in-place (default):
+
+    .. code-block:: python
+
+        >>> v = StrictDataVersion('0.2')
+        >>> v.bump('minor', inplace=False)
+        StrictDataVersion ('0.3')
+        >>> v
+        StrictDataVersion ('0.2')
 
 
     '''
@@ -124,8 +231,6 @@ class StrictDataVersion(StrictVersion):
         return new_version
 
         
-
-    
     def _increment_prerelease(self, current_prerelease, prerelease):
 
         if prerelease == 'alpha':
@@ -141,11 +246,9 @@ class StrictDataVersion(StrictVersion):
                     ' to prerelease stage "alpha"'' - version already in beta'
 
                     raise ValueError(msg)
-                else:
-                    msg = 'Version "{}" prerelease "{}" not understood'.format(
-                        self, kind)
 
-                    raise ValueError(msg)
+                else:
+                    raise ValueError('Version "{}" not understood'.format(self))
         
         elif prerelease == 'beta':
             if current_prerelease is None:
@@ -159,10 +262,8 @@ class StrictDataVersion(StrictVersion):
                     new_prerelease = ('b', int(current_prerelease[1]) + 1)
 
                 else:
-                    msg = 'Version "{}" prerelease "{}" not understood'.format(
-                        self, kind)
+                    raise ValueError('Version "{}" not understood'.format(self))
 
-                    raise ValueError(msg)
 
         elif prerelease is None:
             new_prerelease = current_prerelease

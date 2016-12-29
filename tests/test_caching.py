@@ -96,8 +96,8 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
     
     # Turn on caching in archive 1 and assert creation
     
-    archive1.cache = True
-    assert archive1.cache is True
+    archive1.cache()
+    assert archive1.is_cached() is True
     assert archive1.api.cache.fs is cache1
     assert cache1.isfile('myArchive')
 
@@ -114,8 +114,8 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
 
     # Turn on caching in archive 2 and assert creation
 
-    archive2.cache = True
-    assert archive2.cache is True
+    archive2.cache()
+    assert archive2.is_cached() is True
     assert archive2.api.cache.fs is cache2
     assert cache2.isfile('myArchive')
 
@@ -159,7 +159,7 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
     # We expect the same result because the cached file is 
     # already open in archive 1
 
-    archive2.cache=False
+    archive2.remove_from_cache()
 
     assert archive1.api.cache.fs.isfile('myArchive')
     assert not archive2.api.cache.fs.isfile('myArchive')
@@ -180,7 +180,7 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
     # be reflected in archive 1 because both are reading 
     # and writing from the same authority.
 
-    archive1.cache=False
+    archive1.remove_from_cache()
 
     assert not archive1.api.cache.fs.isfile('myArchive')
     assert not archive2.api.cache.fs.isfile('myArchive')

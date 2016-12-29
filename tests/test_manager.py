@@ -29,11 +29,12 @@ def test_spec_config_creation(standalone_manager):
 
 def test_spec_config_update_metadata(standalone_manager):
 
-    assert len(standalone_manager._get_spec_documents('standalone-test-table')[0]['config']) == 2
+    assert len(standalone_manager.required_archive_metadata) == 3
 
 def test_spec_config_update_user_config(standalone_manager):
 
-    assert len(standalone_manager._get_spec_documents('standalone-test-table')[1]['config']) == 2
+    assert len(standalone_manager.required_user_config) == 2
+
 
 class TestBaseManager(object):
 

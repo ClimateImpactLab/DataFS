@@ -91,12 +91,10 @@ class MongoDBManager(BaseDataManager):
     def _create_spec_table(self, table_name):
 
 
-        spec_table_name = table_name + '.spec'
+        if self._spec_table_name in self._get_table_names():
+            raise KeyError('Table "{}" already exists'.format(self._spec_table_name))
 
-        if spec_table_name in self._get_table_names():
-            raise KeyError('Table "{}" already exists'.format(spec_table_name))
-
-        self.db.create_collection(spec_table_name)
+        self.db.create_collection(self._spec_table_name)
 
     def _delete_table(self, table_name):
         if table_name not in self._get_table_names():
@@ -117,7 +115,8 @@ class MongoDBManager(BaseDataManager):
 
     @property
     def spec_collection(self):
-        spec_table_name = self.table_name + '.spec'
+
+        spec_table_name = self._spec_table_name
 
 
         if spec_table_name not in self._get_table_names():
@@ -147,10 +146,10 @@ class MongoDBManager(BaseDataManager):
             self.collection.update({"_id": archive_name},
                                    {"$set": {"metadata.{}".format(key): val}})
 
-    def _update_spec_config(self, table_name, document_name, spec):
+    def _update_spec_config(self,document_name, spec):
 
-        if self._spec_coll is None:
-            self._spec_coll = self.db[table_name + '.spec']
+        # if self._spec_coll is None:
+        #     self._spec_coll = self.db[self._]
 
 
 
@@ -286,5 +285,15 @@ class MongoDBManager(BaseDataManager):
 
     def _get_spec_documents(self, table_name):
         return [item for item in self.spec_collection.find({})]
+
+
+    def _get_required_user_config(self):
+
+        return self.spec_collection.find_one({'_id': 'required_user_config'})['config']
+
+    def _get_required_archive_metadata(self):
+        
+        return self.spec_collection.find_one({'_id': 'required_metadata_config'})['config']
+
 
     

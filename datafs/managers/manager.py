@@ -34,7 +34,7 @@ class BaseDataManager(object):
     def required_user_config(self):
         if self._required_user_config is None:
             try:
-                user_config = self._get_user_config()
+                user_config = self._get_required_user_config()
                 assert type(user_config) == dict
 
                 self._required_user_config = user_config
@@ -50,7 +50,7 @@ class BaseDataManager(object):
     def required_archive_metadata(self):
         if self._required_archive_metadata is None:
             try:
-                archive_metadata = self._get_metadata_config()
+                archive_metadata = self._get_required_archive_metadata()
                 assert type(archive_metadata) == dict
 
                 self._required_archive_metadata = archive_metadata
@@ -358,11 +358,11 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_user_config(self):
+    def _get_required_user_config(self):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_metadata_config(self):
+    def _get_required_archive_metadata(self):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 

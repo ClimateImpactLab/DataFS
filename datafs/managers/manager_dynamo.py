@@ -373,7 +373,7 @@ class DynamoDBManager(BaseDataManager):
         else:
             return versions[0]['checksum']
 
-    def _get_user_config(self):
+    def _get_required_user_config(self):
 
 
 
@@ -381,7 +381,7 @@ class DynamoDBManager(BaseDataManager):
                             '_id': '{}'.format('required_user_config')})['Item']['config']
 
 
-    def _get_metadata_config(self):
+    def _get_required_archive_metadata(self):
 
         return self._spec_table.get_item(Key={
                             '_id': '{}'.format('required_metadata_config')})['Item']['config']

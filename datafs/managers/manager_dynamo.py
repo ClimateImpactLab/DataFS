@@ -27,15 +27,18 @@ class DynamoDBManager(BaseDataManager):
             table_name,
             session_args={},
             resource_args={}):
-        super(DynamoDBManager, self).__init__()
 
-        self._table_name = table_name
+        super(DynamoDBManager, self).__init__(table_name)
+
         self._session_args = session_args
         self._resource_args = resource_args
 
         self._session = boto3.Session(**session_args)
         self._resource = self._session.resource('dynamodb', **resource_args)
-        self._table = self._resource.Table(table_name)
+        self._table = self._resource.Table(self._table_name)
+        self._spec_table = self._resource.Table(self._spec_table_name)
+
+
 
     @property
     def config(self):
@@ -91,11 +94,68 @@ class DynamoDBManager(BaseDataManager):
         return [t.name for t in self._resource.tables.all()]
 
     def _create_archive_table(self, table_name):
+        '''
+        Dynamo implementation of BaseDataManager create_archive_table
+
+        waiter object is implemented to ensure table creation before moving on
+        this will slow down table creation. However, since we are only creating table once
+        this should no impact users. 
+
+        Parameters
+        ----------
+        table_name: str
+
+        Returns
+        -------
+        None
+
+        '''
         if table_name in self._get_table_names():
             raise KeyError('Table "{}" already exists'.format(table_name))
 
         try:
-            self._resource.create_table(TableName=table_name,
+            table = self._resource.create_table(TableName=table_name,
+                                        KeySchema=[{'AttributeName': '_id',
+                                                    'KeyType': 'HASH'},
+                                                   ],
+                                        AttributeDefinitions=[{'AttributeName': '_id',
+                                                               'AttributeType': 'S'},
+                                                              ],
+                                        ProvisionedThroughput={'ReadCapacityUnits': 123,
+                                                               'WriteCapacityUnits': 123})
+            table.meta.client.get_waiter('table_exists').wait(TableName=table_name)
+
+
+        except ValueError:
+            # Error handling for windows incompatability issue
+            assert table_name in self._get_table_names(), 'Table creation failed'
+
+
+    def _create_spec_table(self, table_name):
+        '''
+        Dynamo implementation of User and Metadata Spec configuration
+        Called by `create_archive_table()` in :py:class:`manager.BaseDataManager`. 
+        This table will additional table will be aliased by 'table_name.spec'
+
+        A waiter is implemented on Dynamo to ensure table exists before executing any subsequent operations
+
+        Paramters
+        ---------
+        table_name: str
+
+        Returns
+        -------
+        None
+        '''
+
+        spec_table = table_name + '.spec'
+        
+
+        if spec_table in self._get_table_names():
+            raise KeyError('Table "{}" already exists'.format(spec_table))
+
+        try:
+            table = self._resource.create_table(TableName=spec_table,
                                         KeySchema=[{'AttributeName': '_id',
                                                     'KeyType': 'HASH'},
                                                    ],
@@ -105,9 +165,75 @@ class DynamoDBManager(BaseDataManager):
                                         ProvisionedThroughput={'ReadCapacityUnits': 123,
                                                                'WriteCapacityUnits': 123})
 
+            table.meta.client.get_waiter('table_exists').wait(TableName=spec_table)
+
+
         except ValueError:
             # Error handling for windows incompatability issue
-            assert table_name in self._get_table_names(), 'Table creation failed'
+            assert spec_table in self._get_table_names(), 'Table creation failed'
+
+    def _create_spec_config(self, table_name):
+        '''
+        Dynamo implementation of spec config creation
+        Called by `create_archive_table()` in :py:class:`manager.BaseDataManager`
+        Simply adds two rows to the spec table
+
+        Parameters
+        ----------
+        table_name
+
+        Returns
+        -------
+        None
+
+        '''
+
+        _spec_table = self._resource.Table(table_name + '.spec')
+
+        user_config = {
+            '_id': 'required_user_config',
+            'config': {}
+        }
+
+        archive_config = {
+            '_id': 'required_metadata_config',
+            'config': {}
+        }
+
+        
+
+        _spec_table.put_item(Item=user_config)
+        _spec_table.put_item(Item=archive_config)
+
+
+    def _update_spec_config(self, document_name, spec={}):
+        '''
+        Dynamo implementation of project specific metadata spec
+
+        
+        '''
+
+
+        
+        
+        spec_data_current  = self._spec_table.get_item(
+                                Key={'_id': '{}'.format(document_name)})['Item']['config']
+
+        #print(spec_data_current)
+        # keep the current state in memory
+        
+        spec_data_current.update(spec)
+        #print(spec_data_current)
+        # add the updated archive_data object to Dynamo
+        updated = self._spec_table.update_item(
+            Key={
+                '_id': '{}'.format(document_name)},
+            UpdateExpression="SET config = :v",
+            ExpressionAttributeValues={
+                ':v': spec_data_current},
+            ReturnValues='ALL_NEW')
+
+
 
     def _delete_table(self, table_name):
         if table_name not in self._get_table_names():
@@ -116,6 +242,8 @@ class DynamoDBManager(BaseDataManager):
         try:
 
             self._resource.Table(table_name).delete()
+            self._resource.Table(table_name + '.spec').delete()
+
 
         except ValueError:
             # Error handling for windows incompatability issue
@@ -267,6 +395,29 @@ class DynamoDBManager(BaseDataManager):
         else:
             return versions[-1]['checksum']
 
+    def _get_required_user_config(self):
+
+
+
+        return self._spec_table.get_item(Key={
+                            '_id': '{}'.format('required_user_config')})['Item']['config']
+
+
+    def _get_required_archive_metadata(self):
+
+        return self._spec_table.get_item(Key={
+                            '_id': '{}'.format('required_metadata_config')})['Item']['config']
+
+
     def _delete_archive_record(self, archive_name):
 
         return self._table.delete_item(Key={'_id': archive_name})
+
+
+    def _get_spec_documents(self, table_name):
+        return self._resource.Table(table_name + '.spec').scan()['Items']
+
+    def _get_document_count(self, table_name):
+        return len(self._get_spec_documents(table_name))
+
+

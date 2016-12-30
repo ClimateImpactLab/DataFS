@@ -48,7 +48,7 @@ class MongoDBManager(BaseDataManager):
     '''
 
     def __init__(self, database_name, table_name, client_kwargs={}):
-        super(MongoDBManager, self).__init__()
+        super(MongoDBManager, self).__init__(table_name)
 
         # setup MongoClient
         # Arguments can be passed to the client
@@ -56,10 +56,10 @@ class MongoDBManager(BaseDataManager):
         self._client = MongoClient(**client_kwargs)
 
         self._database_name = database_name
-        self._table_name = table_name
 
         self._db = None
         self._coll = None
+        self._spec_coll = None
 
     @property
     def config(self):
@@ -89,18 +89,47 @@ class MongoDBManager(BaseDataManager):
 
         self.db.create_collection(self.table_name)
 
+        
+
+        # something like create_archive for both docs
+
+
+    def _create_spec_table(self, table_name):
+
+
+        if self._spec_table_name in self._get_table_names():
+            raise KeyError('Table "{}" already exists'.format(self._spec_table_name))
+
+        self.db.create_collection(self._spec_table_name)
+
     def _delete_table(self, table_name):
         if table_name not in self._get_table_names():
             raise KeyError('Table "{}" not found'.format(table_name))
 
         self.db.drop_collection(table_name)
+        self.db.drop_collection(table_name +'.spec')
 
     @property
     def collection(self):
-        if self._coll is None:
-            self._connect()
+        table_name = self.table_name
 
-        return self._coll
+        if table_name not in self._get_table_names():
+            raise KeyError('Table "{}" not found'.format(table_name))
+
+
+        return self.db[table_name]
+
+    @property
+    def spec_collection(self):
+
+        spec_table_name = self._spec_table_name
+
+
+        if spec_table_name not in self._get_table_names():
+            raise KeyError('Table "{}" not found'.format(spec_table_name))
+
+        return self.db[spec_table_name]
+            
 
     @property
     def db(self):
@@ -109,12 +138,7 @@ class MongoDBManager(BaseDataManager):
 
         return self._db
 
-    def _connect(self):
 
-        if self.table_name not in self._get_table_names():
-            raise KeyError('Table "{}" not found'.format(self.table_name))
-
-        self._coll = self.db[self.table_name]
 
     # Private methods (to be implemented!)
 
@@ -127,6 +151,15 @@ class MongoDBManager(BaseDataManager):
         for key, val in metadata.items():
             self.collection.update({"_id": archive_name},
                                    {"$set": {"metadata.{}".format(key): val}})
+
+    def _update_spec_config(self,document_name, spec):
+
+        # if self._spec_coll is None:
+        #     self._spec_coll = self.db[self._]
+
+
+
+        self.spec_collection.update_many({"_id": document_name}, {"$set": {'config': spec}}, upsert=True)
 
     @catch_timeout
     def _create_archive(
@@ -168,6 +201,26 @@ class MongoDBManager(BaseDataManager):
 
         except KeyError:
             pass
+
+
+    @catch_timeout
+    def _create_spec_config(self, table_name):
+
+        if self._spec_coll == None:
+            self._spec_coll = self.db[table_name + '.spec']
+
+        itrbl = [{'_id': x, 'config': {}} 
+                        for x in ('required_user_config', 'required_metadata_config')]
+
+
+
+        try:
+            self.spec_collection.insert_many(itrbl)
+            #self.collection.insert_one()
+        except TypeError as e:
+            print(e)
+            #raise KeyError('Spec config files already created for {}'.format(table_name))
+
 
 
     @catch_timeout
@@ -247,3 +300,22 @@ class MongoDBManager(BaseDataManager):
         res = self.collection.find({}, {"_id": 1})
 
         return [r['_id'] for r in res]
+
+    def _get_document_count(self):
+
+        return self.spec_collection.count()
+
+    def _get_spec_documents(self, table_name):
+        return [item for item in self.spec_collection.find({})]
+
+
+    def _get_required_user_config(self):
+
+        return self.spec_collection.find_one({'_id': 'required_user_config'})['config']
+
+    def _get_required_archive_metadata(self):
+        
+        return self.spec_collection.find_one({'_id': 'required_metadata_config'})['config']
+
+
+    

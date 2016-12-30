@@ -38,8 +38,11 @@ class ConfigFile(object):
             config = yaml.load(self.config_file)
 
         else:
-            with open(self.config_file, 'r') as y:
-                config = yaml.load(y)
+            try:
+                with open(self.config_file, 'r') as y:
+                    config = yaml.load(y)
+            except IOError:
+                config = {}
 
         self.parse_configfile_contents(config)
 

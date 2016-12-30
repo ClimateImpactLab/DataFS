@@ -21,6 +21,7 @@ from datafs.core import data_file
 from datafs.services.service import DataService
 from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
+from tests.resources import prep_manager
 
 from contextlib import contextmanager
 
@@ -43,55 +44,6 @@ def pytest_generate_tests(metafunc):
     if 'open_func' in metafunc.fixturenames:
         metafunc.parametrize('open_func', ['open_file', 'get_local_path'])
 
-
-@contextmanager
-def prep_manager(mgr_name):
-
-    table_name = 'my-new-data-table'
-
-    if mgr_name == 'mongo':
-
-        manager_mongo = MongoDBManager(
-            database_name='MyDatabase',
-            table_name=table_name)
-
-        manager_mongo.create_archive_table(
-            table_name,
-            raise_on_err=False)
-
-        try:
-            yield manager_mongo
-
-        finally:
-            manager_mongo.delete_table(
-                table_name,
-                raise_on_err=False)
-
-    elif mgr_name == 'dynamo':
-
-        manager_dynamo = DynamoDBManager(
-            table_name,
-            session_args={
-                'aws_access_key_id': "access-key-id-of-your-choice",
-                'aws_secret_access_key': "secret-key-of-your-choice"},
-            resource_args={
-                'endpoint_url': 'http://localhost:8000/',
-                'region_name': 'us-east-1'})
-
-        manager_dynamo.create_archive_table(
-            table_name,
-            raise_on_err=False)
-
-        try:
-            yield manager_dynamo
-
-        finally:
-            manager_dynamo.delete_table(
-                table_name,
-                raise_on_err=False)
-
-    else:
-        raise ValueError('Manager "{}" not recognized'.format(mgr_name))
 
 
 @contextmanager
@@ -142,6 +94,8 @@ def prep_filesystem(fs_name):
 
         finally:
             m.stop()
+
+
 
 
 @pytest.yield_fixture
@@ -231,6 +185,46 @@ def cache2():
         yield filesystem
 
 
+@pytest.yield_fixture
+def manager_with_spec(mgr_name):
+
+    with prep_manager(mgr_name, table_name='standalone-test-table') as manager:
+
+
+        metadata_config = {
+            'item1': 'test_string1',
+            'item2': 'test_string2',
+            'item3': 'test_string3'
+        }
+
+        user_config = {
+            'username': 'Your Name',
+            'Home Institution': 'Your Institution',
+            'contact': 'my.email@example.com'
+            
+        }
+
+
+        manager.update_spec_config('required_metadata_config', metadata_config)
+        manager.update_spec_config('required_user_config', user_config)
+        manager.required_user_config
+        manager.required_archive_metadata
+
+        yield manager
+
+
+@pytest.yield_fixture
+def api_with_spec(manager_with_spec):
+
+        api = DataAPI(
+            username='My Name',
+            contact='my.email@example.com')
+
+        api.attach_manager(manager_with_spec)
+        api.attach_authority('auth', auth1)
+
+
+        yield api
 
 @pytest.fixture
 def opener(open_func):

@@ -121,14 +121,18 @@ def configure(ctx, helper, edit):
         allow_extra_args=True))
 @click.argument('archive_name')
 @click.option('--authority_name', envvar='AUTHORITY_NAME', default=None)
+@click.option('--versioned', envvar='VERSIONED', default=True)
 @click.pass_context
-def create_archive(ctx, archive_name, authority_name):
+def create_archive(ctx, archive_name, authority_name, versioned=True):
     kwargs = parse_args_as_kwargs(ctx.args)
     var = ctx.obj.api.create_archive(
         archive_name,
         authority_name=authority_name,
+        versioned=versioned,
         metadata=kwargs)
-    click.echo('created archive {}'.format(var))
+
+    verstring = 'versioned archive' if versioned else 'archive'
+    click.echo('created {} {}'.format(verstring, var))
 
 
 @cli.command(
@@ -137,22 +141,45 @@ def create_archive(ctx, archive_name, authority_name):
         allow_extra_args=True))
 @click.argument('archive_name')
 @click.argument('filepath')
+@click.option('--bumpversion', envvar='BUMPVERSION', default='patch')
+@click.option('--prerelease', envvar='PRERELEASE', default=None)
 @click.pass_context
-def upload(ctx, archive_name, filepath):
+def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None):
     kwargs = parse_args_as_kwargs(ctx.args)
+
     var = ctx.obj.api.get_archive(archive_name)
-    var.update(filepath, **kwargs)
-    click.echo('uploaded data to {}'.format(var))
+    latest_version = var.latest_version
+
+    var.update(filepath, bumpversion=bumpversion, prerelease=prerelease, **kwargs)
+    new_version = var.latest_version
+    
+    if new_version != latest_version:
+        bumpmsg = ' version bumped {} --> {}.'.format(latest_version, new_version)
+    elif var.versioned:
+        bumpmsg = ' version remains {}.'.format(latest_version)
+    else:
+        bumpmsg = ''
+
+    click.echo('uploaded data to {}.{}'.format(var, bumpmsg))
 
 
 @cli.command()
 @click.argument('archive_name')
 @click.argument('filepath')
+@click.option('--version', envvar='VERSION', default=None)
 @click.pass_context
-def download(ctx, archive_name, filepath):
+def download(ctx, archive_name, filepath, version):
     var = ctx.obj.api.get_archive(archive_name)
-    var.download(filepath)
-    click.echo('downloaded {} to {}'.format(var, filepath))
+
+    if version is None:
+        version = var.latest_version
+
+    var.download(filepath, version=version)
+
+    archstr = var.archive_name +\
+        '' if (not var.versioned) else ' v{}'.format(version)
+
+    click.echo('downloaded {} to {}'.format(archstr, filepath))
 
 
 @cli.command()
@@ -166,9 +193,17 @@ def metadata(ctx, archive_name):
 @cli.command()
 @click.argument('archive_name')
 @click.pass_context
+def history(ctx, archive_name):
+    var = ctx.obj.api.get_archive(archive_name)
+    click.echo(var.history)
+
+
+@cli.command()
+@click.argument('archive_name')
+@click.pass_context
 def versions(ctx, archive_name):
     var = ctx.obj.api.get_archive(archive_name)
-    click.echo(var.versions)
+    click.echo(pprint.pformat(map(str, var.versions)))
 
 
 @cli.command()

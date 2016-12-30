@@ -35,11 +35,16 @@ class MongoDBManager(BaseDataManager):
     '''
     Parameters
     ----------
+    
+    database_name : str
+        Name of the database containing the DataFS tables
 
     table_name: str
-        For Climate Impact Lab table_name = "cil-data"
+        Name of the data archive table
 
-    *args, **kwargs passed to :py:class:`pymongo.MongoClient`
+    client_kwargs : dict
+        Keyword arguments used in initializing a :py:class:`pymongo.MongoClient`
+        object
     '''
 
     def __init__(self, database_name, table_name, client_kwargs={}):
@@ -74,6 +79,7 @@ class MongoDBManager(BaseDataManager):
     def table_name(self):
         return self._table_name
 
+    @catch_timeout
     def _get_table_names(self):
         return self.db.collection_names(include_system_collections=False)
 
@@ -127,13 +133,15 @@ class MongoDBManager(BaseDataManager):
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
+            versioned,
             metadata):
 
         doc = {
             '_id': archive_name,
             'authority_name': authority_name,
-            'service_path': service_path,
+            'archive_path': archive_path,
+            'versioned': versioned,
             'versions': []}
         doc['metadata'] = metadata
 
@@ -146,17 +154,21 @@ class MongoDBManager(BaseDataManager):
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
+            versioned,
             metadata):
 
         try:
             self._create_archive(
                 archive_name,
                 authority_name,
-                service_path,
+                archive_path,
+                versioned,
                 metadata)
+
         except KeyError:
             pass
+
 
     @catch_timeout
     def _get_archive_listing(self, archive_name):
@@ -170,6 +182,16 @@ class MongoDBManager(BaseDataManager):
 
         return self.collection.find_one({'_id': archive_name})
 
+    def _get_archive_spec(self, archive_name):
+        res = self._get_archive_listing(archive_name)
+
+        if res is None:
+            raise KeyError
+
+        spec = ['authority_name', 'archive_path', 'versioned']
+        
+        return {k:v for k,v in res.items() if k in spec}
+
     def _get_authority_name(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
@@ -179,14 +201,14 @@ class MongoDBManager(BaseDataManager):
 
         return res['authority_name']
 
-    def _get_service_path(self, archive_name):
+    def _get_archive_path(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
 
         if res is None:
             raise KeyError
 
-        return res['service_path']
+        return res['archive_path']
 
     def _get_archive_metadata(self, archive_name):
 

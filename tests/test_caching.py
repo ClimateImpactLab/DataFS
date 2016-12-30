@@ -19,40 +19,9 @@ from datafs.services.service import DataService
 from contextlib import contextmanager
 
 import pytest
+from fs.errors import (ResourceLockedError, ResourceInvalidError)
 
-from tests.resources import string_types, u
-
-
-
-@pytest.fixture
-def opener(open_func):
-    '''
-    Fixture for opening files using each of the available methods
-
-    open_func is parameterized in conftest.py
-    '''
-
-    if open_func == 'open_file':
-
-        @contextmanager
-        def inner(archive, *args, **kwargs):
-            with archive.open(*args, **kwargs) as f:
-                yield f
-
-        return inner
-
-    elif open_func == 'get_local_path':
-
-        @contextmanager
-        def inner(archive, *args, **kwargs):
-            with archive.get_local_path() as fp:
-                with open(fp, *args, **kwargs) as f:
-                    yield f
-
-        return inner
-
-    else:
-        raise NameError('open_func "{}" not recognized'.format(open_func))
+from datafs._compat import string_types, u
 
 
 def test_delete_handling(api, auth1, cache):
@@ -63,7 +32,7 @@ def test_delete_handling(api, auth1, cache):
     with open('test_file.txt', 'w+') as f:
         f.write('this is an upload test')
 
-    var = api.create_archive('archive1', authority_name='auth1')
+    var = api.create_archive('archive1', authority_name='auth1', versioned=False)
     var.update('test_file.txt', cache=True)
 
     assert os.path.isfile(api.cache.fs.getsyspath('archive1'))
@@ -91,12 +60,12 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
     api2.attach_authority('auth1', auth1)
     api2.attach_cache(cache2)
 
-    archive1 = api1.create_archive('myArchive')
+    archive1 = api1.create_archive('myArchive', versioned=False)
     
     # Turn on caching in archive 1 and assert creation
     
-    archive1.cache = True
-    assert archive1.cache is True
+    archive1.cache()
+    assert archive1.is_cached() is True
     assert archive1.api.cache.fs is cache1
     assert cache1.isfile('myArchive')
 
@@ -113,8 +82,8 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
 
     # Turn on caching in archive 2 and assert creation
 
-    archive2.cache = True
-    assert archive2.cache is True
+    archive2.cache()
+    assert archive2.is_cached() is True
     assert archive2.api.cache.fs is cache2
     assert cache2.isfile('myArchive')
 
@@ -158,7 +127,7 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
     # We expect the same result because the cached file is 
     # already open in archive 1
 
-    archive2.cache=False
+    archive2.remove_from_cache()
 
     assert archive1.api.cache.fs.isfile('myArchive')
     assert not archive2.api.cache.fs.isfile('myArchive')
@@ -179,7 +148,7 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
     # be reflected in archive 1 because both are reading 
     # and writing from the same authority.
 
-    archive1.cache=False
+    archive1.remove_from_cache()
 
     assert not archive1.api.cache.fs.isfile('myArchive')
     assert not archive2.api.cache.fs.isfile('myArchive')
@@ -253,12 +222,12 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
 
     with opener(archive1, 'r') as f1:
 
-        assert len(archive1.versions) == 7
+        assert len(archive1.history) == 7
         assert u('12345') == u(f1.read(str_length/2))
         
         with opener(archive2, 'w+') as f2:
             f2.write(test_str_2)
 
-        assert len(archive1.versions) == 8
+        assert len(archive1.history) == 8
         assert u('67890') == u(f1.read())
 

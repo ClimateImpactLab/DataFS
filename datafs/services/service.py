@@ -17,6 +17,29 @@ class DataService(object):
             self.__class__.__name__, self.fs.__class__.__name__, hex(id(self)))
 
     def upload(self, filepath, service_path, remove=False):
+        '''
+        "Upload" a file to a service
+
+        This copies a file from the local filesystem into the ``DataService``'s 
+        filesystem. If ``remove==True``, the file is moved rather than copied.
+        
+        If ``filepath`` and ``service_path`` paths are the same, ``upload`` 
+        deletes the file if ``remove==True`` and returns.
+
+        Parameters
+        ----------
+        filepath : str
+            Relative or absolute path to the file to be uploaded on the user's 
+            filesystem
+
+        service_path: str
+            Path to the destination for the file on the ``DataService``'s 
+            filesystem
+
+        remove : bool
+            If true, the file is moved rather than copied
+        '''
+
         local = OSFS(os.path.dirname(filepath))
 
         # Skip if source and dest are the same

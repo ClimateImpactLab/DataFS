@@ -48,7 +48,7 @@ class BaseDataManager(object):
             except KeyError:
                 pass
 
-    def update(self, archive_name, checksum, metadata, user_config={}):
+    def update(self, archive_name, checksum, metadata, user_config={}, **kwargs):
         '''
         Register a new version for archive ``archive_name``
 
@@ -63,6 +63,7 @@ class BaseDataManager(object):
             'checksum': checksum['checksum']}
 
         version_metadata.update(user_config)
+        version_metadata.update(kwargs)
 
         archive_data = metadata
 
@@ -80,7 +81,8 @@ class BaseDataManager(object):
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
+            versioned,
             raise_on_err=True,
             metadata={},
             user_config={}):
@@ -112,11 +114,16 @@ class BaseDataManager(object):
             self._create_archive(
                 archive_name,
                 authority_name,
-                service_path,
+                archive_path,
+                versioned,
                 archive_metadata)
         else:
             self._create_if_not_exists(
-                archive_name, authority_name, service_path, archive_metadata)
+                archive_name, 
+                authority_name, 
+                archive_path, 
+                versioned, 
+                archive_metadata)
 
         return self.get_archive(archive_name)
 
@@ -129,20 +136,17 @@ class BaseDataManager(object):
         archive_specification : dict
             archive_name: name of the archive to be retrieved
             authority: name of the archive's authority
-            service_path: service path of archive 
+            archive_path: service path of archive 
         '''
 
         try:
-            authority_name = self._get_authority_name(archive_name)
-            service_path = self._get_service_path(archive_name)
+            spec = self._get_archive_spec(archive_name)
+            spec['archive_name'] = archive_name
+            return spec
 
         except KeyError:
             raise KeyError('Archive "{}" not found'.format(archive_name))
 
-        return dict(
-            archive_name=archive_name,
-            authority=authority_name,
-            service_path=service_path)
 
     def get_archive_names(self):
         '''
@@ -225,7 +229,8 @@ class BaseDataManager(object):
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
+            versioned,
             metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
@@ -234,7 +239,8 @@ class BaseDataManager(object):
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
+            versioned,
             metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
@@ -255,7 +261,7 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_service_path(self, archive_name):
+    def _get_archive_path(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 

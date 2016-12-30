@@ -1,3 +1,4 @@
+
 from contextlib import contextmanager
 from datafs.managers.manager_dynamo import DynamoDBManager
 from datafs.managers.manager_mongo import MongoDBManager
@@ -60,3 +61,4 @@ def prep_manager(mgr_name, table_name = 'my-new-data-table'):
 
     else:
         raise ValueError('Manager "{}" not recognized'.format(mgr_name))
+

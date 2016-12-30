@@ -18,52 +18,16 @@ from contextlib import contextmanager
 
 import pytest
 
-from tests.resources import (
-    string_types,
-    u)
+from datafs._compat import string_types, u
 
 p = 'path/to/file/name.txt'
 
 
-@pytest.fixture
-def opener(open_func):
-    '''
-    Fixture for opening files using each of the available methods
-
-    open_func is parameterized in conftest.py
-    '''
-
-    if open_func == 'open_file':
-
-        return data_file.open_file
-
-    elif open_func == 'get_local_path':
-
-        @contextmanager
-        def inner(
-                auth,
-                cache,
-                update,
-                service_path,
-                version_check,
-                hasher,
-                *args,
-                **kwargs):
-            with data_file.get_local_path(auth, cache, update, service_path, version_check, hasher) as fp:
-                assert isinstance(fp, string_types)
-
-                with open(fp, *args, **kwargs) as f:
-                    yield f
-
-        return inner
-
-    else:
-        raise NameError('open_func "{}" not recognized'.format(open_func))
 
 
-def get_checker(service, service_path):
-    if service.fs.isfile(service_path):
-        checksum = DataAPI.hash_file(service.fs.getsyspath(service_path))
+def get_checker(service, filepath):
+    if service.fs.isfile(filepath):
+        checksum = DataAPI.hash_file(service.fs.getsyspath(filepath))['checksum']
     else:
         checksum = None
 
@@ -73,11 +37,16 @@ def get_checker(service, service_path):
     return check
 
 
+def hasher(f):
+
+    return DataAPI.hash_file(f)['checksum']
+
+
 def updater(checksum, metadata={}):
     pass
 
 
-def test_file_io(local_auth, cache, opener):
+def test_file_io(local_auth, cache, datafile_opener):
 
     a1 = DataService(local_auth)
     csh = DataService(cache)
@@ -85,7 +54,7 @@ def test_file_io(local_auth, cache, opener):
     # SUBTEST 1
 
     # Write data to a new system path. No files currently in csh.
-    with opener(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'w+') as f:
+    with datafile_opener(a1, csh, updater, get_checker(a1, p), hasher, p, mode='w+') as f:
         f.write(u('test data 1'))
 
     assert a1.fs.isfile(p)
@@ -104,7 +73,7 @@ def test_file_io(local_auth, cache, opener):
 
     for _ in range(5):
 
-        with opener(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'r') as f:
+        with datafile_opener(a1, csh, updater, get_checker(a1, p), hasher, p, mode='r') as f:
             assert u('test data 1') == f.read()
 
         # We expect the contents to be left unchanged
@@ -119,7 +88,7 @@ def test_file_io(local_auth, cache, opener):
 
     # Overwrite file and check contents again, this time with no csh
 
-    with opener(a1, None, updater, p, get_checker(a1, p), DataAPI.hash_file, 'w+') as f:
+    with datafile_opener(a1, None, updater, get_checker(a1, p), hasher, p, mode='w+') as f:
         f.write(u('test data 2'))
 
     # We expect the contents to be written to the authority
@@ -135,7 +104,7 @@ def test_file_io(local_auth, cache, opener):
     # Append to the file and test file contents
 
     for i in range(5):
-        with opener(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'a') as f:
+        with datafile_opener(a1, csh, updater, get_checker(a1, p), hasher, p, mode='a') as f:
             f.write(u('appended data'))
 
         # We expect the contents to be left unchanged
@@ -147,7 +116,7 @@ def test_file_io(local_auth, cache, opener):
         assert not os.path.isfile(csh.fs.getsyspath(p))
 
 
-def test_file_caching(local_auth, cache, opener):
+def test_file_caching(local_auth, cache, datafile_opener):
 
     a1 = DataService(local_auth)
     csh = DataService(cache)
@@ -155,7 +124,7 @@ def test_file_caching(local_auth, cache, opener):
     # SUBTEST 1
 
     # Write data to a new system path. No files currently in csh.
-    with opener(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'w+') as f:
+    with datafile_opener(a1, csh, updater, get_checker(a1, p), hasher, p, mode='w+') as f:
         f.write(u('test data 1'))
 
     assert a1.fs.isfile(p)
@@ -179,7 +148,7 @@ def test_file_caching(local_auth, cache, opener):
         f.write('')
 
     # Read file, and ensure we read from the authority
-    with opener(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'r') as f:
+    with datafile_opener(a1, csh, updater, get_checker(a1, p), hasher, p, mode='r') as f:
         assert u('test data 1') == f.read()
 
     # We expect the contents to be left unchanged
@@ -194,7 +163,7 @@ def test_file_caching(local_auth, cache, opener):
 
     # Write, and check consistency across authority and csh
 
-    with opener(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'w+') as f:
+    with datafile_opener(a1, csh, updater, get_checker(a1, p), hasher, p, mode='w+') as f:
         f.write(u('test data 2'))
 
     # We expect the contents to be written to the authority
@@ -212,7 +181,7 @@ def test_file_caching(local_auth, cache, opener):
     with open(csh.fs.getsyspath(p), 'w+') as f:
         f.write(u('erroneous csh data'))
 
-    with opener(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'r') as f:
+    with datafile_opener(a1, csh, updater, get_checker(a1, p), hasher, p, mode='r') as f:
         assert u('test data 2') == f.read()
 
     # We expect authority to be unaffected
@@ -227,7 +196,7 @@ def test_file_caching(local_auth, cache, opener):
 
     # During read, manually modify the authority. Ensure updated data not
     # overwritten
-    with opener(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'r') as f:
+    with datafile_opener(a1, csh, updater, get_checker(a1, p), hasher, p, mode='r') as f:
 
         # Overwrite a1
         with open(a1.fs.getsyspath(p), 'w+') as f2:
@@ -244,7 +213,7 @@ def test_file_caching(local_auth, cache, opener):
         assert u('test data 2') == f.read()
 
     # On second read, we expect the data to be updated
-    with opener(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'r') as f:
+    with datafile_opener(a1, csh, updater, get_checker(a1, p), hasher, p, mode='r') as f:
         assert u('test data 3') == f.read()
 
     with open(a1.fs.getsyspath(p), 'r') as f:
@@ -257,7 +226,7 @@ def test_file_caching(local_auth, cache, opener):
 
     # During write, manually modify the authority. Overwrite the authority
     # with new version.
-    with opener(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'w+') as f:
+    with datafile_opener(a1, csh, updater, get_checker(a1, p), hasher, p, mode='w+') as f:
 
         # Overwrite a1
         with open(a1.fs.getsyspath(p), 'w+') as f2:
@@ -284,7 +253,7 @@ def test_delete_handling(local_auth, cache):
     with open(csh.fs.getsyspath(p), 'w+') as f:
         f.write('')
 
-    with data_file.get_local_path(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file) as fp:
+    with data_file.get_local_path(a1, csh, updater, get_checker(a1, p), hasher, p) as fp:
         with open(fp, 'w+') as f:
             f.write(u('test data 1'))
 
@@ -303,7 +272,7 @@ def test_delete_handling(local_auth, cache):
 
     with pytest.raises(OSError) as excinfo:
 
-        with data_file.get_local_path(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file) as fp:
+        with data_file.get_local_path(a1, csh, updater, get_checker(a1, p), hasher, p) as fp:
             with open(fp, 'r') as f:
                 assert u('test data 1') == f.read()
 
@@ -323,7 +292,7 @@ def test_delete_handling(local_auth, cache):
 
     # Unexpected things may have happened to the csh. But we expect it to be
     # back to normal after another read:
-    with data_file.open_file(a1, csh, updater, p, get_checker(a1, p), DataAPI.hash_file, 'r') as f:
+    with data_file.open_file(a1, csh, updater, get_checker(a1, p), hasher, p, mode='r') as f:
         assert u('test data 1') == f.read()
 
     with open(a1.fs.getsyspath(p), 'r') as f:

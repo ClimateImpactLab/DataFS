@@ -16,6 +16,7 @@ from fs.tempfs import TempFS
 from fs.s3fs import S3FS
 
 from datafs import DataAPI
+from datafs._compat import string_types
 from datafs.core import data_file
 from datafs.services.service import DataService
 from datafs.managers.manager_mongo import MongoDBManager
@@ -184,7 +185,6 @@ def cache2():
         yield filesystem
 
 
-
 @pytest.yield_fixture
 def manager_with_spec(mgr_name):
 
@@ -226,3 +226,108 @@ def api_with_spec(manager_with_spec):
 
         yield api
 
+@pytest.fixture
+def opener(open_func):
+    '''
+    Fixture for opening files using each of the available methods
+
+    open_func is parameterized in conftest.py
+    '''
+
+    if open_func == 'open_file':
+
+        @contextmanager
+        def inner(
+            archive, 
+            mode='r', 
+            version=None, 
+            bumpversion='patch', 
+            prerelease=None, 
+            *args, 
+            **kwargs):
+
+            with archive.open(
+                *args, 
+                mode=mode,
+                version=version, 
+                bumpversion=bumpversion, 
+                prerelease=prerelease, 
+                **kwargs) as f:
+                
+                yield f
+
+        return inner
+
+    elif open_func == 'get_local_path':
+
+        @contextmanager
+        def inner(
+            archive, 
+            mode='r', 
+            version=None, 
+            bumpversion='patch', 
+            prerelease=None, 
+            *args, 
+            **kwargs):
+
+            with archive.get_local_path(
+                version=version, 
+                bumpversion=bumpversion, 
+                prerelease=prerelease) as fp:
+                
+                with open(fp, mode=mode, *args, **kwargs) as f:
+                    yield f
+
+        return inner
+
+    else:
+        raise NameError('open_func "{}" not recognized'.format(open_func))
+
+
+
+@pytest.fixture
+def datafile_opener(open_func):
+    '''
+    Fixture for opening files using each of the available methods
+
+    open_func is parameterized in conftest.py
+    '''
+
+    if open_func == 'open_file':
+
+        return data_file.open_file
+
+    elif open_func == 'get_local_path':
+
+        @contextmanager
+        def inner(
+                auth,
+                cache,
+                update,
+                version_check,
+                hasher,
+                read_path,
+                write_path=None,
+                cache_on_write=False,
+                *args,
+                **kwargs):
+
+            with data_file.get_local_path(
+                auth, 
+                cache, 
+                update, 
+                version_check, 
+                hasher, 
+                read_path, 
+                write_path, 
+                cache_on_write) as fp:
+
+                assert isinstance(fp, string_types)
+
+                with open(fp, *args, **kwargs) as f:
+                    yield f
+
+        return inner
+
+    else:
+        raise NameError('open_func "{}" not recognized'.format(open_func))

@@ -51,8 +51,9 @@ Create an archive
 
 Let's peek under the hood to see where this data is stored:
 
-    >>> var.authority.fs.getpathurl('caching/archive') # doctest: +ELLIPSIS
-    'https://test-bucket.s3.amazonaws.com/caching/archive?...AWSAccessKeyId=MY_KEY'
+    >>> url = var.authority.fs.getpathurl(var.get_version_path())
+    >>> print(url)  # doctest: +ELLIPSIS
+    https://test-bucket.s3.amazonaws.com/caching/archive...AWSAccessKeyId=MY_KEY
 
 Now let's set up a cache. This would typically be a local or networked directory
 but we'll use a temporary filesystem for this example:
@@ -62,7 +63,7 @@ but we'll use a temporary filesystem for this example:
 
 Now we can activate caching for our archive:
 
-    >>> var.cache = True
+    >>> var.cache()
 
 When we read the data from the cache, it downloads the file for future use:
 

@@ -10,7 +10,15 @@ class DynamoDBManager(BaseDataManager):
     Parameters
     ----------
     table_name: str
-        For Climate Impact Lab table_name = "cil-data"
+        Name of the data archive table
+
+    session_args: dict
+        Keyword arguments used in initializing a :py:class:`boto3.Session` 
+        object
+
+    resource_args: dict
+        Keyword arguments used in initializing a dynamodb 
+        :py:class:`~boto3.resources.factory.dynamodb.ServiceResource` object
 
     """
 
@@ -56,7 +64,7 @@ class DynamoDBManager(BaseDataManager):
                 AttributesToGet=['_id'])['Items']]
             return res
 
-    def _update(self, archive_name, version_metadata):
+    def _update(self, archive_name, versions):
         '''
         Updates the version specific metadata attribute in DynamoDB
         In DynamoDB this is simply a list append on this attribute value
@@ -66,20 +74,20 @@ class DynamoDBManager(BaseDataManager):
         archive_name: str
             unique '_id' primary key
 
-        version_metadata: dict
+        versions: dict
             dictionary of version metadata values
 
         Returns
         -------
         dict
-            list of dictionaries of version_metadata
+            list of dictionaries of versions
         '''
         self._table.update_item(
             Key={
                 '_id': archive_name},
-            UpdateExpression="SET version_metadata = list_append(:v, version_metadata)",
+            UpdateExpression="SET versions = list_append(versions, :v)",
             ExpressionAttributeValues={
-                ':v': [version_metadata]},
+                ':v': [versions]},
             ReturnValues='ALL_NEW')
 
     def _get_table_names(self):
@@ -274,7 +282,8 @@ class DynamoDBManager(BaseDataManager):
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
+            versioned,
             metadata):
         '''
         This adds an item in a DynamoDB table corresponding to a S3 object
@@ -301,8 +310,9 @@ class DynamoDBManager(BaseDataManager):
         item = {
             '_id': archive_name,
             'authority_name': authority_name,
-            'service_path': service_path,
-            'version_metadata': [],
+            'archive_path': archive_path,
+            'versioned': versioned,
+            'versions': [],
             'archive_data': metadata
         }
 
@@ -318,13 +328,15 @@ class DynamoDBManager(BaseDataManager):
             self,
             archive_name,
             authority_name,
-            service_name,
+            archive_path,
+            versioned,
             metadata):
         try:
             self._create_archive(
                 archive_name,
                 authority_name,
-                service_name,
+                archive_path,
+                versioned,
                 metadata)
         except KeyError:
             pass
@@ -345,23 +357,33 @@ class DynamoDBManager(BaseDataManager):
 
         return res['archive_data']
 
+    def _get_archive_spec(self, archive_name):
+        res = self._get_archive_listing(archive_name)
+
+        if res is None:
+            raise KeyError
+
+        spec = ['authority_name', 'archive_path', 'versioned']
+
+        return {k:v for k,v in res.items() if k in spec}
+
     def _get_authority_name(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
 
         return res['authority_name']
 
-    def _get_service_path(self, archive_name):
+    def _get_archive_path(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
 
-        return res['service_path']
+        return res['archive_path']
 
     def _get_versions(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
 
-        return res['version_metadata']
+        return res['versions']
 
     def _get_latest_hash(self, archive_name):
 
@@ -371,7 +393,7 @@ class DynamoDBManager(BaseDataManager):
             return None
 
         else:
-            return versions[0]['checksum']
+            return versions[-1]['checksum']
 
     def _get_required_user_config(self):
 

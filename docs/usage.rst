@@ -9,4 +9,5 @@ To use DataFS Distributed Data Management System in a project::
 
 .. toctree::
 
+    usage.api.specification
     tutorial.subclassing

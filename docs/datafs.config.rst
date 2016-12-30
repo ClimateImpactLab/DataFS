@@ -5,7 +5,7 @@ Submodules
 ----------
 
 datafs.config.config_file module
-------------------------------
+--------------------------------
 
 .. automodule:: datafs.config.config_file
     :members:
@@ -13,17 +13,17 @@ datafs.config.config_file module
     :show-inheritance:
 
 datafs.config.constructor module
-------------------------------
+--------------------------------
 
 .. automodule:: datafs.config.constructor
     :members:
     :undoc-members:
     :show-inheritance:
 
-datafs.config.helper module
-------------------------------
+datafs.config.helpers module
+----------------------------
 
-.. automodule:: datafs.config.helper
+.. automodule:: datafs.config.helpers
     :members:
     :undoc-members:
     :show-inheritance:

@@ -182,3 +182,47 @@ def cache2():
 
     with prep_filesystem('OSFS') as filesystem:
         yield filesystem
+
+
+
+@pytest.yield_fixture
+def manager_with_spec(mgr_name):
+
+    with prep_manager(mgr_name, table_name='standalone-test-table') as manager:
+
+
+        metadata_config = {
+            'item1': 'test_string1',
+            'item2': 'test_string2',
+            'item3': 'test_string3'
+        }
+
+        user_config = {
+            'username': 'Your Name',
+            'Home Institution': 'Your Institution',
+            'contact': 'my.email@example.com'
+            
+        }
+
+
+        manager.update_spec_config('required_metadata_config', metadata_config)
+        manager.update_spec_config('required_user_config', user_config)
+        manager.required_user_config
+        manager.required_archive_metadata
+
+        yield manager
+
+
+@pytest.yield_fixture
+def api_with_spec(manager_with_spec):
+
+        api = DataAPI(
+            username='My Name',
+            contact='my.email@example.com')
+
+        api.attach_manager(manager_with_spec)
+        api.attach_authority('auth', auth1)
+
+
+        yield api
+

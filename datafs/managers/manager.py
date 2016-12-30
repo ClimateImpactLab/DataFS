@@ -33,15 +33,10 @@ class BaseDataManager(object):
     @property
     def required_user_config(self):
         if self._required_user_config is None:
-            try:
-                user_config = self._get_required_user_config()
-                assert type(user_config) == dict
+            user_config = self._get_required_user_config()
+            assert isinstance(user_config, dict), 'sorry, user_config "{}" is a {}'.format(user_config, type(user_config))
 
-                self._required_user_config = user_config
-
-            except TypeError as e:
-                print(e)
-
+            self._required_user_config = user_config
 
         return self._required_user_config
 
@@ -49,14 +44,10 @@ class BaseDataManager(object):
     @property
     def required_archive_metadata(self):
         if self._required_archive_metadata is None:
-            try:
-                archive_metadata = self._get_required_archive_metadata()
-                assert type(archive_metadata) == dict
+            archive_metadata = self._get_required_archive_metadata()
+            assert isinstance(archive_metadata, dict)
 
-                self._required_archive_metadata = archive_metadata
-
-            except TypeError as e:
-                print(e)
+            self._required_archive_metadata = archive_metadata
 
         return self._required_archive_metadata
 

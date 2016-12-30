@@ -1,7 +1,6 @@
 
 from __future__ import absolute_import
 from datafs.managers.manager import BaseDataManager
-from tests.resources import prep_manager
 
 import pytest
 
@@ -12,28 +11,61 @@ def base_manager():
     return mgr
 
 
-@pytest.yield_fixture
-def standalone_manager(mgr_name):
-
-    with prep_manager(mgr_name, table_name='standalone-test-table') as manager:
-        yield manager
 
 
-def test_spec_table_creation(standalone_manager):
-    assert 'standalone-test-table.spec' in standalone_manager.table_names
+class TestMetadataRequirements(object):
 
-def test_spec_config_creation(standalone_manager):
+    def test_spec_table_creation(self, manager_with_spec):
+        
+        assert 'standalone-test-table.spec' in manager_with_spec.table_names
+
+    def test_spec_config_creation(self,manager_with_spec):
     
-    assert len(standalone_manager._get_spec_documents('standalone-test-table')) == 2
+        assert len(manager_with_spec._get_spec_documents('standalone-test-table')) == 2
+
+    def test_spec_config_update_metadata(self,manager_with_spec):
+        assert len(manager_with_spec.required_archive_metadata) == 3
+
+    def test_spec_config_update_user_config(self,manager_with_spec):
+
+        assert len(manager_with_spec.required_user_config) == 3
+
+    def test_manager_spec_setup(self,api_with_spec, auth1):
+
+        metadata_config = {
+            'item1': 'test_string1',
+            'item2': 'test_string2',
+            'item3': 'test_string3'
+        }
+
+        user_config = {
+            'username': 'My Name',
+            'Home Institution': 'Your Institution', 
+            'contact': 'my.email@example.com'
+            
+        }
+        
+        api_with_spec.user_config.update(user_config)
+
+        api_with_spec.create_archive('my_spec_test_archive', metadata=metadata_config)
+
+        with pytest.raises(AssertionError) as excinfo:
+            api_with_spec.create_archive('my_other_test_archive', metadata={})
+
+    def test_manager_spec_setup_api_metadata(self,api_with_spec, auth1):
+
+        metadata_config = {
+            'item1': 'test_string1',
+            'item2': 'test_string2',
+            'item3': 'test_string3'
+        }
+
+        with pytest.raises(AssertionError) as excinfo:
+            api_with_spec.create_archive('my_api_test_archive', metadata=metadata_config)
 
 
-def test_spec_config_update_metadata(standalone_manager):
 
-    assert len(standalone_manager.required_archive_metadata) == 3
 
-def test_spec_config_update_user_config(standalone_manager):
-
-    assert len(standalone_manager.required_user_config) == 2
 
 
 class TestBaseManager(object):

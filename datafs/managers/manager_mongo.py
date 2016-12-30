@@ -197,7 +197,7 @@ class MongoDBManager(BaseDataManager):
         if self._spec_coll == None:
             self._spec_coll = self.db[table_name + '.spec']
 
-        itrbl = [{'_id': x, 'config': ''} 
+        itrbl = [{'_id': x, 'config': {}} 
                         for x in ('required_user_config', 'required_metadata_config')]
 
 

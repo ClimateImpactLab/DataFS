@@ -27,6 +27,14 @@ DataFS is an abstraction layer for data storage systems. It manages file version
 * Free software: MIT license
 * Documentation: https://datafs.readthedocs.io.
 
+Features
+--------
+
+* Explicit version and metadata management for teams
+* Unified read/write interface across file systems
+* Easily create out-of-the-box configuration files for users
+
+
 
 Usage
 -----
@@ -93,16 +101,15 @@ We can also retrieve versioned data specifically:
 
 See `examples <http://datafs.readthedocs.io/en/latest/examples.html>`_ for more extensive use cases.
 
-
-Features
---------
-
-
 Todo
 ----
 
-Add a front-end
+See `issues <https://github.com/ClimateImpactLab/DataFS/issues>`_ to see and add to our todos.
+
 
 Credits
 ---------
- This package was created by Justin Simcock and Michael Delgado of the Climate Impact Lab
+
+This package was created by `Justin Simcock <https://github.com/jgerardsimcock>`_ and `Michael Delgado <https://github.com/delgadom>`_ of the `Climate Impact Lab <http://impactlab.org>`_. Check us out on `github <https://github.com/ClimateImpactLab>`_.
+
+Thanks also to `audreyr <https://github.com/audreyr>`_ for the wonderful `cookiecutter <https://github.com/audreyr/cookiecutter-pypackage>`_ package, and to `pyup <https://pyup.io>`_, a constant source of inspiration and our third contributor.

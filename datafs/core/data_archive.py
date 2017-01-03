@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from datafs.core import data_file
 from datafs.core.versions import BumpableVersion
+from datafs._compat import string_types
 from contextlib import contextmanager
 import fs.utils
 from fs.osfs import OSFS
@@ -51,8 +52,31 @@ class DataArchive(object):
     def default_version(self):
         if self._default_version is None:
             return self.latest_version
-        else:
-            return BumpableVersion(self._default_version)
+
+        if isinstance(self._default_version, string_types):
+            return max(map(lambda v: v==self._default_version, self.versions))
+
+        qualifying = self.versions
+
+        for compare, ver in self._default_version:
+            
+            if compare == "==":
+                qualifying = filter(lambda v: v == ver, qualifying)
+            elif compare == "<":
+                qualifying = filter(lambda v: v < ver, qualifying)
+            elif compare == "<=":
+                qualifying = filter(lambda v: v <= ver, qualifying)
+            elif compare == ">":
+                qualifying = filter(lambda v: v > ver, qualifying)
+            elif compare == ">=":
+                qualifying = filter(lambda v: v >= ver, qualifying)
+            else:
+                return ValueError('Default comparison "{}" not understood'.format(compare))
+
+        if len(qualifying) < 1:
+            raise ValueError('No valid versions found for archive "{}" that satisfy requirements'.format(self.archive_name))
+
+        return max(qualifying)
 
 
     @property

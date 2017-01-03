@@ -8,6 +8,7 @@ import os
 import click
 import yaml
 import pprint
+import requirements as requirement_parser
 
 
 def parse_args_as_kwargs(args):
@@ -46,9 +47,10 @@ class DataFSInterface(object):
 #this sets the command line environment for 
 @click.group()
 @click.option('--config-file', envvar='CONFIG_FILE', type=str)
+@click.option('--requirements', envvar='REQUIREMENTS', type=str)
 @click.option('--profile', envvar='PROFILE', type=str, default=None)
 @click.pass_context
-def cli(ctx, config_file=None, profile=None):
+def cli(ctx, config_file=None, requirements=None, profile=None):
 
     ctx.obj = DataFSInterface()
 
@@ -56,6 +58,17 @@ def cli(ctx, config_file=None, profile=None):
 
     config = ConfigFile(ctx.obj.config_file)
     config.read_config()
+
+    if requirements is None:
+        requirements = config.config.get('requirements', None)
+
+    if requirements is not None:
+        ctx.obj.requirements = dict(map(
+            lambda tup: tuple(tup[:1]), requirement_parser.parse(requirements)))
+
+    else:
+        ctx.obj.requirements = {}
+
 
     ctx.obj.config = config
 
@@ -125,11 +138,13 @@ def configure(ctx, helper, edit):
 @click.pass_context
 def create_archive(ctx, archive_name, authority_name, versioned=True):
     kwargs = parse_args_as_kwargs(ctx.args)
+    reqs = ctx.obj.requirements.get(archive_name, None)
     var = ctx.obj.api.create_archive(
         archive_name,
         authority_name=authority_name,
         versioned=versioned,
-        metadata=kwargs)
+        metadata=kwargs,
+        default_version=reqs)
 
     verstring = 'versioned archive' if versioned else 'archive'
     click.echo('created {} {}'.format(verstring, var))
@@ -147,7 +162,8 @@ def create_archive(ctx, archive_name, authority_name, versioned=True):
 def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None):
     kwargs = parse_args_as_kwargs(ctx.args)
 
-    var = ctx.obj.api.get_archive(archive_name)
+    reqs = ctx.obj.requirements.get(archive_name, None)
+    var = ctx.obj.api.get_archive(archive_name, default_version=reqs)
     latest_version = var.latest_version
 
     var.update(filepath, bumpversion=bumpversion, prerelease=prerelease, **kwargs)
@@ -169,7 +185,8 @@ def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None):
 @click.option('--version', envvar='VERSION', default=None)
 @click.pass_context
 def download(ctx, archive_name, filepath, version):
-    var = ctx.obj.api.get_archive(archive_name)
+    reqs = ctx.obj.requirements.get(archive_name, None)
+    var = ctx.obj.api.get_archive(archive_name, default_version=reqs)
 
     if version is None:
         version = var.latest_version
@@ -186,7 +203,8 @@ def download(ctx, archive_name, filepath, version):
 @click.argument('archive_name')
 @click.pass_context
 def metadata(ctx, archive_name):
-    var = ctx.obj.api.get_archive(archive_name)
+    reqs = ctx.obj.requirements.get(archive_name, None)
+    var = ctx.obj.api.get_archive(archive_name, default_version=reqs)
     click.echo(pprint.pformat(var.metadata))
 
 
@@ -194,7 +212,8 @@ def metadata(ctx, archive_name):
 @click.argument('archive_name')
 @click.pass_context
 def history(ctx, archive_name):
-    var = ctx.obj.api.get_archive(archive_name)
+    reqs = ctx.obj.requirements.get(archive_name, None)
+    var = ctx.obj.api.get_archive(archive_name, default_version=reqs)
     click.echo(var.history)
 
 
@@ -202,7 +221,8 @@ def history(ctx, archive_name):
 @click.argument('archive_name')
 @click.pass_context
 def versions(ctx, archive_name):
-    var = ctx.obj.api.get_archive(archive_name)
+    reqs = ctx.obj.requirements.get(archive_name, None)
+    var = ctx.obj.api.get_archive(archive_name, default_version=reqs)
     click.echo(pprint.pformat(map(str, var.versions)))
 
 

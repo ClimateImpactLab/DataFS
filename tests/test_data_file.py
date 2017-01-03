@@ -32,17 +32,17 @@ def get_checker(service, filepath):
         checksum = None
 
     def check(chk):
-        return chk == checksum
+        return chk['checksum'] == checksum
 
     return check
 
 
 def hasher(f):
 
-    return DataAPI.hash_file(f)['checksum']
+    return DataAPI.hash_file(f)
 
 
-def updater(checksum, metadata={}):
+def updater(*args, **kwargs):
     pass
 
 

@@ -150,7 +150,7 @@ class MongoDBManager(BaseDataManager):
     def _update_metadata(self, archive_name, metadata):
         for key, val in metadata.items():
             self.collection.update({"_id": archive_name},
-                                   {"$set": {"metadata.{}".format(key): val}})
+                                   {"$set": {"archive_data.{}".format(key): val}})
 
     def _update_spec_config(self,document_name, spec):
 
@@ -165,38 +165,22 @@ class MongoDBManager(BaseDataManager):
     def _create_archive(
             self,
             archive_name,
-            authority_name,
-            archive_path,
-            versioned,
             metadata):
 
-        doc = {
-            '_id': archive_name,
-            'authority_name': authority_name,
-            'archive_path': archive_path,
-            'versioned': versioned,
-            'versions': []}
-        doc['metadata'] = metadata
 
         try:
-            self.collection.insert_one(doc)
+            self.collection.insert_one(metadata)
         except DuplicateKeyError:
             raise KeyError('Archive "{}" already exists'.format(archive_name))
 
     def _create_if_not_exists(
             self,
             archive_name,
-            authority_name,
-            archive_path,
-            versioned,
             metadata):
 
         try:
             self._create_archive(
                 archive_name,
-                authority_name,
-                archive_path,
-                versioned,
                 metadata)
 
         except KeyError:
@@ -270,7 +254,7 @@ class MongoDBManager(BaseDataManager):
         if res is None:
             raise KeyError
 
-        return res['metadata']
+        return res['archive_data']
 
     def _get_versions(self, archive_name):
 

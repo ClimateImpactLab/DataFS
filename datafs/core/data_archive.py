@@ -152,6 +152,7 @@ class DataArchive(object):
         remove=False, 
         bumpversion='patch', 
         prerelease=None, 
+        dependencies=None,
         **kwargs):
         '''
         Enter a new version to a DataArchive
@@ -189,18 +190,19 @@ class DataArchive(object):
 
         '''
 
-
         latest_version = self.latest_version
 
-        checksum = self.api.hash_file(filepath)
+        hashval = self.api.hash_file(filepath)
 
-        if checksum['checksum'] == self.latest_hash:
+        checksum = hashval['checksum']
+        algorithm = hashval['algorithm']
+
+        if checksum == self.latest_hash:
             self.update_metadata(kwargs)
 
             if remove and os.path.isfile(filepath):
                 os.remove(filepath)
 
-            self._update_manager(checksum, kwargs, version=latest_version)
             return
 
         if self.versioned:
@@ -227,21 +229,19 @@ class DataArchive(object):
         else:
             self.authority.upload(filepath, next_path, remove=remove)
 
-        self._update_manager(checksum, kwargs, version=next_version)
+        self._update_manager(
+            archive_metadata=kwargs, 
+            version_metadata=dict(checksum=checksum, algorithm=algorithm, version=next_version, dependencies=dependencies))
 
 
-    def _update_manager(self, checksum, metadata={}, version=None):
-        version_metadata = dict(
-            archive_name=self.archive_name,
-            checksum=checksum,
-            metadata=metadata,
-            user_config=self.api.user_config)
+    def _update_manager(self, archive_metadata={}, version_metadata={}):
+        
+        version_metadata['user_config'] = self.api.user_config
 
-        if self.versioned:
-            version_metadata['version'] = str(version)
 
         # update records in self.api.manager
-        self.api.manager.update(**version_metadata)
+        self.api.manager.update(self.archive_name, version_metadata)
+        self.update_metadata(archive_metadata)
 
     def update_metadata(self, metadata):
 
@@ -252,7 +252,7 @@ class DataArchive(object):
     # File I/O methods
 
     @contextmanager
-    def open(self, mode='r', version=None, bumpversion='patch', prerelease=None, *args, **kwargs):
+    def open(self, mode='r', version=None, bumpversion='patch', prerelease=None, dependencies = None, *args, **kwargs):
         '''
         Opens a file for read/write
 
@@ -320,8 +320,8 @@ class DataArchive(object):
         version_check = lambda chk: chk['checksum'] == version_hash
 
         # Updater updates the manager with the latest version number
-        updater = lambda *args, **kwargs: self._update_manager(
-            *args, version=next_version, **kwargs)
+        updater = lambda **kwargs: self._update_manager(
+            version_metadata=dict(version=next_version, dependencies=dependencies, **kwargs))
 
         opener = data_file.open_file(
             self.authority,
@@ -339,7 +339,7 @@ class DataArchive(object):
             yield f
 
     @contextmanager
-    def get_local_path(self, version=None, bumpversion='patch', prerelease=None):
+    def get_local_path(self, version=None, bumpversion='patch', prerelease=None, dependencies=None, *args, **kwargs):
         '''
         Returns a local path for read/write
 
@@ -401,8 +401,8 @@ class DataArchive(object):
         version_check = lambda chk: chk['checksum'] == version_hash
 
         # Updater updates the manager with the latest version number
-        updater = lambda *args, **kwargs: self._update_manager(
-            *args, version=next_version, **kwargs)
+        updater = lambda **kwargs: self._update_manager(
+            version_metadata=dict(version=next_version, dependencies=dependencies, **kwargs))
 
         path = data_file.get_local_path(
             self.authority,

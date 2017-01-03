@@ -281,9 +281,6 @@ class DynamoDBManager(BaseDataManager):
     def _create_archive(
             self,
             archive_name,
-            authority_name,
-            archive_path,
-            versioned,
             metadata):
         '''
         This adds an item in a DynamoDB table corresponding to a S3 object
@@ -307,14 +304,6 @@ class DynamoDBManager(BaseDataManager):
         Coerce underscores to dashes
         '''
 
-        item = {
-            '_id': archive_name,
-            'authority_name': authority_name,
-            'archive_path': archive_path,
-            'versioned': versioned,
-            'versions': [],
-            'archive_data': metadata
-        }
 
         if archive_name in self._get_archive_names():
 
@@ -322,21 +311,15 @@ class DynamoDBManager(BaseDataManager):
                 "{} already exists. Use get_archive() to view".format(archive_name))
 
         else:
-            self._table.put_item(Item=item)
+            self._table.put_item(Item=metadata)
 
     def _create_if_not_exists(
             self,
             archive_name,
-            authority_name,
-            archive_path,
-            versioned,
             metadata):
         try:
             self._create_archive(
                 archive_name,
-                authority_name,
-                archive_path,
-                versioned,
                 metadata)
         except KeyError:
             pass

@@ -107,7 +107,8 @@ class DataAPI(object):
             archive_path=None,
             versioned=True,
             raise_on_err=True,
-            metadata={}):
+            metadata={},
+            default_version=None):
         '''
         Create a DataFS archive
 
@@ -148,12 +149,12 @@ class DataAPI(object):
             metadata=metadata,
             user_config=self.user_config)
 
-        return self._ArchiveConstructor(api=self, **res)
+        return self._ArchiveConstructor(api=self, default_version=default_version, **res)
 
-    def get_archive(self, archive_name):
+    def get_archive(self, archive_name, default_version=None):
 
         res = self.manager.get_archive(archive_name)
-        return self._ArchiveConstructor(api=self, **res)
+        return self._ArchiveConstructor(api=self, default_version=default_version, **res)
 
 
     @property

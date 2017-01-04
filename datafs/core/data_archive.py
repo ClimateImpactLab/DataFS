@@ -30,7 +30,7 @@ class DataArchive(object):
     
     def get_latest_version(self):
 
-        versions = self.versions
+        versions = self.get_versions()
     
         if len(versions) == 0:
             return None
@@ -38,8 +38,8 @@ class DataArchive(object):
         else:
             return max(versions)
 
-    @property
-    def versions(self):
+    
+    def get_versions(self):
 
         if not self.versioned:
             return [None]
@@ -474,7 +474,7 @@ class DataArchive(object):
 
         '''
 
-        for version in self.versions:
+        for version in self.get_versions():
             if self.authority.fs.exists(self.get_version_path(version)):
                 self.authority.fs.remove(self.get_version_path(version))
 

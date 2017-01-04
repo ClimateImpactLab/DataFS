@@ -12,7 +12,7 @@ def test_version_tracking(api1, auth1, opener):
     assert archive.versioned, "Archive not versioned, but should be by default"
 
     assert archive.get_latest_version() is None
-    assert len(archive.versions) == 0
+    assert len(archive.get_versions()) == 0
     assert archive.latest_hash is None
     assert archive.get_version_hash() is None
 
@@ -21,7 +21,7 @@ def test_version_tracking(api1, auth1, opener):
         f.write(u('test content v0.0.1a1'))
 
     assert archive.get_latest_version() == '0.0.1a1'
-    assert len(archive.versions) == 1
+    assert len(archive.get_versions()) == 1
     assert archive.latest_hash is not None
     assert archive.get_version_hash('0.0.1a1') == archive.latest_hash
 
@@ -33,7 +33,7 @@ def test_version_tracking(api1, auth1, opener):
         f.write(u('test content v0.1b1'))
 
     assert archive.get_latest_version() == '0.1b1'
-    assert len(archive.versions) == 2
+    assert len(archive.get_versions()) == 2
     assert archive.latest_hash is not None
     assert archive.get_version_hash('0.0.1a1') != archive.latest_hash
     assert archive.get_version_hash('0.1b1') == archive.latest_hash
@@ -48,7 +48,7 @@ def test_version_tracking(api1, auth1, opener):
         f.write(u(' --> v0.1.1'))
 
     assert archive.get_latest_version() == '0.1.1'
-    assert len(archive.versions) == 3
+    assert len(archive.get_versions()) == 3
     assert archive.latest_hash is not None
     assert archive.get_version_hash('0.0.1a1') != archive.latest_hash
     assert archive.get_version_hash('0.1.1') == archive.latest_hash

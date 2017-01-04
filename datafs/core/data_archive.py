@@ -585,7 +585,7 @@ class DataArchive(object):
         if version is None:
             raise ValueError('No version provided')
 
-        for  i,v in enumerate(self.history):
+        for i,v in enumerate(self.history):
             if v['version'] == version:
                 return self.history[i]['dependencies']
 

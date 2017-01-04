@@ -50,33 +50,25 @@ class DataArchive(object):
 
     @property
     def default_version(self):
-        if self._default_version is None:
-            return self.latest_version
 
-        if isinstance(self._default_version, string_types):
-            return max(map(lambda v: v==self._default_version, self.versions))
+        if not self.versioned:
+            return None
 
-        qualifying = self.versions
+        versions = self.versions
 
-        for compare, ver in self._default_version:
-            
-            if compare == "==":
-                qualifying = filter(lambda v: v == ver, qualifying)
-            elif compare == "<":
-                qualifying = filter(lambda v: v < ver, qualifying)
-            elif compare == "<=":
-                qualifying = filter(lambda v: v <= ver, qualifying)
-            elif compare == ">":
-                qualifying = filter(lambda v: v > ver, qualifying)
-            elif compare == ">=":
-                qualifying = filter(lambda v: v >= ver, qualifying)
-            else:
-                return ValueError('Default comparison "{}" not understood'.format(compare))
+        if self._default_version is None or self._default_version == 'latest':
+            if len(versions) == 0:
+                return None
 
-        if len(qualifying) < 1:
-            raise ValueError('No valid versions found for archive "{}" that satisfy requirements'.format(self.archive_name))
+            return max(versions)
 
-        return max(qualifying)
+        matches = filter(lambda v: v==self._default_version, self.versions)
+
+        if len(matches) > 0:
+            return max(matches)
+
+        raise ValueError('Archive "{}" version {} not found'.format(
+            self.archive_name, self._default_version))
 
 
     @property
@@ -191,7 +183,7 @@ class DataArchive(object):
         filepath, 
         cache=False, 
         remove=False, 
-        bumpversion='patch', 
+        bumpversion=None, 
         prerelease=None, 
         **kwargs):
         '''
@@ -293,7 +285,7 @@ class DataArchive(object):
     # File I/O methods
 
     @contextmanager
-    def open(self, mode='r', version=None, bumpversion='patch', prerelease=None, *args, **kwargs):
+    def open(self, mode='r', version=None, bumpversion=None, prerelease=None, *args, **kwargs):
         '''
         Opens a file for read/write
 
@@ -328,6 +320,11 @@ class DataArchive(object):
         if version is None:
             latest_version = self.latest_version
             version = self.default_version
+
+        elif version == 'latest':
+            latest_version = self.latest_version
+            version = latest_version
+
 
         else:
             latest_version = self.latest_version
@@ -380,7 +377,7 @@ class DataArchive(object):
             yield f
 
     @contextmanager
-    def get_local_path(self, version=None, bumpversion='patch', prerelease=None):
+    def get_local_path(self, version=None, bumpversion=None, prerelease=None):
         '''
         Returns a local path for read/write
 
@@ -409,6 +406,13 @@ class DataArchive(object):
         if version is None:
             latest_version = self.latest_version
             version = self.default_version
+
+        elif isinstance(version, BumpableVersion):
+            pass
+
+        elif version == 'latest':
+            latest_version = self.latest_version
+            version = latest_version
 
         else:
             latest_version = self.latest_version
@@ -469,6 +473,13 @@ class DataArchive(object):
 
         if version is None:
             version = self.default_version
+
+        elif isinstance(version, BumpableVersion):
+            pass
+
+        elif version == 'latest':
+            latest_version = self.latest_version
+            version = latest_version
 
         dirname, filename= os.path.split(
             os.path.abspath(os.path.expanduser(filepath)))
@@ -587,6 +598,13 @@ class DataArchive(object):
         if version is None:
             version = self.default_version
 
+        elif isinstance(version, BumpableVersion):
+            pass
+
+        elif version == 'latest':
+            latest_version = self.latest_version
+            version = latest_version
+
         if self.api.cache and self.api.cache.fs.isfile(self.get_version_path(version)):
             return True
 
@@ -600,6 +618,13 @@ class DataArchive(object):
         if version is None:
             version = self.default_version
 
+        elif isinstance(version, BumpableVersion):
+            pass
+
+        elif version == 'latest':
+            latest_version = self.latest_version
+            version = latest_version
+
         if not self.api.cache.fs.isfile(self.get_version_path(version)):
             data_file._touch(self.api.cache.fs, self.get_version_path(version))
 
@@ -612,5 +637,15 @@ class DataArchive(object):
         if version is None:
             version = self.default_version
 
+        elif isinstance(version, BumpableVersion):
+            pass
+
+        elif version == 'latest':
+            latest_version = self.latest_version
+            version = latest_version
+
         if self.api.cache.fs.isfile(self.get_version_path(version)):
             self.api.cache.fs.remove(self.get_version_path(version))
+
+
+

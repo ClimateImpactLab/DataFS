@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from datafs.services.service import DataService
 from datafs.core.data_archive import DataArchive
-from contextlib import contextmanager
+from datafs._compat import open_filelike
 
 import fs.path
 
@@ -26,13 +26,15 @@ class DataAPI(object):
     _ArchiveConstructor = DataArchive
 
 
-    def __init__(self, **kwargs):
+    def __init__(self, default_versions = {}, **kwargs):
 
         self.user_config = kwargs
 
         self._manager = None
         self._cache = None
         self._authorities = {}
+
+        self._default_versions = default_versions
 
         self._authorities_locked = False
         self._manager_locked = False
@@ -107,8 +109,7 @@ class DataAPI(object):
             archive_path=None,
             versioned=True,
             raise_on_err=True,
-            metadata={},
-            default_version=None):
+            metadata={}):
         '''
         Create a DataFS archive
 
@@ -130,7 +131,11 @@ class DataAPI(object):
         **kwargs will be passed to the archive as metadata
 
 
+        .. todo::
 
+            Should you be allowed to create an archive with a default version? 
+            This will fail on archive.open() and archive.get_local_path() 
+            because the version does not yet exist.
 
         '''
 
@@ -139,6 +144,8 @@ class DataAPI(object):
 
         if archive_path is None:
             archive_path = self.create_archive_path(archive_name)
+
+        default_version = self._default_versions.get(archive_name, None)
 
         res = self.manager.create_archive(
             archive_name,
@@ -149,12 +156,21 @@ class DataAPI(object):
             metadata=metadata,
             user_config=self.user_config)
 
-        return self._ArchiveConstructor(api=self, default_version=default_version, **res)
+        return self._ArchiveConstructor(
+            api=self, 
+            default_version=default_version, 
+            **res)
 
     def get_archive(self, archive_name, default_version=None):
 
         res = self.manager.get_archive(archive_name)
-        return self._ArchiveConstructor(api=self, default_version=default_version, **res)
+        
+        default_version = self._default_versions.get(archive_name, None)
+
+        return self._ArchiveConstructor(
+            api=self, 
+            default_version=default_version, 
+            **res)
 
 
     @property
@@ -254,19 +270,9 @@ class DataAPI(object):
 
         '''
 
-        @contextmanager
-        def open_file(f):
-
-            if hasattr(f, 'read'):
-                yield f
-
-            else:
-                with open(f, 'rb') as f_obj:
-                    yield f_obj
-
         md5 = hashlib.md5()
 
-        with open_file(f) as f_obj:
+        with open_filelike(f, 'rb') as f_obj:
             for chunk in iter(lambda: f_obj.read(128 * md5.block_size), b''):
                 md5.update(chunk)
 

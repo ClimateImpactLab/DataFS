@@ -1,9 +1,12 @@
 
 from datafs.config.config_file import ConfigFile
 from datafs.config.constructor import APIConstructor
+from datafs._compat import open_filelike
 
+import os
+import re
 
-def get_api(profile=None, config_file=None):
+def get_api(profile=None, config_file=None, requirements='requirements_data.txt'):
     '''
     Generate a datafs.DataAPI object from a config profile
 
@@ -97,10 +100,36 @@ def get_api(profile=None, config_file=None):
 
     profile_config = config.get_profile_config(profile)
 
+
+    default_versions = {}
+    
+    if requirements is None:
+        requirements = config.config.get('requirements', None)
+
+    if requirements is not None and os.path.isfile(requirements):
+        with open_filelike(requirements, 'r') as reqfile:
+            for reqline in reqfile.readlines():
+                if re.search(r'^\s*$', reqline):
+                    continue
+
+                # should we do archive name checking here? If the statement 
+                # doesn't split, the entire thing gets passed to create_archive
+                # or get_archive as the archive_name.
+                
+                version_stmt = map(lambda s: s.strip(), reqline.split('=='))
+
+                if len(version_stmt) == 1:
+                    default_versions[version_stmt[0]] = None
+                else:
+                    default_versions[version_stmt[0]] = version_stmt[1]
+
     api = APIConstructor.generate_api_from_config(profile_config)
+    api._default_versions.update(default_versions)
 
     APIConstructor.attach_manager_from_config(api, profile_config)
     APIConstructor.attach_services_from_config(api, profile_config)
     APIConstructor.attach_cache_from_config(api, profile_config)
+
+
 
     return api

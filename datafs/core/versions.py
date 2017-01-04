@@ -235,6 +235,11 @@ class BumpableVersion(distutils.version.StrictVersion):
                 new_prerelease = self._increment_prerelease(None, prerelease)
                 new_version = self._increment_version(self.version, 'patch')
 
+        else:
+            # default is bump patch
+            
+            new_prerelease = None
+            new_version = self._increment_version(self.version, 'patch')
 
         if inplace == True:
             self.version = new_version

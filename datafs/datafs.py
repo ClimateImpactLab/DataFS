@@ -3,12 +3,12 @@
 from __future__ import absolute_import
 from datafs.core.data_api import DataAPI
 from datafs.config.config_file import ConfigFile
-from datafs.config.constructor import APIConstructor
+from datafs.config.helpers import get_api
 import os
+import re
 import click
 import yaml
 import pprint
-import requirements as requirement_parser
 
 
 def parse_args_as_kwargs(args):
@@ -47,10 +47,10 @@ class DataFSInterface(object):
 #this sets the command line environment for 
 @click.group()
 @click.option('--config-file', envvar='CONFIG_FILE', type=str)
-@click.option('--requirements', envvar='REQUIREMENTS', type=str)
+@click.option('--requirements', envvar='REQUIREMENTS', type=str, default='requirements_data.txt')
 @click.option('--profile', envvar='PROFILE', type=str, default=None)
 @click.pass_context
-def cli(ctx, config_file=None, requirements=None, profile=None):
+def cli(ctx, config_file=None, requirements='requirements_data.txt', profile=None):
 
     ctx.obj = DataFSInterface()
 
@@ -59,17 +59,6 @@ def cli(ctx, config_file=None, requirements=None, profile=None):
     config = ConfigFile(ctx.obj.config_file)
     config.read_config()
 
-    if requirements is None:
-        requirements = config.config.get('requirements', None)
-
-    if requirements is not None:
-        ctx.obj.requirements = dict(map(
-            lambda tup: tuple(tup[:1]), requirement_parser.parse(requirements)))
-
-    else:
-        ctx.obj.requirements = {}
-
-
     ctx.obj.config = config
 
     if profile is None:
@@ -77,13 +66,7 @@ def cli(ctx, config_file=None, requirements=None, profile=None):
 
     ctx.obj.profile = profile
 
-    profile_config = ctx.obj.config.get_profile_config(ctx.obj.profile)
-
-    api = APIConstructor.generate_api_from_config(profile_config)
-
-    APIConstructor.attach_manager_from_config(api, profile_config)
-    APIConstructor.attach_services_from_config(api, profile_config)
-    APIConstructor.attach_cache_from_config(api, profile_config)
+    api = get_api(profile=profile, config_file=config_file, requirements=requirements)
 
     ctx.obj.api = api
 
@@ -123,7 +106,8 @@ def configure(ctx, helper, edit):
         for kw in ctx.obj.api.REQUIRED_USER_CONFIG:
             if kw not in ctx.obj.api.user_config:
                 raise KeyError(
-                    'Required configuration option "{}" not supplied. Use --helper to configure interactively'.format(kw))
+                    'Required configuration option "{}" not supplied. '
+                    'Use --helper to configure interactively'.format(kw))
 
     ctx.obj.config.write_config()
 
@@ -138,13 +122,11 @@ def configure(ctx, helper, edit):
 @click.pass_context
 def create_archive(ctx, archive_name, authority_name, versioned=True):
     kwargs = parse_args_as_kwargs(ctx.args)
-    reqs = ctx.obj.requirements.get(archive_name, None)
     var = ctx.obj.api.create_archive(
         archive_name,
         authority_name=authority_name,
         versioned=versioned,
-        metadata=kwargs,
-        default_version=reqs)
+        metadata=kwargs)
 
     verstring = 'versioned archive' if versioned else 'archive'
     click.echo('created {} {}'.format(verstring, var))
@@ -162,15 +144,21 @@ def create_archive(ctx, archive_name, authority_name, versioned=True):
 def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None):
     kwargs = parse_args_as_kwargs(ctx.args)
 
-    reqs = ctx.obj.requirements.get(archive_name, None)
-    var = ctx.obj.api.get_archive(archive_name, default_version=reqs)
+    var = ctx.obj.api.get_archive(archive_name)
     latest_version = var.latest_version
 
-    var.update(filepath, bumpversion=bumpversion, prerelease=prerelease, **kwargs)
+    var.update(
+        filepath, 
+        bumpversion=bumpversion, 
+        prerelease=prerelease, 
+        **kwargs)
+
     new_version = var.latest_version
     
     if new_version != latest_version:
-        bumpmsg = ' version bumped {} --> {}.'.format(latest_version, new_version)
+        bumpmsg = ' version bumped {} --> {}.'.format(
+            latest_version, new_version)
+
     elif var.versioned:
         bumpmsg = ' version remains {}.'.format(latest_version)
     else:
@@ -185,11 +173,10 @@ def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None):
 @click.option('--version', envvar='VERSION', default=None)
 @click.pass_context
 def download(ctx, archive_name, filepath, version):
-    reqs = ctx.obj.requirements.get(archive_name, None)
-    var = ctx.obj.api.get_archive(archive_name, default_version=reqs)
+    var = ctx.obj.api.get_archive(archive_name)
 
     if version is None:
-        version = var.latest_version
+        version = var.default_version
 
     var.download(filepath, version=version)
 
@@ -203,8 +190,7 @@ def download(ctx, archive_name, filepath, version):
 @click.argument('archive_name')
 @click.pass_context
 def metadata(ctx, archive_name):
-    reqs = ctx.obj.requirements.get(archive_name, None)
-    var = ctx.obj.api.get_archive(archive_name, default_version=reqs)
+    var = ctx.obj.api.get_archive(archive_name)
     click.echo(pprint.pformat(var.metadata))
 
 
@@ -212,8 +198,7 @@ def metadata(ctx, archive_name):
 @click.argument('archive_name')
 @click.pass_context
 def history(ctx, archive_name):
-    reqs = ctx.obj.requirements.get(archive_name, None)
-    var = ctx.obj.api.get_archive(archive_name, default_version=reqs)
+    var = ctx.obj.api.get_archive(archive_name)
     click.echo(var.history)
 
 
@@ -221,8 +206,7 @@ def history(ctx, archive_name):
 @click.argument('archive_name')
 @click.pass_context
 def versions(ctx, archive_name):
-    reqs = ctx.obj.requirements.get(archive_name, None)
-    var = ctx.obj.api.get_archive(archive_name, default_version=reqs)
+    var = ctx.obj.api.get_archive(archive_name)
     click.echo(pprint.pformat(map(str, var.versions)))
 
 
@@ -232,7 +216,9 @@ def versions(ctx, archive_name):
 def list(ctx, prefix):
     archives = ctx.obj.api.archives
     res = [
-        var.archive_name for var in archives if var.archive_name.startswith(prefix)]
+        var.archive_name 
+        for var in archives if var.archive_name.startswith(prefix)]
+
     click.echo(res)
 
 

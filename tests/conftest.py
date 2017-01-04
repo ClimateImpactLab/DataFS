@@ -223,6 +223,7 @@ def api_with_spec(manager_with_spec):
 
         yield api
 
+
 @pytest.fixture
 def opener(open_func):
     '''
@@ -240,6 +241,7 @@ def opener(open_func):
             version=None, 
             bumpversion='patch', 
             prerelease=None, 
+            dependencies=None,
             *args, 
             **kwargs):
 
@@ -248,7 +250,8 @@ def opener(open_func):
                 mode=mode,
                 version=version, 
                 bumpversion=bumpversion, 
-                prerelease=prerelease, 
+                prerelease=prerelease,
+                dependencies=dependencies, 
                 **kwargs) as f:
                 
                 yield f
@@ -264,13 +267,15 @@ def opener(open_func):
             version=None, 
             bumpversion='patch', 
             prerelease=None, 
+            dependencies=None,
             *args, 
             **kwargs):
 
             with archive.get_local_path(
                 version=version, 
                 bumpversion=bumpversion, 
-                prerelease=prerelease) as fp:
+                prerelease=prerelease,
+                dependencies=dependencies) as fp:
                 
                 with open(fp, mode=mode, *args, **kwargs) as f:
                     yield f

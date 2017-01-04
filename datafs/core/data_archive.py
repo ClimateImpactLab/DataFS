@@ -573,3 +573,20 @@ class DataArchive(object):
 
         if self.api.cache.fs.isfile(self.get_version_path(version)):
             self.api.cache.fs.remove(self.get_version_path(version))
+
+    def get_dependencies(self, version=None):
+        '''
+        Parameters
+        ----------
+        version: str
+            string representing version number whose dependencies you are looking up
+        '''
+
+        if version is None:
+            raise ValueError('No version provided')
+
+        for  i,v in enumerate(self.history):
+            if v['version'] == version:
+                return self.history[i]['dependencies']
+
+

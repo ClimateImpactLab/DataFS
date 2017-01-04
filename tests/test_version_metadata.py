@@ -41,13 +41,13 @@ class TestVersionedMetadata(object):
 
 		var.update('test.txt', remove=True, version='patch', dependencies={'arch1': '0.1.0', 'arch2': '0.2.0'})
 
-		assert len(var.history[-1]['dependencies']) == 2
+		assert len(var.get_history()[-1]['dependencies']) == 2
 
 		with opener(var, 'w+', dependencies={'arch2': '0.1.2'}) as f:
 			f.write(u'test and more test')
 
 
-		assert var.history[-1]['dependencies']['arch2'] == '0.1.2'
+		assert var.get_history()[-1]['dependencies']['arch2'] == '0.1.2'
 
 
 		assert len(var.get_dependencies(version='0.0.1')) == 2
@@ -78,7 +78,7 @@ class TestVersionedMetadata(object):
 			ds.to_netcdf(f)
 
 
-		assert var.history[-1]['dependencies']['arch2'] == '0.2.0'
+		assert var.get_history()[-1]['dependencies']['arch2'] == '0.2.0'
 
 		assert len(ds.tmin.shape) > 0
 
@@ -96,8 +96,8 @@ class TestVersionedMetadata(object):
 			mem.to_netcdf(f)
 
 
-		assert  var.history[-1]['dependencies']['arch2'] == '1.2.0'
-		assert  var.history[-1]['checksum'] != var.history[-2]['checksum']
-		
+		assert  var.get_history()[-1]['dependencies']['arch2'] == '1.2.0'
+		assert  var.get_history()[-1]['checksum'] != var.get_history()[-2]['checksum']
+
 
 

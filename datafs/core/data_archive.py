@@ -44,7 +44,7 @@ class DataArchive(object):
         if not self.versioned:
             return [None]
 
-        versions = self.history
+        versions = self.get_history()
     
         if len(versions) == 0:
             return []
@@ -118,6 +118,10 @@ class DataArchive(object):
     def metadata(self):
         return self.api.manager.get_metadata(self.archive_name)
 
+
+    def get_history(self):
+        return self.api.manager.get_version_history(self.archive_name)
+
     def get_latest_hash(self):
         return self.api.manager.get_latest_hash(self.archive_name)
 
@@ -129,7 +133,7 @@ class DataArchive(object):
             if version is None:
                 return None
 
-            for ver in self.history:
+            for ver in self.get_history():
                 if BumpableVersion(ver['version']) == version:
                     return ver['checksum']
 
@@ -139,10 +143,6 @@ class DataArchive(object):
         else:
             return self.get_latest_hash()
 
-
-    @property
-    def history(self):
-        return self.api.manager.get_version_history(self.archive_name)
 
     def update(
         self, 
@@ -584,8 +584,8 @@ class DataArchive(object):
         if version is None:
             raise ValueError('No version provided')
 
-        for i,v in enumerate(self.history):
+        for i,v in enumerate(self.get_history()):
             if v['version'] == version:
-                return self.history[i]['dependencies']
+                return self.get_history()[i]['dependencies']
 
 

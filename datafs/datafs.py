@@ -148,10 +148,10 @@ def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None):
     kwargs = parse_args_as_kwargs(ctx.args)
 
     var = ctx.obj.api.get_archive(archive_name)
-    latest_version = var.latest_version
+    latest_version = var.get_latest_version()
 
     var.update(filepath, bumpversion=bumpversion, prerelease=prerelease, **kwargs)
-    new_version = var.latest_version
+    new_version = var.get_latest_version()
     
     if new_version != latest_version:
         bumpmsg = ' version bumped {} --> {}.'.format(latest_version, new_version)
@@ -172,7 +172,7 @@ def download(ctx, archive_name, filepath, version):
     var = ctx.obj.api.get_archive(archive_name)
 
     if version is None:
-        version = var.latest_version
+        version = var.get_latest_version()
 
     var.download(filepath, version=version)
 

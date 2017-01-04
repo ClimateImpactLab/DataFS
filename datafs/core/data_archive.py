@@ -27,8 +27,8 @@ class DataArchive(object):
     def versioned(self):
         return self._versioned
 
-    @property
-    def latest_version(self):
+    
+    def get_latest_version(self):
 
         versions = self.versions
     
@@ -91,7 +91,7 @@ class DataArchive(object):
 
         if self.versioned:
             if version is None:
-                version = self.latest_version
+                version = self.get_latest_version()
 
             if version is None:
                 return fs.path.join(self.archive_path, str(BumpableVersion()))
@@ -125,7 +125,7 @@ class DataArchive(object):
     def get_version_hash(self, version=None):
         if self.versioned:
             if version is None:
-                version = self.latest_version
+                version = self.get_latest_version()
 
             if version is None:
                 return None
@@ -190,7 +190,7 @@ class DataArchive(object):
 
         '''
 
-        latest_version = self.latest_version
+        latest_version = self.get_latest_version()
 
         hashval = self.api.hash_file(filepath)
 
@@ -285,11 +285,11 @@ class DataArchive(object):
         
         '''
         if version is None:
-            latest_version = self.latest_version
+            latest_version = self.get_latest_version()
             version = latest_version
 
         else:
-            latest_version = self.latest_version
+            latest_version = self.get_latest_version()
 
         version_hash = self.get_version_hash(version)
 
@@ -366,11 +366,11 @@ class DataArchive(object):
 
         '''
         if version is None:
-            latest_version = self.latest_version
+            latest_version = self.get_latest_version()
             version = latest_version
 
         else:
-            latest_version = self.latest_version
+            latest_version = self.get_latest_version()
 
         version_hash = self.get_version_hash(version)
 
@@ -427,7 +427,7 @@ class DataArchive(object):
         '''
 
         if version is None:
-            version = self.latest_version
+            version = self.get_latest_version()
 
         dirname, filename= os.path.split(
             os.path.abspath(os.path.expanduser(filepath)))
@@ -544,7 +544,7 @@ class DataArchive(object):
         '''
 
         if version is None:
-            version = self.latest_version
+            version = self.get_latest_version()
 
         if self.api.cache and self.api.cache.fs.isfile(self.get_version_path(version)):
             return True
@@ -557,7 +557,7 @@ class DataArchive(object):
             raise ValueError('No cache attached')
 
         if version is None:
-            version = self.latest_version
+            version = self.get_latest_version()
 
         if not self.api.cache.fs.isfile(self.get_version_path(version)):
             data_file._touch(self.api.cache.fs, self.get_version_path(version))
@@ -569,7 +569,7 @@ class DataArchive(object):
     def remove_from_cache(self, version=None):
 
         if version is None:
-            version = self.latest_version
+            version = self.get_latest_version()
 
         if self.api.cache.fs.isfile(self.get_version_path(version)):
             self.api.cache.fs.remove(self.get_version_path(version))

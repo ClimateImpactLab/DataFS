@@ -33,6 +33,20 @@ def interactive_configuration(api, config, profile=None):
                 default=profile_config['api']['user_config'][kw])
 
 
+def parse_dependency_tuples(dependency_args):
+    
+    if len(args) = 0: 
+        return None
+
+    dependencies = {}
+    for arg in args:
+        if len(arg) == 2: 
+            split = arg.split('==')
+            dependencies[split[0]] = split[1]
+        dependencies[arg] = ''
+
+    return dependencies
+
 class DataFSInterface(object):
 
     def __init__(self, config={}, api=None, config_file=None, profile=None):
@@ -143,14 +157,16 @@ def create_archive(ctx, archive_name, authority_name, versioned=True):
 @click.argument('filepath')
 @click.option('--bumpversion', envvar='BUMPVERSION', default='patch')
 @click.option('--prerelease', envvar='PRERELEASE', default=None)
+@click.option('--dependencies', multiple=True)
 @click.pass_context
-def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None):
+def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None, dependencies=None):
     kwargs = parse_args_as_kwargs(ctx.args)
+    dependencies_dict = parse_dependency_tuples(dependencies)
 
     var = ctx.obj.api.get_archive(archive_name)
     latest_version = var.get_latest_version()
 
-    var.update(filepath, bumpversion=bumpversion, prerelease=prerelease, **kwargs)
+    var.update(filepath, bumpversion=bumpversion, prerelease=prerelease, dependencies=dependencies_dict, **kwargs)
     new_version = var.get_latest_version()
     
     if new_version != latest_version:

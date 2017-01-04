@@ -5,6 +5,7 @@ from datafs.core.data_archive import DataArchive
 import pytest
 
 
+#hack to get around installing these packages on Travis
 has_special_dependencies = False
 
 try:
@@ -63,7 +64,7 @@ class TestVersionedMetadata(object):
 
 
 		tmin_values = base + 3 * np.random.randn(annual_cycle.size, 3)
-		tmax_values = base + 10 + 3 * np.random.randn(annual_cycle.size, 3)
+		tmax_values = base + 3 * np.random.randn(annual_cycle.size, 3)
 
 
 		ds = xr.Dataset({'tmin': (('time', 'location'), tmin_values), 
@@ -79,24 +80,24 @@ class TestVersionedMetadata(object):
 
 		assert var.history[-1]['dependencies']['arch2'] == '0.2.0'
 
-		#assert len(ds.tmin.shape) > 0
+		assert len(ds.tmin.shape) > 0
 
-		# 	tmin_values = base + 10 * np.random.randn(annual_cycle.size, 10)
-		# 	new_ds = xr.Dataset({'tmin': (('time', 'location'), tmin_values), 
-		# 			 'tmax': (('time', 'location'), tmax_values)},
-	 #                {'time': times, 'location': ['IA', 'IN', 'IL']})
+		tmin_values = base + 10 * np.random.randn(annual_cycle.size, 3)
+		ds.update({'tmin': (('time', 'location'), tmin_values)})
+		
 
-		# 	with var.get_local_path(bumpversion='patch', dependencies={'arch1': '0.1.0', 'arch2': '1.2.0'}) as f:
-		# 		with xr.open_dataset(f) as ds:
+		with var.get_local_path(bumpversion='patch', dependencies={'arch1': '0.1.0', 'arch2': '1.2.0'}) as f:
+			with xr.open_dataset(f) as ds:
 
-		# 			mem = ds.load()
-		# 			ds.close()
-
-
-		# 		mem.attrs['description'] = 'some netcdf description'
-		# 		mem.to_netcdf(f)
+				mem = ds.load()
+				ds.close()
 
 
-		# assert 
+			mem.to_netcdf(f)
+
+
+		assert  var.history[-1]['dependencies']['arch2'] == '1.2.0'
+		assert  var.history[-1]['checksum'] != var.history[-2]['checksum']
+		
 
 

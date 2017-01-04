@@ -109,16 +109,16 @@ class TestHashFunction(object):
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, archive.latest_hash)
+        assert direct == archive.get_latest_hash(), 'Manual hash "{}" != archive hash "{}"'.format(
+            direct, archive.get_latest_hash())
 
         # Try uploading the same file
         apihash = self.update_and_hash(archive, contents)
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, archive.latest_hash)
+        assert direct == archive.get_latest_hash(), 'Manual hash "{}" != archive hash "{}"'.format(
+            direct, archive.get_latest_hash())
 
         # Update and test again!
 
@@ -136,8 +136,8 @@ class TestHashFunction(object):
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, archive.latest_hash)
+        assert direct == archive.get_latest_hash(), 'Manual hash "{}" != archive hash "{}"'.format(
+            direct, archive.get_latest_hash())
 
         # Update and test a different way!
 
@@ -154,8 +154,8 @@ class TestHashFunction(object):
         assert contents == current, 'Latest updates "{}" !=  archive contents "{}"'.format(
             contents, current)
 
-        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, archive.latest_hash)
+        assert direct == archive.get_latest_hash(), 'Manual hash "{}" != archive hash "{}"'.format(
+            direct, archive.get_latest_hash())
 
 
 class TestArchiveCreation(object):

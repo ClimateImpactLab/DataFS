@@ -118,8 +118,7 @@ class DataArchive(object):
     def metadata(self):
         return self.api.manager.get_metadata(self.archive_name)
 
-    @property
-    def latest_hash(self):
+    def get_latest_hash(self):
         return self.api.manager.get_latest_hash(self.archive_name)
 
     def get_version_hash(self, version=None):
@@ -138,7 +137,7 @@ class DataArchive(object):
                 version))
 
         else:
-            return self.latest_hash
+            return self.get_latest_hash()
 
 
     @property
@@ -197,7 +196,7 @@ class DataArchive(object):
         checksum = hashval['checksum']
         algorithm = hashval['algorithm']
 
-        if checksum == self.latest_hash:
+        if checksum == self.get_latest_hash():
             self.update_metadata(kwargs)
 
             if remove and os.path.isfile(filepath):

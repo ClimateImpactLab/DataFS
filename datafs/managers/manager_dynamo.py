@@ -64,7 +64,7 @@ class DynamoDBManager(BaseDataManager):
                 AttributesToGet=['_id'])['Items']]
             return res
 
-    def _update(self, archive_name, versions):
+    def _update(self, archive_name, version_metadata):
         '''
         Updates the version specific metadata attribute in DynamoDB
         In DynamoDB this is simply a list append on this attribute value
@@ -74,20 +74,20 @@ class DynamoDBManager(BaseDataManager):
         archive_name: str
             unique '_id' primary key
 
-        versions: dict
+        version_metadata: dict
             dictionary of version metadata values
 
         Returns
         -------
         dict
-            list of dictionaries of versions
+            list of dictionaries of version_history
         '''
         self._table.update_item(
             Key={
                 '_id': archive_name},
-            UpdateExpression="SET versions = list_append(versions, :v)",
+            UpdateExpression="SET version_history = list_append(version_history, :v)",
             ExpressionAttributeValues={
-                ':v': [versions]},
+                ':v': [version_metadata]},
             ReturnValues='ALL_NEW')
 
     def _get_table_names(self):
@@ -362,21 +362,21 @@ class DynamoDBManager(BaseDataManager):
 
         return res['archive_path']
 
-    def _get_versions(self, archive_name):
+    def _get_version_history(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
 
-        return res['versions']
+        return res['version_history']
 
     def _get_latest_hash(self, archive_name):
 
-        versions = self._get_versions(archive_name)
+        version_history = self._get_version_history(archive_name)
 
-        if len(versions) == 0:
+        if len(version_history) == 0:
             return None
 
         else:
-            return versions[-1]['checksum']
+            return version_history[-1]['checksum']
 
     def _get_required_user_config(self):
 

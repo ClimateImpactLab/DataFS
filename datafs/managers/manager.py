@@ -159,7 +159,7 @@ class BaseDataManager(object):
             'authority_name': authority_name,
             'archive_path': archive_path,
             'versioned': versioned,
-            'versions': [],
+            'version_history': [],
             'archive_data': metadata
         }
         archive_metadata.update(user_config)
@@ -262,8 +262,8 @@ class BaseDataManager(object):
 
         self._delete_archive_record(archive_name)
 
-    def get_versions(self, archive_name):
-        return self._get_versions(archive_name)
+    def get_version_history(self, archive_name):
+        return self._get_version_history(archive_name)
 
 
     @classmethod
@@ -358,7 +358,7 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_versions(self, archive_name):
+    def _get_version_history(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
     def _get_document_count(self, table_name):

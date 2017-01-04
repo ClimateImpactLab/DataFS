@@ -143,7 +143,7 @@ class DataArchive(object):
 
     @property
     def history(self):
-        return self.api.manager.get_versions(self.archive_name)
+        return self.api.manager.get_version_history(self.archive_name)
 
     def update(
         self, 

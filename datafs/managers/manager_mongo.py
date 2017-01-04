@@ -145,7 +145,7 @@ class MongoDBManager(BaseDataManager):
     @catch_timeout
     def _update(self, archive_name, archive_data):
         self.collection.update({"_id": archive_name},
-                               {"$push": {"versions": archive_data}})
+                               {"$push": {"version_history": archive_data}})
 
     def _update_metadata(self, archive_name, metadata):
         for key, val in metadata.items():
@@ -256,24 +256,24 @@ class MongoDBManager(BaseDataManager):
 
         return res['archive_data']
 
-    def _get_versions(self, archive_name):
+    def _get_version_history(self, archive_name):
 
         res = self.collection.find_one({'_id': archive_name})
 
         if res is None:
             raise KeyError
 
-        return res['versions']
+        return res['version_history']
 
     def _get_latest_hash(self, archive_name):
 
-        versions = self._get_versions(archive_name)
+        version_history = self._get_version_history(archive_name)
 
-        if len(versions) == 0:
+        if len(version_history) == 0:
             return None
 
         else:
-            return versions[-1]['checksum']
+            return version_history[-1]['checksum']
 
     def _delete_archive_record(self, archive_name):
 

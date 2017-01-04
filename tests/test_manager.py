@@ -130,9 +130,9 @@ class TestBaseManager(object):
             base_manager._delete_table('my-data-table')
 
     
-    def test_get_versions(self, base_manager):
+    def test_get_version_history(self, base_manager):
         with pytest.raises(NotImplementedError):
-            base_manager._get_versions('archive 1')
+            base_manager._get_version_history('archive 1')
 
 
     
@@ -206,6 +206,6 @@ class TestBaseManager(object):
             base_manager._delete_table('my-data-table')
 
     
-    def test_get_versions(self, base_manager):
+    def test_get_version_history(self, base_manager):
         with pytest.raises(NotImplementedError):
-            base_manager._get_versions('archive 1')
+            base_manager._get_version_history('archive 1')

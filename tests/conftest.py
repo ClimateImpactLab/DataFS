@@ -192,14 +192,11 @@ def manager_with_spec(mgr_name):
 
 
         metadata_config = {
-            'item1': 'test_string1',
-            'item2': 'test_string2',
-            'item3': 'test_string3'
-        }
+            'description': 'some metadata'
+            }
 
         user_config = {
             'username': 'Your Name',
-            'Home Institution': 'Your Institution',
             'contact': 'my.email@example.com'
             
         }

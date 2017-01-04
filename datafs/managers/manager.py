@@ -171,7 +171,7 @@ class BaseDataManager(object):
         required |= set(self.required_archive_metadata.keys())
 
         for attr in required:
-            assert attr in archive_metadata['archive_data'] or archive_metadata, 'Required attribute "{}" missing from metadata'.format(
+            assert (attr in archive_metadata['archive_data']) or (attr in archive_metadata), 'Required attribute "{}" missing from metadata'.format(
                 attr)
 
         if raise_on_err:

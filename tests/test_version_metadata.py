@@ -79,7 +79,7 @@ class TestVersionedMetadata(object):
 
 		assert var.history[-1]['dependencies']['arch2'] == '0.2.0'
 
-		assert len(ds.tmin.shape) > 0
+		#assert len(ds.tmin.shape) > 0
 
 		# 	tmin_values = base + 10 * np.random.randn(annual_cycle.size, 10)
 		# 	new_ds = xr.Dataset({'tmin': (('time', 'location'), tmin_values), 

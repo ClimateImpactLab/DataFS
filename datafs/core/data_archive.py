@@ -114,8 +114,8 @@ class DataArchive(object):
     def archive_path(self):
         return self._archive_path
 
-    @property
-    def metadata(self):
+    
+    def get_metadata(self):
         return self.api.manager.get_metadata(self.archive_name)
 
 

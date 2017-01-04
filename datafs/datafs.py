@@ -187,7 +187,7 @@ def download(ctx, archive_name, filepath, version):
 @click.pass_context
 def metadata(ctx, archive_name):
     var = ctx.obj.api.get_archive(archive_name)
-    click.echo(pprint.pformat(var.metadata))
+    click.echo(pprint.pformat(var.get_metadata()))
 
 
 @cli.command()

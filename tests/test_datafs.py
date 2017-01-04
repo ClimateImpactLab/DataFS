@@ -166,7 +166,7 @@ class TestArchiveCreation(object):
         api.create_archive(archive_name, metadata={'testval': 'my test value'})
         var = api.get_archive(archive_name)
 
-        testval = var.metadata['testval']
+        testval = var.get_metadata()['testval']
 
         with pytest.raises(KeyError) as excinfo:
             api.create_archive(archive_name)
@@ -180,12 +180,12 @@ class TestArchiveCreation(object):
             raise_on_err=False)
         var = api.get_archive(archive_name)
 
-        assert testval == var.metadata[
+        assert testval == var.get_metadata()[
             'testval'], "Test archive was incorrectly updated!"
 
         var.update_metadata({'testval': 'a different test value'})
 
-        assert var.metadata[
+        assert var.get_metadata()[
             'testval'] == 'a different test value', "Test archive was not updated!"
 
         # Test archive deletion

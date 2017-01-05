@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from datafs.core import data_file
 from datafs.core.versions import BumpableVersion
+from datafs._compat import string_types
 from contextlib import contextmanager
 import fs.utils
 from fs.osfs import OSFS
@@ -10,7 +11,15 @@ import os
 
 class DataArchive(object):
 
-    def __init__(self, api, archive_name, authority_name, archive_path, versioned=True):
+    def __init__(
+        self, 
+        api, 
+        archive_name, 
+        authority_name, 
+        archive_path, 
+        versioned=True,
+        default_version=None):
+
         self.api = api
         self.archive_name = archive_name
 
@@ -18,6 +27,7 @@ class DataArchive(object):
         self._archive_path = archive_path
 
         self._versioned = versioned
+        self._default_version = default_version
 
     def __repr__(self):
         return "<{} {}://{}>".format(self.__class__.__name__,
@@ -38,7 +48,7 @@ class DataArchive(object):
         else:
             return max(versions)
 
-    
+
     def get_versions(self):
 
         if not self.versioned:
@@ -50,7 +60,30 @@ class DataArchive(object):
             return []
     
         else:
-            return sorted(map(BumpableVersion, set([v['version'] for v in versions])))
+            return sorted(map(BumpableVersion, set([v['version'] for v in versions]))) 
+
+
+    
+    def get_default_version(self):
+
+        if not self.versioned:
+            return None
+
+        versions = self.get_versions()
+
+        if self._default_version is None or self._default_version == 'latest':
+            if len(versions) == 0:
+                return None
+
+            return max(versions)
+
+        matches = filter(lambda v: v==self._default_version, self.get_versions())
+
+        if len(matches) > 0:
+            return max(matches)
+
+        raise ValueError('Archive "{}" version {} not found'.format(
+            self.archive_name, self._default_version))
 
 
     def get_version_path(self, version=None):
@@ -65,7 +98,7 @@ class DataArchive(object):
         ----------
         version : str or object
             Version number to use as file name on versioned archives (default 
-            latest)
+            latest unless ``default_version`` set)
 
         Examples
         --------
@@ -91,7 +124,8 @@ class DataArchive(object):
 
         if self.versioned:
             if version is None:
-                version = self.get_latest_version()
+ 
+                version = self.get_default_version()
 
             if version is None:
                 return fs.path.join(self.archive_path, str(BumpableVersion()))
@@ -128,7 +162,7 @@ class DataArchive(object):
     def get_version_hash(self, version=None):
         if self.versioned:
             if version is None:
-                version = self.get_latest_version()
+                version = self.get_default_version()
 
             if version is None:
                 return None
@@ -149,7 +183,7 @@ class DataArchive(object):
         filepath, 
         cache=False, 
         remove=False, 
-        bumpversion='patch', 
+        bumpversion=None, 
         prerelease=None, 
         dependencies=None,
         **kwargs):
@@ -251,7 +285,7 @@ class DataArchive(object):
     # File I/O methods
 
     @contextmanager
-    def open(self, mode='r', version=None, bumpversion='patch', prerelease=None, dependencies = None, *args, **kwargs):
+    def open(self, mode='r', version=None, bumpversion=None, prerelease=None, dependencies = None, *args, **kwargs):
         '''
         Opens a file for read/write
 
@@ -285,7 +319,12 @@ class DataArchive(object):
         '''
         if version is None:
             latest_version = self.get_latest_version()
+            version = self.get_default_version()
+
+        elif version == 'latest':
+            latest_version = self.get_latest_version()
             version = latest_version
+
 
         else:
             latest_version = self.get_latest_version()
@@ -338,7 +377,7 @@ class DataArchive(object):
             yield f
 
     @contextmanager
-    def get_local_path(self, version=None, bumpversion='patch', prerelease=None, dependencies=None, *args, **kwargs):
+    def get_local_path(self, version=None, bumpversion=None, prerelease=None, dependencies=None, *args, **kwargs):
         '''
         Returns a local path for read/write
 
@@ -365,6 +404,13 @@ class DataArchive(object):
 
         '''
         if version is None:
+            latest_version = self.get_latest_version()
+            version = self.get_default_version()
+
+        elif isinstance(version, BumpableVersion):
+            pass
+
+        elif version == 'latest':
             latest_version = self.get_latest_version()
             version = latest_version
 
@@ -426,7 +472,14 @@ class DataArchive(object):
         '''
 
         if version is None:
-            version = self.get_latest_version()
+            version = self.get_default_version()
+
+        elif isinstance(version, BumpableVersion):
+            pass
+
+        elif version == 'latest':
+            latest_version = self.get_latest_version()
+            version = latest_version
 
         dirname, filename= os.path.split(
             os.path.abspath(os.path.expanduser(filepath)))
@@ -543,7 +596,14 @@ class DataArchive(object):
         '''
 
         if version is None:
-            version = self.get_latest_version()
+            version = self.get_default_version()
+
+        elif isinstance(version, BumpableVersion):
+            pass
+
+        elif version == 'latest':
+            latest_version = self.get_latest_version()
+            version = latest_version
 
         if self.api.cache and self.api.cache.fs.isfile(self.get_version_path(version)):
             return True
@@ -556,7 +616,14 @@ class DataArchive(object):
             raise ValueError('No cache attached')
 
         if version is None:
-            version = self.get_latest_version()
+            version = self.get_default_version()
+
+        elif isinstance(version, BumpableVersion):
+            pass
+
+        elif version == 'latest':
+            latest_version = self.get_latest_version()
+            version = latest_version
 
         if not self.api.cache.fs.isfile(self.get_version_path(version)):
             data_file._touch(self.api.cache.fs, self.get_version_path(version))
@@ -568,7 +635,14 @@ class DataArchive(object):
     def remove_from_cache(self, version=None):
 
         if version is None:
-            version = self.get_latest_version()
+            version = self.get_default_version()
+
+        elif isinstance(version, BumpableVersion):
+            pass
+
+        elif version == 'latest':
+            latest_version = self.get_latest_version()
+            version = latest_version
 
         if self.api.cache.fs.isfile(self.get_version_path(version)):
             self.api.cache.fs.remove(self.get_version_path(version))
@@ -582,10 +656,25 @@ class DataArchive(object):
         '''
 
         if version is None:
-            raise ValueError('No version provided')
+            version = self.get_default_version()
 
-        for i,v in enumerate(self.get_history()):
-            if v['version'] == version:
-                return self.get_history()[i]['dependencies']
+        if version == 'latest':
+            version = self.get_latest_version()
+
+        for v in reversed(self.get_history()):
+            if BumpableVersion(v['version']) == version:
+                return v['dependencies']
+
+        raise ValueError('Version {} not found'.format(version))
+
+    def set_dependencies(self, dependencies={}):
+        
+        version_metadata = self.get_history()[-1]
+
+        version_metadata['dependencies'] = dependencies
+        version_metadata['user_config'] = self.api.user_config
+
+        self.api.manager.update(self.archive_name, version_metadata)
+
 
 

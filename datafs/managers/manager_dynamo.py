@@ -401,7 +401,5 @@ class DynamoDBManager(BaseDataManager):
     def _get_spec_documents(self, table_name):
         return self._resource.Table(table_name + '.spec').scan()['Items']
 
-    def _get_document_count(self, table_name):
-        return len(self._get_spec_documents(table_name))
 
 

@@ -289,10 +289,6 @@ class MongoDBManager(BaseDataManager):
 
         return [r['_id'] for r in res]
 
-    def _get_document_count(self):
-
-        return self.spec_collection.count()
-
     def _get_spec_documents(self, table_name):
         return [item for item in self.spec_collection.find({})]
 

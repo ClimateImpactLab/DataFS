@@ -347,7 +347,7 @@ class DataArchive(object):
             latest_version = self.get_latest_version()
             version = self.get_default_version()
 
-        elif version == 'latest':
+        elif isinstance(version, string_types) and version == 'latest':
             latest_version = self.get_latest_version()
             version = latest_version
 
@@ -436,7 +436,7 @@ class DataArchive(object):
         elif isinstance(version, BumpableVersion):
             pass
 
-        elif version == 'latest':
+        elif isinstance(version, string_types) and version == 'latest':
             latest_version = self.get_latest_version()
             version = latest_version
 
@@ -503,7 +503,7 @@ class DataArchive(object):
         elif isinstance(version, BumpableVersion):
             pass
 
-        elif version == 'latest':
+        elif isinstance(version, string_types) and version == 'latest':
             latest_version = self.get_latest_version()
             version = latest_version
 
@@ -627,7 +627,7 @@ class DataArchive(object):
         elif isinstance(version, BumpableVersion):
             pass
 
-        elif version == 'latest':
+        elif isinstance(version, string_types) and version == 'latest':
             latest_version = self.get_latest_version()
             version = latest_version
 
@@ -647,7 +647,7 @@ class DataArchive(object):
         elif isinstance(version, BumpableVersion):
             pass
 
-        elif version == 'latest':
+        elif isinstance(version, string_types) and version == 'latest':
             latest_version = self.get_latest_version()
             version = latest_version
 
@@ -666,7 +666,7 @@ class DataArchive(object):
         elif isinstance(version, BumpableVersion):
             pass
 
-        elif version == 'latest':
+        elif isinstance(version, string_types) and version == 'latest':
             latest_version = self.get_latest_version()
             version = latest_version
 
@@ -684,7 +684,7 @@ class DataArchive(object):
         if version is None:
             version = self.get_default_version()
 
-        if version == 'latest':
+        if isinstance(version, string_types) and version  == 'latest':
             version = self.get_latest_version()
         
         history = self.get_history()

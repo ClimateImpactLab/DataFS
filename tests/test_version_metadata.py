@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from datafs.managers.manager import BaseDataManager
 from datafs.core.data_archive import DataArchive
+import tempfile
+import os
 
 import pytest
 
@@ -39,18 +41,33 @@ class TestVersionedMetadata(object):
 		with open('test.txt', 'w+') as f:
 			f.write(u'test test, this is a test')
 
+		
+
 		var.update('test.txt', remove=True, version='patch', dependencies={'arch1': '0.1.0', 'arch2': '0.2.0'})
 
-		assert len(var.get_history()[-1]['dependencies']) == 2
+
+		with opener(var, 'r') as f:
+			assert f.read() == 'test test, this is a test'
+
+
+		assert len(var.get_dependencies()) == 2
 
 		with opener(var, 'w+', dependencies={'arch2': '0.1.2'}) as f:
 			f.write(u'test and more test')
 
 
-		assert var.get_history()[-1]['dependencies']['arch2'] == '0.1.2'
+		with opener(var, 'r', version='latest') as f:
+			assert f.read() == 'test and more test'
+
+		assert var.get_dependencies(version='latest')['arch2'] == '0.1.2'
 
 
 		assert len(var.get_dependencies(version='0.0.1')) == 2
+
+
+
+
+
 
 
 	# @requires_xarray
@@ -76,11 +93,13 @@ class TestVersionedMetadata(object):
 		var = api.create_archive('streaming_test')
 		with var.get_local_path(bumpversion='patch', dependencies ={'arch1': '0.1.0', 'arch2': '0.2.0'}) as f:
 			ds.to_netcdf(f)
+			ds.close()
+
 
 
 		assert var.get_history()[-1]['dependencies']['arch2'] == '0.2.0'
 
-		assert len(ds.tmin.shape) > 0
+			
 
 		tmin_values = base + 10 * np.random.randn(annual_cycle.size, 3)
 		ds.update({'tmin': (('time', 'location'), tmin_values)})

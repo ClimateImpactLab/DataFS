@@ -231,3 +231,4 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
         assert len(archive1.get_history()) == 8
         assert u('67890') == u(f1.read())
 
+

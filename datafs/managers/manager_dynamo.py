@@ -224,7 +224,7 @@ class DynamoDBManager(BaseDataManager):
         
         spec_data_current.update(spec)
         #print(spec_data_current)
-        # add the updated archive_data object to Dynamo
+        # add the updated archive_metadata object to Dynamo
         updated = self._spec_table.update_item(
             Key={
                 '_id': '{}'.format(document_name)},
@@ -246,7 +246,7 @@ class DynamoDBManager(BaseDataManager):
             # Error handling for windows incompatability issue
             assert table_name not in self._get_table_names(), 'Table deletion failed'
 
-    def _update_metadata(self, archive_name, metadata):
+    def _update_metadata(self, archive_name, archive_metadata):
         """
         Appends the updated_metada dict to the Metadata Attribute list
 
@@ -264,15 +264,16 @@ class DynamoDBManager(BaseDataManager):
         """
 
         # keep the current state in memory
-        archive_data_current = self._get_archive_metadata(archive_name)
-        archive_data_current.update(metadata)
-        # add the updated archive_data object to Dynamo
+        archive_metadata_current = self._get_archive_metadata(archive_name)
+        archive_metadata_current.update(archive_metadata)
+        
+        # add the updated archive_metadata object to Dynamo
         updated = self._table.update_item(
             Key={
                 '_id': archive_name},
-            UpdateExpression="SET archive_data = :v",
+            UpdateExpression="SET archive_metadata = :v",
             ExpressionAttributeValues={
-                ':v': archive_data_current},
+                ':v': archive_metadata_current},
             ReturnValues='ALL_NEW')
 
     def _create_archive(
@@ -335,7 +336,7 @@ class DynamoDBManager(BaseDataManager):
 
         res = self._get_archive_listing(archive_name)
 
-        return res['archive_data']
+        return res['archive_metadata']
 
     def _get_archive_spec(self, archive_name):
         res = self._get_archive_listing(archive_name)

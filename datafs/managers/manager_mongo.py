@@ -142,14 +142,14 @@ class MongoDBManager(BaseDataManager):
     # Private methods (to be implemented!)
 
     @catch_timeout
-    def _update(self, archive_name, archive_data):
+    def _update(self, archive_name, version_metadata):
         self.collection.update({"_id": archive_name},
-                               {"$push": {"version_history": archive_data}})
+                               {"$push": {"version_history": version_metadata}})
 
-    def _update_metadata(self, archive_name, metadata):
-        for key, val in metadata.items():
+    def _update_metadata(self, archive_name, archive_metadata):
+        for key, val in archive_metadata.items():
             self.collection.update({"_id": archive_name},
-                                   {"$set": {"archive_data.{}".format(key): val}})
+                                   {"$set": {"archive_metadata.{}".format(key): val}})
 
     def _update_spec_config(self,document_name, spec):
 
@@ -253,7 +253,7 @@ class MongoDBManager(BaseDataManager):
         if res is None:
             raise KeyError
 
-        return res['archive_data']
+        return res['archive_metadata']
 
     def _get_version_history(self, archive_name):
 

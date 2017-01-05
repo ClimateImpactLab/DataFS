@@ -128,12 +128,12 @@ class BaseDataManager(object):
 
         self._update(archive_name, version_metadata)
 
-    def update_metadata(self, archive_name, metadata):
+    def update_metadata(self, archive_name, archive_metadata):
         '''
         Update metadata for archive ``archive_name``
         '''
 
-        self._update_metadata(archive_name, metadata)
+        self._update_metadata(archive_name, archive_metadata)
 
     def create_archive(
             self,
@@ -160,7 +160,7 @@ class BaseDataManager(object):
             'archive_path': archive_path,
             'versioned': versioned,
             'version_history': [],
-            'archive_data': metadata
+            'archive_metadata': metadata
         }
         archive_metadata.update(user_config)
 
@@ -171,7 +171,7 @@ class BaseDataManager(object):
         required |= set(self.required_archive_metadata.keys())
 
         for attr in required:
-            assert (attr in archive_metadata['archive_data']) or (attr in archive_metadata), 'Required attribute "{}" missing from metadata'.format(
+            assert (attr in archive_metadata['archive_metadata']) or (attr in archive_metadata), 'Required attribute "{}" missing from metadata'.format(
                 attr)
 
         if raise_on_err:
@@ -279,7 +279,7 @@ class BaseDataManager(object):
 
     # Private methods (to be implemented by subclasses of DataManager)
 
-    def _update(self, archive_name, archive_data):
+    def _update(self, archive_name, version_metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 

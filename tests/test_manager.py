@@ -23,23 +23,20 @@ class TestMetadataRequirements(object):
         assert len(manager_with_spec._get_spec_documents('standalone-test-table')) == 2
 
     def test_spec_config_update_metadata(self,manager_with_spec):
-        assert len(manager_with_spec.required_archive_metadata) == 3
+        assert len(manager_with_spec.required_archive_metadata) == 1
 
     def test_spec_config_update_user_config(self,manager_with_spec):
 
-        assert len(manager_with_spec.required_user_config) == 3
+        assert len(manager_with_spec.required_user_config) == 2
 
     def test_manager_spec_setup(self,api_with_spec, auth1):
 
         metadata_config = {
-            'item1': 'test_string1',
-            'item2': 'test_string2',
-            'item3': 'test_string3'
+            'description': 'test_string1',
         }
 
         user_config = {
             'username': 'My Name',
-            'Home Institution': 'Your Institution', 
             'contact': 'my.email@example.com'
             
         }
@@ -49,18 +46,17 @@ class TestMetadataRequirements(object):
         api_with_spec.create_archive('my_spec_test_archive', metadata=metadata_config)
 
         with pytest.raises(AssertionError) as excinfo:
-            api_with_spec.create_archive('my_other_test_archive', metadata={})
+            api_with_spec.create_archive('my_other_test_archive', metadata={'another_string': 'to break the test'})
 
     def test_manager_spec_setup_api_metadata(self,api_with_spec, auth1):
 
         metadata_config = {
-            'item1': 'test_string1',
-            'item2': 'test_string2',
-            'item3': 'test_string3'
+            'archive_data': 'test_string1',
+
         }
 
         with pytest.raises(AssertionError) as excinfo:
-            api_with_spec.create_archive('my_api_test_archive', metadata=metadata_config)
+            api_with_spec.create_archive('my_api_test_archive', metadata={})
 
 
 class TestBaseManager(object):
@@ -134,9 +130,9 @@ class TestBaseManager(object):
             base_manager._delete_table('my-data-table')
 
     
-    def test_get_versions(self, base_manager):
+    def test_get_version_history(self, base_manager):
         with pytest.raises(NotImplementedError):
-            base_manager._get_versions('archive 1')
+            base_manager._get_version_history('archive 1')
 
 
     
@@ -210,6 +206,6 @@ class TestBaseManager(object):
             base_manager._delete_table('my-data-table')
 
     
-    def test_get_versions(self, base_manager):
+    def test_get_version_history(self, base_manager):
         with pytest.raises(NotImplementedError):
-            base_manager._get_versions('archive 1')
+            base_manager._get_version_history('archive 1')

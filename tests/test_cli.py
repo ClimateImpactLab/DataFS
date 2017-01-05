@@ -144,7 +144,7 @@ def test_cli_local(test_config):
     assert result.exit_code == 0
     assert "'description': 'My test data archive'" in result.output or "u'description': u'My test data archive'" in result.output
     #test the api side of the operation
-    assert u'My test data archive' in api2.archives[0].metadata.values()
+    assert u'My test data archive' in api2.archives[0].get_metadata().values()
 
 
 
@@ -176,7 +176,7 @@ def test_cli_local(test_config):
         assert data == 'Hoo Yah! Stay Stoked!'
 
     #lets check to make sure our metadata update also passed through
-    assert 'Surfers Journal' ==  api2.archives[0].metadata['source']
+    assert 'Surfers Journal' ==  api2.archives[0].get_metadata()['source']
 
     
     #test to assert metadata update

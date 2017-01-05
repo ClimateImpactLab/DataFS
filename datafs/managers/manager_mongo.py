@@ -145,12 +145,12 @@ class MongoDBManager(BaseDataManager):
     @catch_timeout
     def _update(self, archive_name, archive_data):
         self.collection.update({"_id": archive_name},
-                               {"$push": {"versions": archive_data}})
+                               {"$push": {"version_history": archive_data}})
 
     def _update_metadata(self, archive_name, metadata):
         for key, val in metadata.items():
             self.collection.update({"_id": archive_name},
-                                   {"$set": {"metadata.{}".format(key): val}})
+                                   {"$set": {"archive_data.{}".format(key): val}})
 
     def _update_spec_config(self,document_name, spec):
 
@@ -165,38 +165,22 @@ class MongoDBManager(BaseDataManager):
     def _create_archive(
             self,
             archive_name,
-            authority_name,
-            archive_path,
-            versioned,
             metadata):
 
-        doc = {
-            '_id': archive_name,
-            'authority_name': authority_name,
-            'archive_path': archive_path,
-            'versioned': versioned,
-            'versions': []}
-        doc['metadata'] = metadata
 
         try:
-            self.collection.insert_one(doc)
+            self.collection.insert_one(metadata)
         except DuplicateKeyError:
             raise KeyError('Archive "{}" already exists'.format(archive_name))
 
     def _create_if_not_exists(
             self,
             archive_name,
-            authority_name,
-            archive_path,
-            versioned,
             metadata):
 
         try:
             self._create_archive(
                 archive_name,
-                authority_name,
-                archive_path,
-                versioned,
                 metadata)
 
         except KeyError:
@@ -270,26 +254,26 @@ class MongoDBManager(BaseDataManager):
         if res is None:
             raise KeyError
 
-        return res['metadata']
+        return res['archive_data']
 
-    def _get_versions(self, archive_name):
+    def _get_version_history(self, archive_name):
 
         res = self.collection.find_one({'_id': archive_name})
 
         if res is None:
             raise KeyError
 
-        return res['versions']
+        return res['version_history']
 
     def _get_latest_hash(self, archive_name):
 
-        versions = self._get_versions(archive_name)
+        version_history = self._get_version_history(archive_name)
 
-        if len(versions) == 0:
+        if len(version_history) == 0:
             return None
 
         else:
-            return versions[-1]['checksum']
+            return version_history[-1]['checksum']
 
     def _delete_archive_record(self, archive_name):
 

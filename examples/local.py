@@ -138,7 +138,7 @@ property:
 
 .. code-block:: python
 
-    >>> print(var.metadata['description'])
+    >>> print(var.get_metadata()['description'])
     My test data archive
 
 Add a file to the archive

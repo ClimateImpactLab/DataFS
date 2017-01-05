@@ -201,14 +201,13 @@ def update_metadata(ctx, archive_name):
 @click.argument('archive_name')
 @click.option('--version')
 @click.option('--dependency', multiple=True)
-
 @click.pass_context
 def set_dependencies(ctx, archive_name, version=None, dependency=None):
     kwargs = parse_dependencies(dependency)
 
     var = ctx.obj.api.get_archive(archive_name)
 
-    var.set_dependencies(version=version, dependencies=dependencies)
+    var.set_dependencies(version=version, dependencies=kwargs)
 
 
 @cli.command()

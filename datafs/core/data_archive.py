@@ -668,9 +668,9 @@ class DataArchive(object):
         raise ValueError('Version {} not found'.format(version))
 
     def set_dependencies(self, version=None, dependencies={}):
-
+        version_metadata = {}
         version_metadata['version'] = version
-        version_metadata.update(dependencies)
+        version_metadata['dependencies'] = dependencies
 
         self.api.manager.update(self.archive_name, version_metadata)
 

@@ -478,6 +478,16 @@ def test_dependency_parsing(test_config):
 
         result = runner.invoke(cli, prefix + ['set_dependencies', 'my_first_archive', '--version', '0.1.0', '--dependency' , 'arch1==0.2.0', '--dependency', 'arch2==0.0.1'])
 
+        assert result.exit_code == 0
+        assert arch1.get_dependencies(version='0.1.0') == {'arch1': '0.2.0', 'arch2': '0.0.1'}
+        
+
+        with open('my_new_test_file.txt', 'w+') as to_upload:
+            to_upload.write(u'test test test two three four')
+
+        result = runner.invoke(cli, prefix + ['upload', 'my_first_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.2.0', '--dependency', 'arch2==0.0.1'])
+
+        assert result.exit_code == 0
         assert arch1.get_dependencies(version='0.1.0') == {'arch1': '0.2.0', 'arch2': '0.0.1'}
 
         

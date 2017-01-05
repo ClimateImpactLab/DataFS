@@ -14,6 +14,7 @@ class ConfigFile(object):
         self.default_profile = default_profile
         self.config = {
             'default-profile': self.default_profile,
+            'requirements': None,
             'profiles': {}}
 
         if config_file:
@@ -28,7 +29,11 @@ class ConfigFile(object):
 
         self.default_profile = config.get(
             'default-profile', self.config['default-profile'])
+
         self.config['default-profile'] = self.default_profile
+
+        self.config['requirements'] = config.get(
+            'requirements', self.config['requirements'])
 
         self.config['profiles'].update(config['profiles'])
 

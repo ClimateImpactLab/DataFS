@@ -75,13 +75,13 @@ By default, archives track versions explicitly. This can be turned off (such tha
 
 .. code-block:: python
 
-    >>> my_archive.versions
+    >>> my_archive.get_versions()
     ['0.0.1', '0.0.2']
     >>>
     >>> with my_archive.open('w+', bumpversion='major') as f:
     ...     f.write(u'a major improvement')
     ...
-    >>> my_archive.versions
+    >>> my_archive.get_versions()
     ['0.0.1', '0.0.2', '1.0']
 
 We can also retrieve versioned data specifically:

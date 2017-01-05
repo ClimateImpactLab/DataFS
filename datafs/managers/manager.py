@@ -85,7 +85,7 @@ class BaseDataManager(object):
             except KeyError:
                 pass
 
-    def update_spec_config(self, document_name,spec):
+    def update_spec_config(self, document_name, spec):
         '''
         Allows update to default setting of either user config or metadata config
         One or the other must be selected as True.
@@ -105,20 +105,20 @@ class BaseDataManager(object):
     def delete_table(self, table_name, raise_on_err=True):
         if raise_on_err:
             self._delete_table(table_name)
+            self._delete_table(table_name + '.spec')
         else:
             try:
                 self._delete_table(table_name)
             except KeyError:
                 pass
 
+
+
     def update(self, archive_name,  version_metadata):
         '''
         Register a new version for archive ``archive_name``
-
         .. note ::
-
             need to implement hash checking to prevent duplicate writes
-
         '''
         version_metadata['updated'] = self.create_timestamp()
         version_metadata['version'] = str(version_metadata.get('version', None))

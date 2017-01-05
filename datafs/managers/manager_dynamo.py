@@ -240,10 +240,7 @@ class DynamoDBManager(BaseDataManager):
             raise KeyError('Table "{}" not found'.format(table_name))
 
         try:
-
             self._resource.Table(table_name).delete()
-            self._resource.Table(table_name + '.spec').delete()
-
 
         except ValueError:
             # Error handling for windows incompatability issue

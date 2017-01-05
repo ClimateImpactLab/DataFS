@@ -107,7 +107,6 @@ class MongoDBManager(BaseDataManager):
             raise KeyError('Table "{}" not found'.format(table_name))
 
         self.db.drop_collection(table_name)
-        self.db.drop_collection(table_name +'.spec')
 
     @property
     def collection(self):

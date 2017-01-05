@@ -12,7 +12,7 @@ def base_manager():
 
 
 
-class TestMetadataRequirements(object):
+class TestMetadataRequirements:
 
     def test_spec_table_creation(self, manager_with_spec):
         
@@ -59,8 +59,7 @@ class TestMetadataRequirements(object):
             api_with_spec.create_archive('my_api_test_archive', metadata={})
 
 
-class TestBaseManager(object):
-
+class TestBaseManager:
     
     def test_update(self, base_manager):
         with pytest.raises(NotImplementedError):

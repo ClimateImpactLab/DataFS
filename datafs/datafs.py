@@ -194,6 +194,23 @@ def update_metadata(ctx, archive_name):
 
 
 
+@cli.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+        allow_extra_args=True))
+@click.argument('archive_name')
+@click.option('--version')
+@click.option('--dependency', multiple=True)
+
+@click.pass_context
+def set_dependencies(ctx, archive_name, version=None, dependency=None):
+    kwargs = parse_dependencies(dependency)
+
+    var = ctx.obj.api.get_archive(archive_name)
+
+    var.set_dependencies(version=version, dependencies=dependencies)
+
+
 @cli.command()
 @click.argument('archive_name')
 @click.argument('filepath')

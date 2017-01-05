@@ -661,9 +661,18 @@ class DataArchive(object):
         if version == 'latest':
             version = self.get_latest_version()
 
-        for v in self.get_history():
+        for v in reversed(self.get_history()):
             if BumpableVersion(v['version']) == version:
                 return v['dependencies']
 
         raise ValueError('Version {} not found'.format(version))
+
+    def set_dependencies(self, version=None, dependencies={}):
+
+        version_metadata['version'] = version
+        version_metadata.update(dependencies)
+
+        self.api.manager.update(self.archive_name, version_metadata)
+
+
 

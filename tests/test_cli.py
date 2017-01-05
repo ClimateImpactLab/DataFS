@@ -476,8 +476,11 @@ def test_dependency_parsing(test_config):
 
         assert arch1.get_dependencies(version='0.1.0') == {'arch1': '0.1.0', 'arch2': None}
 
-         
+        result = runner.invoke(cli, prefix + ['set_dependencies', 'my_first_archive', '--version', '0.1.0', '--dependency' , 'arch1==0.2.0', '--dependency', 'arch2==0.0.1'])
 
+        assert arch1.get_dependencies(version='0.1.0') == {'arch1': '0.2.0', 'arch2': '0.0.1'}
+
+        
 
         os.remove('my_new_test_file.txt')
 

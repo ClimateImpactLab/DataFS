@@ -284,22 +284,16 @@ class BaseDataManager(object):
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _create_archive(
-            self,
-            archive_name,
-            authority_name,
-            archive_path,
-            versioned,
-            metadata):
+        self,
+        archive_name,
+        archive_metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _create_if_not_exists(
-            self,
-            archive_name,
-            authority_name,
-            archive_path,
-            versioned,
-            metadata):
+        self,
+        archive_name, 
+        archive_metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 

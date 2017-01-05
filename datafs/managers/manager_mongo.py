@@ -148,7 +148,12 @@ class MongoDBManager(BaseDataManager):
 
     def _update_metadata(self, archive_name, archive_metadata):
         for key, val in archive_metadata.items():
-            self.collection.update({"_id": archive_name},
+            if val is None:
+                self.collection.update({"_id": archive_name},
+                                   {"$unset": {"archive_metadata.{}".format(key): ""}})
+
+            else:
+                self.collection.update({"_id": archive_name},
                                    {"$set": {"archive_metadata.{}".format(key): val}})
 
     def _update_spec_config(self,document_name, spec):

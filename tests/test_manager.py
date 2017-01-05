@@ -70,18 +70,14 @@ class TestBaseManager:
         with pytest.raises(NotImplementedError):
             base_manager._create_archive(
                 'archive_1',
-                auth1,
-                'archive/1',
                 {})
 
     
     def test_create_if_not_exists(self, base_manager, auth1):
         with pytest.raises(NotImplementedError):
-            base_manager._create_if_not_exists(
-                'archive_1',
-                auth1,
-                'archive/1',
-                {})
+            base_manager._create_if_not_exists('archive_1', {
+                'authority_name': 'auth1',
+                'archive_path': 'archive/1'})
 
     
     def test_get_archives(self, base_manager):
@@ -133,78 +129,3 @@ class TestBaseManager:
         with pytest.raises(NotImplementedError):
             base_manager._get_version_history('archive 1')
 
-
-    
-    def test_update(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._update('archive 1', {})
-
-    
-    def test_create_archive(self, base_manager, auth1):
-        with pytest.raises(NotImplementedError):
-            base_manager._create_archive(
-                'archive_1',
-                auth1,
-                'archive/1',
-                True,
-                {})
-
-    
-    def test_create_if_not_exists(self, base_manager, auth1):
-        with pytest.raises(NotImplementedError):
-            base_manager._create_if_not_exists(
-                'archive_1',
-                auth1,
-                'archive/1',
-                True,
-                {})
-
-    
-    def test_get_archives(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._get_archives()
-
-    
-    def test_get_archive_metadata(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._get_archive_metadata('archive 1')
-
-    
-    def test_get_latest_hash(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._get_latest_hash('archive 1')
-
-    
-    def test_get_authority_name(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._get_authority_name('archive 1')
-
-    
-    def test_get_archive_path(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._get_archive_path('archive 1')
-
-    
-    def test_delete_archive_record(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._delete_archive_record('archive 1')
-
-    
-    def test_get_table_names(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._get_table_names()
-
-    
-    def test_create_archive_table(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._create_archive_table('my-data-table')
-
-    
-    def test_delete_table(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._delete_table('my-data-table')
-
-    
-    def test_get_version_history(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._get_version_history('archive 1')

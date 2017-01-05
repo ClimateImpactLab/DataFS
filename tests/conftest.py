@@ -19,6 +19,7 @@ from datafs import DataAPI
 from datafs._compat import string_types
 from datafs.core import data_file
 from datafs.services.service import DataService
+from datafs.managers.manager import BaseDataManager
 from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
 from tests.resources import prep_manager
@@ -333,3 +334,5 @@ def datafile_opener(open_func):
 
     else:
         raise NameError('open_func "{}" not recognized'.format(open_func))
+
+

@@ -266,7 +266,10 @@ class DynamoDBManager(BaseDataManager):
         # keep the current state in memory
         archive_metadata_current = self._get_archive_metadata(archive_name)
         archive_metadata_current.update(archive_metadata)
-        
+        for k, v in archive_metadata_current.items():
+            if v is None:
+                del archive_metadata_current[k]
+
         # add the updated archive_metadata object to Dynamo
         updated = self._table.update_item(
             Key={

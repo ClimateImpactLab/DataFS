@@ -5,6 +5,7 @@ import doctest
 import datafs
 import moto
 from examples import (local, ondisk, s3, caching)
+from examples.preconfigured import preconfigured
 from examples.subclassing import client
 from datafs.managers.manager_dynamo import DynamoDBManager
 
@@ -81,3 +82,9 @@ def test_subclassing():
     assert failures == 0
 
     manager.delete_table(table_name)
+
+
+def test_preconfigured():
+    failures, tests = doctest.testmod(preconfigured, report=True)
+    assert failures == 0
+

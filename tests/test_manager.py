@@ -51,6 +51,15 @@ class TestMetadataRequirements:
 
         assert api_with_spec.manager.get_metadata('my_spec_test_archive')['metadata_key'] == 'metadata_val'
 
+        api_with_spec.manager.update_metadata('my_spec_test_archive', {'metadata_key': ''})
+
+        assert api_with_spec.manager.get_metadata('my_spec_test_archive')['metadata_key'] == ''
+
+
+        assert api_with_spec.manager._get_authority_name('my_spec_test_archive') =='auth'
+        assert api_with_spec.manager._get_archive_path('my_spec_test_archive') =='my/spec/test/archive'
+
+
         with pytest.raises(AssertionError) as excinfo:
             api_with_spec.create_archive('my_other_test_archive', metadata={'another_string': 'to break the test'})
 

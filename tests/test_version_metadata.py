@@ -3,7 +3,7 @@ from datafs.managers.manager import BaseDataManager
 from datafs.core.data_archive import DataArchive
 
 import pytest
-
+import os
 
 #hack to get around installing these packages on Travis
 has_special_dependencies = False
@@ -33,13 +33,15 @@ def requires_xarray(func):
 
 class TestVersionedMetadata(object):
 
-	def test_versioned_metadata_open(self, api, opener):
+	def test_versioned_metadata_open(self, api, opener, temporary_dir):
+
+		fp = os.path.join(temporary_dir, 'test.txt')
 
 		var = api.create_archive('my_archive')
-		with open('test.txt', 'w+') as f:
+		with open(fp, 'w+') as f:
 			f.write(u'test test, this is a test')
 
-		var.update('test.txt', remove=True, version='patch', dependencies={'arch1': '0.1.0', 'arch2': '0.2.0'})
+		var.update(fp, version='patch', dependencies={'arch1': '0.1.0', 'arch2': '0.2.0'})
 
 		assert len(var.get_history()[-1]['dependencies']) == 2
 

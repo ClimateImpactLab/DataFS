@@ -167,6 +167,8 @@ when attempting to take restricted actions:
 Teardown
 ~~~~~~~~
 
+A user with full privileges can completely remove archives and manager tables:
+
 .. code-block:: python
 
     >>> api.delete_archive('archive1')

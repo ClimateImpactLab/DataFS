@@ -45,6 +45,21 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize('open_func', ['open_file', 'get_local_path'])
 
 
+@pytest.yield_fixture(scope='function')
+def temporary_dir():
+
+    tmpdir = tempfile.mkdtemp()
+
+    try:
+        yield tmpdir
+
+    finally:
+        try:
+            shutil.rmtree(tmpdir)
+        except (WindowsError, OSError, IOError):
+            time.sleep(0.5)
+            shutil.rmtree(tmpdir)
+
 
 @contextmanager
 def prep_filesystem(fs_name):

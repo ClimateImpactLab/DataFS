@@ -101,6 +101,11 @@ class BaseDataManager(object):
 
         self._update_spec_config(document_name, spec)
 
+    def set_required_user_config(self, spec={}):
+        self.update_spec_config('required_user_config', spec)
+
+    def set_required_metadata_config(self, spec={}):
+        self.update_spec_config('required_metadata_config', spec)
 
     def delete_table(self, table_name, raise_on_err=True):
         if raise_on_err:

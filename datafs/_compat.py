@@ -1,5 +1,6 @@
 
 from contextlib import contextmanager
+import os
 
 try:
     u = unicode

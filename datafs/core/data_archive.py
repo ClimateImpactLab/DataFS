@@ -667,10 +667,12 @@ class DataArchive(object):
 
         raise ValueError('Version {} not found'.format(version))
 
-    def set_dependencies(self, version=None, dependencies={}):
-        version_metadata = {}
-        version_metadata['version'] = version
+    def set_dependencies(self, dependencies={}):
+        
+        version_metadata = self.get_history()[-1]
+
         version_metadata['dependencies'] = dependencies
+        version_metadata['user_config'] = self.api.user_config
 
         self.api.manager.update(self.archive_name, version_metadata)
 

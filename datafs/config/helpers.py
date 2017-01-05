@@ -6,6 +6,20 @@ from datafs._compat import open_filelike
 import os
 import re
 
+def parse_requirement(requirement_line):
+
+    # should we do archive name checking here? If the statement 
+    # doesn't split, the entire thing gets passed to create_archive
+    # or get_archive as the archive_name.
+    
+    version_stmt = map(lambda s: s.strip(), requirement_line.split('=='))
+
+    if len(version_stmt) == 1:
+        return version_stmt[0],  None
+    else:
+        return version_stmt[0], version_stmt[1]
+
+
 def get_api(profile=None, config_file=None, requirements='requirements_data.txt'):
     '''
     Generate a datafs.DataAPI object from a config profile
@@ -111,17 +125,9 @@ def get_api(profile=None, config_file=None, requirements='requirements_data.txt'
             for reqline in reqfile.readlines():
                 if re.search(r'^\s*$', reqline):
                     continue
-
-                # should we do archive name checking here? If the statement 
-                # doesn't split, the entire thing gets passed to create_archive
-                # or get_archive as the archive_name.
-                
-                version_stmt = map(lambda s: s.strip(), reqline.split('=='))
-
-                if len(version_stmt) == 1:
-                    default_versions[version_stmt[0]] = None
-                else:
-                    default_versions[version_stmt[0]] = version_stmt[1]
+                    
+                archive, version = parse_requirement(reqline)
+                default_versions[archive] = version
 
     api = APIConstructor.generate_api_from_config(profile_config)
     api._default_versions.update(default_versions)

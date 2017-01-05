@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 from datafs.core.data_api import DataAPI
 from datafs.config.config_file import ConfigFile
-from datafs.config.helpers import get_api
+from datafs.config.helpers import get_api, parse_requirement
 import os
 import re
 import click
@@ -33,6 +33,20 @@ def interactive_configuration(api, config, profile=None):
                 api.REQUIRED_USER_CONFIG[kw],
                 default=profile_config['api']['user_config'][kw])
 
+
+def parse_dependencies(dependency_args):
+    
+    if len(dependency_args) == 0: 
+        return None
+
+    # dependencies = {}
+    return dict(map(parse_requirement, dependency_args))
+    #     if len(arg) == 2: 
+    #         split = arg.split('==')
+    #         dependencies[split[0]] = split[1]
+    #     dependencies[arg] = None
+
+    # return dependencies
 
 class DataFSInterface(object):
 
@@ -140,20 +154,18 @@ def create_archive(ctx, archive_name, authority_name, versioned=True):
 @click.argument('filepath')
 @click.option('--bumpversion', envvar='BUMPVERSION', default='patch')
 @click.option('--prerelease', envvar='PRERELEASE', default=None)
+@click.option('--dependency', multiple=True)
 @click.pass_context
-def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None):
+def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None, dependency=None):
     kwargs = parse_args_as_kwargs(ctx.args)
+    dependencies_dict = parse_dependencies(dependency)
 
     var = ctx.obj.api.get_archive(archive_name)
-    latest_version = var.latest_version
+    latest_version = var.get_latest_version()
 
-    var.update(
-        filepath, 
-        bumpversion=bumpversion, 
-        prerelease=prerelease, 
-        **kwargs)
+    var.update(filepath, bumpversion=bumpversion, prerelease=prerelease, dependencies=dependencies_dict, **kwargs)
+    new_version = var.get_latest_version()
 
-    new_version = var.latest_version
     
     if new_version != latest_version:
         bumpmsg = ' version bumped {} --> {}.'.format(
@@ -167,6 +179,37 @@ def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None):
     click.echo('uploaded data to {}.{}'.format(var, bumpmsg))
 
 
+@cli.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+        allow_extra_args=True))
+@click.argument('archive_name')
+@click.pass_context
+def update_metadata(ctx, archive_name):
+    kwargs = parse_args_as_kwargs(ctx.args)
+
+    var = ctx.obj.api.get_archive(archive_name)
+
+    var.update_metadata(metadata=kwargs)
+
+
+
+@cli.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+        allow_extra_args=True))
+@click.argument('archive_name')
+@click.option('--version')
+@click.option('--dependency', multiple=True)
+@click.pass_context
+def set_dependencies(ctx, archive_name, version=None, dependency=None):
+    kwargs = parse_dependencies(dependency)
+
+    var = ctx.obj.api.get_archive(archive_name)
+
+    var.set_dependencies(version=version, dependencies=kwargs)
+
+
 @cli.command()
 @click.argument('archive_name')
 @click.argument('filepath')
@@ -176,7 +219,8 @@ def download(ctx, archive_name, filepath, version):
     var = ctx.obj.api.get_archive(archive_name)
 
     if version is None:
-        version = var.default_version
+        version = var.get_default_version()
+
 
     var.download(filepath, version=version)
 
@@ -191,7 +235,7 @@ def download(ctx, archive_name, filepath, version):
 @click.pass_context
 def metadata(ctx, archive_name):
     var = ctx.obj.api.get_archive(archive_name)
-    click.echo(pprint.pformat(var.metadata))
+    click.echo(pprint.pformat(var.get_metadata()))
 
 
 @cli.command()
@@ -199,7 +243,7 @@ def metadata(ctx, archive_name):
 @click.pass_context
 def history(ctx, archive_name):
     var = ctx.obj.api.get_archive(archive_name)
-    click.echo(var.history)
+    click.echo(pprint.pformat(var.get_history()))
 
 
 @cli.command()
@@ -207,7 +251,7 @@ def history(ctx, archive_name):
 @click.pass_context
 def versions(ctx, archive_name):
     var = ctx.obj.api.get_archive(archive_name)
-    click.echo(pprint.pformat(map(str, var.versions)))
+    click.echo(pprint.pformat(map(str, var.get_versions())))
 
 
 @cli.command()

@@ -145,8 +145,6 @@ class DataAPI(object):
         if archive_path is None:
             archive_path = self.create_archive_path(archive_name)
 
-        default_version = self._default_versions.get(archive_name, None)
-
         res = self.manager.create_archive(
             archive_name,
             authority_name,
@@ -158,7 +156,6 @@ class DataAPI(object):
 
         return self._ArchiveConstructor(
             api=self, 
-            default_version=default_version, 
             **res)
 
     def get_archive(self, archive_name, default_version=None):

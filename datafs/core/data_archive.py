@@ -37,10 +37,10 @@ class DataArchive(object):
     def versioned(self):
         return self._versioned
 
-    @property
-    def latest_version(self):
+    
+    def get_latest_version(self):
 
-        versions = self.versions
+        versions = self.get_versions()
     
         if len(versions) == 0:
             return None
@@ -48,13 +48,28 @@ class DataArchive(object):
         else:
             return max(versions)
 
-    @property
-    def default_version(self):
+
+    def get_versions(self):
+
+        if not self.versioned:
+            return [None]
+
+        versions = self.get_history()
+    
+        if len(versions) == 0:
+            return []
+    
+        else:
+            return sorted(map(BumpableVersion, set([v['version'] for v in versions]))) 
+
+
+    
+    def get_default_version(self):
 
         if not self.versioned:
             return None
 
-        versions = self.versions
+        versions = self.get_versions()
 
         if self._default_version is None or self._default_version == 'latest':
             if len(versions) == 0:
@@ -62,28 +77,13 @@ class DataArchive(object):
 
             return max(versions)
 
-        matches = filter(lambda v: v==self._default_version, self.versions)
+        matches = filter(lambda v: v==self._default_version, self.get_versions())
 
         if len(matches) > 0:
             return max(matches)
 
         raise ValueError('Archive "{}" version {} not found'.format(
             self.archive_name, self._default_version))
-
-
-    @property
-    def versions(self):
-
-        if not self.versioned:
-            return [None]
-
-        versions = self.history
-    
-        if len(versions) == 0:
-            return []
-    
-        else:
-            return sorted(map(BumpableVersion, set([v['version'] for v in versions])))
 
 
     def get_version_path(self, version=None):
@@ -124,7 +124,8 @@ class DataArchive(object):
 
         if self.versioned:
             if version is None:
-                version = self.default_version
+ 
+                version = self.get_default_version()
 
             if version is None:
                 return fs.path.join(self.archive_path, str(BumpableVersion()))
@@ -147,23 +148,26 @@ class DataArchive(object):
     def archive_path(self):
         return self._archive_path
 
-    @property
-    def metadata(self):
+    
+    def get_metadata(self):
         return self.api.manager.get_metadata(self.archive_name)
 
-    @property
-    def latest_hash(self):
+
+    def get_history(self):
+        return self.api.manager.get_version_history(self.archive_name)
+
+    def get_latest_hash(self):
         return self.api.manager.get_latest_hash(self.archive_name)
 
     def get_version_hash(self, version=None):
         if self.versioned:
             if version is None:
-                version = self.default_version
+                version = self.get_default_version()
 
             if version is None:
                 return None
 
-            for ver in self.history:
+            for ver in self.get_history():
                 if BumpableVersion(ver['version']) == version:
                     return ver['checksum']
 
@@ -171,12 +175,8 @@ class DataArchive(object):
                 version))
 
         else:
-            return self.latest_hash
+            return self.get_latest_hash()
 
-
-    @property
-    def history(self):
-        return self.api.manager.get_versions(self.archive_name)
 
     def update(
         self, 
@@ -185,6 +185,7 @@ class DataArchive(object):
         remove=False, 
         bumpversion=None, 
         prerelease=None, 
+        dependencies=None,
         **kwargs):
         '''
         Enter a new version to a DataArchive
@@ -222,18 +223,19 @@ class DataArchive(object):
 
         '''
 
+        latest_version = self.get_latest_version()
 
-        latest_version = self.latest_version
+        hashval = self.api.hash_file(filepath)
 
-        checksum = self.api.hash_file(filepath)
+        checksum = hashval['checksum']
+        algorithm = hashval['algorithm']
 
-        if checksum['checksum'] == self.latest_hash:
+        if checksum == self.get_latest_hash():
             self.update_metadata(kwargs)
 
             if remove and os.path.isfile(filepath):
                 os.remove(filepath)
 
-            self._update_manager(checksum, kwargs, version=latest_version)
             return
 
         if self.versioned:
@@ -260,21 +262,19 @@ class DataArchive(object):
         else:
             self.authority.upload(filepath, next_path, remove=remove)
 
-        self._update_manager(checksum, kwargs, version=next_version)
+        self._update_manager(
+            archive_metadata=kwargs, 
+            version_metadata=dict(checksum=checksum, algorithm=algorithm, version=next_version, dependencies=dependencies))
 
 
-    def _update_manager(self, checksum, metadata={}, version=None):
-        version_metadata = dict(
-            archive_name=self.archive_name,
-            checksum=checksum,
-            metadata=metadata,
-            user_config=self.api.user_config)
+    def _update_manager(self, archive_metadata={}, version_metadata={}):
+        
+        version_metadata['user_config'] = self.api.user_config
 
-        if self.versioned:
-            version_metadata['version'] = str(version)
 
         # update records in self.api.manager
-        self.api.manager.update(**version_metadata)
+        self.api.manager.update(self.archive_name, version_metadata)
+        self.update_metadata(archive_metadata)
 
     def update_metadata(self, metadata):
 
@@ -285,7 +285,7 @@ class DataArchive(object):
     # File I/O methods
 
     @contextmanager
-    def open(self, mode='r', version=None, bumpversion=None, prerelease=None, *args, **kwargs):
+    def open(self, mode='r', version=None, bumpversion=None, prerelease=None, dependencies = None, *args, **kwargs):
         '''
         Opens a file for read/write
 
@@ -318,16 +318,16 @@ class DataArchive(object):
         
         '''
         if version is None:
-            latest_version = self.latest_version
-            version = self.default_version
+            latest_version = self.get_latest_version()
+            version = self.get_default_version()
 
         elif version == 'latest':
-            latest_version = self.latest_version
+            latest_version = self.get_latest_version()
             version = latest_version
 
 
         else:
-            latest_version = self.latest_version
+            latest_version = self.get_latest_version()
 
         version_hash = self.get_version_hash(version)
 
@@ -358,8 +358,8 @@ class DataArchive(object):
         version_check = lambda chk: chk['checksum'] == version_hash
 
         # Updater updates the manager with the latest version number
-        updater = lambda *args, **kwargs: self._update_manager(
-            *args, version=next_version, **kwargs)
+        updater = lambda **kwargs: self._update_manager(
+            version_metadata=dict(version=next_version, dependencies=dependencies, **kwargs))
 
         opener = data_file.open_file(
             self.authority,
@@ -377,7 +377,7 @@ class DataArchive(object):
             yield f
 
     @contextmanager
-    def get_local_path(self, version=None, bumpversion=None, prerelease=None):
+    def get_local_path(self, version=None, bumpversion=None, prerelease=None, dependencies=None, *args, **kwargs):
         '''
         Returns a local path for read/write
 
@@ -404,18 +404,18 @@ class DataArchive(object):
 
         '''
         if version is None:
-            latest_version = self.latest_version
-            version = self.default_version
+            latest_version = self.get_latest_version()
+            version = self.get_default_version()
 
         elif isinstance(version, BumpableVersion):
             pass
 
         elif version == 'latest':
-            latest_version = self.latest_version
+            latest_version = self.get_latest_version()
             version = latest_version
 
         else:
-            latest_version = self.latest_version
+            latest_version = self.get_latest_version()
 
         version_hash = self.get_version_hash(version)
 
@@ -446,8 +446,8 @@ class DataArchive(object):
         version_check = lambda chk: chk['checksum'] == version_hash
 
         # Updater updates the manager with the latest version number
-        updater = lambda *args, **kwargs: self._update_manager(
-            *args, version=next_version, **kwargs)
+        updater = lambda **kwargs: self._update_manager(
+            version_metadata=dict(version=next_version, dependencies=dependencies, **kwargs))
 
         path = data_file.get_local_path(
             self.authority,
@@ -472,13 +472,13 @@ class DataArchive(object):
         '''
 
         if version is None:
-            version = self.default_version
+            version = self.get_default_version()
 
         elif isinstance(version, BumpableVersion):
             pass
 
         elif version == 'latest':
-            latest_version = self.latest_version
+            latest_version = self.get_latest_version()
             version = latest_version
 
         dirname, filename= os.path.split(
@@ -526,7 +526,7 @@ class DataArchive(object):
 
         '''
 
-        for version in self.versions:
+        for version in self.get_versions():
             if self.authority.fs.exists(self.get_version_path(version)):
                 self.authority.fs.remove(self.get_version_path(version))
 
@@ -596,13 +596,13 @@ class DataArchive(object):
         '''
 
         if version is None:
-            version = self.default_version
+            version = self.get_default_version()
 
         elif isinstance(version, BumpableVersion):
             pass
 
         elif version == 'latest':
-            latest_version = self.latest_version
+            latest_version = self.get_latest_version()
             version = latest_version
 
         if self.api.cache and self.api.cache.fs.isfile(self.get_version_path(version)):
@@ -616,13 +616,13 @@ class DataArchive(object):
             raise ValueError('No cache attached')
 
         if version is None:
-            version = self.default_version
+            version = self.get_default_version()
 
         elif isinstance(version, BumpableVersion):
             pass
 
         elif version == 'latest':
-            latest_version = self.latest_version
+            latest_version = self.get_latest_version()
             version = latest_version
 
         if not self.api.cache.fs.isfile(self.get_version_path(version)):
@@ -635,17 +635,44 @@ class DataArchive(object):
     def remove_from_cache(self, version=None):
 
         if version is None:
-            version = self.default_version
+            version = self.get_default_version()
 
         elif isinstance(version, BumpableVersion):
             pass
 
         elif version == 'latest':
-            latest_version = self.latest_version
+            latest_version = self.get_latest_version()
             version = latest_version
 
         if self.api.cache.fs.isfile(self.get_version_path(version)):
             self.api.cache.fs.remove(self.get_version_path(version))
+
+    def get_dependencies(self, version=None):
+        '''
+        Parameters
+        ----------
+        version: str
+            string representing version number whose dependencies you are looking up
+        '''
+
+        if version is None:
+            version = self.get_default_version()
+
+        if version == 'latest':
+            version = self.get_latest_version()
+
+        for v in reversed(self.get_history()):
+            if BumpableVersion(v['version']) == version:
+                return v['dependencies']
+
+        raise ValueError('Version {} not found'.format(version))
+
+    def set_dependencies(self, version=None, dependencies={}):
+        version_metadata = {}
+        version_metadata['version'] = version
+        version_metadata['dependencies'] = dependencies
+
+        self.api.manager.update(self.archive_name, version_metadata)
 
 
 

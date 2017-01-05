@@ -112,8 +112,8 @@ class APIConstructor(object):
         >>> from datafs.managers.manager_dynamo import DynamoDBManager
         >>> assert isinstance(mgr, DynamoDBManager)
         >>>
-        >>> mgr.table_names
-        []
+        >>> 'data-from-yaml' in mgr.table_names
+        False
         >>> mgr.create_archive_table('data-from-yaml')
         >>> print(mgr.table_names[0])
         data-from-yaml

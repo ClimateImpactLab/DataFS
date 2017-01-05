@@ -326,3 +326,4 @@ class BumpableVersion(distutils.version.StrictVersion):
             return distutils.version.StrictVersion.__cmp__(self, other)
         else:
             return distutils.version.StrictVersion.__cmp__(self, other)
+

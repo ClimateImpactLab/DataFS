@@ -117,31 +117,20 @@ class BaseDataManager(object):
             except KeyError:
                 pass
 
-            try:
-                self._delete_table(table_name + '.spec')
-            except KeyError:
-                pass
 
-    def update(self, archive_name, checksum, metadata, user_config={}, **kwargs):
+
+    def update(self, archive_name,  version_metadata):
         '''
         Register a new version for archive ``archive_name``
-
         .. note ::
-
             need to implement hash checking to prevent duplicate writes
-
         '''
-        version_metadata = {
-            'updated': self.create_timestamp(),
-            'algorithm': checksum['algorithm'],
-            'checksum': checksum['checksum']}
+        version_metadata['updated'] = self.create_timestamp()
+        version_metadata['version'] = str(version_metadata.get('version', None))
 
-        version_metadata.update(user_config)
-        version_metadata.update(kwargs)
+        
 
-        archive_data = metadata
 
-        self.update_metadata(archive_name, archive_data)
         self._update(archive_name, version_metadata)
 
     def update_metadata(self, archive_name, metadata):
@@ -170,9 +159,15 @@ class BaseDataManager(object):
 
         '''
 
-        archive_metadata = {}
+        archive_metadata = {
+            '_id': archive_name,
+            'authority_name': authority_name,
+            'archive_path': archive_path,
+            'versioned': versioned,
+            'version_history': [],
+            'archive_data': metadata
+        }
         archive_metadata.update(user_config)
-        archive_metadata.update(metadata)
 
         archive_metadata['creation_date'] = archive_metadata.get(
             'creation_date', self.create_timestamp())
@@ -181,22 +176,16 @@ class BaseDataManager(object):
         required |= set(self.required_archive_metadata.keys())
 
         for attr in required:
-            assert attr in archive_metadata, 'Required attribute "{}" missing from metadata'.format(
+            assert (attr in archive_metadata['archive_data']) or (attr in archive_metadata), 'Required attribute "{}" missing from metadata'.format(
                 attr)
 
         if raise_on_err:
             self._create_archive(
                 archive_name,
-                authority_name,
-                archive_path,
-                versioned,
                 archive_metadata)
         else:
             self._create_if_not_exists(
                 archive_name, 
-                authority_name, 
-                archive_path, 
-                versioned, 
                 archive_metadata)
 
         return self.get_archive(archive_name)
@@ -278,8 +267,8 @@ class BaseDataManager(object):
 
         self._delete_archive_record(archive_name)
 
-    def get_versions(self, archive_name):
-        return self._get_versions(archive_name)
+    def get_version_history(self, archive_name):
+        return self._get_version_history(archive_name)
 
 
     @classmethod
@@ -374,7 +363,7 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_versions(self, archive_name):
+    def _get_version_history(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
     def _get_document_count(self, table_name):

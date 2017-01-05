@@ -226,7 +226,7 @@ def open_file(
                         fs.utils.copyfile(
                             write_fs, read_path, authority.fs, write_path)
 
-                    update(checksum=checksum)
+                    update(**checksum)
 
         else:
 
@@ -303,7 +303,7 @@ def get_local_path(
                         _makedirs(authority.fs, fs.path.dirname(write_path))
                         fs.utils.copyfile(
                             write_fs, read_path, authority.fs, write_path)
-                    update(checksum=checksum)
+                    update(**checksum)
 
             else:
                 raise OSError(

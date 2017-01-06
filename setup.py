@@ -34,7 +34,7 @@ requirements_test = [
 ]
 
 extras = {
-    'test': requirements_test,
+    'test': requirements_test
 }
 
 

@@ -365,6 +365,7 @@ class BaseDataManager(object):
     def _create_archive_table(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
+        
     def _create_spec_table(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')

@@ -118,14 +118,20 @@ class DataArchive(object):
             >>> 
             >>> print(ver.get_version_path('0.0.0'))
             arch2/0.0.0
+            >>> print(ver.get_version_path('latest')) # doctest: +ELLIPSIS
+            Traceback (most recent call last):
+            ...
+            AttributeError: 'NoneType' object has no attribute 'manager'
 
 
         '''
 
         if self.versioned:
             if version is None:
- 
                 version = self.get_default_version()
+
+            elif isinstance(version, string_types) and version == 'latest':
+                version = self.get_latest_version()
 
             if version is None:
                 return fs.path.join(self.archive_path, str(BumpableVersion()))

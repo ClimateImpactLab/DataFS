@@ -22,9 +22,11 @@ from datafs.services.service import DataService
 from datafs.managers.manager import BaseDataManager
 from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
-from tests.resources import prep_manager
+from tests.resources import prep_manager, _close
 
 from contextlib import contextmanager
+
+
 
 
 def pytest_generate_tests(metafunc):
@@ -54,11 +56,7 @@ def tempdir():
         yield tmpdir
 
     finally:
-        try:
-            shutil.rmtree(tmpdir)
-        except (WindowsError, OSError, IOError):
-            time.sleep(0.5)
-            shutil.rmtree(tmpdir)
+        _close(tmpdir)
 
 @contextmanager
 def prep_filesystem(fs_name):
@@ -75,21 +73,7 @@ def prep_filesystem(fs_name):
             local.close()
 
         finally:
-            try:
-                shutil.rmtree(tmpdir)
-            except (WindowsError, OSError, IOError):
-                time.sleep(0.5)
-                shutil.rmtree(tmpdir)
-
-    elif fs_name == 'TempFS':
-
-        local = TempFS()
-
-        try:
-            yield local
-
-        finally:
-            local.close()
+            _close(tmpdir)
 
     elif fs_name == 'S3FS':
 

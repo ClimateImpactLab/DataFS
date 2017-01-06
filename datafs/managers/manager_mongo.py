@@ -89,10 +89,6 @@ class MongoDBManager(BaseDataManager):
 
         self.db.create_collection(self.table_name)
 
-        
-
-        # something like create_archive for both docs
-
 
     def _create_spec_table(self, table_name):
 
@@ -129,14 +125,12 @@ class MongoDBManager(BaseDataManager):
 
         return self.db[spec_table_name]
             
-
     @property
     def db(self):
         if self._db is None:
             self._db = self._client[self.database_name]
 
         return self._db
-
 
 
     # Private methods (to be implemented!)
@@ -158,11 +152,6 @@ class MongoDBManager(BaseDataManager):
 
     def _update_spec_config(self,document_name, spec):
 
-        # if self._spec_coll is None:
-        #     self._spec_coll = self.db[self._]
-
-
-
         self.spec_collection.update_many({"_id": document_name}, {"$set": {'config': spec}}, upsert=True)
 
     @catch_timeout
@@ -170,7 +159,6 @@ class MongoDBManager(BaseDataManager):
             self,
             archive_name,
             metadata):
-
 
         try:
             self.collection.insert_one(metadata)
@@ -200,14 +188,7 @@ class MongoDBManager(BaseDataManager):
         itrbl = [{'_id': x, 'config': {}} 
                         for x in ('required_user_config', 'required_archive_metadata')]
 
-
-
-        try:
-            self.spec_collection.insert_many(itrbl)
-            #self.collection.insert_one()
-        except TypeError as e:
-            print(e)
-            #raise KeyError('Spec config files already created for {}'.format(table_name))
+        self.spec_collection.insert_many(itrbl)
 
 
 

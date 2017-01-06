@@ -68,7 +68,7 @@ if desired.
     $ echo "updated contents" > my_file.txt
     
     $ datafs update my_new_data_archive my_file.txt --bumpversion minor
-    uploaded data to <DataArchive osdc://my_new_data_archive>. version bumped 0.0.1 --> 0.1.
+    uploaded data to <DataArchive s3://my_new_data_archive>. version bumped 0.0.1 --> 0.1.
     
     $ datafs cat my_new_data_archive
     updated contents

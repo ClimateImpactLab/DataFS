@@ -17,12 +17,6 @@ matrix:
       env: DATAFS_TEST_ENV=xarray
 
 install:
-  - pip install .
-  - pip install -r requirements.txt
-  - pip install -r requirements_test.txt
-  - pip install git+https://github.com/PyFilesystem/pyfilesystem#egg=0.5.5a1
-  - pip install coveralls
-  - pip install pytest-cov
   - if [[ "$DATAFS_TEST_ENV" == "xarray" ]]; then
     if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
         wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
@@ -40,6 +34,12 @@ install:
     source activate datafs;
     fi
   - python setup.py install
+  - python -m pip install .
+  - python -m pip install -r requirements.txt
+  - python -m pip install -r requirements_test.txt
+  - python -m pip install git+https://github.com/PyFilesystem/pyfilesystem#egg=0.5.5a1
+  - python -m pip install coveralls
+  - python -m pip install pytest-cov
 
 script:
   - if [[ "$DATAFS_TEST_ENV" == "xarray" ]]; then

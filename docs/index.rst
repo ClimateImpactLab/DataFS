@@ -7,8 +7,8 @@ Contents:
    :maxdepth: 2
 
    readme
+   overview
    installation
-   usage
    configure
    pythonapi
    cli

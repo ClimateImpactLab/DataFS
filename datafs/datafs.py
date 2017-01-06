@@ -51,9 +51,9 @@ class DataFSInterface(object):
 
 #this sets the command line environment for 
 @click.group()
-@click.option('--config-file', type=str)
-@click.option('--requirements', type=str, default='requirements_data.txt')
-@click.option('--profile', type=str, default=None)
+@click.option('--config-file', envvar='DATAFS_CONFIG_FILE', type=str)
+@click.option('--requirements', envvar='DATAFS_REQUIREMENTS_FILE', type=str, default='requirements_data.txt')
+@click.option('--profile', envvar='DATAFS_DEFAULT_PROFILE', type=str, default=None)
 @click.pass_context
 def cli(ctx, config_file=None, requirements='requirements_data.txt', profile=None):
 
@@ -159,7 +159,7 @@ def create_archive(ctx, archive_name, authority_name, versioned=True, helper=Fal
 @click.option('--prerelease', default=None)
 @click.option('--dependency', multiple=True)
 @click.pass_context
-def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None, dependency=None):
+def update(ctx, archive_name, filepath, bumpversion='patch', prerelease=None, dependency=None):
     generate_api(ctx)
     kwargs = parse_args_as_kwargs(ctx.args)
     dependencies_dict = parse_dependencies(dependency)
@@ -170,8 +170,11 @@ def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None, de
     var.update(filepath, bumpversion=bumpversion, prerelease=prerelease, dependencies=dependencies_dict, **kwargs)
     new_version = var.get_latest_version()
 
+    if latest_version is None and new_version is not None:
+        bumpmsg = ' new version {} created.'.format(
+            latest_version, new_version)
     
-    if new_version != latest_version:
+    elif new_version != latest_version:
         bumpmsg = ' version bumped {} --> {}.'.format(
             latest_version, new_version)
 
@@ -238,6 +241,19 @@ def download(ctx, archive_name, filepath, version):
 
 @cli.command()
 @click.argument('archive_name')
+@click.option('--version', default=None)
+@click.pass_context
+def cat(ctx, archive_name, version):
+    generate_api(ctx)
+    var = ctx.obj.api.get_archive(archive_name)
+
+    with var.open('r', version=version) as f:
+        for chunk in iter(lambda: f_obj.read(1024*1024), ''):
+            click.echo(chunk)
+
+
+@cli.command()
+@click.argument('archive_name')
 @click.pass_context
 def metadata(ctx, archive_name):
     generate_api(ctx)
@@ -274,6 +290,17 @@ def list(ctx, prefix):
         for var in archives if var.archive_name.startswith(prefix)]
 
     click.echo(res)
+
+
+@cli.command()
+@click.argument('archive_name')
+@click.pass_context
+def delete(ctx, archive_name):
+    generate_api(ctx)
+    var = ctx.obj.api.get_archive(archive_name)
+
+    var.delete()
+    click.echo('deleted archive {}'.format(var))
 
 
 if __name__ == "__main__":

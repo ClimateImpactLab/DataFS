@@ -4,7 +4,6 @@
 Using the Command-Line Interface
 ================================
 
-
 .. toctree::
 
    	cli.creating_archives

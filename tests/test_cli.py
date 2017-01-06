@@ -141,9 +141,9 @@ def test_cli_local(test_config):
             f.write('Hoo Yah! Stay Stoked!')
 
         #use testing suite to make command line update
-        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'upload', 'my_first_archive', 'hello.txt', '--source', 'Surfers Journal'])
+        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'update', 'my_first_archive', 'hello.txt', '--source', 'Surfers Journal'])
         assert result.exit_code == 0
-        #assert that we get upload feedback
+        #assert that we get update feedback
         assert 'uploaded data to <DataArchive local://my_first_archive>' in result.output
         #lets read the file to make sure it says what we want
         with open('hello.txt','r') as f:
@@ -166,10 +166,10 @@ def test_cli_local(test_config):
     
     with runner.isolated_filesystem():
 
-        with open('here.txt', 'w+') as to_upload:
-            to_upload.write('new version data')
+        with open('here.txt', 'w+') as to_update:
+            to_update.write('new version data')
 
-        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'upload', 'my_first_archive', 'here.txt', '--bumpversion', 'minor'])
+        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'update', 'my_first_archive', 'here.txt', '--bumpversion', 'minor'])
         assert result.exit_code == 0
 
         os.remove('here.txt')
@@ -493,10 +493,10 @@ def test_dependency_parsing(test_config):
 
     with runner.isolated_filesystem():
 
-        with open('my_new_test_file.txt', 'w+') as to_upload:
-            to_upload.write(u'test test test')
+        with open('my_new_test_file.txt', 'w+') as to_update:
+            to_update.write(u'test test test')
 
-        result = runner.invoke(cli, prefix + ['upload', 'my_first_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.1.0', '--dependency', 'arch2'])
+        result = runner.invoke(cli, prefix + ['update', 'my_first_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.1.0', '--dependency', 'arch2'])
         assert result.exit_code == 0
 
         assert arch1.get_latest_version() == '0.1.0'
@@ -511,10 +511,10 @@ def test_dependency_parsing(test_config):
         assert arch1.get_dependencies(version='0.1.0') == {'arch1': '0.2.0', 'arch2': '0.0.1'}
         
 
-        with open('my_new_test_file.txt', 'w+') as to_upload:
-            to_upload.write(u'test test test two three four')
+        with open('my_new_test_file.txt', 'w+') as to_update:
+            to_update.write(u'test test test two three four')
 
-        result = runner.invoke(cli, prefix + ['upload', 'my_first_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.2.0', '--dependency', 'arch2==0.0.1'])
+        result = runner.invoke(cli, prefix + ['update', 'my_first_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.2.0', '--dependency', 'arch2==0.0.1'])
 
         assert result.exit_code == 0
 
@@ -541,10 +541,10 @@ def test_update_metadata(test_config):
 
     with runner.isolated_filesystem():
 
-        with open('my_new_test_file.txt', 'w+') as to_upload:
-            to_upload.write(u'test test test')
+        with open('my_new_test_file.txt', 'w+') as to_update:
+            to_update.write(u'test test test')
 
-        result = runner.invoke(cli, prefix + ['upload', 'my_next_archive', 'my_new_test_file.txt'])
+        result = runner.invoke(cli, prefix + ['update', 'my_next_archive', 'my_new_test_file.txt'])
         assert result.exit_code == 0
 
         result = runner.invoke(cli, prefix + ['update_metadata', 'my_next_archive', '--description', 'some_description'])

@@ -20,7 +20,7 @@ install:
   - pip install -r requirements_test.txt
   - pip install coveralls
   - pip install pytest-cov
-  - if [[ "$DATAFS_TEST_ENV" == "xarray"]]; then
+  - if [[ "$DATAFS_TEST_ENV" == "xarray" ]]; then
     if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
         wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
       else

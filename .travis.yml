@@ -18,28 +18,30 @@ matrix:
 
 install:
   - if [[ "$DATAFS_TEST_ENV" == "xarray" ]]; then
-    if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-        wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-      else
-        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-      fi;
-    bash miniconda.sh -b -p $HOME/miniconda;
-    export PATH="$HOME/miniconda/bin:$PATH";
-    hash -r;
-    conda config --set always_yes yes --set changeps1 no;
-    conda update -q conda;
-    conda info -a;
+      if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+          wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+        else
+          wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+        fi;
+      bash miniconda.sh -b -p $HOME/miniconda;
+      export PATH="$HOME/miniconda/bin:$PATH";
+      hash -r;
+      conda config --set always_yes yes --set changeps1 no;
+      conda update -q conda;
+      conda info -a;
 
-    conda create -q -n datafs python=$TRAVIS_PYTHON_VERSION netCDF4 xarray dask numpy pandas;
-    source activate datafs;
+      conda create -q -n datafs python=$TRAVIS_PYTHON_VERSION netCDF4 xarray dask numpy pandas;
+      source activate datafs;
+    else
+      python setup.py install;
+      python -m pip install .;
+      python -m pip install .[test];
+      python -m pip install -r requirements.txt;
+      python -m pip install -r requirements_test.txt;
+      python -m pip install git+https://github.com/PyFilesystem/pyfilesystem#egg=0.5.5a1;
+      python -m pip install coveralls;
+      python -m pip install pytest-cov;
     fi
-  - python setup.py install
-  - python -m pip install .
-  - python -m pip install -r requirements.txt
-  - python -m pip install -r requirements_test.txt
-  - python -m pip install git+https://github.com/PyFilesystem/pyfilesystem#egg=0.5.5a1
-  - python -m pip install coveralls
-  - python -m pip install pytest-cov
 
 script:
   - if [[ "$DATAFS_TEST_ENV" == "xarray" ]]; then

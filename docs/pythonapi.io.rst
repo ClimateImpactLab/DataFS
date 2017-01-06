@@ -5,9 +5,6 @@ Reading and Writing Files
 =========================
 
 
-
-
-
 Writing Archive Files
 ---------------------
 
@@ -165,6 +162,8 @@ then passed to the
         tmin      (time, location) float64 -8.037 -1.788 -3.932 -9.341 -6.558 ...
 
 
+
+Check out :ref:`examples` for more information on how to write and read files DataFS on different filesystems
 
 
 

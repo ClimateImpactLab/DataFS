@@ -65,9 +65,9 @@ def test_version_tracking(api1, auth1, opener):
     assert 'not found in archive history' in str(excinfo.value)
 
 
-def test_versioned_fs_functions(api1, auth1, opener):
+def test_versioned_fs_functions(api1, auth2, opener):
 
-    api1.attach_authority('auth', auth1)
+    api1.attach_authority('auth', auth2)
 
     archive = api1.create_archive('fs_funcs_test_archive')
 

@@ -155,15 +155,14 @@ class DynamoDBManager(BaseDataManager):
             raise KeyError('Table "{}" already exists'.format(spec_table))
 
         try:
-            table = self._resource.create_table(TableName=spec_table,
-                                        KeySchema=[{'AttributeName': '_id',
-                                                    'KeyType': 'HASH'},
-                                                   ],
-                                        AttributeDefinitions=[{'AttributeName': '_id',
-                                                               'AttributeType': 'S'},
-                                                              ],
-                                        ProvisionedThroughput={'ReadCapacityUnits': 123,
-                                                               'WriteCapacityUnits': 123})
+            table = self._resource.create_table(
+                TableName=spec_table,
+                KeySchema=[
+                    {'AttributeName': '_id', 'KeyType': 'HASH'}],
+                AttributeDefinitions=[
+                    {'AttributeName': '_id','AttributeType': 'S'}],
+                ProvisionedThroughput={
+                    'ReadCapacityUnits': 123,'WriteCapacityUnits': 123})
 
             table.meta.client.get_waiter('table_exists').wait(TableName=spec_table)
 

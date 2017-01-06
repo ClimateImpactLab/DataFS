@@ -1,17 +1,55 @@
-exitlanguage: python
+language: python
+
 python:
-- '2.7'
-- pypy
+  - 2.7
+  - pypy
+
+env:
+  global:
+    DYNAMODB_URL: http://dynamodb:8000/
+  matrix:
+    - DATAFS_TEST_ENV=basic
+    - DATAFS_TEST_ENV=xarray
+
+matrix:
+  allow_failures:
+    - python: pypy
+      env: DATAFS_TEST_ENV=xarray
+
 install:
-- pip install .
-- pip install -r requirements.txt
-- pip install -r requirements_test.txt
-- pip install coveralls
-- pip install pytest-cov
+  - if [[ "$DATAFS_TEST_ENV" == "xarray" ]]; then
+      if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+          wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+        else
+          wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+        fi;
+      bash miniconda.sh -b -p $HOME/miniconda;
+      export PATH="$HOME/miniconda/bin:$PATH";
+      hash -r;
+      conda config --set always_yes yes --set changeps1 no;
+      conda update -q conda;
+      conda info -a;
+
+      conda create -q -n datafs python=$TRAVIS_PYTHON_VERSION h5py netCDF4 xarray dask numpy scipy pandas h5py hdf5 numba blaze scipy bottleneck dask;
+      source activate datafs;
+    fi
+  - python setup.py install
+  - python -m pip install .
+  - python -m pip install .[test]
+  - python -m pip install -r requirements.txt
+  - python -m pip install -r requirements_test.txt
+  - python -m pip install git+https://github.com/PyFilesystem/pyfilesystem#egg=0.5.5a1
+  - python -m pip install coveralls
+  - python -m pip install pytest-cov
+
 script:
-- if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then pytest ./datafs ./tests ./docs;
-  else pytest ./datafs ./tests ./docs --cov --doctest-modules --cov-report term-missing;
-  fi
+  - if [[ "$DATAFS_TEST_ENV" == "xarray" ]]; then
+    source activate datafs;
+    fi
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then python -m pytest ./datafs ./tests ./docs;
+    else python -m pytest ./datafs ./tests ./docs --cov --doctest-modules --cov-report term-missing;
+    fi
+
 deploy:
   provider: pypi
   user: delgadom
@@ -21,19 +59,21 @@ deploy:
     branch: master
     distributions: sdist bdist_wheel
     repo: ClimateImpactLab/DataFS
+
 services:
-- mongodb
-- dynamodb
-- docker
+  - mongodb
+  - dynamodb
+  - docker
+
 before_install:
-- docker pull tray/dynamodb-local
-- docker run -d -p 8000:8000 tray/dynamodb-local -inMemory -port 8000
-env:
-  global:
-    DYNAMODB_URL: http://dynamodb:8000/
+  - docker pull tray/dynamodb-local
+  - docker run -d -p 8000:8000 tray/dynamodb-local -inMemory -port 8000
+
 notifications:
   email:
     on_success: never
     on_failure: never
+
 after_success:
-- coveralls
+  - coverage combine
+  - coveralls

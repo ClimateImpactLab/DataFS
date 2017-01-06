@@ -43,6 +43,61 @@ def test_delete_handling(api, auth1, cache):
     assert not os.path.isfile('test_file.txt')
 
 
+def test_versioned_cache_handling(api, auth1, cache, opener):
+
+    api.attach_authority('auth1', auth1)
+    api.attach_cache(cache)
+
+    with open('test_file.txt', 'w+') as f:
+        f.write('this is an upload test')
+
+    var = api.create_archive('archive1', authority_name='auth1', versioned=True)
+    var.update('test_file.txt', cache=True)
+
+    assert os.path.isfile(
+        api.cache.fs.getsyspath(var.get_version_path('latest')))
+
+    var.remove_from_cache('latest')
+
+    assert not os.path.isfile(
+        api.cache.fs.getsyspath(var.get_version_path('latest')))
+
+    # try re-upload, with file deletion. Should be written to cache
+    var.update('test_file.txt', remove=True)
+
+    assert not os.path.isfile('test_file.txt')
+
+    with opener(var, 'w+') as f:
+        f.write(u'this is a new test')
+
+    var.cache('latest')
+
+    assert var.is_cached('latest')
+    assert var.is_cached(var.get_latest_version())
+    assert not var.is_cached(var.get_versions()[0])
+
+    assert os.path.isfile(
+        api.cache.fs.getsyspath(var.get_version_path('latest')))
+
+    var.remove_from_cache('latest')
+    
+    assert not os.path.isfile(
+        api.cache.fs.getsyspath(var.get_version_path('latest')))
+
+    var.cache(var.get_versions()[-2])
+
+    assert os.path.isfile(
+        api.cache.fs.getsyspath(var.get_version_path(var.get_versions()[-2])))
+
+    var.remove_from_cache(var.get_versions()[-2])
+    
+    assert not os.path.isfile(
+        api.cache.fs.getsyspath(var.get_version_path(var.get_versions()[-2])))
+
+
+
+
+
 def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
     '''
     Test upload/download/cache operations with two users

@@ -103,6 +103,8 @@ We attach this file to the api and give it a name:
 .. code-block:: python
 
     >>> api.attach_authority('local', local)
+    >>> api.default_authority # doctest: +ELLIPSIS
+    <DataService:OSFS object at ...>
 
 Create archives
 ~~~~~~~~~~~~~~~

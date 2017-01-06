@@ -2,11 +2,13 @@ from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
 from datafs.datafs import cli
 from datafs import DataAPI, get_api, to_config_file
+from tests.resources import _close
 import tempfile
 import os
 import click
 from click.testing import CliRunner
 import pytest, shutil
+import yaml
 
 try:
     from StringIO import StringIO
@@ -14,26 +16,6 @@ try:
 except ImportError:
     from io import StringIO
 
-
-
-
-def _close(path):
-
-    closed = False
-
-    for i in range(5):
-        try:
-            if os.path.isfile(path):
-                os.remove(path)
-            else:
-                shutil.rmtree(path)
-            closed = True
-            break
-        except OSError as e:
-            time.sleep(0.5)
-
-    if not closed:
-        raise e
 
 
 @pytest.yield_fixture(scope='module')
@@ -341,6 +323,54 @@ def test_specified_requirements(preloaded_config):
         with open('local_req_3.txt', 'r') as f:
             assert f.read() == 'this is archive req_3 version 1.1'
 
+
+def test_versions(preloaded_config):
+
+    profile, temp_file = preloaded_config
+
+    # Create a requirements file and 
+
+    runner = CliRunner()
+
+    prefix = [
+        '--config-file', '{}'.format(temp_file), 
+        '--profile', 'myapi', 
+        '--requirements', 'requirements_data_test1.txt']
+
+    with runner.isolated_filesystem():
+
+        result = runner.invoke(
+            cli, 
+            prefix + ['versions', 'req_3'])
+
+        assert result.exit_code == 0
+        versions = yaml.load(result.output)
+
+        assert ['1.0','1.1a1','1.1'] == versions
+
+
+def test_history(preloaded_config):
+
+    profile, temp_file = preloaded_config
+
+    # Create a requirements file and 
+
+    runner = CliRunner()
+
+    prefix = [
+        '--config-file', '{}'.format(temp_file), 
+        '--profile', 'myapi', 
+        '--requirements', 'requirements_data_test1.txt']
+
+    with runner.isolated_filesystem():
+
+        result = runner.invoke(
+            cli, 
+            prefix + ['history', 'req_3'])
+
+        assert result.exit_code == 0
+        history = yaml.load(result.output)
+        assert len(history) == 3
 
 
 def test_alternate_versions(preloaded_config):

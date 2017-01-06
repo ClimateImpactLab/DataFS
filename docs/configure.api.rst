@@ -1,4 +1,4 @@
-.. _usage-api-specification:
+.. _configure-api:
 
 Specifying API objects
 ======================

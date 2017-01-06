@@ -3,6 +3,9 @@ from contextlib import contextmanager
 from datafs.managers.manager_dynamo import DynamoDBManager
 from datafs.managers.manager_mongo import MongoDBManager
 
+import os
+import shutil
+import time
 
 try:
     u = unicode
@@ -12,6 +15,23 @@ except NameError:
     string_types = (str,)
 
 
+def _close(path):
+
+    closed = False
+
+    for i in range(5):
+        try:
+            if os.path.isfile(path):
+                os.remove(path)
+            else:
+                shutil.rmtree(path)
+            closed = True
+            break
+        except OSError as e:
+            time.sleep(0.5)
+
+    if not closed:
+        raise e
 
 @contextmanager
 def prep_manager(mgr_name, table_name = 'my-new-data-table'):

@@ -6,9 +6,12 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   readme
+   readme <-- structure better
    installation
-   usage
+   configure
+   python_api
+   command_line
+   admin
    contributing
    history
    datafs

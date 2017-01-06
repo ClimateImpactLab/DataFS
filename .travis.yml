@@ -1,7 +1,4 @@
-exitlanguage: python
-python:
-- '2.7'
-- pypy
+language: python
 
 matrix:
   include:
@@ -9,6 +6,9 @@ matrix:
       env: DATAFS_TEST_ENV=basic
     - python: pypy
       env: DATAFS_TEST_ENV=xarray
+env:
+  global:
+    DYNAMODB_URL: http://dynamodb:8000/
 
 allow_failures:
   - env: DATAFS_TEST_ENV=xarray
@@ -62,13 +62,13 @@ services:
 before_install:
 - docker pull tray/dynamodb-local
 - docker run -d -p 8000:8000 tray/dynamodb-local -inMemory -port 8000
-env:
-  global:
-    DYNAMODB_URL: http://dynamodb:8000/
+
+
 notifications:
   email:
     on_success: never
     on_failure: never
+
 after_success:
-- coverage combine
-- coveralls
+  - coverage combine
+  - coveralls

@@ -14,12 +14,12 @@ allow_failures:
   - env: DATAFS_TEST_ENV=xarray
 
 install:
-- pip install .
-- pip install -r requirements.txt
-- pip install -r requirements_test.txt
-- pip install coveralls
-- pip install pytest-cov
-- if [[ "$DATAFS_TEST_ENV" == "xarray"]]; then
+  - pip install .
+  - pip install -r requirements.txt
+  - pip install -r requirements_test.txt
+  - pip install coveralls
+  - pip install pytest-cov
+  - if [[ "$DATAFS_TEST_ENV" == "xarray"]]; then
     sudo apt-get update
     # We do this conditionally because it saves us some downloading if the
     # version is the same.
@@ -38,14 +38,14 @@ install:
 
     conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION netCDF4 xarray dask;
     source activate test-environment;
-    fi;
+    fi
   - python setup.py install
 
 
 script:
-- if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then pytest ./datafs ./tests ./docs;
-  else pytest ./datafs ./tests ./docs --cov --doctest-modules --cov-report term-missing;
-  fi
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then pytest ./datafs ./tests ./docs;
+    else pytest ./datafs ./tests ./docs --cov --doctest-modules --cov-report term-missing;
+    fi
 deploy:
   provider: pypi
   user: delgadom
@@ -56,12 +56,13 @@ deploy:
     distributions: sdist bdist_wheel
     repo: ClimateImpactLab/DataFS
 services:
-- mongodb
-- dynamodb
-- docker
+  - mongodb
+  - dynamodb
+  - docker
+  
 before_install:
-- docker pull tray/dynamodb-local
-- docker run -d -p 8000:8000 tray/dynamodb-local -inMemory -port 8000
+  - docker pull tray/dynamodb-local
+  - docker run -d -p 8000:8000 tray/dynamodb-local -inMemory -port 8000
 
 
 notifications:

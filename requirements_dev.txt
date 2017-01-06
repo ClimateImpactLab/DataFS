@@ -2,6 +2,4 @@
 
 bumpversion==0.5.3
 watchdog==0.8.3
-Sphinx==1.5.1
-sphinx_rtd_theme==0.1.10a0
 cryptography==1.7.1

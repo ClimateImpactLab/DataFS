@@ -1,8 +1,6 @@
-.. _configure:
+.. _pythonapi-versioning:
 
-====================
-Using the Python API
-====================
+=================
+Tracking Versions
+=================
 
-
-.. toctree::

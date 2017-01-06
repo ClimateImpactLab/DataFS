@@ -11,8 +11,10 @@ env:
     - DATAFS_TEST_ENV=basic
     - DATAFS_TEST_ENV=xarray
 
-allow_failures:
-  - env: DATAFS_TEST_ENV=xarray
+matrix:
+  allow_failures:
+    - python: pypy
+      env: DATAFS_TEST_ENV=xarray
 
 install:
   - pip install .
@@ -34,12 +36,18 @@ install:
     conda update -q conda;
     conda info -a;
 
-    conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION netCDF4 xarray dask;
-    source activate test-environment;
+    conda create -q -n datafs python=$TRAVIS_PYTHON_VERSION netCDF4 xarray dask numpy pandas;
+  import xarray as xr
+  import numpy as np
+  import pandas as pd
+    source activate datafs;
     fi
   - python setup.py install
 
 script:
+  - if [[ "$DATAFS_TEST_ENV" == "xarray" ]]; then
+    source activate datafs;
+    fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then pytest ./datafs ./tests ./docs;
     else pytest ./datafs ./tests ./docs --cov --doctest-modules --cov-report term-missing;
     fi

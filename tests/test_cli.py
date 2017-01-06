@@ -112,7 +112,7 @@ def test_cli_local(test_config):
 
 
     #test for configure and create archive
-    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'create_archive', 'my_first_archive', '--description', 'My test data archive'])
+    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'create', 'my_first_archive', '--description', 'My test data archive'])
     assert result.exit_code == 0
     assert result.output.strip() == 'created versioned archive <DataArchive local://my_first_archive>'
 
@@ -213,9 +213,9 @@ def preloaded_config(test_config):
     
     # Set up a couple archives with multiple versions
     
-    arch1 = api.create_archive('req_1')
-    arch2 = api.create_archive('req_2')
-    arch3 = api.create_archive('req_3')
+    arch1 = api.create('req_1')
+    arch2 = api.create('req_2')
+    arch3 = api.create('req_3')
 
     with arch1.open('w+', bumpversion='minor') as f:
         f.write(u'this is archive req_1 version 0.1')
@@ -489,7 +489,7 @@ def test_dependency_parsing(test_config):
                 '--profile', 
                 'myapi']
 
-    arch1 = api.create_archive('my_first_archive')
+    arch1 = api.create('my_first_archive')
 
     with runner.isolated_filesystem():
 
@@ -537,7 +537,7 @@ def test_update_metadata(test_config):
                 '--config-file', '{}'.format(temp_file), 
                 '--profile', 'myapi']
 
-    arch1 = api.create_archive('my_next_archive')
+    arch1 = api.create('my_next_archive')
 
     with runner.isolated_filesystem():
 

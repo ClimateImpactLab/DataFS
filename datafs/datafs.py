@@ -135,10 +135,10 @@ def configure(ctx, helper, edit):
 @click.option('--versioned', default=True)
 @click.option('--helper', is_flag=True)
 @click.pass_context
-def create_archive(ctx, archive_name, authority_name, versioned=True, helper=False):
+def create(ctx, archive_name, authority_name, versioned=True, helper=False):
     generate_api(ctx)
     kwargs = parse_args_as_kwargs(ctx.args)
-    var = ctx.obj.api.create_archive(
+    var = ctx.obj.api.create(
         archive_name,
         authority_name=authority_name,
         versioned=versioned,
@@ -248,7 +248,7 @@ def cat(ctx, archive_name, version):
     var = ctx.obj.api.get_archive(archive_name)
 
     with var.open('r', version=version) as f:
-        for chunk in iter(lambda: f_obj.read(1024*1024), ''):
+        for chunk in iter(lambda: f.read(1024*1024), ''):
             click.echo(chunk)
 
 

@@ -21,7 +21,7 @@ operations:
 
 .. code-block:: python
 
-    >>> archive = my_api.create_archive('archive_name', authority_name='s3-1')
+    >>> archive = my_api.create('archive_name', authority_name='s3-1')
     >>>
     >>> archive.delete()                             # doctest: +ELLIPSIS
     Traceback (most recent call last):
@@ -36,7 +36,7 @@ However, users of this api still have access to all other features:
 
 .. code-block:: python
 
-    >>> archive_2 = my_api.create_archive(
+    >>> archive_2 = my_api.create(
     ...     'another archive',
     ...     authority_name='NAT-1',
     ...     metadata={'description':'data file to be stored on network-attached-storage'})

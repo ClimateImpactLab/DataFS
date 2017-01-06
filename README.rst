@@ -38,6 +38,7 @@ Features
 * Easily create out-of-the-box configuration files for users
 * Track data dependencies and usage logs
 * Use datafs from python or from the command line
+* Permissions handled by managers & services, giving you full control over user access
 
 
 Usage
@@ -45,23 +46,37 @@ Usage
 
 First, `configure an API <http://datafs.readthedocs.io/en/latest/configure.html>`_. Don't worry. It's not too bad.
 
-We'll assume we already have an API object created. Once you have this, you can start using DataFS to create and use archives.
+We'll assume we already have an API object created and attached to a service called "s3". Once you have this, you can start using DataFS to create and use archives.
 
 .. code-block:: bash
 
-    $ datafs create_archive my_new_data_archive --description "a test archive"
-    created versioned archive <DataArchive local://my_new_data_archive>
+    $ datafs create my_new_data_archive --description "a test archive"
+    created versioned archive <DataArchive s3://my_new_data_archive>
     
-    $ echo "file contents" >> my_file.txt
+    $ echo "file contents" > my_file.txt
     
     $ datafs update my_new_data_archive my_file.txt
     
-    $ echo "updated contents" >> my_file.txt
+    $ datafs cat my_new_data_archive
+    file contents
+
+
+
+.. code-block:: bash
+
+    $ echo "updated contents" > my_file.txt
     
-    $ datafs update my_new_data_archive --bumpversion minor
+    $ datafs update my_new_data_archive my_file.txt --bumpversion minor
+    uploaded data to <DataArchive osdc://my_new_data_archive>. version bumped 0.0.1 --> 0.1.
     
-    $ python -m datafs.datafs --profile test delete my_new_data_archive
-    deleted archive <DataArchive local://my_new_data_archive>
+    $ datafs cat my_new_data_archive
+    updated contents
+    
+    $ datafs cat my_new_data_archive --version 0.0.1
+    file contents
+    
+    $ datafs delete my_new_data_archive
+    deleted archive <DataArchive s3://my_new_data_archive>
 
 See `examples <http://datafs.readthedocs.io/en/latest/examples.html>`_ for more extensive use cases.
 

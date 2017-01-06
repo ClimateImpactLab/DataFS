@@ -26,7 +26,7 @@ class TestVersionedMetadata(object):
 
 		fp = os.path.join(tempdir, "test.txt")
 
-		var = api.create_archive('my_archive')
+		var = api.create('my_archive')
 		with open(fp, 'w+') as f:
 			f.write(u'test test, this is a test')
 
@@ -74,7 +74,7 @@ class TestVersionedMetadata(object):
 
 	    
 
-		var = api.create_archive('streaming_test')
+		var = api.create('streaming_test')
 		with var.get_local_path(
 			bumpversion='patch', 
 			dependencies ={'arch1': '0.1.0', 'arch2': '0.2.0'}) as f:

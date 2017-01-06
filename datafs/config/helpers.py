@@ -10,7 +10,7 @@ import click
 def _parse_requirement(requirement_line):
 
     # should we do archive name checking here? If the statement 
-    # doesn't split, the entire thing gets passed to create_archive
+    # doesn't split, the entire thing gets passed to api.create
     # or get_archive as the archive_name.
     
     version_stmt = map(lambda s: s.strip(), requirement_line.split('=='))
@@ -86,7 +86,7 @@ def get_api(profile=None, config_file=None, requirements='requirements_data.txt'
         ...     'DataFiles',
         ...     raise_on_err=False)
         >>>
-        >>> archive = api.create_archive(
+        >>> archive = api.create(
         ...     'my_first_archive',
         ...     metadata = dict(description = 'My test data archive'),
         ...     raise_on_err=False)

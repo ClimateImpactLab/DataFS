@@ -38,7 +38,7 @@ Features
 * Easily create out-of-the-box configuration files for users
 * Track data dependencies and usage logs
 * Use datafs from python or from the command line
-* Permissions handled by managers & services, giving you full control over user access
+* Permissions handled by managers & services, giving you control over user access
 
 
 Usage
@@ -53,14 +53,15 @@ We'll assume we already have an API object created and attached to a service cal
     $ datafs create my_new_data_archive --description "a test archive"
     created versioned archive <DataArchive s3://my_new_data_archive>
     
-    $ echo "file contents" > my_file.txt
+    $ echo "initial file contents" > my_file.txt
     
     $ datafs update my_new_data_archive my_file.txt
     
     $ datafs cat my_new_data_archive
-    file contents
+    initial file contents
 
-
+Versions are tracked explicitly. Bump versions on write, and read old versions 
+if desired.
 
 .. code-block:: bash
 
@@ -73,8 +74,33 @@ We'll assume we already have an API object created and attached to a service cal
     updated contents
     
     $ datafs cat my_new_data_archive --version 0.0.1
-    file contents
+    initial file contents
+
+Pin versions using a requirements file to set the default version
+
+.. code-block:: bash
+
+    $ echo "my_new_data_archive==0.0.1" > requirements_data.txt
     
+    $ datafs cat my_new_data_archive
+    initial file contents
+
+All of these features are available from (and faster in) python:
+
+.. code-block:: python
+
+    >>> api = datafs.get_api()
+    >>> archive = api.get_archive('my_new_data_archive')
+    >>> with archive.open('r', version='latest') as f:
+    ...     print(f.read())
+    ...
+    updated contents
+
+
+If you have permission to delete archives, it's easy to do. See `administrative tools <http://datafs.readthedocs.io/en/latest/admin.html>`_ for tips on setting permissions.
+
+.. code-block:: bash
+
     $ datafs delete my_new_data_archive
     deleted archive <DataArchive s3://my_new_data_archive>
 

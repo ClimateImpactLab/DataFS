@@ -44,6 +44,7 @@ install:
 script:
   - if [[ "$DATAFS_TEST_ENV" == "xarray" ]]; then
     source activate datafs;
+    export PATH="$HOME/miniconda/bin:$PATH";
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then pytest ./datafs ./tests ./docs;
     else pytest ./datafs ./tests ./docs --cov --doctest-modules --cov-report term-missing;

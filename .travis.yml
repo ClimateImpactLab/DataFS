@@ -1,18 +1,15 @@
 language: python
 
-matrix:
-  include:
-    - python: 2.7
-      env: DATAFS_TEST_ENV=basic
-    - python: pypy
-      env: DATAFS_TEST_ENV=xarray
-    - python: 2.7
-      env: DATAFS_TEST_ENV=xarray
-    - python: pypy
-      env: DATAFS_TEST_ENV=basic
+python:
+  - 2.7
+  - pypy
+
 env:
   global:
     DYNAMODB_URL: http://dynamodb:8000/
+  matrix:
+    - DATAFS_TEST_ENV=basic
+    - DATAFS_TEST_ENV=xarray
 
 allow_failures:
   - env: DATAFS_TEST_ENV=xarray

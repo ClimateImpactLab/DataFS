@@ -30,7 +30,7 @@ install:
       conda update -q conda;
       conda info -a;
 
-      conda create -q -n datafs python=$TRAVIS_PYTHON_VERSION netCDF4 xarray dask numpy pandas;
+      conda create -q -n datafs python=$TRAVIS_PYTHON_VERSION h5py netCDF4 xarray dask numpy scipy pandas h5py hdf5 numba blaze scipy bottleneck dask;
       source activate datafs;
     fi
   - python setup.py install

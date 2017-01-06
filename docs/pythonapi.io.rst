@@ -1,8 +1,6 @@
-.. _configure:
+.. _pythonapi-io:
 
-====================
-Using the Python API
-====================
+=========================
+Reading and Writing Files
+=========================
 
-
-.. toctree::

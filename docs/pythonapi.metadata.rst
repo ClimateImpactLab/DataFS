@@ -1,8 +1,6 @@
-.. _configure:
+.. _pythonapi-metadata:
 
-====================
-Using the Python API
-====================
+=================
+Managing Metadata
+=================
 
-
-.. toctree::

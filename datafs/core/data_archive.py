@@ -51,13 +51,13 @@ class DataArchive(object):
 
     def get_versions(self):
 
-        if not self.versioned:
-            return [None]
-
         versions = self.get_history()
     
         if len(versions) == 0:
             return []
+
+        elif not self.versioned:
+            return [None]
     
         else:
             return sorted(map(BumpableVersion, set([v['version'] for v in versions]))) 
@@ -266,11 +266,37 @@ class DataArchive(object):
             archive_metadata=kwargs, 
             version_metadata=dict(checksum=checksum, algorithm=algorithm, version=next_version, dependencies=dependencies))
 
-
-    def _update_manager(self, archive_metadata={}, version_metadata={}):
+    def _get_default_dependencies(self):
+        '''
+        Get default dependencies from requirements file or (if no requirements file) from previous version
+        '''
         
+        # Get default dependencies from requirements file
+        default_dependencies = {
+            k:v for k, v in self.api._default_versions.items() if k!=self.archive_name}
+        
+        # If no requirements file or is empty:
+        if len(default_dependencies) == 0:
+
+            # Retrieve dependencies from last archive record
+            history = self.get_history()
+            
+            if len(history) > 0:
+                default_dependencies = history[-1].get('dependencies', {})
+
+        return default_dependencies
+
+    def _set_version_defaults(self, version_metadata):
+
         version_metadata['user_config'] = self.api.user_config
 
+        if version_metadata.get('dependencies', None) is None:
+            version_metadata['dependencies'] = self._get_default_dependencies()
+
+
+    def _update_manager(self, archive_metadata={}, version_metadata={}):
+
+        self._set_version_defaults(version_metadata)
 
         # update records in self.api.manager
         self.api.manager.update(self.archive_name, version_metadata)
@@ -321,7 +347,7 @@ class DataArchive(object):
             latest_version = self.get_latest_version()
             version = self.get_default_version()
 
-        elif version == 'latest':
+        elif isinstance(version, string_types) and version == 'latest':
             latest_version = self.get_latest_version()
             version = latest_version
 
@@ -410,7 +436,7 @@ class DataArchive(object):
         elif isinstance(version, BumpableVersion):
             pass
 
-        elif version == 'latest':
+        elif isinstance(version, string_types) and version == 'latest':
             latest_version = self.get_latest_version()
             version = latest_version
 
@@ -477,7 +503,7 @@ class DataArchive(object):
         elif isinstance(version, BumpableVersion):
             pass
 
-        elif version == 'latest':
+        elif isinstance(version, string_types) and version == 'latest':
             latest_version = self.get_latest_version()
             version = latest_version
 
@@ -526,7 +552,10 @@ class DataArchive(object):
 
         '''
 
-        for version in self.get_versions():
+        versions = self.get_versions()
+        self.api.manager.delete_archive_record(self.archive_name)
+
+        for version in versions:
             if self.authority.fs.exists(self.get_version_path(version)):
                 self.authority.fs.remove(self.get_version_path(version))
 
@@ -534,7 +563,6 @@ class DataArchive(object):
                 if self.api.cache.fs.exists(self.get_version_path(version)):
                     self.api.cache.fs.remove(self.get_version_path(version))
 
-        self.api.manager.delete_archive_record(self.archive_name)
 
     def isfile(self, version=None, *args, **kwargs):
         '''
@@ -601,7 +629,7 @@ class DataArchive(object):
         elif isinstance(version, BumpableVersion):
             pass
 
-        elif version == 'latest':
+        elif isinstance(version, string_types) and version == 'latest':
             latest_version = self.get_latest_version()
             version = latest_version
 
@@ -621,7 +649,7 @@ class DataArchive(object):
         elif isinstance(version, BumpableVersion):
             pass
 
-        elif version == 'latest':
+        elif isinstance(version, string_types) and version == 'latest':
             latest_version = self.get_latest_version()
             version = latest_version
 
@@ -640,7 +668,7 @@ class DataArchive(object):
         elif isinstance(version, BumpableVersion):
             pass
 
-        elif version == 'latest':
+        elif isinstance(version, string_types) and version == 'latest':
             latest_version = self.get_latest_version()
             version = latest_version
 
@@ -658,10 +686,14 @@ class DataArchive(object):
         if version is None:
             version = self.get_default_version()
 
-        if version == 'latest':
+        if isinstance(version, string_types) and version  == 'latest':
             version = self.get_latest_version()
+        
+        history = self.get_history()
+        if len(history) == 0:
+            raise ValueError('Cannot get dependencies on an empty archive')
 
-        for v in reversed(self.get_history()):
+        for v in reversed(history):
             if BumpableVersion(v['version']) == version:
                 return v['dependencies']
 
@@ -669,7 +701,11 @@ class DataArchive(object):
 
     def set_dependencies(self, dependencies={}):
         
-        version_metadata = self.get_history()[-1]
+        history = self.get_history()
+        if len(history) == 0:
+            raise ValueError('Cannot set dependencies on an empty archive')
+
+        version_metadata = history[-1]
 
         version_metadata['dependencies'] = dependencies
         version_metadata['user_config'] = self.api.user_config

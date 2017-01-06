@@ -19,12 +19,7 @@ def open_filelike(filelike, mode='r'):
     if hasattr(filelike, 'read'):
         yield filelike
 
-    elif os.path.isfile(filelike):
+    else:
         with open(filelike, mode) as f:
             yield f
 
-    elif isinstance(filelike, string_types):
-        yield StringIO(filelike)
-
-    else:
-        raise ValueError('Cannot open "{}"'.format(filelike))

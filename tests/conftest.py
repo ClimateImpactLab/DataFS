@@ -19,6 +19,7 @@ from datafs import DataAPI
 from datafs._compat import string_types
 from datafs.core import data_file
 from datafs.services.service import DataService
+from datafs.managers.manager import BaseDataManager
 from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
 from tests.resources import prep_manager
@@ -46,8 +47,7 @@ def pytest_generate_tests(metafunc):
 
 
 @pytest.yield_fixture(scope='function')
-def temporary_dir():
-
+def tempdir():
     tmpdir = tempfile.mkdtemp()
 
     try:
@@ -59,7 +59,6 @@ def temporary_dir():
         except (WindowsError, OSError, IOError):
             time.sleep(0.5)
             shutil.rmtree(tmpdir)
-
 
 @contextmanager
 def prep_filesystem(fs_name):
@@ -217,8 +216,9 @@ def manager_with_spec(mgr_name):
         }
 
 
-        manager.update_spec_config('required_metadata_config', metadata_config)
-        manager.update_spec_config('required_user_config', user_config)
+        manager.set_required_user_config(user_config)
+        manager.set_required_archive_metadata(metadata_config)
+
         manager.required_user_config
         manager.required_archive_metadata
 
@@ -226,7 +226,7 @@ def manager_with_spec(mgr_name):
 
 
 @pytest.yield_fixture
-def api_with_spec(manager_with_spec):
+def api_with_spec(manager_with_spec, auth1):
 
         api = DataAPI(
             username='My Name',
@@ -234,7 +234,6 @@ def api_with_spec(manager_with_spec):
 
         api.attach_manager(manager_with_spec)
         api.attach_authority('auth', auth1)
-
 
         yield api
 
@@ -348,3 +347,5 @@ def datafile_opener(open_func):
 
     else:
         raise NameError('open_func "{}" not recognized'.format(open_func))
+
+

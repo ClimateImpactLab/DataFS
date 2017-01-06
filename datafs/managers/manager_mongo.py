@@ -142,14 +142,19 @@ class MongoDBManager(BaseDataManager):
     # Private methods (to be implemented!)
 
     @catch_timeout
-    def _update(self, archive_name, archive_data):
+    def _update(self, archive_name, version_metadata):
         self.collection.update({"_id": archive_name},
-                               {"$push": {"version_history": archive_data}})
+                               {"$push": {"version_history": version_metadata}})
 
-    def _update_metadata(self, archive_name, metadata):
-        for key, val in metadata.items():
-            self.collection.update({"_id": archive_name},
-                                   {"$set": {"archive_data.{}".format(key): val}})
+    def _update_metadata(self, archive_name, archive_metadata):
+        for key, val in archive_metadata.items():
+            if val is None:
+                self.collection.update({"_id": archive_name},
+                                   {"$unset": {"archive_metadata.{}".format(key): ""}})
+
+            else:
+                self.collection.update({"_id": archive_name},
+                                   {"$set": {"archive_metadata.{}".format(key): val}})
 
     def _update_spec_config(self,document_name, spec):
 
@@ -193,7 +198,7 @@ class MongoDBManager(BaseDataManager):
             self._spec_coll = self.db[table_name + '.spec']
 
         itrbl = [{'_id': x, 'config': {}} 
-                        for x in ('required_user_config', 'required_metadata_config')]
+                        for x in ('required_user_config', 'required_archive_metadata')]
 
 
 
@@ -253,7 +258,7 @@ class MongoDBManager(BaseDataManager):
         if res is None:
             raise KeyError
 
-        return res['archive_data']
+        return res['archive_metadata']
 
     def _get_version_history(self, archive_name):
 
@@ -284,10 +289,6 @@ class MongoDBManager(BaseDataManager):
 
         return [r['_id'] for r in res]
 
-    def _get_document_count(self):
-
-        return self.spec_collection.count()
-
     def _get_spec_documents(self, table_name):
         return [item for item in self.spec_collection.find({})]
 
@@ -298,7 +299,7 @@ class MongoDBManager(BaseDataManager):
 
     def _get_required_archive_metadata(self):
         
-        return self.spec_collection.find_one({'_id': 'required_metadata_config'})['config']
+        return self.spec_collection.find_one({'_id': 'required_archive_metadata'})['config']
 
 
     

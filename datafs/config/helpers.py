@@ -5,8 +5,9 @@ from datafs._compat import open_filelike
 
 import os
 import re
+import click
 
-def parse_requirement(requirement_line):
+def _parse_requirement(requirement_line):
 
     # should we do archive name checking here? If the statement 
     # doesn't split, the entire thing gets passed to create_archive
@@ -126,7 +127,7 @@ def get_api(profile=None, config_file=None, requirements='requirements_data.txt'
                 if re.search(r'^\s*$', reqline):
                     continue
                     
-                archive, version = parse_requirement(reqline)
+                archive, version = _parse_requirement(reqline)
                 default_versions[archive] = version
 
     api = APIConstructor.generate_api_from_config(profile_config)
@@ -139,3 +140,42 @@ def get_api(profile=None, config_file=None, requirements='requirements_data.txt'
 
 
     return api
+
+
+def _interactive_config(to_populate, prompts):
+    '''
+    Interactively populates to_populate with user-entered values
+
+    Parameters
+    ----------
+
+    to_populate : dict
+        Data dictionary to fill. Default values are taken from this dictionary.
+    
+    prompts : dict
+        Keys and prompts to use when filling ``to_populate``
+    '''
+
+    for kw, prompt in prompts.items():
+        to_populate[kw] = click.prompt(
+            prompt,
+            default=to_populate.get(kw))
+
+def check_requirements(to_populate, prompts, helper=False):
+
+    for kw, prompt in prompts.items():
+        if helper:
+            if kw not in to_populate:
+                to_populate[kw] = click.prompt(prompt)
+        else:
+            msg = (
+                'Required value "{}" not found. '
+                'Use helper=True or the --helper '
+                'flag for assistance.'.format(kw))
+
+            assert kw in to_populate, msg
+
+def to_config_file(api, config_file=None, profile='default'):
+
+    config = ConfigFile(config_file=config_file, default_profile=profile)
+    config.write_config_from_api(api, config_file=config_file, profile=profile)

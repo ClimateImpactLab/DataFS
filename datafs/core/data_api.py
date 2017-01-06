@@ -109,7 +109,8 @@ class DataAPI(object):
             archive_path=None,
             versioned=True,
             raise_on_err=True,
-            metadata={}):
+            metadata={},
+            helper=False):
         '''
         Create a DataFS archive
 
@@ -152,7 +153,8 @@ class DataAPI(object):
             versioned=versioned,
             raise_on_err=raise_on_err,
             metadata=metadata,
-            user_config=self.user_config)
+            user_config=self.user_config,
+            helper=helper)
 
         return self._ArchiveConstructor(
             api=self, 
@@ -281,3 +283,6 @@ class DataAPI(object):
 
         if self.cache:
             self.cache.fs.close()
+
+
+    

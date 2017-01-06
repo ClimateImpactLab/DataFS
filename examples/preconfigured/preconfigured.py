@@ -86,10 +86,10 @@ help users:
     ...     'username': 'your full name',
     ...     'contact': 'your email address'})
 
-Similarly, :py:meth:`~datafs.managers.BaseDataManager.set_required_metadata_config`
+Similarly, :py:meth:`~datafs.managers.BaseDataManager.set_required_archive_metadata`
 sets the metadata that is required for each archive:
 
-    >>> api.manager.set_required_metadata_config({
+    >>> api.manager.set_required_archive_metadata({
     ...     'description': 'a long description of the archive'})
 
 Attempts by users to create/update archives without these attributes will now 
@@ -127,7 +127,7 @@ to skip the description, an error is raised and the archive is not created:
     ...  # doctest: +ELLIPSIS
     Traceback (most recent call last):
     ...
-    AssertionError: Required attribute "description" missing from metadata
+    AssertionError: Required value "description" not found. Use helper=True or the --helper flag for assistance.
     >>> 
     >>> api.archives
     [<DataArchive local://archive1>]

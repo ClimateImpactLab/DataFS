@@ -46,6 +46,19 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize('open_func', ['open_file', 'get_local_path'])
 
 
+@pytest.yield_fixture(scope='function')
+def tempdir():
+    tmpdir = tempfile.mkdtemp()
+
+    try:
+        yield tmpdir
+
+    finally:
+        try:
+            shutil.rmtree(tmpdir)
+        except (WindowsError, OSError, IOError):
+            time.sleep(0.5)
+            shutil.rmtree(tmpdir)
 
 @contextmanager
 def prep_filesystem(fs_name):
@@ -212,7 +225,7 @@ def manager_with_spec(mgr_name):
 
 
 @pytest.yield_fixture
-def api_with_spec(manager_with_spec):
+def api_with_spec(manager_with_spec, auth1):
 
         api = DataAPI(
             username='My Name',
@@ -220,7 +233,6 @@ def api_with_spec(manager_with_spec):
 
         api.attach_manager(manager_with_spec)
         api.attach_authority('auth', auth1)
-
 
         yield api
 

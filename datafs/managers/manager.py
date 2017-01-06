@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 
 import time, threading
-
+from datafs.config.helpers import check_requirements
 
 
 class BaseDataManager(object):
@@ -11,10 +11,6 @@ class BaseDataManager(object):
 
     Should be subclassed. Not intended to be used directly.
     '''
-
-    REQUIRED_USER_CONFIG = {}
-
-    REQUIRED_ARCHIVE_METADATA = {}
 
     TimestampFormat = '%Y%m%d-%H%M%S'
 
@@ -69,8 +65,6 @@ class BaseDataManager(object):
 
         '''
         
-
-        
         if raise_on_err:
             self._create_archive_table(table_name)
             self._create_spec_table(table_name)
@@ -101,6 +95,45 @@ class BaseDataManager(object):
 
         self._update_spec_config(document_name, spec)
 
+    def set_required_user_config(self, user_config):
+        '''
+        Sets required user metadata for all users
+
+        Parameters
+        ----------
+        user_config : dict
+
+            Dictionary of required user metadata and metadata field 
+            descriptions. All archive creation and update actions will be 
+            required to have these keys in the user_config metadata. 
+
+            If the archive or version metadata does not contain these keys, an 
+            error will be raised with the descrtiption in the value associated 
+            with the key.
+
+        '''
+
+        self.update_spec_config('required_user_config', user_config)
+
+    def set_required_metadata_config(self, metadata_config):
+        '''
+        Sets required archive metatdata for all users
+
+        Parameters
+        ----------
+        metadata_config : dict
+
+            Dictionary of required archive metada and metadata field 
+            descriptions. All archives created on this manager table will 
+            be required to have these keys in their archive's metadata.
+
+            If the archive metadata does not contain these keys, an error
+            will be raised with the description in the value associated with 
+            the key.
+
+        '''
+
+        self.update_spec_config('required_metadata_config', metadata_config)
 
     def delete_table(self, table_name, raise_on_err=True):
         if raise_on_err:
@@ -143,7 +176,8 @@ class BaseDataManager(object):
             versioned,
             raise_on_err=True,
             metadata={},
-            user_config={}):
+            user_config={},
+            helper=False):
         '''
         Create a new data archive
 
@@ -153,6 +187,16 @@ class BaseDataManager(object):
             new :py:class:`~datafs.core.data_archive.DataArchive` object
 
         '''
+
+        check_requirements(
+            to_populate=user_config,
+            prompts=self.required_user_config,
+            helper=helper)
+
+        check_requirements(
+            to_populate=metadata,
+            prompts=self.required_archive_metadata,
+            helper=helper)
 
         archive_metadata = {
             '_id': archive_name,
@@ -166,13 +210,6 @@ class BaseDataManager(object):
 
         archive_metadata['creation_date'] = archive_metadata.get(
             'creation_date', self.create_timestamp())
-
-        required = set(self.required_user_config.keys())
-        required |= set(self.required_archive_metadata.keys())
-
-        for attr in required:
-            assert (attr in archive_metadata['archive_metadata']) or (attr in archive_metadata), 'Required attribute "{}" missing from metadata'.format(
-                attr)
 
         if raise_on_err:
             self._create_archive(

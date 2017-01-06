@@ -1,11 +1,11 @@
 from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
+from datafs.datafs import cli
+from datafs import DataAPI, get_api, to_config_file
 import tempfile
 import os
+import click
 from click.testing import CliRunner
-from datafs import get_api
-from datafs.datafs import cli
-from contextlib import contextmanager
 import pytest, shutil
 
 try:
@@ -118,7 +118,6 @@ profiles:
         f.write(my_test_yaml)
 
     yield 'myapi', temp_file
-
 
 
 def test_cli_local(test_config):
@@ -506,8 +505,7 @@ def test_update_metadata(test_config):
 
     prefix = [
                 '--config-file', '{}'.format(temp_file), 
-                '--profile', 
-                'myapi']
+                '--profile', 'myapi']
 
     arch1 = api.create_archive('my_next_archive')
 
@@ -520,7 +518,7 @@ def test_update_metadata(test_config):
         assert result.exit_code == 0
 
         result = runner.invoke(cli, prefix + ['update_metadata', 'my_next_archive', '--description', 'some_description'])
-        #assert result.exit_code == 0
+        assert result.exit_code == 0
         assert arch1.get_metadata() == {'description': 'some_description'}
 
         
@@ -530,16 +528,125 @@ def test_update_metadata(test_config):
     arch1.delete()
 
 
+def test_sufficient_configuration(manager_with_spec, tempdir):
+    '''
+    Test writing an api with required user config to a config file and then 
+    running configure.
+    '''
+
+    # Create an appropriately specified API
+    api = DataAPI(
+        username='My Name',
+        contact='my.email@example.com')
+
+    # Attach a manager which requires username, contact
+    api.attach_manager(manager_with_spec)
+
+    # Export the API to a file
+    config_file = os.path.join(tempdir, '.datafs.yml')
+    to_config_file(api=api, config_file=config_file, profile='conftest')
+
+    runner = CliRunner()
+
+    prefix = ['--config-file', config_file, '--profile', 'conftest']
+    
+    # Test the configuration
+    result = runner.invoke(cli, prefix + ['configure'])
+    assert result.exit_code == 0
 
 
-if __name__ == '__main__':
-    ctx_manager_table = contextmanager(manager_table)
-    ctx_temp_dir = contextmanager(temp_dir)
-    ctx_temp_file = contextmanager(temp_file)
-    ctx_test_config = contextmanager(test_config)
+def test_insufficient_configuration(manager_with_spec, tempdir):
+    '''
+    Test writing an api with required user config to a config file and then 
+    running configure without sufficient user_config.
+    '''
 
-    with ctx_manager_table() as m, ctx_temp_dir() as tempdir, ctx_temp_file() as tmp:
-        with ctx_test_config(m, tempdir, tmp) as config:
-            profile, fp = config
-            test_cli_local(profile, fp)
+    # Create an insufficiently specified API
+    api = DataAPI(username='My Name')
 
+    # Attach a manager which requires username, contact
+    api.attach_manager(manager_with_spec)
+
+    # Export the API to a file
+    config_file = os.path.join(tempdir, '.datafs.yml')
+    to_config_file(api=api, config_file=config_file, profile='conftest')
+
+    runner = CliRunner()
+
+    prefix = ['--config-file', config_file, '--profile', 'conftest']
+    
+    # Test the configuration and make sure an exception is raised
+    result = runner.invoke(cli, prefix + ['configure'])
+    assert result.exception
+
+
+def test_manual_configuration(manager_with_spec, tempdir):
+    '''
+    Test writing an api with required user config to a config file and then 
+    running configure user_config specified as keyword arguments
+    '''
+
+    # Create an insufficiently specified API
+    api = DataAPI(username='My Name')
+
+    # Attach a manager which requires username, contact
+    api.attach_manager(manager_with_spec)
+
+    # Export the API to a file
+    config_file = os.path.join(tempdir, '.datafs.yml')
+    to_config_file(api=api, config_file=config_file, profile='conftest')
+
+    runner = CliRunner()
+
+    prefix = ['--config-file', config_file, '--profile', 'conftest']
+    
+    # Test the configuration and make sure an exception is raised
+    result = runner.invoke(cli, prefix + [
+        'configure', 
+        '--contact', 
+        '"my_email@domain.com'])
+
+    assert result.exit_code == 0
+
+
+
+def test_helper_configuration(manager_with_spec, tempdir, monkeypatch):
+    '''
+    Test writing an api with required user config to a config file and then 
+    running configure user_config with the flag --helper
+    '''
+
+    # Create an insufficiently specified API
+    api = DataAPI(username='My Name')
+
+    # Attach a manager which requires username, contact
+    api.attach_manager(manager_with_spec)
+
+    # Export the API to a file
+    config_file = os.path.join(tempdir, '.datafs.yml')
+    to_config_file(api=api, config_file=config_file, profile='conftest')
+
+
+    assert 'contact' not in api.user_config
+
+    runner = CliRunner()
+
+    prefix = ['--config-file', config_file, '--profile', 'conftest']
+
+    
+    def get_user_email(*args, **kwargs):
+        return "my_email@domain.com"
+    
+    # override click.prompt
+    monkeypatch.setattr('click.prompt', get_user_email)
+    
+    # Test the helper with the appropriate input stream
+    result = runner.invoke(
+        cli, 
+        prefix + ['configure', '--helper']
+        )
+
+    assert result.exit_code == 0
+
+    api2 = get_api(config_file=config_file, profile='conftest')
+    assert api2.user_config['contact'] == "my_email@domain.com"

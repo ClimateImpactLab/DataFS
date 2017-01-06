@@ -552,7 +552,10 @@ class DataArchive(object):
 
         '''
 
-        for version in self.get_versions():
+        versions = self.get_versions()
+        self.api.manager.delete_archive_record(self.archive_name)
+
+        for version in versions:
             if self.authority.fs.exists(self.get_version_path(version)):
                 self.authority.fs.remove(self.get_version_path(version))
 
@@ -560,7 +563,6 @@ class DataArchive(object):
                 if self.api.cache.fs.exists(self.get_version_path(version)):
                     self.api.cache.fs.remove(self.get_version_path(version))
 
-        self.api.manager.delete_archive_record(self.archive_name)
 
     def isfile(self, version=None, *args, **kwargs):
         '''

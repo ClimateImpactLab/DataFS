@@ -3,7 +3,7 @@ from datafs.managers.manager import BaseDataManager
 from datafs.core.data_archive import DataArchive
 
 import pytest
-
+import os
 
 #hack to get around installing these packages on Travis
 has_special_dependencies = False
@@ -18,28 +18,20 @@ try:
 except ImportError:
     pass
 
-def requires_xarray(func):
-
-	@pytest.mark.skipif(not has_special_dependencies, reason='Modules unable to install')
-	def inner(*args, **kwargs):
-		return func(*args, **kwargs)
-
-	return inner
-
-
-
-
-
-
 class TestVersionedMetadata(object):
 
-	def test_versioned_metadata_open(self, api, opener):
+	def test_versioned_metadata_open(self, api, opener, tempdir):
+
+		fp = os.path.join(tempdir, "test.txt")
 
 		var = api.create_archive('my_archive')
-		with open('test.txt', 'w+') as f:
+		with open(fp, 'w+') as f:
 			f.write(u'test test, this is a test')
 
-		var.update('test.txt', remove=True, version='patch', dependencies={'arch1': '0.1.0', 'arch2': '0.2.0'})
+		var.update(
+			fp, 
+			version='patch', 
+			dependencies={'arch1': '0.1.0', 'arch2': '0.2.0'})
 
 		assert len(var.get_history()[-1]['dependencies']) == 2
 
@@ -53,8 +45,9 @@ class TestVersionedMetadata(object):
 		assert len(var.get_dependencies(version='0.0.1')) == 2
 
 
-	# @requires_xarray
-	@pytest.mark.skipif(not has_special_dependencies, reason='Modules unable to install')
+	@pytest.mark.skipif(
+		not has_special_dependencies, 
+		reason='Modules unable to install')
 	def test_version_metadata_with_streaming(self,api,opener):
 
 		np.random.seed(123)
@@ -74,7 +67,10 @@ class TestVersionedMetadata(object):
 	    
 
 		var = api.create_archive('streaming_test')
-		with var.get_local_path(bumpversion='patch', dependencies ={'arch1': '0.1.0', 'arch2': '0.2.0'}) as f:
+		with var.get_local_path(
+			bumpversion='patch', 
+			dependencies ={'arch1': '0.1.0', 'arch2': '0.2.0'}) as f:
+			
 			ds.to_netcdf(f)
 
 
@@ -86,7 +82,10 @@ class TestVersionedMetadata(object):
 		ds.update({'tmin': (('time', 'location'), tmin_values)})
 		
 
-		with var.get_local_path(bumpversion='patch', dependencies={'arch1': '0.1.0', 'arch2': '1.2.0'}) as f:
+		with var.get_local_path(
+			bumpversion='patch', 
+			dependencies={'arch1': '0.1.0', 'arch2': '1.2.0'}) as f:
+			
 			with xr.open_dataset(f) as ds:
 
 				mem = ds.load()
@@ -97,7 +96,8 @@ class TestVersionedMetadata(object):
 
 
 		assert  var.get_history()[-1]['dependencies']['arch2'] == '1.2.0'
-		assert  var.get_history()[-1]['checksum'] != var.get_history()[-2]['checksum']
+		assert  var.get_history()[-1][
+			'checksum'] != var.get_history()[-2]['checksum']
 
 
 

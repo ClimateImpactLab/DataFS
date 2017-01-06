@@ -115,7 +115,7 @@ class BaseDataManager(object):
 
         self.update_spec_config('required_user_config', user_config)
 
-    def set_required_metadata_config(self, metadata_config):
+    def set_required_archive_metadata(self, metadata_config):
         '''
         Sets required archive metatdata for all users
 
@@ -133,7 +133,7 @@ class BaseDataManager(object):
 
         '''
 
-        self.update_spec_config('required_metadata_config', metadata_config)
+        self.update_spec_config('required_archive_metadata', metadata_config)
 
     def delete_table(self, table_name, raise_on_err=True):
         if raise_on_err:

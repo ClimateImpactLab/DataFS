@@ -216,8 +216,9 @@ def manager_with_spec(mgr_name):
         }
 
 
-        manager.update_spec_config('required_metadata_config', metadata_config)
-        manager.update_spec_config('required_user_config', user_config)
+        manager.set_required_user_config(user_config)
+        manager.set_required_archive_metadata(metadata_config)
+
         manager.required_user_config
         manager.required_archive_metadata
 

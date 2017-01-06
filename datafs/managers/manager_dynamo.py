@@ -196,7 +196,7 @@ class DynamoDBManager(BaseDataManager):
         }
 
         archive_config = {
-            '_id': 'required_metadata_config',
+            '_id': 'required_archive_metadata',
             'config': {}
         }
 
@@ -390,7 +390,7 @@ class DynamoDBManager(BaseDataManager):
     def _get_required_archive_metadata(self):
 
         return self._spec_table.get_item(Key={
-                            '_id': '{}'.format('required_metadata_config')})['Item']['config']
+                            '_id': '{}'.format('required_archive_metadata')})['Item']['config']
 
 
     def _delete_archive_record(self, archive_name):

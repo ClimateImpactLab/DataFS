@@ -198,7 +198,7 @@ class MongoDBManager(BaseDataManager):
             self._spec_coll = self.db[table_name + '.spec']
 
         itrbl = [{'_id': x, 'config': {}} 
-                        for x in ('required_user_config', 'required_metadata_config')]
+                        for x in ('required_user_config', 'required_archive_metadata')]
 
 
 
@@ -303,7 +303,7 @@ class MongoDBManager(BaseDataManager):
 
     def _get_required_archive_metadata(self):
         
-        return self.spec_collection.find_one({'_id': 'required_metadata_config'})['config']
+        return self.spec_collection.find_one({'_id': 'required_archive_metadata'})['config']
 
 
     

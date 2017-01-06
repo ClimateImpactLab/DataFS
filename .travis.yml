@@ -6,6 +6,10 @@ matrix:
       env: DATAFS_TEST_ENV=basic
     - python: pypy
       env: DATAFS_TEST_ENV=xarray
+    - python: 2.7
+      env: DATAFS_TEST_ENV=xarray
+    - python: pypy
+      env: DATAFS_TEST_ENV=basic
 env:
   global:
     DYNAMODB_URL: http://dynamodb:8000/

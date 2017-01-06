@@ -15,14 +15,14 @@ import yaml
 import pprint
 
 
-def parse_args_as_kwargs(args):
+def _parse_args_as_kwargs(args):
     assert len(args) % 2 == 0
     kwargs = {}
     for i in range(0, len(args), 2):
         kwargs[args[i].lstrip('-')] = args[i + 1]
     return kwargs
 
-def interactive_configuration(api, config, profile=None):
+def _interactive_configuration(api, config, profile=None):
 
     if profile is None:
         profile = self.default_profile
@@ -36,7 +36,7 @@ def interactive_configuration(api, config, profile=None):
 
     config.config['profiles'][profile] = profile_config
 
-def parse_dependencies(dependency_args):
+def _parse_dependencies(dependency_args):
     
     if len(dependency_args) == 0: 
         return None
@@ -44,7 +44,20 @@ def parse_dependencies(dependency_args):
     # dependencies = {}
     return dict(map(_parse_requirement, dependency_args))
 
-class DataFSInterface(object):
+def _generate_api(ctx):
+
+
+    ctx.obj.config.read_config()
+
+    if ctx.obj.profile is None:
+        ctx.obj.profile = ctx.obj.config.config['default-profile']
+
+    ctx.obj.api = get_api(
+        profile=ctx.obj.profile, 
+        config_file=ctx.obj.config_file, 
+        requirements=ctx.obj.requirements)
+
+class _DataFSInterface(object):
 
     def __init__(self):
         pass
@@ -57,7 +70,7 @@ class DataFSInterface(object):
 @click.pass_context
 def cli(ctx, config_file=None, requirements='requirements_data.txt', profile=None):
 
-    ctx.obj = DataFSInterface()
+    ctx.obj = _DataFSInterface()
 
     ctx.obj.config_file = config_file
     ctx.obj.config = ConfigFile(ctx.obj.config_file)
@@ -69,19 +82,6 @@ def cli(ctx, config_file=None, requirements='requirements_data.txt', profile=Non
     def teardown():
         if hasattr(ctx.obj, 'api'):
             ctx.obj.api.close()
-
-def generate_api(ctx):
-
-
-    ctx.obj.config.read_config()
-
-    if ctx.obj.profile is None:
-        ctx.obj.profile = ctx.obj.config.config['default-profile']
-
-    ctx.obj.api = get_api(
-        profile=ctx.obj.profile, 
-        config_file=ctx.obj.config_file, 
-        requirements=ctx.obj.requirements)
 
 
 @cli.command(
@@ -101,7 +101,7 @@ def configure(ctx, helper, edit):
         ctx.obj.config.edit_config_file()
         return
 
-    generate_api(ctx)
+    _generate_api(ctx)
 
     kwargs = {ctx.args[i][2:]: ctx.args[i + 1]
               for i in xrange(0, len(ctx.args), 2)}
@@ -111,7 +111,7 @@ def configure(ctx, helper, edit):
     ctx.obj.api.user_config.update(kwargs)
 
     if helper:
-        interactive_configuration(
+        _interactive_configuration(
             ctx.obj.api,
             ctx.obj.config,
             profile=ctx.obj.profile)
@@ -136,8 +136,8 @@ def configure(ctx, helper, edit):
 @click.option('--helper', is_flag=True)
 @click.pass_context
 def create(ctx, archive_name, authority_name, versioned=True, helper=False):
-    generate_api(ctx)
-    kwargs = parse_args_as_kwargs(ctx.args)
+    _generate_api(ctx)
+    kwargs = _parse_args_as_kwargs(ctx.args)
     var = ctx.obj.api.create(
         archive_name,
         authority_name=authority_name,
@@ -160,9 +160,9 @@ def create(ctx, archive_name, authority_name, versioned=True, helper=False):
 @click.option('--dependency', multiple=True)
 @click.pass_context
 def update(ctx, archive_name, filepath, bumpversion='patch', prerelease=None, dependency=None):
-    generate_api(ctx)
-    kwargs = parse_args_as_kwargs(ctx.args)
-    dependencies_dict = parse_dependencies(dependency)
+    _generate_api(ctx)
+    kwargs = _parse_args_as_kwargs(ctx.args)
+    dependencies_dict = _parse_dependencies(dependency)
 
     var = ctx.obj.api.get_archive(archive_name)
     latest_version = var.get_latest_version()
@@ -193,8 +193,8 @@ def update(ctx, archive_name, filepath, bumpversion='patch', prerelease=None, de
 @click.argument('archive_name')
 @click.pass_context
 def update_metadata(ctx, archive_name):
-    generate_api(ctx)
-    kwargs = parse_args_as_kwargs(ctx.args)
+    _generate_api(ctx)
+    kwargs = _parse_args_as_kwargs(ctx.args)
 
     var = ctx.obj.api.get_archive(archive_name)
 
@@ -210,8 +210,8 @@ def update_metadata(ctx, archive_name):
 @click.option('--dependency', multiple=True)
 @click.pass_context
 def set_dependencies(ctx, archive_name, dependency=None):
-    generate_api(ctx)
-    kwargs = parse_dependencies(dependency)
+    _generate_api(ctx)
+    kwargs = _parse_dependencies(dependency)
 
     var = ctx.obj.api.get_archive(archive_name)
 
@@ -224,7 +224,7 @@ def set_dependencies(ctx, archive_name, dependency=None):
 @click.option('--version', default=None)
 @click.pass_context
 def download(ctx, archive_name, filepath, version):
-    generate_api(ctx)
+    _generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
 
     if version is None:
@@ -244,7 +244,7 @@ def download(ctx, archive_name, filepath, version):
 @click.option('--version', default=None)
 @click.pass_context
 def cat(ctx, archive_name, version):
-    generate_api(ctx)
+    _generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
 
     with var.open('r', version=version) as f:
@@ -256,7 +256,7 @@ def cat(ctx, archive_name, version):
 @click.argument('archive_name')
 @click.pass_context
 def metadata(ctx, archive_name):
-    generate_api(ctx)
+    _generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
     click.echo(pprint.pformat(var.get_metadata()))
 
@@ -265,7 +265,7 @@ def metadata(ctx, archive_name):
 @click.argument('archive_name')
 @click.pass_context
 def history(ctx, archive_name):
-    generate_api(ctx)
+    _generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
     click.echo(pprint.pformat(var.get_history()))
 
@@ -274,7 +274,7 @@ def history(ctx, archive_name):
 @click.argument('archive_name')
 @click.pass_context
 def versions(ctx, archive_name):
-    generate_api(ctx)
+    _generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
     click.echo(pprint.pformat(map(str, var.get_versions())))
 
@@ -283,7 +283,7 @@ def versions(ctx, archive_name):
 @click.option('--prefix', default='')
 @click.pass_context
 def list(ctx, prefix):
-    generate_api(ctx)
+    _generate_api(ctx)
     archives = ctx.obj.api.archives
     res = [
         var.archive_name 
@@ -296,7 +296,7 @@ def list(ctx, prefix):
 @click.argument('archive_name')
 @click.pass_context
 def delete(ctx, archive_name):
-    generate_api(ctx)
+    _generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
 
     var.delete()

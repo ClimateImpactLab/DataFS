@@ -1,5 +1,5 @@
 =========================================
-DataFS Distributed Data Management System
+DataFS Data Management System
 =========================================
 
 
@@ -21,7 +21,7 @@ DataFS Distributed Data Management System
      :alt: Updates
 
 
-DataFS is pip for data. It manages file versions, dependencies, and metadata for individual use or large organizations.
+DataFS is a package manager for data. It manages file versions, dependencies, and metadata for individual use or large organizations.
 
 Configure and connect to a metadata `Manager <http://datafs.readthedocs.io/en/latest/configure.manager.html>`_ and multiple data `Services <http://datafs.readthedocs.io/en/latest/configure.authorities.html>`_ using a specification file and you'll be sharing, tracking, and using your data in seconds.
 
@@ -89,6 +89,7 @@ All of these features are available from (and faster in) python:
 
 .. code-block:: python
 
+    >>> import datafs
     >>> api = datafs.get_api()
     >>> archive = api.get_archive('my_new_data_archive')
     >>> with archive.open('r', version='latest') as f:
@@ -137,7 +138,7 @@ Services:
 
   - AWS/S3: ``pip install boto``
   - SFTP: ``pip install paramiko``
-  - HTTP/HTTPS: ``pip install requests``
+  - XMLRPC: ``pip install xmlrpclib``
 
 
 Requirements

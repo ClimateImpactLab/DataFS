@@ -135,8 +135,8 @@ metadata that was created when it was initialized.
 
     >>> var = api.get_archive('my_first_archive')
 
-We can access the metadata for this archive through the archive's ``metadata``
-property:
+We can access the metadata for this archive through the archive's 
+:py:meth:`~datafs.core.DataArchive.get_metadata` method:
 
 .. code-block:: python
 

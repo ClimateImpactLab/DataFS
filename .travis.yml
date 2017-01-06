@@ -37,9 +37,6 @@ install:
     conda info -a;
 
     conda create -q -n datafs python=$TRAVIS_PYTHON_VERSION netCDF4 xarray dask numpy pandas;
-  import xarray as xr
-  import numpy as np
-  import pandas as pd
     source activate datafs;
     fi
   - python setup.py install

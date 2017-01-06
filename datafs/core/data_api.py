@@ -95,7 +95,7 @@ class DataAPI(object):
 
         self._manager = manager
 
-    def create_archive(
+    def create(
             self,
             archive_name,
             authority_name=None,

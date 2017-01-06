@@ -46,7 +46,7 @@ filesystem returns streaming objects returned by ``boto`` or ``request`` calls.
     >>>
     >>> api.attach_authority('aws', s3)
     >>>
-    >>> var = api.create_archive(
+    >>> var = api.create(
     ...     'streaming_archive',
     ...     metadata = dict(description = 'My test data archive'))
     >>>

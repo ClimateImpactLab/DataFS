@@ -1,8 +1,6 @@
-.. _configure:
+.. _pythonapi-creating-archives:
 
-====================
-Using the Python API
-====================
+======================
+Creating Data Archives
+======================
 
-
-.. toctree::

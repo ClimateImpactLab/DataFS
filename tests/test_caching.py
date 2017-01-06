@@ -32,7 +32,7 @@ def test_delete_handling(api, auth1, cache):
     with open('test_file.txt', 'w+') as f:
         f.write('this is an upload test')
 
-    var = api.create_archive('archive1', authority_name='auth1', versioned=False)
+    var = api.create('archive1', authority_name='auth1', versioned=False)
     var.update('test_file.txt', cache=True)
 
     assert os.path.isfile(api.cache.fs.getsyspath('archive1'))
@@ -51,7 +51,7 @@ def test_versioned_cache_handling(api, auth1, cache, opener):
     with open('test_file.txt', 'w+') as f:
         f.write('this is an upload test')
 
-    var = api.create_archive('archive1', authority_name='auth1', versioned=True)
+    var = api.create('archive1', authority_name='auth1', versioned=True)
     var.update('test_file.txt', cache=True)
 
     assert os.path.isfile(
@@ -115,7 +115,7 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
     api2.attach_authority('auth1', auth1)
     api2.attach_cache(cache2)
 
-    archive1 = api1.create_archive('myArchive', versioned=False)
+    archive1 = api1.create('myArchive', versioned=False)
     
     # Turn on caching in archive 1 and assert creation
     

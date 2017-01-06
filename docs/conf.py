@@ -62,7 +62,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'DataFS Distributed Data Management System'
+project = u'DataFS Data Management System'
 copyright = u"2016, Climate Impact Lab"
 
 # The version info for the project you're documenting, acts as replacement
@@ -222,7 +222,7 @@ latex_elements = {
 # [howto/manual]).
 latex_documents = [
     ('index', 'datafs.tex',
-     u'DataFS Distributed Data Management System Documentation',
+     u'DataFS Data Management System Documentation',
      u'Climate Impact Lab', 'manual'),
 ]
 
@@ -253,7 +253,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'datafs',
-     u'DataFS Distributed Data Management System Documentation',
+     u'DataFS Data Management System Documentation',
      [u'Climate Impact Lab'], 1)
 ]
 
@@ -268,7 +268,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'datafs',
-     u'DataFS Distributed Data Management System Documentation',
+     u'DataFS Data Management System Documentation',
      u'Climate Impact Lab',
      'datafs',
      'One line description of project.',

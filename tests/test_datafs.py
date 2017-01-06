@@ -61,7 +61,7 @@ def archive(api):
 
     archive_name = 'test_archive_{}'.format(test_id)
 
-    var = api.create_archive(
+    var = api.create(
         archive_name,
         metadata=dict(description='My test data archive #{}'.format(test_id)))
 
@@ -167,17 +167,17 @@ class TestArchiveCreation(object):
     def test_create_archive(self, api):
         archive_name = 'test_recreation_error'
 
-        api.create_archive(archive_name, metadata={'testval': 'my test value'})
+        api.create(archive_name, metadata={'testval': 'my test value'})
         var = api.get_archive(archive_name)
 
         testval = var.get_metadata()['testval']
 
         with pytest.raises(KeyError) as excinfo:
-            api.create_archive(archive_name)
+            api.create(archive_name)
 
         assert "already exists" in str(excinfo.value)
 
-        api.create_archive(
+        api.create(
             archive_name,
             metadata={
                 'testval': 'a different test value'},

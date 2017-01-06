@@ -44,7 +44,7 @@ class TestMetadataRequirements:
         api_with_spec.user_config.update(user_config)
         assert api_with_spec.manager.config['table_name'] == 'standalone-test-table'
 
-        api_with_spec.create_archive('my_spec_test_archive', metadata=metadata_config)
+        api_with_spec.create('my_spec_test_archive', metadata=metadata_config)
 
 
         api_with_spec.manager.update_metadata('my_spec_test_archive', {'metadata_key': 'metadata_val'})
@@ -62,7 +62,7 @@ class TestMetadataRequirements:
 
 
         with pytest.raises(AssertionError) as excinfo:
-            api_with_spec.create_archive('my_other_test_archive', metadata={'another_string': 'to break the test'})
+            api_with_spec.create('my_other_test_archive', metadata={'another_string': 'to break the test'})
 
 
 class TestManagers(object):
@@ -111,7 +111,7 @@ class TestManagers(object):
         }
 
         with pytest.raises(AssertionError) as excinfo:
-            api_with_spec.create_archive('my_api_test_archive', metadata={})
+            api_with_spec.create('my_api_test_archive', metadata={})
 
 
 class TestBaseManager:

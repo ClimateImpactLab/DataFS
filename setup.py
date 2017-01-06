@@ -24,7 +24,7 @@ with open('entry_points.cfg', 'r') as e:
 
 setup(
     name='datafs',
-    version='0.6.0',
+    version='0.6.1',
     description="DataFS is an abstraction layer for data storage systems. It manages file versions and metadata using a json-like storage system like AWS's DynamoDB and relies on PyFilesystem to abstract file storage, allowing you to store files locally and on the cloud in a seamless interface.",
     long_description=readme + '\n\n' + history,
     author="Climate Impact Lab",

@@ -14,6 +14,7 @@ import pytest
 
 from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
+from datafs._compat import string_types, u
 from datafs import DataAPI
 from fs.osfs import OSFS
 from fs.tempfs import TempFS
@@ -31,8 +32,11 @@ import moto
 
 from six import b
 
-from datafs._compat import string_types, u
-
+try:
+    PermissionError
+except:
+    class PermissionError(NameError):
+        pass
 
 def get_counter():
     '''
@@ -193,3 +197,17 @@ class TestArchiveCreation(object):
 
         with pytest.raises(KeyError) as excinfo:
             api.get_archive(archive_name)
+
+
+    def test_api_locks(self, api, auth1, mgr_name):
+
+        api.lock_manager()
+        api.lock_authorities()
+
+        with pytest.raises((PermissionError, NameError)) as excinfo:
+            with prep_manager(mgr_name) as manager:
+                api.attach_manager(manager)
+
+        with pytest.raises((PermissionError, NameError)) as excinfo:
+            api.attach_authority('auth', auth1)
+

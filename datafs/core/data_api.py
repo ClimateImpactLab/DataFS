@@ -46,13 +46,6 @@ class DataAPI(object):
 
         self._authorities[service_name] = DataService(service)
 
-
-    def lock_authorities(self):
-        self._authorities_locked = True
-
-    def lock_manager(self):
-        self._manager_locked = True
-
     def lock_authorities(self):
         self._authorities_locked = True
 

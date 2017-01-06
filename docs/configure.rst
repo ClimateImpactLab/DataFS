@@ -7,7 +7,7 @@ Configuring DataFS
 
 .. toctree::
 
-    confirugre.api
+    configure.api
     configure.manager
     configure.authorities
     configure.cache

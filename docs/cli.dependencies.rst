@@ -1,8 +1,6 @@
-.. _configure:
+.. _cli-dependencies:
 
-====================
-Using the Python API
-====================
+==========================
+Managing Data Dependencies
+==========================
 
-
-.. toctree::

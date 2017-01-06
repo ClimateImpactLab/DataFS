@@ -1,8 +1,6 @@
-.. _configure:
+.. _cli-creating-archives:
 
-====================
-Using the Python API
-====================
+======================
+Creating DAta Archives
+======================
 
-
-.. toctree::

@@ -49,11 +49,12 @@ class TestMetadataRequirements:
 
         api_with_spec.manager.update_metadata('my_spec_test_archive', {'metadata_key': 'metadata_val'})
 
+        assert len(api_with_spec.manager.get_metadata('my_spec_test_archive')) == 2
         assert api_with_spec.manager.get_metadata('my_spec_test_archive')['metadata_key'] == 'metadata_val'
 
-        api_with_spec.manager.update_metadata('my_spec_test_archive', {'metadata_key': ''})
+        api_with_spec.manager.update_metadata('my_spec_test_archive', {'metadata_key': None})
 
-        assert api_with_spec.manager.get_metadata('my_spec_test_archive')['metadata_key'] == ''
+        assert len(api_with_spec.manager.get_metadata('my_spec_test_archive')) == 1
 
 
         assert api_with_spec.manager._get_authority_name('my_spec_test_archive') =='auth'
@@ -62,6 +63,8 @@ class TestMetadataRequirements:
 
         with pytest.raises(AssertionError) as excinfo:
             api_with_spec.create_archive('my_other_test_archive', metadata={'another_string': 'to break the test'})
+
+
 
     def test_manager_spec_setup_api_metadata(self,api_with_spec, auth1):
 
@@ -130,9 +133,11 @@ class TestBaseManager:
             base_manager._get_table_names()
 
     
-    def test_create_archive_table(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._create_archive_table('my-data-table')
+    # def test_create_archive_table(self, api1):
+    #     api1.manager._create_archive_table('some_table_name')
+    #     assert 'some_table_name' in api1.manager.table_names 
+    #     api1.manager._delete_table('some_table_name')
+    #     assert 'some_table_name' not in api1.manager.table_names 
 
     
     def test_delete_table(self, base_manager):

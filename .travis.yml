@@ -20,9 +20,7 @@ install:
   - pip install coveralls
   - pip install pytest-cov
   - if [[ "$DATAFS_TEST_ENV" == "xarray"]]; then
-    sudo apt-get update
-    # We do this conditionally because it saves us some downloading if the
-    # version is the same.
+    sudo apt-get update;
     if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
         wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
       else
@@ -33,7 +31,6 @@ install:
     hash -r;
     conda config --set always_yes yes --set changeps1 no;
     conda update -q conda;
-    # Useful for debugging any issues with conda
     conda info -a;
 
     conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION netCDF4 xarray dask;
@@ -59,7 +56,7 @@ services:
   - mongodb
   - dynamodb
   - docker
-  
+
 before_install:
   - docker pull tray/dynamodb-local
   - docker run -d -p 8000:8000 tray/dynamodb-local -inMemory -port 8000

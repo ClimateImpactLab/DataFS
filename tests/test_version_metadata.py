@@ -38,7 +38,6 @@ class TestVersionedMetadata(object):
 		with opener(var, 'r') as f:
 			assert f.read() == 'test test, this is a test'
 
-
 		assert len(var.get_dependencies()) == 2
 
 		with opener(var, 'w+', dependencies={'arch2': '0.1.2'}) as f:

@@ -112,8 +112,8 @@ class APIConstructor(object):
         >>> from datafs.managers.manager_dynamo import DynamoDBManager
         >>> assert isinstance(mgr, DynamoDBManager)
         >>>
-        >>> mgr.table_names
-        []
+        >>> 'data-from-yaml' in mgr.table_names
+        False
         >>> mgr.create_archive_table('data-from-yaml')
         >>> print(mgr.table_names[0])
         data-from-yaml
@@ -121,12 +121,12 @@ class APIConstructor(object):
 
         '''
 
-        try:
-            mgr_class_name = manager_config['class']
-        except KeyError:
+        if 'class' not in manager_config:
             raise ValueError(
                 'Manager not fully specified. Give '
                 '"class:manager_name", e.g. "class:MongoDBManager".')
+        
+        mgr_class_name = manager_config['class']
 
         if mgr_class_name.lower()[:5] == 'mongo':
             from datafs.managers.manager_mongo import MongoDBManager as mgr_class

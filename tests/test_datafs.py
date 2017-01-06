@@ -31,10 +31,7 @@ import moto
 
 from six import b
 
-try:
-    unicode
-except NameError:
-    unicode = str
+from datafs._compat import string_types, u
 
 
 def get_counter():
@@ -105,27 +102,27 @@ class TestHashFunction(object):
         Run through a number of iterations of the hash functions
         '''
 
-        contents = unicode(contents)
+        contents = u(contents)
 
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
         apihash = self.update_and_hash(archive, contents)
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, archive.latest_hash)
+        assert direct == archive.get_latest_hash(), 'Manual hash "{}" != archive hash "{}"'.format(
+            direct, archive.get_latest_hash())
 
         # Try uploading the same file
         apihash = self.update_and_hash(archive, contents)
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, archive.latest_hash)
+        assert direct == archive.get_latest_hash(), 'Manual hash "{}" != archive hash "{}"'.format(
+            direct, archive.get_latest_hash())
 
         # Update and test again!
 
-        contents = unicode((os.linesep).join(
+        contents = u((os.linesep).join(
             [contents, contents, 'line 3!' + contents]))
 
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
@@ -139,12 +136,12 @@ class TestHashFunction(object):
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, archive.latest_hash)
+        assert direct == archive.get_latest_hash(), 'Manual hash "{}" != archive hash "{}"'.format(
+            direct, archive.get_latest_hash())
 
         # Update and test a different way!
 
-        contents = unicode((os.linesep).join([contents, 'more!!!', contents]))
+        contents = u((os.linesep).join([contents, 'more!!!', contents]))
 
         direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
 
@@ -157,8 +154,8 @@ class TestHashFunction(object):
         assert contents == current, 'Latest updates "{}" !=  archive contents "{}"'.format(
             contents, current)
 
-        assert direct == archive.latest_hash, 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, archive.latest_hash)
+        assert direct == archive.get_latest_hash(), 'Manual hash "{}" != archive hash "{}"'.format(
+            direct, archive.get_latest_hash())
 
 
 class TestArchiveCreation(object):
@@ -169,7 +166,7 @@ class TestArchiveCreation(object):
         api.create_archive(archive_name, metadata={'testval': 'my test value'})
         var = api.get_archive(archive_name)
 
-        testval = var.metadata['testval']
+        testval = var.get_metadata()['testval']
 
         with pytest.raises(KeyError) as excinfo:
             api.create_archive(archive_name)
@@ -183,12 +180,12 @@ class TestArchiveCreation(object):
             raise_on_err=False)
         var = api.get_archive(archive_name)
 
-        assert testval == var.metadata[
+        assert testval == var.get_metadata()[
             'testval'], "Test archive was incorrectly updated!"
 
         var.update_metadata({'testval': 'a different test value'})
 
-        assert var.metadata[
+        assert var.get_metadata()[
             'testval'] == 'a different test value', "Test archive was not updated!"
 
         # Test archive deletion

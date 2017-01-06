@@ -35,14 +35,20 @@ class MongoDBManager(BaseDataManager):
     '''
     Parameters
     ----------
-    api : object
-        :py:class:`~datafs.core.data_api.DataAPI` object
+    
+    database_name : str
+        Name of the database containing the DataFS tables
 
-    *args, **kwargs passed to :py:class:`pymongo.MongoClient`
+    table_name: str
+        Name of the data archive table
+
+    client_kwargs : dict
+        Keyword arguments used in initializing a :py:class:`pymongo.MongoClient`
+        object
     '''
 
-    def __init__(self, database_name, table_name, api=None, client_kwargs={}):
-        super(MongoDBManager, self).__init__(api)
+    def __init__(self, database_name, table_name, client_kwargs={}):
+        super(MongoDBManager, self).__init__(table_name)
 
         # setup MongoClient
         # Arguments can be passed to the client
@@ -50,10 +56,10 @@ class MongoDBManager(BaseDataManager):
         self._client = MongoClient(**client_kwargs)
 
         self._database_name = database_name
-        self._table_name = table_name
 
         self._db = None
         self._coll = None
+        self._spec_coll = None
 
     @property
     def config(self):
@@ -73,6 +79,7 @@ class MongoDBManager(BaseDataManager):
     def table_name(self):
         return self._table_name
 
+    @catch_timeout
     def _get_table_names(self):
         return self.db.collection_names(include_system_collections=False)
 
@@ -82,6 +89,19 @@ class MongoDBManager(BaseDataManager):
 
         self.db.create_collection(self.table_name)
 
+        
+
+        # something like create_archive for both docs
+
+
+    def _create_spec_table(self, table_name):
+
+
+        if self._spec_table_name in self._get_table_names():
+            raise KeyError('Table "{}" already exists'.format(self._spec_table_name))
+
+        self.db.create_collection(self._spec_table_name)
+
     def _delete_table(self, table_name):
         if table_name not in self._get_table_names():
             raise KeyError('Table "{}" not found'.format(table_name))
@@ -90,10 +110,25 @@ class MongoDBManager(BaseDataManager):
 
     @property
     def collection(self):
-        if self._coll is None:
-            self._connect()
+        table_name = self.table_name
 
-        return self._coll
+        if table_name not in self._get_table_names():
+            raise KeyError('Table "{}" not found'.format(table_name))
+
+
+        return self.db[table_name]
+
+    @property
+    def spec_collection(self):
+
+        spec_table_name = self._spec_table_name
+
+
+        if spec_table_name not in self._get_table_names():
+            raise KeyError('Table "{}" not found'.format(spec_table_name))
+
+        return self.db[spec_table_name]
+            
 
     @property
     def db(self):
@@ -102,60 +137,79 @@ class MongoDBManager(BaseDataManager):
 
         return self._db
 
-    def _connect(self):
 
-        if self.table_name not in self._get_table_names():
-            raise KeyError('Table "{}" not found'.format(self.table_name))
-
-        self._coll = self.db[self.table_name]
 
     # Private methods (to be implemented!)
 
     @catch_timeout
-    def _update(self, archive_name, archive_data):
+    def _update(self, archive_name, version_metadata):
         self.collection.update({"_id": archive_name},
-                               {"$push": {"versions": archive_data}})
+                               {"$push": {"version_history": version_metadata}})
 
-    def _update_metadata(self, archive_name, metadata):
-        for key, val in metadata.items():
-            self.collection.update({"_id": archive_name},
-                                   {"$set": {"metadata.{}".format(key): val}})
+    def _update_metadata(self, archive_name, archive_metadata):
+        for key, val in archive_metadata.items():
+            if val is None:
+                self.collection.update({"_id": archive_name},
+                                   {"$unset": {"archive_metadata.{}".format(key): ""}})
+
+            else:
+                self.collection.update({"_id": archive_name},
+                                   {"$set": {"archive_metadata.{}".format(key): val}})
+
+    def _update_spec_config(self,document_name, spec):
+
+        # if self._spec_coll is None:
+        #     self._spec_coll = self.db[self._]
+
+
+
+        self.spec_collection.update_many({"_id": document_name}, {"$set": {'config': spec}}, upsert=True)
 
     @catch_timeout
     def _create_archive(
             self,
             archive_name,
-            authority_name,
-            service_path,
             metadata):
 
-        doc = {
-            '_id': archive_name,
-            'authority_name': authority_name,
-            'service_path': service_path,
-            'versions': []}
-        doc['metadata'] = metadata
 
         try:
-            self.collection.insert_one(doc)
+            self.collection.insert_one(metadata)
         except DuplicateKeyError:
             raise KeyError('Archive "{}" already exists'.format(archive_name))
 
     def _create_if_not_exists(
             self,
             archive_name,
-            authority_name,
-            service_path,
             metadata):
 
         try:
             self._create_archive(
                 archive_name,
-                authority_name,
-                service_path,
                 metadata)
+
         except KeyError:
             pass
+
+
+    @catch_timeout
+    def _create_spec_config(self, table_name):
+
+        if self._spec_coll == None:
+            self._spec_coll = self.db[table_name + '.spec']
+
+        itrbl = [{'_id': x, 'config': {}} 
+                        for x in ('required_user_config', 'required_archive_metadata')]
+
+
+
+        try:
+            self.spec_collection.insert_many(itrbl)
+            #self.collection.insert_one()
+        except TypeError as e:
+            print(e)
+            #raise KeyError('Spec config files already created for {}'.format(table_name))
+
+
 
     @catch_timeout
     def _get_archive_listing(self, archive_name):
@@ -169,6 +223,16 @@ class MongoDBManager(BaseDataManager):
 
         return self.collection.find_one({'_id': archive_name})
 
+    def _get_archive_spec(self, archive_name):
+        res = self._get_archive_listing(archive_name)
+
+        if res is None:
+            raise KeyError
+
+        spec = ['authority_name', 'archive_path', 'versioned']
+        
+        return {k:v for k,v in res.items() if k in spec}
+
     def _get_authority_name(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
@@ -178,14 +242,14 @@ class MongoDBManager(BaseDataManager):
 
         return res['authority_name']
 
-    def _get_service_path(self, archive_name):
+    def _get_archive_path(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
 
         if res is None:
             raise KeyError
 
-        return res['service_path']
+        return res['archive_path']
 
     def _get_archive_metadata(self, archive_name):
 
@@ -194,26 +258,26 @@ class MongoDBManager(BaseDataManager):
         if res is None:
             raise KeyError
 
-        return res['metadata']
+        return res['archive_metadata']
 
-    def _get_versions(self, archive_name):
+    def _get_version_history(self, archive_name):
 
         res = self.collection.find_one({'_id': archive_name})
 
         if res is None:
             raise KeyError
 
-        return res['versions']
+        return res['version_history']
 
     def _get_latest_hash(self, archive_name):
 
-        versions = self._get_versions(archive_name)
+        version_history = self._get_version_history(archive_name)
 
-        if len(versions) == 0:
+        if len(version_history) == 0:
             return None
 
         else:
-            return versions[-1]['checksum']
+            return version_history[-1]['checksum']
 
     def _delete_archive_record(self, archive_name):
 
@@ -224,3 +288,18 @@ class MongoDBManager(BaseDataManager):
         res = self.collection.find({}, {"_id": 1})
 
         return [r['_id'] for r in res]
+
+    def _get_spec_documents(self, table_name):
+        return [item for item in self.spec_collection.find({})]
+
+
+    def _get_required_user_config(self):
+
+        return self.spec_collection.find_one({'_id': 'required_user_config'})['config']
+
+    def _get_required_archive_metadata(self):
+        
+        return self.spec_collection.find_one({'_id': 'required_archive_metadata'})['config']
+
+
+    

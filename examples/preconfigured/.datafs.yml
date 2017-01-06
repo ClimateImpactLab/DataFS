@@ -1,0 +1,59 @@
+# Specify a default profile
+default-profile: example
+
+# Configure your profiles here
+profiles:
+
+    # Everything under this key specifies the example profile
+    example:
+        
+        api:
+            
+            # Enter user data for each user
+            user_config:
+                contact: me@email.com
+                username: My Name
+            
+            
+        # Add multiple data filesystems to use as 
+        # the authoritative source for an archive
+        authorities:
+            
+            # The authority "local" is an OSFS 
+            # (local) filesystem, and has the relative
+            # path "example_data_dir" as it's root.
+            local:
+                service: OSFS
+                args: [example_data_dir]
+            
+            # The authority "remote" is an AWS S3FS
+            # filesystem, and uses the "aws-test"
+            # profile in the aws config file to 
+            # connect to resources on Amazon's us-east-1
+            remote:
+                service: S3FS
+                args: ['test-bucket']
+                kwargs:
+                    region_name: us-east-1
+                    profile_name: 'aws-test'
+        
+        
+        # Add one manager per profile
+        manager:
+            
+            # This manager accesses the table 
+            # 'my-test-data' in a local instance
+            # of AWS's DynamoDB. To use a live 
+            # DynamoDB, remove the endpoint_url 
+            # specification.
+            class: DynamoDBManager
+            kwargs:
+                resource_args:
+                    endpoint_url: 'http://localhost:8000/'
+                    region_name: 'us-east-1'
+                    
+                session_args:
+                    profile_name: aws-test
+                    
+                table_name: my-test-data
+

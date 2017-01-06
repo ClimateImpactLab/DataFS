@@ -16,10 +16,13 @@ from fs.tempfs import TempFS
 from fs.s3fs import S3FS
 
 from datafs import DataAPI
+from datafs._compat import string_types
 from datafs.core import data_file
 from datafs.services.service import DataService
+from datafs.managers.manager import BaseDataManager
 from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
+from tests.resources import prep_manager
 
 from contextlib import contextmanager
 
@@ -43,55 +46,19 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize('open_func', ['open_file', 'get_local_path'])
 
 
-@contextmanager
-def prep_manager(mgr_name):
+@pytest.yield_fixture(scope='function')
+def tempdir():
+    tmpdir = tempfile.mkdtemp()
 
-    table_name = 'my-new-data-table'
+    try:
+        yield tmpdir
 
-    if mgr_name == 'mongo':
-
-        manager_mongo = MongoDBManager(
-            database_name='MyDatabase',
-            table_name=table_name)
-
-        manager_mongo.create_archive_table(
-            table_name,
-            raise_on_err=False)
-
+    finally:
         try:
-            yield manager_mongo
-
-        finally:
-            manager_mongo.delete_table(
-                table_name,
-                raise_on_err=False)
-
-    elif mgr_name == 'dynamo':
-
-        manager_dynamo = DynamoDBManager(
-            table_name,
-            session_args={
-                'aws_access_key_id': "access-key-id-of-your-choice",
-                'aws_secret_access_key': "secret-key-of-your-choice"},
-            resource_args={
-                'endpoint_url': 'http://localhost:8000/',
-                'region_name': 'us-east-1'})
-
-        manager_dynamo.create_archive_table(
-            table_name,
-            raise_on_err=False)
-
-        try:
-            yield manager_dynamo
-
-        finally:
-            manager_dynamo.delete_table(
-                table_name,
-                raise_on_err=False)
-
-    else:
-        raise ValueError('Manager "{}" not recognized'.format(mgr_name))
-
+            shutil.rmtree(tmpdir)
+        except (WindowsError, OSError, IOError):
+            time.sleep(0.5)
+            shutil.rmtree(tmpdir)
 
 @contextmanager
 def prep_filesystem(fs_name):
@@ -141,6 +108,8 @@ def prep_filesystem(fs_name):
 
         finally:
             m.stop()
+
+
 
 
 @pytest.yield_fixture
@@ -228,3 +197,155 @@ def cache2():
 
     with prep_filesystem('OSFS') as filesystem:
         yield filesystem
+
+
+@pytest.yield_fixture
+def manager_with_spec(mgr_name):
+
+    with prep_manager(mgr_name, table_name='standalone-test-table') as manager:
+
+
+        metadata_config = {
+            'description': 'some metadata'
+            }
+
+        user_config = {
+            'username': 'Your Name',
+            'contact': 'my.email@example.com'
+            
+        }
+
+
+        manager.set_required_user_config(user_config)
+        manager.set_required_archive_metadata(metadata_config)
+
+        manager.required_user_config
+        manager.required_archive_metadata
+
+        yield manager
+
+
+@pytest.yield_fixture
+def api_with_spec(manager_with_spec, auth1):
+
+        api = DataAPI(
+            username='My Name',
+            contact='my.email@example.com')
+
+        api.attach_manager(manager_with_spec)
+        api.attach_authority('auth', auth1)
+
+        yield api
+
+
+@pytest.fixture
+def opener(open_func):
+    '''
+    Fixture for opening files using each of the available methods
+
+    open_func is parameterized in conftest.py
+    '''
+
+    if open_func == 'open_file':
+
+        @contextmanager
+        def inner(
+            archive, 
+            mode='r', 
+            version=None, 
+            bumpversion='patch', 
+            prerelease=None, 
+            dependencies=None,
+            *args, 
+            **kwargs):
+
+            with archive.open(
+                *args, 
+                mode=mode,
+                version=version, 
+                bumpversion=bumpversion, 
+                prerelease=prerelease,
+                dependencies=dependencies, 
+                **kwargs) as f:
+                
+                yield f
+
+        return inner
+
+    elif open_func == 'get_local_path':
+
+        @contextmanager
+        def inner(
+            archive, 
+            mode='r', 
+            version=None, 
+            bumpversion='patch', 
+            prerelease=None, 
+            dependencies=None,
+            *args, 
+            **kwargs):
+
+            with archive.get_local_path(
+                version=version, 
+                bumpversion=bumpversion, 
+                prerelease=prerelease,
+                dependencies=dependencies) as fp:
+                
+                with open(fp, mode=mode, *args, **kwargs) as f:
+                    yield f
+
+        return inner
+
+    else:
+        raise NameError('open_func "{}" not recognized'.format(open_func))
+
+
+
+@pytest.fixture
+def datafile_opener(open_func):
+    '''
+    Fixture for opening files using each of the available methods
+
+    open_func is parameterized in conftest.py
+    '''
+
+    if open_func == 'open_file':
+
+        return data_file.open_file
+
+    elif open_func == 'get_local_path':
+
+        @contextmanager
+        def inner(
+                auth,
+                cache,
+                update,
+                version_check,
+                hasher,
+                read_path,
+                write_path=None,
+                cache_on_write=False,
+                *args,
+                **kwargs):
+
+            with data_file.get_local_path(
+                auth, 
+                cache, 
+                update, 
+                version_check, 
+                hasher, 
+                read_path, 
+                write_path, 
+                cache_on_write) as fp:
+
+                assert isinstance(fp, string_types)
+
+                with open(fp, *args, **kwargs) as f:
+                    yield f
+
+        return inner
+
+    else:
+        raise NameError('open_func "{}" not recognized'.format(open_func))
+
+

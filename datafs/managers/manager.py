@@ -1,6 +1,9 @@
 
 from __future__ import absolute_import
 
+import time, threading
+from datafs.config.helpers import check_requirements
+
 
 class BaseDataManager(object):
     '''
@@ -9,67 +12,172 @@ class BaseDataManager(object):
     Should be subclassed. Not intended to be used directly.
     '''
 
-    def __init__(self, api=None):
-        self.api = api
+    TimestampFormat = '%Y%m%d-%H%M%S'
+
+    def __init__(self, table_name):
+        
+        self._table_name = table_name
+        self._spec_table_name = table_name + '.spec'
+
+        self._required_user_config = None
+        self._required_archive_metadata = None
 
     @property
     def table_names(self):
         return self._get_table_names()
 
+    @property
+    def required_user_config(self):
+        if self._required_user_config is None:
+            user_config = self._get_required_user_config()
+            assert isinstance(user_config, dict), 'sorry, user_config "{}" is a {}'.format(user_config, type(user_config))
+
+            self._required_user_config = user_config
+
+        return self._required_user_config
+
+
+    @property
+    def required_archive_metadata(self):
+        if self._required_archive_metadata is None:
+            archive_metadata = self._get_required_archive_metadata()
+            assert isinstance(archive_metadata, dict)
+
+            self._required_archive_metadata = archive_metadata
+
+        return self._required_archive_metadata
+
+
     def create_archive_table(self, table_name, raise_on_err=True):
+        '''
+
+        Parameters
+        -----------
+        table_name: str
+
+        Creates a table to store archives for your project
+        Also creates and populates a table with basic spec for user and metadata config
+
+        Returns
+        -------
+        None
+
+
+        '''
+        
         if raise_on_err:
             self._create_archive_table(table_name)
+            self._create_spec_table(table_name)
+            self._create_spec_config(table_name)
+            
 
         else:
             try:
                 self._create_archive_table(table_name)
+                self._create_spec_table(table_name)
+                self._create_spec_config(table_name)
             except KeyError:
                 pass
+
+    def update_spec_config(self, document_name, spec):
+        '''
+        Allows update to default setting of either user config or metadata config
+        One or the other must be selected as True.
+
+        Parameters:
+        table_name: str
+        user_config: bool
+        metadata_config: bool
+        **spec: kwargs
+
+        '''
+
+
+        self._update_spec_config(document_name, spec)
+
+    def set_required_user_config(self, user_config):
+        '''
+        Sets required user metadata for all users
+
+        Parameters
+        ----------
+        user_config : dict
+
+            Dictionary of required user metadata and metadata field 
+            descriptions. All archive creation and update actions will be 
+            required to have these keys in the user_config metadata. 
+
+            If the archive or version metadata does not contain these keys, an 
+            error will be raised with the descrtiption in the value associated 
+            with the key.
+
+        '''
+
+        self.update_spec_config('required_user_config', user_config)
+
+    def set_required_archive_metadata(self, metadata_config):
+        '''
+        Sets required archive metatdata for all users
+
+        Parameters
+        ----------
+        metadata_config : dict
+
+            Dictionary of required archive metada and metadata field 
+            descriptions. All archives created on this manager table will 
+            be required to have these keys in their archive's metadata.
+
+            If the archive metadata does not contain these keys, an error
+            will be raised with the description in the value associated with 
+            the key.
+
+        '''
+
+        self.update_spec_config('required_archive_metadata', metadata_config)
 
     def delete_table(self, table_name, raise_on_err=True):
         if raise_on_err:
             self._delete_table(table_name)
+            self._delete_table(table_name + '.spec')
         else:
             try:
                 self._delete_table(table_name)
             except KeyError:
                 pass
 
-    def update(self, archive_name, checksum, metadata):
+
+
+    def update(self, archive_name,  version_metadata):
         '''
         Register a new version for archive ``archive_name``
-
         .. note ::
-
             need to implement hash checking to prevent duplicate writes
-
         '''
-        version_metadata = {
-            'updated': self.api.create_timestamp(),
-            'algorithm': checksum['algorithm'],
-            'checksum': checksum['checksum']}
+        version_metadata['updated'] = self.create_timestamp()
+        version_metadata['version'] = str(version_metadata.get('version', None))
 
-        version_metadata.update(self.api.user_config)
+        
 
-        archive_data = metadata
 
-        self.update_metadata(archive_name, archive_data)
         self._update(archive_name, version_metadata)
 
-    def update_metadata(self, archive_name, metadata):
+    def update_metadata(self, archive_name, archive_metadata):
         '''
         Update metadata for archive ``archive_name``
         '''
 
-        self._update_metadata(archive_name, metadata)
+        self._update_metadata(archive_name, archive_metadata)
 
     def create_archive(
             self,
             archive_name,
             authority_name,
-            service_path,
+            archive_path,
+            versioned,
             raise_on_err=True,
-            metadata={}):
+            metadata={},
+            user_config={},
+            helper=False):
         '''
         Create a new data archive
 
@@ -80,29 +188,37 @@ class BaseDataManager(object):
 
         '''
 
-        archive_metadata = {}
-        archive_metadata.update(self.api.user_config)
-        archive_metadata.update(metadata)
+        check_requirements(
+            to_populate=user_config,
+            prompts=self.required_user_config,
+            helper=helper)
+
+        check_requirements(
+            to_populate=metadata,
+            prompts=self.required_archive_metadata,
+            helper=helper)
+
+        archive_metadata = {
+            '_id': archive_name,
+            'authority_name': authority_name,
+            'archive_path': archive_path,
+            'versioned': versioned,
+            'version_history': [],
+            'archive_metadata': metadata
+        }
+        archive_metadata.update(user_config)
 
         archive_metadata['creation_date'] = archive_metadata.get(
-            'creation_date', self.api.create_timestamp())
-
-        required = set(self.api.REQUIRED_USER_CONFIG.keys())
-        required |= set(self.api.REQUIRED_ARCHIVE_METADATA.keys())
-
-        for attr in required:
-            assert attr in archive_metadata, 'Required attribute "{}" missing from metadata'.format(
-                attr)
+            'creation_date', self.create_timestamp())
 
         if raise_on_err:
             self._create_archive(
                 archive_name,
-                authority_name,
-                service_path,
                 archive_metadata)
         else:
             self._create_if_not_exists(
-                archive_name, authority_name, service_path, archive_metadata)
+                archive_name, 
+                archive_metadata)
 
         return self.get_archive(archive_name)
 
@@ -112,30 +228,20 @@ class BaseDataManager(object):
 
         Returns
         -------
-        archive_name : str
-            name of the archive to be retrieved
-
+        archive_specification : dict
+            archive_name: name of the archive to be retrieved
+            authority: name of the archive's authority
+            archive_path: service path of archive 
         '''
 
         try:
-            authority_name = self._get_authority_name(archive_name)
-            service_path = self._get_service_path(archive_name)
+            spec = self._get_archive_spec(archive_name)
+            spec['archive_name'] = archive_name
+            return spec
 
         except KeyError:
             raise KeyError('Archive "{}" not found'.format(archive_name))
 
-        return self.api._ArchiveConstructor(
-            api=self.api,
-            archive_name=archive_name,
-            authority=authority_name,
-            service_path=service_path)
-
-    def get_archives(self):
-        '''
-        Returns a list of DataArchive objects
-
-        '''
-        return [self.get_archive(arch) for arch in self.get_archive_names()]
 
     def get_archive_names(self):
         '''
@@ -193,30 +299,38 @@ class BaseDataManager(object):
 
         self._delete_archive_record(archive_name)
 
-    def get_versions(self, archive_name):
-        return self._get_versions(archive_name)
+    def get_version_history(self, archive_name):
+        return self._get_version_history(archive_name)
+
+
+    @classmethod
+    def create_timestamp(cls):
+        '''
+        Utility function for formatting timestamps
+
+        Overload this function to change timestamp formats
+        '''
+
+        return time.strftime(cls.TimestampFormat, time.gmtime())
+
 
     # Private methods (to be implemented by subclasses of DataManager)
 
-    def _update(self, archive_name, archive_data):
+    def _update(self, archive_name, version_metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _create_archive(
-            self,
-            archive_name,
-            authority_name,
-            service_path,
-            metadata):
+        self,
+        archive_name,
+        archive_metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _create_if_not_exists(
-            self,
-            archive_name,
-            authority_name,
-            service_path,
-            metadata):
+        self,
+        archive_name, 
+        archive_metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
@@ -236,7 +350,7 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_service_path(self, archive_name):
+    def _get_archive_path(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
@@ -251,11 +365,33 @@ class BaseDataManager(object):
     def _create_archive_table(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
+    def _create_spec_table(self, table_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _create_spec_config(self, table_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _update_spec_config(self, document_name, spec):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')        
 
     def _delete_table(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_versions(self, archive_name):
+    def _get_required_user_config(self):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_required_archive_metadata(self):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_version_history(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+
+

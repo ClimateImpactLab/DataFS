@@ -1,9 +1,27 @@
 
 from datafs.config.config_file import ConfigFile
 from datafs.config.constructor import APIConstructor
+from datafs._compat import open_filelike
+
+import os
+import re
+import click
+
+def _parse_requirement(requirement_line):
+
+    # should we do archive name checking here? If the statement 
+    # doesn't split, the entire thing gets passed to create_archive
+    # or get_archive as the archive_name.
+    
+    version_stmt = map(lambda s: s.strip(), requirement_line.split('=='))
+
+    if len(version_stmt) == 1:
+        return version_stmt[0],  None
+    else:
+        return version_stmt[0], version_stmt[1]
 
 
-def get_api(profile=None, config_file=None):
+def get_api(profile=None, config_file=None, requirements='requirements_data.txt'):
     '''
     Generate a datafs.DataAPI object from a config profile
 
@@ -97,10 +115,67 @@ def get_api(profile=None, config_file=None):
 
     profile_config = config.get_profile_config(profile)
 
+
+    default_versions = {}
+    
+    if requirements is None:
+        requirements = config.config.get('requirements', None)
+
+    if requirements is not None and os.path.isfile(requirements):
+        with open_filelike(requirements, 'r') as reqfile:
+            for reqline in reqfile.readlines():
+                if re.search(r'^\s*$', reqline):
+                    continue
+                    
+                archive, version = _parse_requirement(reqline)
+                default_versions[archive] = version
+
     api = APIConstructor.generate_api_from_config(profile_config)
+    api._default_versions.update(default_versions)
 
     APIConstructor.attach_manager_from_config(api, profile_config)
     APIConstructor.attach_services_from_config(api, profile_config)
     APIConstructor.attach_cache_from_config(api, profile_config)
 
+
+
     return api
+
+
+def _interactive_config(to_populate, prompts):
+    '''
+    Interactively populates to_populate with user-entered values
+
+    Parameters
+    ----------
+
+    to_populate : dict
+        Data dictionary to fill. Default values are taken from this dictionary.
+    
+    prompts : dict
+        Keys and prompts to use when filling ``to_populate``
+    '''
+
+    for kw, prompt in prompts.items():
+        to_populate[kw] = click.prompt(
+            prompt,
+            default=to_populate.get(kw))
+
+def check_requirements(to_populate, prompts, helper=False):
+
+    for kw, prompt in prompts.items():
+        if helper:
+            if kw not in to_populate:
+                to_populate[kw] = click.prompt(prompt)
+        else:
+            msg = (
+                'Required value "{}" not found. '
+                'Use helper=True or the --helper '
+                'flag for assistance.'.format(kw))
+
+            assert kw in to_populate, msg
+
+def to_config_file(api, config_file=None, profile='default'):
+
+    config = ConfigFile(config_file=config_file, default_profile=profile)
+    config.write_config_from_api(api, config_file=config_file, profile=profile)

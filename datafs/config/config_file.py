@@ -1,6 +1,7 @@
 
 from __future__ import absolute_import
 from datafs.core.data_api import DataAPI
+from datafs._compat import open_filelike
 import yaml
 import os
 import importlib
@@ -14,6 +15,7 @@ class ConfigFile(object):
         self.default_profile = default_profile
         self.config = {
             'default-profile': self.default_profile,
+            'requirements': None,
             'profiles': {}}
 
         if config_file:
@@ -28,46 +30,33 @@ class ConfigFile(object):
 
         self.default_profile = config.get(
             'default-profile', self.config['default-profile'])
+
         self.config['default-profile'] = self.default_profile
+
+        self.config['requirements'] = config.get(
+            'requirements', self.config['requirements'])
 
         self.config['profiles'].update(config['profiles'])
 
     def read_config(self):
 
-        if hasattr(self.config_file, 'read'):
-            config = yaml.load(self.config_file)
-
-        else:
-            with open(self.config_file, 'r') as y:
-                config = yaml.load(y)
+        with open_filelike(self.config_file, 'r') as f:
+            config = yaml.load(f)
 
         self.parse_configfile_contents(config)
 
 
     def edit_config_file(self):
-        self.write_config()
 
         click.edit(filename=self.config_file)
 
     def write_config(self, fp=None):
 
-        read_fp = os.path.join(click.get_app_dir('datafs'), 'config.yml')
+        if fp is None:
+            fp = os.path.join(click.get_app_dir('datafs'), 'config.yml')
 
-        if fp is not None:
-            read_fp = fp
-
-        if hasattr(read_fp, 'write'):
-            read_fp.write(yaml.dump(self.config))
-
-        else:
-            configdir = os.path.dirname(
-                os.path.expanduser(read_fp))
-
-            if not os.path.isdir(configdir):
-                os.makedirs(configdir)
-
-            with open(os.path.expanduser(read_fp), 'w+') as f:
-                f.write(yaml.dump(self.config))
+        with open_filelike(fp, 'w+') as f:
+            f.write(yaml.dump(self.config))
 
     def get_profile_config(self, profile=None):
         if profile is None:
@@ -103,13 +92,18 @@ class ConfigFile(object):
             profile_config['manager'][kw] = profile_config[
                 'manager'].get(kw, manager_cfg[kw])
 
-        authorities_cfg = {
-            service_name: {
+        authorities_cfg = {}
+        
+        for service_name, service in api._authorities.items():
+
+            authorities_cfg[service_name] = {
                 'service': service.fs.__class__.__name__,
                 'args': [],
                 'kwargs': {}
             }
-            for service_name, service in api._authorities.items()}
+
+            if service.fs.hassyspath('/'):
+                authorities_cfg[service_name]['args'] = [service.fs.getsyspath('/')]
 
         for service_name in authorities_cfg.keys():
             if service_name not in profile_config['authorities']:
@@ -130,7 +124,7 @@ class ConfigFile(object):
                 profile_config['cache'][kw] = profile_config[
                     'cache'].get(kw, cache_cfg[kw])
 
-    def write_config_from_api(self, api, profile=None, config_file=None):
+    def write_config_from_api(self, api, config_file=None, profile=None):
         '''
         Create/update the config file from a DataAPI object
 
@@ -160,9 +154,11 @@ class ConfigFile(object):
 
             >>> from datafs import DataAPI
             >>> from datafs.managers.manager_mongo import MongoDBManager
+            >>> from fs.osfs import OSFS
             >>> from fs.tempfs import TempFS
             >>> import os
             >>> import tempfile
+            >>> import shutil
             >>>
             >>> api = DataAPI(
             ...      username='My Name',
@@ -178,7 +174,8 @@ class ConfigFile(object):
             >>>
             >>> api.attach_manager(manager)
             >>>
-            >>> local = TempFS()
+            >>> tmpdir = tempfile.mkdtemp()
+            >>> local = OSFS(tmpdir)
             >>>
             >>> api.attach_authority('local', local)
             >>>
@@ -205,8 +202,8 @@ class ConfigFile(object):
                   user_config: {contact: my.email@example.com, username: My Name}
                 authorities:
                   local:
-                    args: []
-                    service: TempFS
+                    args: [...]
+                    service: OSFS
                     kwargs: {}
                 cache: {}
                 manager:
@@ -219,6 +216,7 @@ class ConfigFile(object):
             <BLANKLINE>
             >>> conf.close()
             >>> local.close()
+            >>> shutil.rmtree(tmpdir)
 
         At this point, we can retrieve the api object from
         the configuration file:
@@ -252,6 +250,7 @@ class ConfigFile(object):
             ... """)
             >>>
             >>> import datafs
+            >>> from fs.tempfs import TempFS
             >>> api = datafs.get_api(profile='my-api', config_file=conf)
             >>>
             >>> cache = TempFS()
@@ -289,6 +288,9 @@ class ConfigFile(object):
                     table_name: DataFiles
             <BLANKLINE>
         '''
+
+        if profile is None:
+            profile = self.default_profile
 
         self.get_config_from_api(api, profile)
         self.write_config(config_file)

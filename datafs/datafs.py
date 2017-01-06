@@ -3,8 +3,13 @@
 from __future__ import absolute_import
 from datafs.core.data_api import DataAPI
 from datafs.config.config_file import ConfigFile
-from datafs.config.constructor import APIConstructor
+from datafs.config.helpers import (
+    get_api, 
+    _parse_requirement, 
+    _interactive_config)
+
 import os
+import re
 import click
 import yaml
 import pprint
@@ -17,85 +22,93 @@ def parse_args_as_kwargs(args):
         kwargs[args[i].lstrip('-')] = args[i + 1]
     return kwargs
 
-
 def interactive_configuration(api, config, profile=None):
+
+    if profile is None:
+        profile = self.default_profile
+
     profile_config = config.get_profile_config(profile)
 
     #read from the required config settings in DataAPI
-    for kw in api.REQUIRED_USER_CONFIG:
-        if kw not in api.user_config:
-            profile_config['api']['user_config'][kw] = click.prompt(
-                api.REQUIRED_USER_CONFIG[kw])
+    _interactive_config(
+        to_populate=profile_config['api']['user_config'], 
+        prompts=api.manager.required_user_config)
 
-        else:
-            profile_config['api']['user_config'][kw] = click.prompt(
-                api.REQUIRED_USER_CONFIG[kw],
-                default=profile_config['api']['user_config'][kw])
+    config.config['profiles'][profile] = profile_config
 
+def parse_dependencies(dependency_args):
+    
+    if len(dependency_args) == 0: 
+        return None
+
+    # dependencies = {}
+    return dict(map(_parse_requirement, dependency_args))
 
 class DataFSInterface(object):
 
-    def __init__(self, config={}, api=None, config_file=None, profile=None):
-        self.config = config
-        self.api = api
-        self.config_file = config_file
-
-
-
+    def __init__(self):
+        pass
 
 #this sets the command line environment for 
 @click.group()
-@click.option('--config-file', envvar='CONFIG_FILE', type=str)
-@click.option('--profile', envvar='PROFILE', type=str, default=None)
+@click.option('--config-file', type=str)
+@click.option('--requirements', type=str, default='requirements_data.txt')
+@click.option('--profile', type=str, default=None)
 @click.pass_context
-def cli(ctx, config_file=None, profile=None):
+def cli(ctx, config_file=None, requirements='requirements_data.txt', profile=None):
 
     ctx.obj = DataFSInterface()
 
     ctx.obj.config_file = config_file
+    ctx.obj.config = ConfigFile(ctx.obj.config_file)
 
-    config = ConfigFile(ctx.obj.config_file)
-    config.read_config()
-
-    ctx.obj.config = config
-
-    if profile is None:
-        profile = config.config['default-profile']
-
+    ctx.obj.requirements = requirements
     ctx.obj.profile = profile
-
-    profile_config = ctx.obj.config.get_profile_config(ctx.obj.profile)
-
-    api = APIConstructor.generate_api_from_config(profile_config)
-
-    APIConstructor.attach_manager_from_config(api, profile_config)
-    APIConstructor.attach_services_from_config(api, profile_config)
-    APIConstructor.attach_cache_from_config(api, profile_config)
-
-    ctx.obj.api = api
-
 
     @ctx.call_on_close
     def teardown():
-        ctx.obj.api.close()
+        if hasattr(ctx.obj, 'api'):
+            ctx.obj.api.close()
+
+def generate_api(ctx):
+
+
+    ctx.obj.config.read_config()
+
+    if ctx.obj.profile is None:
+        ctx.obj.profile = ctx.obj.config.config['default-profile']
+
+    ctx.obj.api = get_api(
+        profile=ctx.obj.profile, 
+        config_file=ctx.obj.config_file, 
+        requirements=ctx.obj.requirements)
 
 
 @cli.command(
     context_settings=dict(
         ignore_unknown_options=True,
         allow_extra_args=True))
-@click.option('--helper', envvar='HELPER', is_flag=True)
-@click.option('--edit', envvar='EDIT', is_flag=True)
+@click.option('--helper', is_flag=True)
+@click.option('--edit', is_flag=True)
 @click.pass_context
 def configure(ctx, helper, edit):
     '''
     Update existing configuration or create a new default profile
     '''
 
+
+    if edit:
+        ctx.obj.config.edit_config_file()
+        return
+
+    generate_api(ctx)
+
     kwargs = {ctx.args[i][2:]: ctx.args[i + 1]
               for i in xrange(0, len(ctx.args), 2)}
     ctx.obj.config.config['profiles'][ctx.obj.profile][
         'api']['user_config'].update(kwargs)
+
+    ctx.obj.api.user_config.update(kwargs)
 
     if helper:
         interactive_configuration(
@@ -103,16 +116,14 @@ def configure(ctx, helper, edit):
             ctx.obj.config,
             profile=ctx.obj.profile)
 
-    elif edit:
-        ctx.obj.config.edit_config_file()
-
     else:
-        for kw in ctx.obj.api.REQUIRED_USER_CONFIG:
+        for kw in ctx.obj.api.manager.required_user_config:
             if kw not in ctx.obj.api.user_config:
                 raise KeyError(
-                    'Required configuration option "{}" not supplied. Use --helper to configure interactively'.format(kw))
+                    'Required configuration option "{}" not supplied. '
+                    'Use --helper to configure interactively'.format(kw))
 
-    ctx.obj.config.write_config()
+    ctx.obj.config.write_config(ctx.obj.config_file)
 
 
 @cli.command(
@@ -120,15 +131,22 @@ def configure(ctx, helper, edit):
         ignore_unknown_options=True,
         allow_extra_args=True))
 @click.argument('archive_name')
-@click.option('--authority_name', envvar='AUTHORITY_NAME', default=None)
+@click.option('--authority_name', default=None)
+@click.option('--versioned', default=True)
+@click.option('--helper', is_flag=True)
 @click.pass_context
-def create_archive(ctx, archive_name, authority_name):
+def create_archive(ctx, archive_name, authority_name, versioned=True, helper=False):
+    generate_api(ctx)
     kwargs = parse_args_as_kwargs(ctx.args)
     var = ctx.obj.api.create_archive(
         archive_name,
         authority_name=authority_name,
-        metadata=kwargs)
-    click.echo('created archive {}'.format(var))
+        versioned=versioned,
+        metadata=kwargs,
+        helper=helper)
+
+    verstring = 'versioned archive' if versioned else 'archive'
+    click.echo('created {} {}'.format(verstring, var))
 
 
 @cli.command(
@@ -137,47 +155,124 @@ def create_archive(ctx, archive_name, authority_name):
         allow_extra_args=True))
 @click.argument('archive_name')
 @click.argument('filepath')
+@click.option('--bumpversion', default='patch')
+@click.option('--prerelease', default=None)
+@click.option('--dependency', multiple=True)
 @click.pass_context
-def upload(ctx, archive_name, filepath):
+def upload(ctx, archive_name, filepath, bumpversion='patch', prerelease=None, dependency=None):
+    generate_api(ctx)
     kwargs = parse_args_as_kwargs(ctx.args)
+    dependencies_dict = parse_dependencies(dependency)
+
     var = ctx.obj.api.get_archive(archive_name)
-    var.update(filepath, **kwargs)
-    click.echo('uploaded data to {}'.format(var))
+    latest_version = var.get_latest_version()
+
+    var.update(filepath, bumpversion=bumpversion, prerelease=prerelease, dependencies=dependencies_dict, **kwargs)
+    new_version = var.get_latest_version()
+
+    
+    if new_version != latest_version:
+        bumpmsg = ' version bumped {} --> {}.'.format(
+            latest_version, new_version)
+
+    elif var.versioned:
+        bumpmsg = ' version remains {}.'.format(latest_version)
+    else:
+        bumpmsg = ''
+
+    click.echo('uploaded data to {}.{}'.format(var, bumpmsg))
+
+
+@cli.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+        allow_extra_args=True))
+@click.argument('archive_name')
+@click.pass_context
+def update_metadata(ctx, archive_name):
+    generate_api(ctx)
+    kwargs = parse_args_as_kwargs(ctx.args)
+
+    var = ctx.obj.api.get_archive(archive_name)
+
+    var.update_metadata(metadata=kwargs)
+
+
+
+@cli.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+        allow_extra_args=True))
+@click.argument('archive_name')
+@click.option('--dependency', multiple=True)
+@click.pass_context
+def set_dependencies(ctx, archive_name, dependency=None):
+    generate_api(ctx)
+    kwargs = parse_dependencies(dependency)
+
+    var = ctx.obj.api.get_archive(archive_name)
+
+    var.set_dependencies(dependencies=kwargs)
 
 
 @cli.command()
 @click.argument('archive_name')
 @click.argument('filepath')
+@click.option('--version', default=None)
 @click.pass_context
-def download(ctx, archive_name, filepath):
+def download(ctx, archive_name, filepath, version):
+    generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
-    var.download(filepath)
-    click.echo('downloaded {} to {}'.format(var, filepath))
+
+    if version is None:
+        version = var.get_default_version()
+
+
+    var.download(filepath, version=version)
+
+    archstr = var.archive_name +\
+        '' if (not var.versioned) else ' v{}'.format(version)
+
+    click.echo('downloaded {} to {}'.format(archstr, filepath))
 
 
 @cli.command()
 @click.argument('archive_name')
 @click.pass_context
 def metadata(ctx, archive_name):
+    generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
-    click.echo(pprint.pformat(var.metadata))
+    click.echo(pprint.pformat(var.get_metadata()))
+
+
+@cli.command()
+@click.argument('archive_name')
+@click.pass_context
+def history(ctx, archive_name):
+    generate_api(ctx)
+    var = ctx.obj.api.get_archive(archive_name)
+    click.echo(pprint.pformat(var.get_history()))
 
 
 @cli.command()
 @click.argument('archive_name')
 @click.pass_context
 def versions(ctx, archive_name):
+    generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
-    click.echo(var.versions)
+    click.echo(pprint.pformat(map(str, var.get_versions())))
 
 
 @cli.command()
-@click.option('--prefix', envvar='PREFIX', default='')
+@click.option('--prefix', default='')
 @click.pass_context
 def list(ctx, prefix):
+    generate_api(ctx)
     archives = ctx.obj.api.archives
     res = [
-        var.archive_name for var in archives if var.archive_name.startswith(prefix)]
+        var.archive_name 
+        for var in archives if var.archive_name.startswith(prefix)]
+
     click.echo(res)
 
 

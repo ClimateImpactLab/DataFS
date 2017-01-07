@@ -8,7 +8,7 @@ Reading and Writing Files
 Writing Archive Files
 ---------------------
 
-To write to a file in DataFS you'll first need to create the archive. We'll assume you've already set up your api with manager, and authorities. 
+To write to a file in DataFS you'll first need to create the archive. We'll assume you've already set up your api with manager, and authorities. We'll use the :py:meth:`datafs.DataAPI.create`.
 
 
 .. code-block:: python
@@ -26,7 +26,7 @@ DataFS needs a file path in order to update files. So now that we have an archiv
     ...     f.write('this is a sample archive')
 
 
-Now that we have a file can we can use the ``update()`` method to upload our file. Depending on size of file and network speeds, there may be some latency when calling ``update()``. 
+Now that we have a file can we can use the ``update()`` method to upload our file. Depending on size of file and network speeds, there may be some latency when calling :py:meth:`datafs.core.DataArchive.update`. 
 
 
 .. code-block:: python
@@ -36,7 +36,8 @@ Now that we have a file can we can use the ``update()`` method to upload our fil
 
 
 Now that our archive is up let's say we want to now pull it down and read it. Reading an archive file is 
-an interface the python users will recognize. We initialize a context manager using the ``with`` statement.
+an interface the python users will recognize. We initialize a context manager using the ``with`` statement. 
+The actual call happens through :py:meth:`datafs.core.DataArchive.open`
 
 .. code-block:: python
 	
@@ -83,8 +84,7 @@ Since DataFS simply needs a filepath, you can simply provide a filepath and it w
 Downloading
 -----------
 
-If you want to download the latest version of an archive all you need to do is provide a path set ``version='latest'``. This will download the latest version to the filepath specified. 
-
+If you want to download the latest version of an archive all you need to do is provide a path set ``version='latest'``. This will download the latest version to the filepath specified. We'll use :py:meth:`datafs.core.DataArchive.get_archive` to get the archive and then use :py:meth:`datafs.core.DataArchive.download`
 
 
 .. code-block:: python
@@ -109,7 +109,8 @@ Writing Streaming Objects
 -------------------------
 
 
-If you are working with certain packages like pandas, or xarray that need a filepath, the interaction is slightly modified from typical file objects. Let' first create the dataset we want to write to
+If you are working with certain packages like pandas, or xarray that need a filepath, the interaction is slightly modified from typical file objects. Let's first create the dataset we want to write to. The method we'll use for this operation is 
+:py:meth:`datafs.core.DataArchive.get_local_path` and xarray's `open_dataset <http://xarray.pydata.org/en/stable/generated/xarray.open_dataset.html>`_ method
 
 
 .. code-block:: python
@@ -144,7 +145,8 @@ Downloading Streaming Objects
 -----------------------------
 
 Now reading a streaming object is similar a regular file object but generate a file path that is 
-then passed to the 
+then passed to the package you are using for reading and writing. In this case we are using xarray so we'll use our 
+:py:meth:`datafs.core.DataArchive.get_local_path` and xarray's `open_dataset <http://xarray.pydata.org/en/stable/generated/xarray.open_dataset.html>`_ method
 
 .. code-block:: python
 

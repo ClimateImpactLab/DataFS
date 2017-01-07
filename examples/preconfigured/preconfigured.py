@@ -111,7 +111,7 @@ From within python:
     ...     profile='example',
     ...     config_file='examples/preconfigured/.datafs.yml')
     >>> 
-    >>> archive = api.create_archive(
+    >>> archive = api.create(
     ...     'archive1', 
     ...     authority_name='local',
     ...     metadata = {'description': 'my new archive'}) 
@@ -121,7 +121,7 @@ to skip the description, an error is raised and the archive is not created:
 
 .. code-block:: python
 
-    >>> archive = api.create_archive(
+    >>> archive = api.create(
     ...     'archive2', 
     ...     authority_name='local')
     ...  # doctest: +ELLIPSIS

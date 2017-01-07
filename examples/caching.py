@@ -36,7 +36,7 @@ For this example we'll use an AWS S3 store. Any filesystem will work, though:
 
 Create an archive
 
-    >>> var = api.create_archive(
+    >>> var = api.create(
     ...     'caching_archive',
     ...     metadata = dict(description = 'My cached remote archive'),
     ...     authority_name='aws')

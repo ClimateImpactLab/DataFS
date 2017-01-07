@@ -173,7 +173,7 @@ def open_file(
 
     use_cache : bool
 
-         update, service_path, version_check, **kwargs
+         update, service_path, version_check, \*\*kwargs
     '''
 
     if write_path is None:
@@ -263,7 +263,7 @@ def get_local_path(
 
     use_cache : bool
 
-         update, service_path, version_check, **kwargs
+         update, service_path, version_check, \*\*kwargs
     '''
 
     if write_path is None:

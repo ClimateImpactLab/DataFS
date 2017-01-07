@@ -7,7 +7,7 @@ from datafs.config.helpers import (
     get_api, 
     _parse_requirement, 
     _interactive_config)
-
+from datafs._compat import u
 import os
 import re
 import click
@@ -154,20 +154,56 @@ def create(ctx, archive_name, authority_name, versioned=True, helper=False):
         ignore_unknown_options=True,
         allow_extra_args=True))
 @click.argument('archive_name')
-@click.argument('filepath')
 @click.option('--bumpversion', default='patch')
 @click.option('--prerelease', default=None)
 @click.option('--dependency', multiple=True)
+@click.option('--string', is_flag=True)
+@click.argument('file', default=None, required=False)
 @click.pass_context
-def update(ctx, archive_name, filepath, bumpversion='patch', prerelease=None, dependency=None):
+def update(
+    ctx, 
+    archive_name, 
+    bumpversion='patch', 
+    prerelease=None, 
+    dependency=None, 
+    string=False,
+    file=None):
+
+    
     _generate_api(ctx)
+    
     kwargs = _parse_args_as_kwargs(ctx.args)
     dependencies_dict = _parse_dependencies(dependency)
 
     var = ctx.obj.api.get_archive(archive_name)
     latest_version = var.get_latest_version()
 
-    var.update(filepath, bumpversion=bumpversion, prerelease=prerelease, dependencies=dependencies_dict, **kwargs)
+    if string:
+        if file is None:
+            contents = raw_input()
+        else:
+            contents = file
+
+        with var.open(
+            'w+', 
+            bumpversion=bumpversion, 
+            prerelease=prerelease, 
+            dependencies=dependencies_dict, 
+            metadata=kwargs) as f:
+
+            f.write(u(contents))
+
+    else:
+        if file is None:
+            file = click.prompt('enter filepath')
+
+        var.update(
+            file, 
+            bumpversion=bumpversion, 
+            prerelease=prerelease, 
+            dependencies=dependencies_dict, 
+            metadata=kwargs)
+    
     new_version = var.get_latest_version()
 
     if latest_version is None and new_version is not None:
@@ -184,6 +220,7 @@ def update(ctx, archive_name, filepath, bumpversion='patch', prerelease=None, de
         bumpmsg = ''
 
     click.echo('uploaded data to {}.{}'.format(var, bumpmsg))
+
 
 
 @cli.command(

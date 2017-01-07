@@ -223,6 +223,6 @@ Cleaning up
 Next steps
 ~~~~~~~~~~
 
-The :ref:`next tutorial <tutorial-aws>` describes setting up DataFS for remote obejct stores, such as with AWS storage.
+The :ref:`next tutorial <examples-aws>` describes setting up DataFS for remote obejct stores, such as with AWS storage.
 
 '''

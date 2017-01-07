@@ -1,4 +1,4 @@
-.. _tutorial-aws:
+.. _examples-other:
 
 Using Other Services
 ====================

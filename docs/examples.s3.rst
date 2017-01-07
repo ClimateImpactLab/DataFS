@@ -1,4 +1,4 @@
-.. _tutorial-aws:
+.. _examples-aws:
 
 Using DataFS with AWS's S3
 =============================

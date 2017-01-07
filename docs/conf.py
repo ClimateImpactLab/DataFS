@@ -33,6 +33,19 @@ sys.path.insert(0, project_root)
 
 import datafs
 
+# -- Suppress Non-local URI Warning ------------------------------------
+
+import sphinx.environment
+from docutils.utils import get_source_line
+
+def _warn_node(self, msg, node, **kwargs):
+    if not msg.startswith('nonlocal image URI found:'):
+        self._warnfunc(msg, '%s:%s' % get_source_line(node), **kwargs)
+
+sphinx.environment.BuildEnvironment.warn_node = _warn_node
+suppress_warnings = ['image.nonlocal_uri']
+
+
 # -- General configuration ---------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -46,6 +59,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx']
+
 
 napoleon_numpy_docstring = True
 

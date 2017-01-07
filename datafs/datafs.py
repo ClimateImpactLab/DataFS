@@ -172,7 +172,7 @@ def update(ctx, archive_name, filepath, bumpversion='patch', prerelease=None, de
 
     if latest_version is None and new_version is not None:
         bumpmsg = ' new version {} created.'.format(
-            latest_version, new_version)
+            new_version)
     
     elif new_version != latest_version:
         bumpmsg = ' version bumped {} --> {}.'.format(

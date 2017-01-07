@@ -114,22 +114,23 @@ class DataAPI(object):
             Name of the archive
 
         authority_name : str
-            Name of the data service to use as the archive's version "authority"
+            Name of the data service to use as the archive's data authority
 
         archive_path : str
             Path to use on the data services (optional)
 
+        versioned : bool
+            If true, store all versions with explicit version numbers (defualt)
+
         raise_on_err : bool
             Raise an error if the archive already exists (default True)
 
-        **kwargs will be passed to the archive as metadata
+        metadata : dict
+            Dictionary of additional archive metadata
 
-
-        .. todo::
-
-            Should you be allowed to create an archive with a default version? 
-            This will fail on archive.open() and archive.get_local_path() 
-            because the version does not yet exist.
+        helper : bool
+            If true, interactively prompt for required metadata (default False)
+        
 
         '''
 

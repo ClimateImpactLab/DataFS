@@ -1,4 +1,4 @@
-.. _configure:
+.. _pythonapi:
 
 ====================
 Using the Python API

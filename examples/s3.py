@@ -233,7 +233,7 @@ Cleaning up
 Next steps
 ~~~~~~~~~~
 
-:ref:`examples.other` describes setting up DataFS for
+:ref:`examples-other` describes setting up DataFS for
 other filesystems, such as sftp or http.
 
 '''

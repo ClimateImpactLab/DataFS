@@ -258,20 +258,20 @@ def test_cli_local(test_config):
     
     with runner.isolated_filesystem():
 
-        with open('here.txt', 'w+') as to_update:
-            to_update.write('new version data')
-
-        result = runner.invoke(cli, prefix + ['update', 'my_first_archive', 'here.txt', '--bumpversion', 'minor'])
+        result = runner.invoke(cli, prefix + ['update', 'my_first_archive', '--bumpversion', 'minor', '--string', 'new version data'])
         assert result.exit_code == 0
 
-        os.remove('here.txt')
-
-        result = runner.invoke(cli, prefix + ['download', 'my_first_archive', 'here.txt'])
+        result = runner.invoke(cli, prefix + ['cat', 'my_first_archive'])
         assert result.exit_code == 0
 
-        with open('here.txt', 'r') as downloaded:
-            assert downloaded.read() == 'new version data'
+        'new version data' in result.output
 
+        result = runner.invoke(cli, prefix + ['download', 'my_first_archive', 'here.txt', '--version', '0.0.1'])
+        assert result.exit_code == 0
+
+        'Hoo Yah! Stay Stoked!' in result.output
+
+        # test download of previous version
         result = runner.invoke(cli, prefix + ['download', 'my_first_archive', 'here.txt', '--version', '0.0.1'])
         assert result.exit_code == 0
 
@@ -291,7 +291,13 @@ def test_cli_local(test_config):
 
 
     #teardown
-    api2.archives[0].delete()
+    result = runner.invoke(cli, prefix + ['delete', 'my_first_archive'])
+
+    result = runner.invoke(cli, prefix + ['list'])
+    assert result.exit_code == 0
+    assert [] == ast.literal_eval(result.output)
+
+    assert len(api2.archives) == 0
 
 
 

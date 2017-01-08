@@ -11,7 +11,7 @@ from datafs._compat import u
 import os
 import re
 import click
-import yaml
+import sys
 import pprint
 
 
@@ -179,10 +179,6 @@ def update(
     latest_version = var.get_latest_version()
 
     if string:
-        if file is None:
-            contents = raw_input()
-        else:
-            contents = file
 
         with var.open(
             'w+', 
@@ -191,7 +187,11 @@ def update(
             dependencies=dependencies_dict, 
             metadata=kwargs) as f:
 
-            f.write(u(contents))
+            if file is None:
+                for line in sys.stdin:
+                    f.write(u(line))
+            else:
+                f.write(u(file))
 
     else:
         if file is None:

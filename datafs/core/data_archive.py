@@ -420,7 +420,7 @@ class DataArchive(object):
             yield f
 
     @contextmanager
-    def get_local_path(self, version=None, bumpversion=None, prerelease=None, dependencies=None, metadata={}, *args, **kwargs):
+    def get_local_path(self, version=None, bumpversion=None, prerelease=None, dependencies=None, metadata={}):
         '''
         Returns a local path for read/write
 

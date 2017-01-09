@@ -32,7 +32,7 @@ class TestVersionedMetadata(object):
 
 		var.update(
 			fp, 
-			version='patch', 
+			bumpversion='patch', 
 			dependencies={'arch1': '0.1.0', 'arch2': '0.2.0'})
 
 		with opener(var, 'r') as f:

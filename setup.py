@@ -10,21 +10,39 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 
-with open('requirements.txt', 'r') as req:
-    requirements = [req for req in req.readlines() if '==' in req]
+requirements_install = [
+    'click==6.6',
+    'PyYAML==3.12'
+]
 
-with open('requirements.txt', 'r') as req:
-    dependency_links = [req for req in req.readlines() if 'http' in req]
+dependency_links = [
+    'git+https://github.com/PyFilesystem/pyfilesystem.git@c94b20c877f1f2ab190d7b1eae3ecc53b3a6d295#egg=pyfilesystem']
 
-with open('requirements_test.txt', 'r') as req:
-    test_requirements = [req for req in req.readlines() if '==' in req]
+requirements_test = [
+    'pip==9.0.1',
+    'wheel==0.29.0',
+    'flake8==3.2.1',
+    'tox==2.5.0',
+    'coverage==4.3.1',
+    'pytest==3.0.5',
+    'pytest_cov==2.4.0',
+    'Sphinx==1.5.1',
+    'sphinx_rtd_theme==0.1.10a0',
+    'moto==0.4.30',
+    'pymongo==3.4.0',
+    'boto3==1.4.3'
+]
 
-with open('entry_points.cfg', 'r') as e:
-    entry_points = e.read()
+extras = {
+    'test': requirements_test
+}
+
+
+entry_points = '[console_scripts]\ndatafs=datafs.datafs:cli'
 
 setup(
     name='datafs',
-    version='0.6.1',
+    version='0.6.2',
     description="DataFS is an abstraction layer for data storage systems. It manages file versions and metadata using a json-like storage system like AWS's DynamoDB and relies on PyFilesystem to abstract file storage, allowing you to store files locally and on the cloud in a seamless interface.",
     long_description=readme + '\n\n' + history,
     author="Climate Impact Lab",
@@ -33,7 +51,7 @@ setup(
     package_dir={'datafs':
                  'datafs'},
     include_package_data=True,
-    install_requires=requirements,
+    install_requires=requirements_install,
     entry_points=entry_points,
     license="MIT license",
     zip_safe=False,
@@ -45,14 +63,9 @@ setup(
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.7'
-        # 'Programming Language :: Python :: 3',
-        # 'Programming Language :: Python :: 3.3',
-        # 'Programming Language :: Python :: 3.4',
-        # 'Programming Language :: Python :: 3.5',
     ],
     test_suite='tests',
-    tests_require=test_requirements,
-    dependency_links = [
-    'git+https://github.com/PyFilesystem/pyfilesystem.git@c94b20c877f1f2ab190d7b1eae3ecc53b3a6d295#egg=pyfilesystem'
-    ]
+    tests_require=requirements_test,
+    extras_require=extras,
+    dependency_links = dependency_links
 )

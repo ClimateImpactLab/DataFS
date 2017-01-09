@@ -4,6 +4,7 @@ Examples
 ========
 
 .. toctree::
+    :maxdepth: 1
 
     examples.local
     examples.ondisk

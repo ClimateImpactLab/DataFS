@@ -118,14 +118,20 @@ class DataArchive(object):
             >>> 
             >>> print(ver.get_version_path('0.0.0'))
             arch2/0.0.0
+            >>> print(ver.get_version_path('latest')) # doctest: +ELLIPSIS
+            Traceback (most recent call last):
+            ...
+            AttributeError: 'NoneType' object has no attribute 'manager'
 
 
         '''
 
         if self.versioned:
             if version is None:
- 
                 version = self.get_default_version()
+
+            elif isinstance(version, string_types) and version == 'latest':
+                version = self.get_latest_version()
 
             if version is None:
                 return fs.path.join(self.archive_path, str(BumpableVersion()))
@@ -186,7 +192,7 @@ class DataArchive(object):
         bumpversion=None, 
         prerelease=None, 
         dependencies=None,
-        **kwargs):
+        metadata={}):
         '''
         Enter a new version to a DataArchive
 
@@ -218,7 +224,9 @@ class DataArchive(object):
             non-None value. If the archive is not versioned, prerelease is 
             ignored.
 
-        kwargs stored as update to metadata.
+        metadata : dict
+            Updates to archive metadata. Pass {key: None} to remove a key from 
+            the archive's metadata.
 
 
         '''
@@ -231,7 +239,7 @@ class DataArchive(object):
         algorithm = hashval['algorithm']
 
         if checksum == self.get_latest_hash():
-            self.update_metadata(kwargs)
+            self.update_metadata(metadata)
 
             if remove and os.path.isfile(filepath):
                 os.remove(filepath)
@@ -263,7 +271,7 @@ class DataArchive(object):
             self.authority.upload(filepath, next_path, remove=remove)
 
         self._update_manager(
-            archive_metadata=kwargs, 
+            archive_metadata=metadata, 
             version_metadata=dict(checksum=checksum, algorithm=algorithm, version=next_version, dependencies=dependencies))
 
     def _get_default_dependencies(self):
@@ -311,7 +319,7 @@ class DataArchive(object):
     # File I/O methods
 
     @contextmanager
-    def open(self, mode='r', version=None, bumpversion=None, prerelease=None, dependencies = None, *args, **kwargs):
+    def open(self, mode='r', version=None, bumpversion=None, prerelease=None, dependencies = None, metadata={}, *args, **kwargs):
         '''
         Opens a file for read/write
 
@@ -338,6 +346,10 @@ class DataArchive(object):
             'beta'. Either bumpversion or prerelease (or both) must be a 
             non-None value. If the archive is not versioned, prerelease is 
             ignored.
+
+        metadata : dict
+            Updates to archive metadata. Pass {key: None} to remove a key from 
+            the archive's metadata.
 
 
         args, kwargs sent to file system opener
@@ -384,8 +396,13 @@ class DataArchive(object):
         version_check = lambda chk: chk['checksum'] == version_hash
 
         # Updater updates the manager with the latest version number
-        updater = lambda **kwargs: self._update_manager(
-            version_metadata=dict(version=next_version, dependencies=dependencies, **kwargs))
+        updater = lambda checksum, algorithm: self._update_manager(
+            archive_metadata=metadata,
+            version_metadata=dict(
+                version=next_version, 
+                dependencies=dependencies, 
+                checksum=checksum, 
+                algorithm=algorithm))
 
         opener = data_file.open_file(
             self.authority,
@@ -403,7 +420,7 @@ class DataArchive(object):
             yield f
 
     @contextmanager
-    def get_local_path(self, version=None, bumpversion=None, prerelease=None, dependencies=None, *args, **kwargs):
+    def get_local_path(self, version=None, bumpversion=None, prerelease=None, dependencies=None, metadata={}):
         '''
         Returns a local path for read/write
 
@@ -427,6 +444,10 @@ class DataArchive(object):
             'beta'. Either bumpversion or prerelease (or both) must be a 
             non-None value. If the archive is not versioned, prerelease is 
             ignored.
+
+        metadata : dict
+            Updates to archive metadata. Pass {key: None} to remove a key from 
+            the archive's metadata.
 
         '''
         if version is None:
@@ -472,8 +493,13 @@ class DataArchive(object):
         version_check = lambda chk: chk['checksum'] == version_hash
 
         # Updater updates the manager with the latest version number
-        updater = lambda **kwargs: self._update_manager(
-            version_metadata=dict(version=next_version, dependencies=dependencies, **kwargs))
+        updater = lambda checksum, algorithm: self._update_manager(
+            archive_metadata=metadata,
+            version_metadata=dict(
+                version=next_version, 
+                dependencies=dependencies, 
+                checksum=checksum, 
+                algorithm=algorithm))
 
         path = data_file.get_local_path(
             self.authority,
@@ -494,7 +520,6 @@ class DataArchive(object):
         Downloads a file from authority to local path
         1. First checks in cache to check if file is there and if it is, is it up to date
         2. If it is not up to date, it will download the file to cache
-        3. If not break
         '''
 
         if version is None:
@@ -546,9 +571,8 @@ class DataArchive(object):
         .. warning::
 
             Deleting an archive will erase all data and metadata permanently.
-            This functionality can be removed by subclassing and overloading
-            this method. For help subclassing DataFS see
-            :ref:`Subclassing DataFS <tutorial-subclassing>`
+            For help setting user permissions, see 
+            :ref:`Administrative Tools <admin>`
 
         '''
 

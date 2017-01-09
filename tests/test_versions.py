@@ -7,7 +7,7 @@ def test_version_tracking(api1, auth1, opener):
 
     api1.attach_authority('auth', auth1)
 
-    archive = api1.create_archive('test_versioned_archive')
+    archive = api1.create('test_versioned_archive')
 
     assert archive.versioned, "Archive not versioned, but should be by default"
 
@@ -65,11 +65,11 @@ def test_version_tracking(api1, auth1, opener):
     assert 'not found in archive history' in str(excinfo.value)
 
 
-def test_versioned_fs_functions(api1, auth1, opener):
+def test_versioned_fs_functions(api1, auth2, opener):
 
-    api1.attach_authority('auth', auth1)
+    api1.attach_authority('auth', auth2)
 
-    archive = api1.create_archive('fs_funcs_test_archive')
+    archive = api1.create('fs_funcs_test_archive')
 
     assert not archive.isfile()
     assert not archive.hasmeta()

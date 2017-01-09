@@ -14,6 +14,7 @@ import pytest
 
 from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
+from datafs._compat import string_types, u
 from datafs import DataAPI
 from fs.osfs import OSFS
 from fs.tempfs import TempFS
@@ -31,8 +32,11 @@ import moto
 
 from six import b
 
-from datafs._compat import string_types, u
-
+try:
+    PermissionError
+except:
+    class PermissionError(NameError):
+        pass
 
 def get_counter():
     '''
@@ -57,7 +61,7 @@ def archive(api):
 
     archive_name = 'test_archive_{}'.format(test_id)
 
-    var = api.create_archive(
+    var = api.create(
         archive_name,
         metadata=dict(description='My test data archive #{}'.format(test_id)))
 
@@ -163,17 +167,17 @@ class TestArchiveCreation(object):
     def test_create_archive(self, api):
         archive_name = 'test_recreation_error'
 
-        api.create_archive(archive_name, metadata={'testval': 'my test value'})
+        api.create(archive_name, metadata={'testval': 'my test value'})
         var = api.get_archive(archive_name)
 
         testval = var.get_metadata()['testval']
 
         with pytest.raises(KeyError) as excinfo:
-            api.create_archive(archive_name)
+            api.create(archive_name)
 
         assert "already exists" in str(excinfo.value)
 
-        api.create_archive(
+        api.create(
             archive_name,
             metadata={
                 'testval': 'a different test value'},
@@ -193,3 +197,17 @@ class TestArchiveCreation(object):
 
         with pytest.raises(KeyError) as excinfo:
             api.get_archive(archive_name)
+
+
+    def test_api_locks(self, api, auth1, mgr_name):
+
+        api.lock_manager()
+        api.lock_authorities()
+
+        with pytest.raises((PermissionError, NameError)) as excinfo:
+            with prep_manager(mgr_name) as manager:
+                api.attach_manager(manager)
+
+        with pytest.raises((PermissionError, NameError)) as excinfo:
+            api.attach_authority('auth', auth1)
+

@@ -117,7 +117,7 @@ metadata. To suppress errors on re-creation, use the
 
 .. code-block:: python
 
-    >>> api.create_archive(
+    >>> api.create(
     ...     'my_remote_archive',
     ...     metadata = dict(description = 'My test data archive'))
     <DataArchive aws://my_remote_archive>
@@ -146,8 +146,8 @@ metadata that was created when it was initialized.
 
     >>> var = api.get_archive('my_remote_archive')
 
-We can access the metadata for this archive through the archive's ``metadata``
-property:
+We can access the metadata for this archive through the archive's 
+:py:meth:`~datafs.core.DataArchive.get_metadata` method:
 
 .. code-block:: python
 
@@ -233,7 +233,7 @@ Cleaning up
 Next steps
 ~~~~~~~~~~
 
-The :ref:`next tutorial <examples.other>` describes setting up DataFS for
+:ref:`examples-other` describes setting up DataFS for
 other filesystems, such as sftp or http.
 
 '''

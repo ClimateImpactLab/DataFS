@@ -88,7 +88,7 @@ class BaseDataManager(object):
         table_name: str
         user_config: bool
         metadata_config: bool
-        **spec: kwargs
+        \*\*spec: kwargs
 
         '''
 
@@ -135,7 +135,10 @@ class BaseDataManager(object):
 
         self.update_spec_config('required_archive_metadata', metadata_config)
 
-    def delete_table(self, table_name, raise_on_err=True):
+    def delete_table(self, table_name=None, raise_on_err=True):
+        if table_name is None:
+            table_name = self._table_name
+            
         if raise_on_err:
             self._delete_table(table_name)
             self._delete_table(table_name + '.spec')
@@ -150,7 +153,9 @@ class BaseDataManager(object):
     def update(self, archive_name,  version_metadata):
         '''
         Register a new version for archive ``archive_name``
+        
         .. note ::
+        
             need to implement hash checking to prevent duplicate writes
         '''
         version_metadata['updated'] = self.create_timestamp()
@@ -365,6 +370,7 @@ class BaseDataManager(object):
     def _create_archive_table(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
+        
     def _create_spec_table(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')

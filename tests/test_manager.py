@@ -1,7 +1,7 @@
 
 from __future__ import absolute_import
 from datafs.managers.manager import BaseDataManager
-
+from botocore.exceptions import ClientError
 import pytest
 
 @pytest.fixture
@@ -44,7 +44,7 @@ class TestMetadataRequirements:
         api_with_spec.user_config.update(user_config)
         assert api_with_spec.manager.config['table_name'] == 'standalone-test-table'
 
-        api_with_spec.create_archive('my_spec_test_archive', metadata=metadata_config)
+        api_with_spec.create('my_spec_test_archive', metadata=metadata_config)
 
 
         api_with_spec.manager.update_metadata('my_spec_test_archive', {'metadata_key': 'metadata_val'})
@@ -62,7 +62,44 @@ class TestMetadataRequirements:
 
 
         with pytest.raises(AssertionError) as excinfo:
-            api_with_spec.create_archive('my_other_test_archive', metadata={'another_string': 'to break the test'})
+            api_with_spec.create('my_other_test_archive', metadata={'another_string': 'to break the test'})
+
+
+class TestManagers(object):
+
+    def test_error_handling(self, api):
+
+        with pytest.raises(KeyError) as excinfo:
+            api.manager._get_authority_name('nonexistant_archive')
+
+        with pytest.raises(KeyError) as excinfo:
+            api.manager._get_archive_path('nonexistant_archive')
+        
+        with pytest.raises(KeyError) as excinfo:
+            api.manager._get_archive_metadata('nonexistant_archive')
+        
+        with pytest.raises(KeyError) as excinfo:
+            api.manager._get_version_history('nonexistant_archive')
+        
+        with pytest.raises(KeyError) as excinfo:
+            api.manager._get_archive_spec('nonexistant_archive')
+
+
+    def test_table_deletion(self, api):
+        
+        with pytest.raises(KeyError) as excinfo:
+            api.manager._delete_table('nonexistant-table')
+
+        api.manager._delete_table(api.manager._table_name)
+
+        with pytest.raises((KeyError, ClientError)) as excinfo:
+            api.manager._update('nonexistant_archive', {})
+
+        api.manager._delete_table(api.manager._spec_table_name)
+
+        with pytest.raises((KeyError, ClientError)) as excinfo:
+            api.manager._update_spec_config('required_user_config', {})
+
 
 
 
@@ -74,78 +111,82 @@ class TestMetadataRequirements:
         }
 
         with pytest.raises(AssertionError) as excinfo:
-            api_with_spec.create_archive('my_api_test_archive', metadata={})
+            api_with_spec.create('my_api_test_archive', metadata={})
 
 
 class TestBaseManager:
     
     def test_update(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._update('archive 1', {})
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._update('archive_name', {})
 
-    
-    def test_create_archive(self, base_manager, auth1):
-        with pytest.raises(NotImplementedError):
-            base_manager._create_archive(
-                'archive_1',
-                {})
+    def test_create_archive(self, base_manager):
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._create_archive('archive_name',{})
 
-    
-    def test_create_if_not_exists(self, base_manager, auth1):
-        with pytest.raises(NotImplementedError):
-            base_manager._create_if_not_exists('archive_1', {
-                'authority_name': 'auth1',
-                'archive_path': 'archive/1'})
+    def test_create_if_not_exists(self, base_manager):
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._create_if_not_exists('archive_name', {})
 
-    
     def test_get_archives(self, base_manager):
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(NotImplementedError) as exc_info:
             base_manager._get_archives()
 
-    
     def test_get_archive_metadata(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._get_archive_metadata('archive 1')
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._get_archive_metadata('archive_name')
 
-    
     def test_get_latest_hash(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._get_latest_hash('archive 1')
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._get_latest_hash('archive_name')
 
-    
     def test_get_authority_name(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._get_authority_name('archive 1')
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._get_authority_name('archive_name')
 
-    
     def test_get_archive_path(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._get_archive_path('archive 1')
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._get_archive_path('archive_name')
 
-    
     def test_delete_archive_record(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._delete_archive_record('archive 1')
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._delete_archive_record('archive_name')
 
-    
     def test_get_table_names(self, base_manager):
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(NotImplementedError) as exc_info:
             base_manager._get_table_names()
 
-    
-    # def test_create_archive_table(self, api1):
-    #     api1.manager._create_archive_table('some_table_name')
-    #     assert 'some_table_name' in api1.manager.table_names 
-    #     api1.manager._delete_table('some_table_name')
-    #     assert 'some_table_name' not in api1.manager.table_names 
+    def test_create_archive_table(self, base_manager):
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._create_archive_table('table_name')
+        
+    def test_create_spec_table(self, base_manager):
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._create_spec_table('table_name')
 
-    
+    def test_create_spec_config(self, base_manager):
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._create_spec_config('table_name')
+
+    def test_update_spec_config(self, base_manager):
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._update_spec_config('required_user_config', {})
+
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._update_spec_config('required_archive_metadata', {})
+
     def test_delete_table(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._delete_table('my-data-table')
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._delete_table('table_name')
 
-    
+    def test_get_required_user_config(self, base_manager):
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._get_required_user_config()
+
+    def test_get_required_archive_metadata(self, base_manager):
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._get_required_archive_metadata()
+
     def test_get_version_history(self, base_manager):
-        with pytest.raises(NotImplementedError):
-            base_manager._get_version_history('archive 1')
-
+        with pytest.raises(NotImplementedError) as exc_info:
+            base_manager._get_version_history('archive_name')

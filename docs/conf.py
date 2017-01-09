@@ -33,6 +33,19 @@ sys.path.insert(0, project_root)
 
 import datafs
 
+# -- Suppress Non-local URI Warning ------------------------------------
+
+import sphinx.environment
+from docutils.utils import get_source_line
+
+def _warn_node(self, msg, node, **kwargs):
+    if not msg.startswith('nonlocal image URI found:'):
+        self._warnfunc(msg, '%s:%s' % get_source_line(node), **kwargs)
+
+sphinx.environment.BuildEnvironment.warn_node = _warn_node
+suppress_warnings = ['image.nonlocal_uri']
+
+
 # -- General configuration ---------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -46,6 +59,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx']
+
 
 napoleon_numpy_docstring = True
 
@@ -62,7 +76,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'DataFS Distributed Data Management System'
+project = u'DataFS Data Management System'
 copyright = u"2016, Climate Impact Lab"
 
 # The version info for the project you're documenting, acts as replacement
@@ -222,7 +236,7 @@ latex_elements = {
 # [howto/manual]).
 latex_documents = [
     ('index', 'datafs.tex',
-     u'DataFS Distributed Data Management System Documentation',
+     u'DataFS Data Management System Documentation',
      u'Climate Impact Lab', 'manual'),
 ]
 
@@ -253,7 +267,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'datafs',
-     u'DataFS Distributed Data Management System Documentation',
+     u'DataFS Data Management System Documentation',
      [u'Climate Impact Lab'], 1)
 ]
 
@@ -268,7 +282,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'datafs',
-     u'DataFS Distributed Data Management System Documentation',
+     u'DataFS Data Management System Documentation',
      u'Climate Impact Lab',
      'datafs',
      'One line description of project.',

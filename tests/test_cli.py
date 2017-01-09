@@ -2,11 +2,14 @@ from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
 from datafs.datafs import cli
 from datafs import DataAPI, get_api, to_config_file
+from tests.resources import _close
 import tempfile
 import os
 import click
 from click.testing import CliRunner
 import pytest, shutil
+import yaml
+import ast
 
 try:
     from StringIO import StringIO
@@ -14,26 +17,6 @@ try:
 except ImportError:
     from io import StringIO
 
-
-
-
-def _close(path):
-
-    closed = False
-
-    for i in range(5):
-        try:
-            if os.path.isfile(path):
-                os.remove(path)
-            else:
-                shutil.rmtree(path)
-            closed = True
-            break
-        except OSError as e:
-            time.sleep(0.5)
-
-    if not closed:
-        raise e
 
 
 @pytest.yield_fixture(scope='module')
@@ -120,109 +103,18 @@ profiles:
     yield 'myapi', temp_file
 
 
-def test_cli_local(test_config):
-
-    profile, temp_file = test_config
-
-    api2 = get_api(profile=profile, config_file=temp_file)
-
-    runner = CliRunner()
-
-
-    #test for configure and create archive
-    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'create_archive', 'my_first_archive', '--description', 'My test data archive'])
-    assert result.exit_code == 0
-    assert result.output.strip() == 'created versioned archive <DataArchive local://my_first_archive>'
-
-    #test the actual creation of the object from the api side
-    assert len(api2.archives) == 1
-    assert api2.archives[0].archive_name == 'my_first_archive'
-
-    #testing the `metadata` option
-    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'metadata', 'my_first_archive'])
-    assert result.exit_code == 0
-    assert "'description': 'My test data archive'" in result.output or "u'description': u'My test data archive'" in result.output
-    #test the api side of the operation
-    assert u'My test data archive' in api2.archives[0].get_metadata().values()
-
-
-
-    result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'list'])
-    #print result.output
-    assert result.exit_code == 0
-    assert 'my_first_archive' in result.output
-    assert api2.archives[0].archive_name == 'my_first_archive'
-
-
-    with runner.isolated_filesystem():
-        with open('hello.txt', 'w') as f:
-            f.write('Hoo Yah! Stay Stoked!')
-
-        #use testing suite to make command line update
-        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'upload', 'my_first_archive', 'hello.txt', '--source', 'Surfers Journal'])
-        assert result.exit_code == 0
-        #assert that we get upload feedback
-        assert 'uploaded data to <DataArchive local://my_first_archive>' in result.output
-        #lets read the file to make sure it says what we want
-        with open('hello.txt','r') as f:
-            data = f.read()
-            assert data == 'Hoo Yah! Stay Stoked!'
-        print result.output
-
-    #this is testing the feed through on the api
-    with api2.archives[0].open('r') as f:
-        data = f.read()
-        assert data == 'Hoo Yah! Stay Stoked!'
-
-    #lets check to make sure our metadata update also passed through
-    assert 'Surfers Journal' ==  api2.archives[0].get_metadata()['source']
-
-    
-    #test to assert metadata update
-    #test to assert file content change
-
-    
-    with runner.isolated_filesystem():
-
-        with open('here.txt', 'w+') as to_upload:
-            to_upload.write('new version data')
-
-        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'upload', 'my_first_archive', 'here.txt', '--bumpversion', 'minor'])
-        assert result.exit_code == 0
-
-        os.remove('here.txt')
-
-        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'download', 'my_first_archive', 'here.txt'])
-        assert result.exit_code == 0
-
-        with open('here.txt', 'r') as downloaded:
-            assert downloaded.read() == 'new version data'
-
-        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'download', 'my_first_archive', 'here.txt', '--version', '0.0.1'])
-        assert result.exit_code == 0
-
-        with open('here.txt', 'r') as downloaded:
-            assert downloaded.read() == 'Hoo Yah! Stay Stoked!'
-
-        # test download of nonexistant version (should fail without overwriting file)
-        result = runner.invoke(cli, ['--config-file', '{}'.format(temp_file), '--profile', 'myapi', 'download', 'my_first_archive', 'here.txt', '--version', '3.0'])
-        assert result.exit_code != 0
-
-        with open('here.txt', 'r') as downloaded:
-            assert downloaded.read() == 'Hoo Yah! Stay Stoked!'
-
-        os.remove('here.txt')
-
-
-
-
-    #teardown
-    api2.archives[0].delete()
-
-
 
 @pytest.yield_fixture(scope='module')
 def preloaded_config(test_config):
+    '''
+    Prepare a manager/auth config with 3 archives, each having 3 versions
+
+    .. note::
+
+        To save on test runtime, scope == module. Tests should not modify 
+        these archives.
+
+    '''
 
     profile, temp_file = test_config
 
@@ -231,9 +123,9 @@ def preloaded_config(test_config):
     
     # Set up a couple archives with multiple versions
     
-    arch1 = api.create_archive('req_1')
-    arch2 = api.create_archive('req_2')
-    arch3 = api.create_archive('req_3')
+    arch1 = api.create('req_1')
+    arch2 = api.create('req_2')
+    arch3 = api.create('req_3')
 
     with arch1.open('w+', bumpversion='minor') as f:
         f.write(u'this is archive req_1 version 0.1')
@@ -277,14 +169,143 @@ def preloaded_config(test_config):
     assert '1.1a1' in arch3_versions
     assert '1.1' in arch3_versions
 
-    yield profile, temp_file
+    try:
 
-    arch1.delete()
-    arch2.delete()
-    arch3.delete()
+        yield profile, temp_file
+
+    finally:
+
+        arch1.delete()
+        arch2.delete()
+        arch3.delete()
+
+
+def test_cli_local(test_config):
+
+    profile, temp_file = test_config
+
+    prefix = ['--config-file', temp_file, '--profile', 'myapi']
+
+    api2 = get_api(profile=profile, config_file=temp_file)
+
+    runner = CliRunner()
+
+
+    #test for configure and create archive
+    result = runner.invoke(
+        cli, 
+        prefix + [
+        'create', 'my_first_archive', '--description', 'My test data archive'])
+
+    assert result.exit_code == 0
+    res = 'created versioned archive <DataArchive local://my_first_archive>'
+    assert result.output.strip() == res
+
+    result = runner.invoke(cli, prefix + ['list'])
+    assert result.exit_code == 0
+    assert ['my_first_archive'] == ast.literal_eval(result.output)
+
+    #test the actual creation of the object from the api side
+    assert len(api2.archives) == 1
+    archive = api2.get_archive('my_first_archive')
+    assert archive.archive_name == 'my_first_archive'
+
+    #testing the `metadata` option
+    result = runner.invoke(cli, prefix + ['metadata', 'my_first_archive'])
+    assert result.exit_code == 0
+    metadata = ast.literal_eval(result.output)
+    assert metadata['description'] == 'My test data archive'
+    
+    #test the api side of the operation
+    assert u'My test data archive' == archive.get_metadata()['description']
+
+
+    with runner.isolated_filesystem():
+        with open('hello.txt', 'w') as f:
+            f.write('Hoo Yah! Stay Stoked!')
+
+        # update using CLI
+        result = runner.invoke(
+            cli, 
+            prefix + [
+                'update', 
+                'my_first_archive', 
+                'hello.txt', 
+                '--source', 
+                'Surfers Journal'])
+        
+        assert result.exit_code == 0
+        #assert that we get update feedback
+        assert 'uploaded data to <DataArchive local://my_first_archive>' in result.output
+        #lets read the file to make sure it says what we want
+        with open('hello.txt','r') as f:
+            data = f.read()
+            assert data == 'Hoo Yah! Stay Stoked!'
+        print result.output
+
+    #this is testing the feed through on the api
+    with api2.archives[0].open('r') as f:
+        data = f.read()
+        assert data == 'Hoo Yah! Stay Stoked!'
+
+    #lets check to make sure our metadata update also passed through
+    assert 'Surfers Journal' ==  api2.archives[0].get_metadata()['source']
+
+    
+    #test to assert metadata update
+    #test to assert file content change
+
+    
+    with runner.isolated_filesystem():
+
+        result = runner.invoke(cli, prefix + ['update', 'my_first_archive', '--bumpversion', 'minor', '--string', 'new version data'])
+        assert result.exit_code == 0
+
+        result = runner.invoke(cli, prefix + ['cat', 'my_first_archive'])
+        assert result.exit_code == 0
+
+        'new version data' in result.output
+
+        result = runner.invoke(cli, prefix + ['download', 'my_first_archive', 'here.txt', '--version', '0.0.1'])
+        assert result.exit_code == 0
+
+        'Hoo Yah! Stay Stoked!' in result.output
+
+        # test download of previous version
+        result = runner.invoke(cli, prefix + ['download', 'my_first_archive', 'here.txt', '--version', '0.0.1'])
+        assert result.exit_code == 0
+
+        with open('here.txt', 'r') as downloaded:
+            assert downloaded.read() == 'Hoo Yah! Stay Stoked!'
+
+        # test download of nonexistant version (should fail without overwriting file)
+        result = runner.invoke(cli, prefix + ['download', 'my_first_archive', 'here.txt', '--version', '3.0'])
+        assert result.exit_code != 0
+
+        with open('here.txt', 'r') as downloaded:
+            assert downloaded.read() == 'Hoo Yah! Stay Stoked!'
+
+        os.remove('here.txt')
+
+
+
+
+    #teardown
+    result = runner.invoke(cli, prefix + ['delete', 'my_first_archive'])
+
+    result = runner.invoke(cli, prefix + ['list'])
+    assert result.exit_code == 0
+    assert [] == ast.literal_eval(result.output)
+
+    assert len(api2.archives) == 0
+
 
 
 def test_specified_requirements(preloaded_config):
+    '''
+    Test download commands with a mix of requirements file, explicit, and 
+    unspecified version requirements
+    '''
 
     profile, temp_file = preloaded_config
 
@@ -342,8 +363,65 @@ def test_specified_requirements(preloaded_config):
             assert f.read() == 'this is archive req_3 version 1.1'
 
 
+def test_versions(preloaded_config):
+    '''
+    Test "versions" CLI command with preloaded archive/config file
+    '''
+
+    profile, temp_file = preloaded_config
+
+    # Create a requirements file and 
+
+    runner = CliRunner()
+
+    prefix = [
+        '--config-file', '{}'.format(temp_file), 
+        '--profile', 'myapi', 
+        '--requirements', 'requirements_data_test1.txt']
+
+    with runner.isolated_filesystem():
+
+        result = runner.invoke(
+            cli, 
+            prefix + ['versions', 'req_3'])
+
+        assert result.exit_code == 0
+        versions = ast.literal_eval(result.output)
+
+        assert ['1.0','1.1a1','1.1'] == versions
+
+
+def test_history(preloaded_config):
+    '''
+    Test "history" CLI command with preloaded archive/config file
+    '''
+
+    profile, temp_file = preloaded_config
+
+    # Create a requirements file and 
+
+    runner = CliRunner()
+
+    prefix = [
+        '--config-file', '{}'.format(temp_file), 
+        '--profile', 'myapi', 
+        '--requirements', 'requirements_data_test1.txt']
+
+    with runner.isolated_filesystem():
+
+        result = runner.invoke(
+            cli, 
+            prefix + ['history', 'req_3'])
+
+        assert result.exit_code == 0
+        history = ast.literal_eval(result.output)
+        assert len(history) == 3
+
 
 def test_alternate_versions(preloaded_config):
+    '''
+    Assert requirements file can be superceeded by explicit version specification
+    '''
 
     profile, temp_file = preloaded_config
 
@@ -400,6 +478,9 @@ def test_alternate_versions(preloaded_config):
 
 
 def test_incorrect_versions(preloaded_config):
+    '''
+    Assert errors raised when attempting to pull invalid versions
+    '''
 
     profile, temp_file = preloaded_config
 
@@ -447,6 +528,9 @@ def test_incorrect_versions(preloaded_config):
         assert result.exception
 
 def test_dependency_parsing(test_config):
+    '''
+    Update archive dependencies across versions from the CLI
+    '''
 
     profile, temp_file = test_config
 
@@ -459,14 +543,14 @@ def test_dependency_parsing(test_config):
                 '--profile', 
                 'myapi']
 
-    arch1 = api.create_archive('my_first_archive')
+    arch1 = api.create('my_first_archive')
 
     with runner.isolated_filesystem():
 
-        with open('my_new_test_file.txt', 'w+') as to_upload:
-            to_upload.write(u'test test test')
+        with open('my_new_test_file.txt', 'w+') as to_update:
+            to_update.write(u'test test test')
 
-        result = runner.invoke(cli, prefix + ['upload', 'my_first_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.1.0', '--dependency', 'arch2'])
+        result = runner.invoke(cli, prefix + ['update', 'my_first_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.1.0', '--dependency', 'arch2'])
         assert result.exit_code == 0
 
         assert arch1.get_latest_version() == '0.1.0'
@@ -481,10 +565,10 @@ def test_dependency_parsing(test_config):
         assert arch1.get_dependencies(version='0.1.0') == {'arch1': '0.2.0', 'arch2': '0.0.1'}
         
 
-        with open('my_new_test_file.txt', 'w+') as to_upload:
-            to_upload.write(u'test test test two three four')
+        with open('my_new_test_file.txt', 'w+') as to_update:
+            to_update.write(u'test test test two three four')
 
-        result = runner.invoke(cli, prefix + ['upload', 'my_first_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.2.0', '--dependency', 'arch2==0.0.1'])
+        result = runner.invoke(cli, prefix + ['update', 'my_first_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.2.0', '--dependency', 'arch2==0.0.1'])
 
         assert result.exit_code == 0
 
@@ -496,6 +580,9 @@ def test_dependency_parsing(test_config):
 
 
 def test_update_metadata(test_config):
+    '''
+    Update archive metadata with a description from the CLI
+    '''
 
     profile, temp_file = test_config
 
@@ -507,14 +594,14 @@ def test_update_metadata(test_config):
                 '--config-file', '{}'.format(temp_file), 
                 '--profile', 'myapi']
 
-    arch1 = api.create_archive('my_next_archive')
+    arch1 = api.create('my_next_archive')
 
     with runner.isolated_filesystem():
 
-        with open('my_new_test_file.txt', 'w+') as to_upload:
-            to_upload.write(u'test test test')
+        with open('my_new_test_file.txt', 'w+') as to_update:
+            to_update.write(u'test test test')
 
-        result = runner.invoke(cli, prefix + ['upload', 'my_next_archive', 'my_new_test_file.txt'])
+        result = runner.invoke(cli, prefix + ['update', 'my_next_archive', 'my_new_test_file.txt'])
         assert result.exit_code == 0
 
         result = runner.invoke(cli, prefix + ['update_metadata', 'my_next_archive', '--description', 'some_description'])

@@ -1,3 +1,1 @@
-git+https://github.com/PyFilesystem/pyfilesystem#egg=0.5.5a1
-click==6.7
-PyYAML==3.12
+-e .

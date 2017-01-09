@@ -55,6 +55,9 @@ For example, when connected to a manager requiring the `'description'` field:
     ...
     AssertionError: Required value "description" not found. Use helper=True or the --helper flag for assistance.
 
+Trying again with a ``--description "[desc]"`` argument will work as expected.
+
+
 Using the Helper
 ~~~~~~~~~~~~~~~~
 

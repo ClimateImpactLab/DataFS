@@ -114,6 +114,7 @@ class BaseDataManager(object):
         '''
 
         self.update_spec_config('required_user_config', user_config)
+        self._required_user_config = None
 
     def set_required_archive_metadata(self, metadata_config):
         '''
@@ -134,6 +135,7 @@ class BaseDataManager(object):
         '''
 
         self.update_spec_config('required_archive_metadata', metadata_config)
+        self._required_archive_metadata = None
 
     def delete_table(self, table_name=None, raise_on_err=True):
         if table_name is None:

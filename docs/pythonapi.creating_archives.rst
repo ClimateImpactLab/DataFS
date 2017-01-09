@@ -33,7 +33,7 @@ If you have more than one authority, you will need to specify an authority on ar
     ...     'my_archive_name',
     ...     authority_name='my_authority')
 
-Alternatively, you can set the :py:attribute:`~datafs.core.data_api.DataAPI.DefaultAuthorityName` attribute:
+Alternatively, you can set the :py:attr:`~datafs.core.data_api.DataAPI.DefaultAuthorityName` attribute:
 
 .. code-block:: python
 

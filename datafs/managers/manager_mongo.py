@@ -141,8 +141,14 @@ class MongoDBManager(BaseDataManager):
                                {"$push": {"version_history": version_metadata}})
 
     def _update_metadata(self, archive_name, archive_metadata):
-        for key, val in archive_metadata.items():
-            if val is None:
+
+        required_metadata_keys= self._get_required_archive_metadata().keys()
+        for k,v in archive_metadata.items(): 
+            if k in required_metadata_keys and v is None:
+                raise ValueError('Value for key {} is None. None cannot be a value for required metadata'.format(k))
+
+
+            elif val is None:
                 self.collection.update({"_id": archive_name},
                                    {"$unset": {"archive_metadata.{}".format(key): ""}})
 

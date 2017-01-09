@@ -24,7 +24,7 @@ We'll assume that your manager and authority have been set up already. Depending
 	...		notes='important note that should be remembered when using this archive'))
 	>>>
 
-Let's check to see if we have any other archives.
+Let's check to see if we have any other archives. It looks like we only have our ``sample_archive``. 
 
 .. code-block:: python
 
@@ -64,9 +64,26 @@ As you can see the source was updated and the ``related_links`` key and value we
  	... u'source': u'NOAAs better temp data'}
 
 
- If you want to remove a particular key value from the metadata you do the following:
 
- 
+
+As long as a particular metadata key-value pair are not a required field, you can remove it. If you want to remove a particular key-value pair from the archive metadata you do the following:
+
+.. code-block:: python 
+
+	>>> sample_archive.update_metadata(dict(related_links=None))
+	>>>
+	>>> {u'long_description': u'daily annual temperature in degrees kelvin, organized by 
+	... admin region2 as defined by the united nations',
+ 	... u'notes': u'important note that should be remembered when using this archive',
+ 	... u'oneline_description': u'daily annual temp by admin region',
+ 	... u'source': u'NOAAs better temp data'}
+
+
+ Now our ``related_links`` key-value pair have been removed. 
+
+
+
+
 
 
 

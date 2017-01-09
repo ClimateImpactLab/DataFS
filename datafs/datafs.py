@@ -239,6 +239,7 @@ def update_metadata(ctx, archive_name):
 
 
 
+
 @cli.command(
     context_settings=dict(
         ignore_unknown_options=True,
@@ -253,6 +254,20 @@ def set_dependencies(ctx, archive_name, dependency=None):
     var = ctx.obj.api.get_archive(archive_name)
 
     var.set_dependencies(dependencies=kwargs)
+
+@cli.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+        allow_extra_args=True))
+@click.argument('archive_name')
+@click.option('--version', default=None)
+@click.pass_context
+def get_dependencies(ctx, archive_name, version):
+    _generate_api(ctx)
+
+    var = ctx.obj.api.get_archive(archive_name)
+
+    click.echo(pprint.pformat(var.get_dependencies(version=version)))
 
 
 @cli.command()

@@ -64,9 +64,14 @@ As you can see the source was updated and the ``related_links`` key and value we
  	... u'source': u'NOAAs better temp data'}
 
 
- If you want to remove a particular key value from the metadata you do the following:
 
- 
+
+If you want to remove a particular key value from the metadata you do the following:
+
+.. code-block:: python 
+
+	>>> sample_archive.update_metadata(dict(related_links=None))
+
 
 
 

@@ -237,11 +237,28 @@ def test_cli_local(test_config):
         assert result.exit_code == 0
         #assert that we get update feedback
         assert 'uploaded data to <DataArchive local://my_first_archive>' in result.output
-        #lets read the file to make sure it says what we want
+        #lets read the file to make sure it remains unchanged
         with open('hello.txt','r') as f:
             data = f.read()
             assert data == 'Hoo Yah! Stay Stoked!'
-        print result.output
+
+        # Try re-upload
+        result = runner.invoke(
+            cli, 
+            prefix + [
+                'update', 
+                'my_first_archive', 
+                'hello.txt', 
+                '--source', 
+                'Surfers Journal'])
+
+
+        assert result.exit_code == 0
+        #assert that we get update feedback
+        intended_output = ('uploaded data to <DataArchive '
+            'local://my_first_archive>. version remains 0.0.1.')
+
+        assert intended_output == result.output.strip()
 
     #this is testing the feed through on the api
     with api2.archives[0].open('r') as f:
@@ -287,9 +304,6 @@ def test_cli_local(test_config):
 
         os.remove('here.txt')
 
-
-
-
     #teardown
     result = runner.invoke(cli, prefix + ['delete', 'my_first_archive'])
 
@@ -298,6 +312,107 @@ def test_cli_local(test_config):
     assert [] == ast.literal_eval(result.output)
 
     assert len(api2.archives) == 0
+
+
+
+
+def test_cli_unversioned(test_config):
+
+    profile, temp_file = test_config
+
+    prefix = ['--config-file', temp_file, '--profile', 'myapi']
+
+    api2 = get_api(profile=profile, config_file=temp_file)
+
+    runner = CliRunner()
+
+
+    #test for configure and create archive
+    result = runner.invoke(
+        cli, 
+        prefix + [
+        'create', 'unversioned', '--not-versioned'])
+
+    assert result.exit_code == 0
+    res = 'created archive <DataArchive local://unversioned>'
+    assert result.output.strip() == res
+
+    result = runner.invoke(cli, prefix + ['list'])
+    assert result.exit_code == 0
+    assert ['unversioned'] == ast.literal_eval(result.output)
+
+    #test the actual creation of the object from the api side
+    assert len(api2.archives) == 1
+    archive = api2.get_archive('unversioned')
+    assert archive.archive_name == 'unversioned'
+
+
+    with runner.isolated_filesystem():
+        with open('hello.txt', 'w') as f:
+            f.write('un-versioned data')
+
+        # update using CLI
+        result = runner.invoke(
+            cli, 
+            prefix + [
+                'update', 
+                'unversioned', 
+                'hello.txt', 
+                '--dependency', 
+                'arch1', 
+                '--dependency',
+                'arch2'])
+        
+        assert result.exit_code == 0
+        #assert that we get update feedback
+        assert 'uploaded data to <DataArchive local://unversioned>.' == result.output.strip()
+
+        # Try re-upload
+        result = runner.invoke(
+            cli, 
+            prefix + [
+                'update', 
+                'unversioned', 
+                '--string',
+                'new content'])
+
+
+        assert result.exit_code == 0
+
+        #assert that we get update feedback
+        intended_output = 'uploaded data to <DataArchive local://unversioned>.'
+
+        assert intended_output == result.output.strip()
+
+    
+    with runner.isolated_filesystem():
+
+        # test download
+        result = runner.invoke(cli, prefix + ['download', 'unversioned', 'here.txt'])
+        assert result.exit_code == 0
+
+        with open('here.txt', 'r') as downloaded:
+            assert downloaded.read() == 'new content'
+
+        # test download with 'latest' version argument'
+        result = runner.invoke(cli, prefix + ['download', 'unversioned', 'here.txt', '--version', 'latest'])
+        assert result.exit_code != 0
+
+        # test download with incorrect version argument
+        result = runner.invoke(cli, prefix + ['download', 'unversioned', 'here.txt', '--version', '0.0.1'])
+        assert result.exit_code != 0
+
+        os.remove('here.txt')
+
+    #teardown
+    result = runner.invoke(cli, prefix + ['delete', 'unversioned'])
+
+    result = runner.invoke(cli, prefix + ['list'])
+    assert result.exit_code == 0
+    assert [] == ast.literal_eval(result.output)
+
+    assert len(api2.archives) == 0
+
 
 
 
@@ -543,14 +658,14 @@ def test_dependency_parsing(test_config):
                 '--profile', 
                 'myapi']
 
-    arch1 = api.create('my_first_archive')
+    arch1 = api.create('dep_archive')
 
     with runner.isolated_filesystem():
 
         with open('my_new_test_file.txt', 'w+') as to_update:
             to_update.write(u'test test test')
 
-        result = runner.invoke(cli, prefix + ['update', 'my_first_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.1.0', '--dependency', 'arch2'])
+        result = runner.invoke(cli, prefix + ['update', 'dep_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.1.0', '--dependency', 'arch2'])
         assert result.exit_code == 0
 
         assert arch1.get_latest_version() == '0.1.0'
@@ -559,21 +674,31 @@ def test_dependency_parsing(test_config):
 
         assert arch1.get_dependencies(version='0.1.0') == {'arch1': '0.1.0', 'arch2': None}
 
-        result = runner.invoke(cli, prefix + ['set_dependencies', 'my_first_archive','--dependency' , 'arch1==0.2.0', '--dependency', 'arch2==0.0.1'])
+        result = runner.invoke(cli, prefix + ['set_dependencies', 'dep_archive','--dependency' , 'arch1==0.2.0', '--dependency', 'arch2==0.0.1'])
 
         assert result.exit_code == 0
         assert arch1.get_dependencies(version='0.1.0') == {'arch1': '0.2.0', 'arch2': '0.0.1'}
-        
+
 
         with open('my_new_test_file.txt', 'w+') as to_update:
             to_update.write(u'test test test two three four')
 
-        result = runner.invoke(cli, prefix + ['update', 'my_first_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.2.0', '--dependency', 'arch2==0.0.1'])
+        result = runner.invoke(cli, prefix + ['update', 'dep_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.2.0', '--dependency', 'arch2==0.0.1'])
 
         assert result.exit_code == 0
 
         assert arch1.get_dependencies(version='0.1.0') == {'arch1': '0.2.0', 'arch2': '0.0.1'}
+        
 
+        result = runner.invoke(cli, prefix + ['get_dependencies', 'dep_archive'])
+
+        assert result.exit_code == 0
+        assert ast.literal_eval(result.output) == {'arch1': '0.2.0', 'arch2': '0.0.1'}
+
+        result = runner.invoke(cli, prefix + ['get_dependencies', 'dep_archive', '--version', '0.1'])
+
+        assert result.exit_code == 0
+        assert ast.literal_eval(result.output) == {'arch1': '0.2.0', 'arch2': '0.0.1'}
         
 
         os.remove('my_new_test_file.txt')

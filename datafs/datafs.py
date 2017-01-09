@@ -132,7 +132,7 @@ def configure(ctx, helper, edit):
         allow_extra_args=True))
 @click.argument('archive_name')
 @click.option('--authority_name', default=None)
-@click.option('--versioned', default=True)
+@click.option('--versioned/--not-versioned', default=True)
 @click.option('--helper', is_flag=True)
 @click.pass_context
 def create(ctx, archive_name, authority_name, versioned=True, helper=False):

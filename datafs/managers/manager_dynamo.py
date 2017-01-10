@@ -1,3 +1,4 @@
+
 import boto3
 #import botocore.exceptions.ClientError
 
@@ -263,6 +264,13 @@ class DynamoDBManager(BaseDataManager):
         """
 
         # keep the current state in memory
+        required_metadata_keys= self._get_required_archive_metadata().keys()
+        for k,v in archive_metadata.items(): 
+            if k in required_metadata_keys and v is None:
+                raise ValueError('Value for key {} is None. None cannot be a value for required metadata'.format(k))
+
+
+
         archive_metadata_current = self._get_archive_metadata(archive_name)
         archive_metadata_current.update(archive_metadata)
         for k, v in archive_metadata_current.items():

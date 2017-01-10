@@ -79,7 +79,8 @@ As long as a particular metadata key-value pair are not a required field, you ca
  	... u'source': u'NOAAs better temp data'}
 
 
- Now our ``related_links`` key-value pair have been removed. 
+Now our ``related_links`` key-value pair has been removed. To make edit the required metadata fields, please 
+see :ref:`admin`. 
 
 
 

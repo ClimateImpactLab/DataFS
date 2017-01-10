@@ -49,6 +49,11 @@ class TestMetadataRequirements:
 
         api_with_spec.manager.update_metadata('my_spec_test_archive', {'metadata_key': 'metadata_val'})
 
+
+        with pytest.raises(ValueError) as excinfo:
+            api_with_spec.manager.update_metadata('my_spec_test_archive', dict(description=None))
+            
+
         assert len(api_with_spec.manager.get_metadata('my_spec_test_archive')) == 2
         assert api_with_spec.manager.get_metadata('my_spec_test_archive')['metadata_key'] == 'metadata_val'
 

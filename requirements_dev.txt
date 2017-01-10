@@ -1,6 +1,5 @@
 click==6.6
 PyYAML==3.12
-git+https://github.com/PyFilesystem/pyfilesystem.git@c94b20c877f1f2ab190d7b1eae3ecc53b3a6d295#egg=pyfilesystem
 pip==9.0.1
 wheel==0.29.0
 flake8==3.2.1

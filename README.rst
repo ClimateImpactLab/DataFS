@@ -115,7 +115,7 @@ Installation
 ``pip install datafs``
 
 
-Additionally, you'll need to choose a manager and services:
+Additionally, you'll need a manager and services:
 
 Managers:
 

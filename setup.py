@@ -52,5 +52,5 @@ setup(
     test_suite='tests',
     tests_require=requirements_test,
     extras_require=extras,
-    dependency_links = ['https://github.com/PyFilesystem/pyfilesystem/tarball/master#egg=fs-0.5.5a1']
+    dependency_links = ['https://github.com/PyFilesystem/pyfilesystem/tarball/master#egg=pyfilesystem-0.5.5a1']
 )

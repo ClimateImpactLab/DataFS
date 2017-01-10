@@ -44,14 +44,14 @@ Features
 Usage
 -----
 
-First, `configure an API <http://datafs.readthedocs.io/en/latest/configure.html>`_. Don't worry. It's not too bad.
+First, `configure an API <http://datafs.readthedocs.io/en/latest/configure.html>`_. Don't worry. It's not too bad. Check out the `quickstart <http://datafs.readthedocs.io/en/latest/quickstart.yml>`_ to follow along.
 
-We'll assume we already have an API object created and attached to a service called "s3". Once you have this, you can start using DataFS to create and use archives.
+We'll assume we already have an API object created and attached to a service called "local". Once you have this, you can start using DataFS to create and use archives.
 
 .. code-block:: bash
 
     $ datafs create my_new_data_archive --description "a test archive"
-    created versioned archive <DataArchive s3://my_new_data_archive>
+    created versioned archive <DataArchive local://my_new_data_archive>
     
     $ echo "initial file contents" > my_file.txt
     
@@ -68,7 +68,7 @@ if desired.
     $ echo "updated contents" > my_file.txt
     
     $ datafs update my_new_data_archive my_file.txt --bumpversion minor
-    uploaded data to <DataArchive s3://my_new_data_archive>. version bumped 0.0.1 --> 0.1.
+    uploaded data to <DataArchive local://my_new_data_archive>. version bumped 0.0.1 --> 0.1.
     
     $ datafs cat my_new_data_archive
     updated contents
@@ -103,7 +103,7 @@ If you have permission to delete archives, it's easy to do. See `administrative 
 .. code-block:: bash
 
     $ datafs delete my_new_data_archive
-    deleted archive <DataArchive s3://my_new_data_archive>
+    deleted archive <DataArchive local://my_new_data_archive>
 
 See `examples <http://datafs.readthedocs.io/en/latest/examples.html>`_ for more extensive use cases.
 

@@ -143,9 +143,9 @@ class MongoDBManager(BaseDataManager):
     def _update_metadata(self, archive_name, archive_metadata):
 
         required_metadata_keys= self._get_required_archive_metadata().keys()
-        for k,v in archive_metadata.items(): 
-            if k in required_metadata_keys and v is None:
-                raise ValueError('Value for key {} is None. None cannot be a value for required metadata'.format(k))
+        for key,val in archive_metadata.items(): 
+            if key in required_metadata_keys and val is None:
+                raise ValueError('Value for key {} is None. None cannot be a value for required metadata'.format(key))
 
 
             elif val is None:

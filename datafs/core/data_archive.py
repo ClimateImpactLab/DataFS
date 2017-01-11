@@ -146,7 +146,7 @@ class DataArchive(object):
         version = _process_version(self, version)
 
         if self.versioned:
-            return fs.path.join(self.archive_path, str(version))
+            return fs1.path.join(self.archive_path, str(version))
 
         else:
             return self.archive_path

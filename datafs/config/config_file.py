@@ -97,13 +97,13 @@ class ConfigFile(object):
         for service_name, service in api._authorities.items():
 
             authorities_cfg[service_name] = {
-                'service': service.fs1.__class__.__name__,
+                'service': service.fs.__class__.__name__,
                 'args': [],
                 'kwargs': {}
             }
 
-            if service.fs1.hassyspath('/'):
-                authorities_cfg[service_name]['args'] = [service.fs1.getsyspath('/')]
+            if service.fs.hassyspath('/'):
+                authorities_cfg[service_name]['args'] = [service.fs.getsyspath('/')]
 
         for service_name in authorities_cfg.keys():
             if service_name not in profile_config['authorities']:
@@ -115,7 +115,7 @@ class ConfigFile(object):
 
         if api.cache:
             cache_cfg = {
-                'service': api.cache.fs1.__class__.__name__,
+                'service': api.cache.fs.__class__.__name__,
                 'args': [],
                 'kwargs': {}
             }

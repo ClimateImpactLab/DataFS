@@ -143,7 +143,7 @@ def test_file_caching(local_auth, cache, datafile_opener):
     # authority.
 
     # "touch" the csh file
-    csh.fs.makedir(fs.path.dirname(p), recursive=True, allow_recreate=True)
+    csh.fs.makedir(fs1.path.dirname(p), recursive=True, allow_recreate=True)
     with open(csh.fs.getsyspath(p), 'w+') as f:
         f.write('')
 
@@ -249,7 +249,7 @@ def test_delete_handling(local_auth, cache):
     csh = DataService(cache)
 
     # "touch" the csh file
-    csh.fs.makedir(fs.path.dirname(p), recursive=True, allow_recreate=True)
+    csh.fs.makedir(fs1.path.dirname(p), recursive=True, allow_recreate=True)
     with open(csh.fs.getsyspath(p), 'w+') as f:
         f.write('')
 

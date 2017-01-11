@@ -203,7 +203,7 @@ def test_cli_local(test_config):
 
     result = runner.invoke(cli, prefix + ['list'])
     assert result.exit_code == 0
-    assert ['my_first_archive'] == result.output.strip().split(' ')
+    assert ['my_first_archive'] == [a for a in result.output.strip().split(' ') if len(a) > 0]
 
     #test the actual creation of the object from the api side
     assert len(api2.list()) == 1
@@ -309,9 +309,9 @@ def test_cli_local(test_config):
 
     result = runner.invoke(cli, prefix + ['list'])
     assert result.exit_code == 0
-    assert [] == ast.literal_eval(result.output)
+    assert [] == [a for a in result.output.strip().split(' ') if len(a) > 0]
 
-    assert len(api2.archives) == 0
+    assert len(api2.list()) == 0
 
 
 
@@ -339,10 +339,10 @@ def test_cli_unversioned(test_config):
 
     result = runner.invoke(cli, prefix + ['list'])
     assert result.exit_code == 0
-    assert ['unversioned'] == ast.literal_eval(result.output)
+    assert ['unversioned'] == [a for a in result.output.strip().split(' ') if len(a) > 0]
 
     #test the actual creation of the object from the api side
-    assert len(api2.archives) == 1
+    assert len(api2.list()) == 1
     archive = api2.get_archive('unversioned')
     assert archive.archive_name == 'unversioned'
 
@@ -693,12 +693,16 @@ def test_dependency_parsing(test_config):
         result = runner.invoke(cli, prefix + ['get_dependencies', 'dep_archive'])
 
         assert result.exit_code == 0
-        assert ast.literal_eval(result.output) == {'arch1': '0.2.0', 'arch2': '0.0.1'}
+
+        assert 'arch1==0.2.0' in result.output
+        assert 'arch2==0.0.1' in result.output
 
         result = runner.invoke(cli, prefix + ['get_dependencies', 'dep_archive', '--version', '0.1'])
 
         assert result.exit_code == 0
-        assert ast.literal_eval(result.output) == {'arch1': '0.2.0', 'arch2': '0.0.1'}
+
+        assert 'arch1==0.2.0' in result.output
+        assert 'arch2==0.0.1' in result.output
         
 
         os.remove('my_new_test_file.txt')

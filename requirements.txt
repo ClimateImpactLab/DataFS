@@ -1,3 +1,5 @@
 click>=6.0
 PyYAML>=3.0
-fs1
+
+pip @
+https://github.com/pyfilesystem/pyfilesystem/archive/0.5.5a1.zip

@@ -9,29 +9,14 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
+with open('requirements.txt', 'r') as req:
+    requirements_install = [l.strip() for l in req.readlines() if l.strip() != '']
 
-requirements_install = [
-    'click==6.6',
-    'PyYAML==3.12'
-]
+with open('requirements_test.txt', 'r') as req:
+    requirements_test = [l.strip() for l in req.readlines() if l.strip() != '']
 
-dependency_links = [
-    'git+https://github.com/PyFilesystem/pyfilesystem.git@c94b20c877f1f2ab190d7b1eae3ecc53b3a6d295#egg=pyfilesystem']
-
-requirements_test = [
-    'pip==9.0.1',
-    'wheel==0.29.0',
-    'flake8==3.2.1',
-    'tox==2.5.0',
-    'coverage==4.3.1',
-    'pytest==3.0.5',
-    'pytest_cov==2.4.0',
-    'Sphinx==1.5.1',
-    'sphinx_rtd_theme==0.1.10a0',
-    'moto==0.4.30',
-    'pymongo==3.4.0',
-    'boto3==1.4.3'
-]
+with open('requirements_links.txt', 'r') as req:
+    dependency_links = [l.strip() for l in req.readlines() if l.strip() != '']
 
 extras = {
     'test': requirements_test

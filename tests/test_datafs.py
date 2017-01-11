@@ -16,9 +16,9 @@ from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
 from datafs._compat import string_types, u
 from datafs import DataAPI
-from fs.osfs import OSFS
-from fs.tempfs import TempFS
-from fs.s3fs import S3FS
+from fs1.osfs import OSFS
+from fs1.tempfs import TempFS
+from fs1.s3fs import S3FS
 from ast import literal_eval
 import os
 import tempfile

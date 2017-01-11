@@ -203,10 +203,10 @@ def test_cli_local(test_config):
 
     result = runner.invoke(cli, prefix + ['list'])
     assert result.exit_code == 0
-    assert ['my_first_archive'] == ast.literal_eval(result.output)
+    assert ['my_first_archive'] == result.output.strip().split(' ')
 
     #test the actual creation of the object from the api side
-    assert len(api2.archives) == 1
+    assert len(api2.list()) == 1
     archive = api2.get_archive('my_first_archive')
     assert archive.archive_name == 'my_first_archive'
 
@@ -244,12 +244,12 @@ def test_cli_local(test_config):
         print result.output
 
     #this is testing the feed through on the api
-    with api2.archives[0].open('r') as f:
+    with api2.get_archive(api2.list()[0]).open('r') as f:
         data = f.read()
         assert data == 'Hoo Yah! Stay Stoked!'
 
     #lets check to make sure our metadata update also passed through
-    assert 'Surfers Journal' ==  api2.archives[0].get_metadata()['source']
+    assert 'Surfers Journal' ==  api2.get_archive(api2.list()[0]).get_metadata()['source']
 
     
     #test to assert metadata update
@@ -295,9 +295,9 @@ def test_cli_local(test_config):
 
     result = runner.invoke(cli, prefix + ['list'])
     assert result.exit_code == 0
-    assert [] == ast.literal_eval(result.output)
+    assert [] == [a for a in result.output.strip().split(' ') if len(a) > 0]
 
-    assert len(api2.archives) == 0
+    assert len(api2.list()) == 0
 
 
 

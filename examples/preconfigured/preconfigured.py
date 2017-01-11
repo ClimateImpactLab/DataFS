@@ -129,8 +129,8 @@ to skip the description, an error is raised and the archive is not created:
     ...
     AssertionError: Required value "description" not found. Use helper=True or the --helper flag for assistance.
     >>> 
-    >>> api.archives
-    [<DataArchive local://archive1>]
+    >>> api.list()
+    ['archive1']
 
 
 Setting User Permissions

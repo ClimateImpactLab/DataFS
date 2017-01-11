@@ -11,6 +11,7 @@ except ImportError:
     pass
 
 
+@pytest.mark.big
 @pytest.mark.skipif(
     not has_special_dependencies, 
     reason='No modules netCDF4, xarray')

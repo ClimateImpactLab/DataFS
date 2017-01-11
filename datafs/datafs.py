@@ -347,7 +347,10 @@ def versions(ctx, archive_name):
 def list(ctx, substr):
     _generate_api(ctx)
 
-    click.echo(' '.join(ctx.obj.api.list(substr)))
+    matches = ctx.obj.api.list(substr)
+    
+    if len(matches) > 0:
+        click.echo(' '.join(matches))
 
 
 @cli.command()

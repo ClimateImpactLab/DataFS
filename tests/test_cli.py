@@ -309,7 +309,7 @@ def test_cli_local(test_config):
 
     result = runner.invoke(cli, prefix + ['list'])
     assert result.exit_code == 0
-    assert [] == [a for a in result.output.strip().split(' ') if len(a) > 0]
+    assert result.output == ''
 
     assert len(api2.list()) == 0
 
@@ -409,7 +409,7 @@ def test_cli_unversioned(test_config):
 
     result = runner.invoke(cli, prefix + ['list'])
     assert result.exit_code == 0
-    assert [] == [a for a in result.output.strip().split(' ') if len(a) > 0]
+    assert result.output == ''
 
     assert len(api2.list()) == 0
 

@@ -1,5 +1,18 @@
--e .[test]
-
+click==6.6
+PyYAML==3.12
+git+https://github.com/PyFilesystem/pyfilesystem.git@c94b20c877f1f2ab190d7b1eae3ecc53b3a6d295#egg=pyfilesystem
+pip==9.0.1
+wheel==0.29.0
+flake8==3.2.1
+tox==2.5.0
+coverage==4.3.1
+pytest==3.0.5
+pytest_cov==2.4.0
+Sphinx==1.5.1
+sphinx_rtd_theme==0.1.10a0
+moto==0.4.30
+pymongo==3.4.0
+boto3==1.4.3
 bumpversion==0.5.3
 watchdog==0.8.3
 cryptography==1.7.1

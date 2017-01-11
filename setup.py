@@ -15,8 +15,8 @@ with open('requirements.txt', 'r') as req:
 with open('requirements_test.txt', 'r') as req:
     requirements_test = [l.strip() for l in req.readlines() if l.strip() != '']
 
-with open('requirements_links.txt', 'r') as req:
-    dependency_links = [l.strip() for l in req.readlines() if l.strip() != '']
+# with open('requirements_links.txt', 'r') as req:
+#     dependency_links = [l.strip() for l in req.readlines() if l.strip() != '']
 
 extras = {
     'test': requirements_test
@@ -51,6 +51,6 @@ setup(
     ],
     test_suite='tests',
     tests_require=requirements_test,
-    extras_require=extras,
-    dependency_links = dependency_links
+    extras_require=extras
+    # dependency_links = dependency_links
 )

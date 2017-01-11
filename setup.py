@@ -51,6 +51,6 @@ setup(
     ],
     test_suite='tests',
     tests_require=requirements_test,
-    extras_require=extras
-    # dependency_links = dependency_links
+    extras_require=extras,
+    dependency_links = dependency_links
 )

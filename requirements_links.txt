@@ -1,1 +1,1 @@
-https://github.com/ClimateImpactLab/pyfilesystem#egg=fs1-0.5.5a1
+https://github.com/ClimateImpactLab/pyfilesystem@fs1#egg=fs1-0.5.5a1

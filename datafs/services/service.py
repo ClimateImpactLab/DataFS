@@ -2,9 +2,9 @@
 from __future__ import absolute_import
 
 import os
-import fs.utils
-import fs.path
-from fs.osfs import OSFS
+import fs1.utils
+import fs1.path
+from fs1.osfs import OSFS
 
 
 class DataService(object):
@@ -52,21 +52,21 @@ class DataService(object):
 
             return
 
-        if not self.fs.isdir(fs.path.dirname(service_path)):
+        if not self.fs.isdir(fs1.path.dirname(service_path)):
             self.fs.makedir(
-                fs.path.dirname(service_path),
+                fs1.path.dirname(service_path),
                 recursive=True,
                 allow_recreate=True)
 
         if remove:
-            fs.utils.movefile(
+            fs1.utils.movefile(
                 local,
                 os.path.basename(filepath),
                 self.fs,
                 service_path)
 
         else:
-            fs.utils.copyfile(
+            fs1.utils.copyfile(
                 local,
                 os.path.basename(filepath),
                 self.fs,

@@ -166,10 +166,13 @@ class DataAPI(object):
             **res)
 
 
-    @property
-    def archives(self):
+    def list(self, substr=None):
 
-        return list(map(self.get_archive, self.manager.get_archive_names()))
+        archives = self.manager.get_archive_names()
+        if substr:
+            return [a for a in archives if substr in a]
+        else:
+            return archives
 
 
     @classmethod

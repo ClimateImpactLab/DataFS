@@ -130,8 +130,8 @@ Let's see what archives we have available to us.
 
 .. code-block:: python
 
-    >>> api.archives
-    [<DataArchive aws://my_remote_archive>]
+    >>> api.list() # doctest: +SKIP
+    ['my_remote_archive']
 
 
 Retrieve archive metadata

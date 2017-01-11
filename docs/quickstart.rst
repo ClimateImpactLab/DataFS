@@ -61,7 +61,7 @@ Using python
     ...     f.write(u'first release')
     ...
 
-    >>> archives.get_versions()
+    >>> archive.get_versions()
     ['0.0.1', '0.0.2', '1.0']
 
 Use other packages:

@@ -4,7 +4,7 @@ from datafs.core import data_file
 from datafs.core.versions import BumpableVersion
 from datafs._compat import string_types
 from contextlib import contextmanager
-import fs1.utils
+import fs1.utils, fs1.path
 from fs1.osfs import OSFS
 import os
 

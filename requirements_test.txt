@@ -1,6 +1,6 @@
 click==6.6
 PyYAML==3.12
-fs==0.5.5a1
+fs1==0.5.5a1
 pip==9.0.1
 wheel==0.29.0
 flake8==3.2.1

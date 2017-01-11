@@ -10,10 +10,10 @@ import boto
 import moto
 import os
 
-import fs.utils
-from fs.osfs import OSFS
-from fs.tempfs import TempFS
-from fs.s3fs import S3FS
+import fs1.utils
+from fs1.osfs import OSFS
+from fs1.tempfs import TempFS
+from fs1.s3fs import S3FS
 
 from datafs import DataAPI
 from datafs._compat import string_types

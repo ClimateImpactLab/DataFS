@@ -2,9 +2,9 @@
 from __future__ import absolute_import
 
 import os
-import fs.utils
-import fs.path
-from fs.osfs import OSFS
+import fs1.utils
+import fs1.path
+from fs1.osfs import OSFS
 
 
 class DataService(object):

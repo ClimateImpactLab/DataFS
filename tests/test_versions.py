@@ -1,6 +1,6 @@
 
 from datafs._compat import string_types, u
-from fs.errors import (ResourceNotFoundError, NoMetaError)
+from fs1.errors import (ResourceNotFoundError, NoMetaError)
 import pytest
 
 def test_version_tracking(api1, auth1, opener):

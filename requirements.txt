@@ -1,3 +1,3 @@
 click>=6.0
 PyYAML>=3.0
-fs1@https://github.com/pyfilesystem/pyfilesystem/archive/0.5.5a1.zip
+fs1@https://github.com/ClimateImpactLab/pyfilesystem/tarball/master#egg=fs1-0.5.5a1

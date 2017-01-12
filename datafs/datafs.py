@@ -342,12 +342,13 @@ def versions(ctx, archive_name):
 
 
 @cli.command()
-@click.option('--substr', default=None, help='filter archive names with a substring')
+@click.option('--pattern', default=None, help='filter archive names with a match pattern')
+@click.option('--engine', default='path', help='comparison engine: str/path/regex (default path)')
 @click.pass_context
-def list(ctx, substr):
+def list(ctx, pattern, engine):
     _generate_api(ctx)
 
-    matches = ctx.obj.api.list(substr)
+    matches = ctx.obj.api.list(pattern, engine)
     
     if len(matches) > 0:
         click.echo(' '.join(matches))

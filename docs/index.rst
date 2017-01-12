@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 1
 
    readme
+   quickstart
    installation
    configure
    pythonapi

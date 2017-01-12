@@ -10,7 +10,7 @@ Specifying API objects manually from within python
 
     >>> from datafs.managers.manager_mongo import MongoDBManager
     >>> from datafs import DataAPI
-    >>> from fs.osfs import OSFS
+    >>> from fs1.osfs import OSFS
     >>> import tempfile
     >>> 
     >>> api = DataAPI(

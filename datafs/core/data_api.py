@@ -4,7 +4,7 @@ from datafs.services.service import DataService
 from datafs.core.data_archive import DataArchive
 from datafs._compat import open_filelike
 
-import fs.path
+import fs1.path
 
 import os
 import hashlib
@@ -166,10 +166,13 @@ class DataAPI(object):
             **res)
 
 
-    @property
-    def archives(self):
+    def list(self, substr=None):
 
-        return list(map(self.get_archive, self.manager.get_archive_names()))
+        archives = self.manager.get_archive_names()
+        if substr:
+            return [a for a in archives if substr in a]
+        else:
+            return archives
 
 
     @classmethod
@@ -224,7 +227,7 @@ class DataAPI(object):
 
         '''
 
-        return fs.path.join(*tuple(archive_name.split('_')))
+        return fs1.path.join(*tuple(archive_name.split('_')))
 
     def delete_archive(self, archive_name):
         '''

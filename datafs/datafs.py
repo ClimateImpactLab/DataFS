@@ -267,7 +267,16 @@ def get_dependencies(ctx, archive_name, version):
 
     var = ctx.obj.api.get_archive(archive_name)
 
-    click.echo(pprint.pformat(var.get_dependencies(version=version)))
+    deps = []
+
+    dependencies = var.get_dependencies(version=version)
+    for arch, dep in dependencies.items():
+        if dep is None:
+            deps.append(dep)
+        else:
+            deps.append('{}=={}'.format(arch, dep))
+
+    click.echo('\n'.join(deps))
 
 
 @cli.command()
@@ -327,21 +336,18 @@ def history(ctx, archive_name):
 @click.pass_context
 def versions(ctx, archive_name):
     _generate_api(ctx)
+
     var = ctx.obj.api.get_archive(archive_name)
     click.echo(pprint.pformat(map(str, var.get_versions())))
 
 
 @cli.command()
-@click.option('--prefix', default='')
+@click.option('--substr', default=None, help='filter archive names with a substring')
 @click.pass_context
-def list(ctx, prefix):
+def list(ctx, substr):
     _generate_api(ctx)
-    archives = ctx.obj.api.archives
-    res = [
-        var.archive_name 
-        for var in archives if var.archive_name.startswith(prefix)]
 
-    click.echo(res)
+    click.echo(' '.join(ctx.obj.api.list(substr)))
 
 
 @cli.command()

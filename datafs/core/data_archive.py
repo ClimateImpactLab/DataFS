@@ -4,8 +4,8 @@ from datafs.core import data_file
 from datafs.core.versions import BumpableVersion
 from datafs._compat import string_types
 from contextlib import contextmanager
-import fs.utils
-from fs.osfs import OSFS
+import fs1.utils, fs1.path
+from fs1.osfs import OSFS
 import os
 
 
@@ -134,10 +134,10 @@ class DataArchive(object):
                 version = self.get_latest_version()
 
             if version is None:
-                return fs.path.join(self.archive_path, str(BumpableVersion()))
+                return fs1.path.join(self.archive_path, str(BumpableVersion()))
 
             else:
-                return fs.path.join(self.archive_path, str(version))
+                return fs1.path.join(self.archive_path, str(version))
 
         else:
             return self.archive_path
@@ -558,7 +558,7 @@ class DataArchive(object):
             version_check, 
             self.api.hash_file) as read_fs:
 
-            fs.utils.copyfile(
+            fs1.utils.copyfile(
                 read_fs,
                 read_path,
                 local,

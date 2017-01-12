@@ -30,16 +30,44 @@ def test_xarray_upload(api1, auth1):
 
     for i in range(2):
 
+        # try reading from the archive
         with archive.get_local_path() as f:
             with xr.open_dataset(f) as ds:
-                ds.load()
+                print(ds)
 
-        assert (ds == airtemps*(2^i)).all()
+        assert len(archive.get_versions()) == i+1
+
+        # try reading from & doing math on the archive
+        with archive.get_local_path() as f:
+            with xr.open_dataset(f) as ds:
+                ds = ds*2
+
+        assert len(archive.get_versions()) == i+1
+
+        # try dask read
+        with archive.get_local_path() as f:
+            with xr.open_dataset(f) as ds:
+                air2 = ds.air*2
+                ds.load()
+        
+
+        assert len(archive.get_versions()) == i+1
+
+        assert (ds.air == airtemps.air*(2**(i))).all()
 
         with archive.get_local_path() as f:
-            (ds*2).to_netcdf(f)
+            ds['air'] = ds.air*2
+            ds.to_netcdf(f)
+
+        assert len(archive.get_versions()) == i+2
 
         ds.close()
 
-
     airtemps.close()
+    
+    assert len(archive.get_versions()) == i+2
+
+    # make sure old version is still ok too
+    with archive.get_local_path(version='0.0.1') as f:
+        with xr.open_dataset(f) as ds:
+            assert (ds.air == airtemps.air).all()

@@ -200,6 +200,11 @@ def open_file(
 
                     yield f
 
+                info = write_fs.getinfokeys(read_path, 'size')
+                if 'size' in info:
+                    if info['size'] == 0:
+                        return
+
                 with write_fs.open(read_path, 'rb') as f:
                     checksum = hasher(f)
 
@@ -276,6 +281,11 @@ def get_local_path(
             yield write_fs.getsyspath(read_path)
 
             if write_fs.isfile(read_path):
+
+                info = write_fs.getinfokeys(read_path, 'size')
+                if 'size' in info:
+                    if info['size'] == 0:
+                        return
 
                 with write_fs.open(read_path, 'rb') as f:
                     checksum = hasher(f)

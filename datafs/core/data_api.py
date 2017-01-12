@@ -8,7 +8,8 @@ import fs1.path
 
 import os
 import hashlib
-
+import fnmatch
+import re
 
 try:
     PermissionError
@@ -166,14 +167,26 @@ class DataAPI(object):
             **res)
 
 
-    def list(self, substr=None):
+    def list(self, pattern=None, engine='path'):
+    
+        archives =self.manager.get_archive_names()
 
-        archives = self.manager.get_archive_names()
-        if substr:
-            return [a for a in archives if substr in a]
-        else:
+        if not pattern:
             return archives
 
+        if engine == 'str':
+            return [x for x in archives if pattern in x]
+
+        elif engine == 'path':
+            return fnmatch.filter(archives, pattern)
+
+        elif engine == 'regex':
+            return [arch for arch in archives if re.search(pattern, arch)]
+
+        else:
+            raise ValueError(
+                'search engine "{}" not recognized. '.format(engine) +\
+                'choose "str", "fn", or "regex"')
 
     @classmethod
     def create_archive_path(cls, archive_name):

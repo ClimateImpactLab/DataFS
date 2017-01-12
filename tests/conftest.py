@@ -9,6 +9,7 @@ import time
 import boto
 import moto
 import os
+import itertools
 
 import fs1.utils
 from fs1.osfs import OSFS
@@ -48,7 +49,7 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize('open_func', ['open_file', 'get_local_path'])
 
 
-@pytest.yield_fixture(scope='function')
+@pytest.yield_fixture
 def tempdir():
     tmpdir = tempfile.mkdtemp()
 
@@ -333,3 +334,48 @@ def datafile_opener(open_func):
         raise NameError('open_func "{}" not recognized'.format(open_func))
 
 
+
+
+@pytest.yield_fixture
+def api_with_diverse_archives(mgr_name, fs_name):
+
+    with prep_manager(mgr_name) as manager:
+
+        api = DataAPI(
+            username='My Name',
+            contact='my.email@example.com')
+
+        api.attach_manager(manager)
+
+        with prep_filesystem(fs_name) as auth:
+
+            api.attach_authority('auth', auth1)
+
+            for indices in itertools.product(*(range(1,4) for _ in range(5))):
+                api.create(
+                    'team{}_project{}_task{}_variable{}_scenario{}.nc'.format(
+                        *indices))
+
+
+            for indices in itertools.product(*(range(1,4) for _ in range(5))):
+                api.create(
+                    'team{}_project{}_task{}_parameter{}_scenario{}.csv'.format(
+                        *indices))
+
+
+            for indices in itertools.product(*(range(1,4) for _ in range(3))):
+                api.create(
+                    'team{}_project{}_task{}_config.txt'.format(
+                        *indices))
+
+            api.TEST_ATTRS = {
+                'archives.variable': 243,
+                'archives.parameter': 243,
+                'archives.config': 27,
+                'count.variable': 3,
+                'count.parameter': 3,
+                'count.config': 1
+            }
+
+
+            yield api

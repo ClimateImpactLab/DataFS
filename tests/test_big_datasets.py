@@ -49,6 +49,18 @@ def test_xarray_upload(api1, auth1):
             with xr.open_dataset(f) as ds:
                 air2 = ds.air*2
                 ds.load()
+
+        # try clearing file. we do not consider this an update.
+        with archive.get_local_path() as f:
+            with open(f, 'w+') as w:
+                pass
+
+        assert len(archive.get_versions()) == i+1
+
+        # try writing nothing. we do not consider this an update.
+        with archive.get_local_path() as f:
+            with open(f, 'w+') as w:
+                w.write('')
         
 
         assert len(archive.get_versions()) == i+1

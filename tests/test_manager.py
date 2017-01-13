@@ -70,6 +70,15 @@ class TestMetadataRequirements:
             api_with_spec.create('my_other_test_archive', metadata={'another_string': 'to break the test'})
 
 
+class TestAuthoritiesSpec:
+
+    def test_authorities_table_creation(self, manager_with_auth):
+
+        assert 'auth-test-table.authorities' in manager_with_auth.table_names
+
+
+
+
 class TestManagers(object):
 
     def test_error_handling(self, api):

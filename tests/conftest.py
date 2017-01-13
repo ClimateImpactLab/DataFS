@@ -208,6 +208,16 @@ def manager_with_spec(mgr_name):
 
         yield manager
 
+@pytest.yield_fixture
+def manager_with_auth(mgr_name):
+
+    with prep_manager(mgr_name, table_name='auth-test-table') as manager:
+
+
+        yield manager
+
+    
+
 
 @pytest.yield_fixture
 def api_with_spec(manager_with_spec, auth1):

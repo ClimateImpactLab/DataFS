@@ -18,6 +18,7 @@ class BaseDataManager(object):
         
         self._table_name = table_name
         self._spec_table_name = table_name + '.spec'
+        self._authorities_table_name = table_name + '.authorities'
 
         self._required_user_config = None
         self._required_archive_metadata = None
@@ -56,7 +57,9 @@ class BaseDataManager(object):
         table_name: str
 
         Creates a table to store archives for your project
-        Also creates and populates a table with basic spec for user and metadata config
+        Creates and populates a table with basic spec for user and metadata config
+        Creates a table for store different configs for your orgs authorities/datastores
+
 
         Returns
         -------
@@ -69,6 +72,7 @@ class BaseDataManager(object):
             self._create_archive_table(table_name)
             self._create_spec_table(table_name)
             self._create_spec_config(table_name)
+            self._create_authorities_table(table_name)
             
 
         else:
@@ -76,6 +80,8 @@ class BaseDataManager(object):
                 self._create_archive_table(table_name)
                 self._create_spec_table(table_name)
                 self._create_spec_config(table_name)
+                self._create_authorities_table(table_name)
+
             except KeyError:
                 pass
 
@@ -144,11 +150,25 @@ class BaseDataManager(object):
         if raise_on_err:
             self._delete_table(table_name)
             self._delete_table(table_name + '.spec')
+            self._delete_table(table_name + '.authorities')
+        
         else:
             try:
                 self._delete_table(table_name)
             except KeyError:
                 pass
+            
+            try:
+                self._delete_table(table_name + '.spec')
+            except KeyError:
+                pass
+
+            try:
+                self._delete_table(table_name + '.authorities')
+            except KeyError:
+                pass
+
+
 
 
 
@@ -321,6 +341,28 @@ class BaseDataManager(object):
         return time.strftime(cls.TimestampFormat, time.gmtime())
 
 
+    def configure_authority(self, authority_name, authority_config={}):
+        '''
+        Method for creating a table on manager that specifies the config for 
+        authorities
+
+        Parameters
+        ----------
+
+        authority_name: str
+            reference for the authority. This will be the primary key in the authorities table
+            You can have multiple entries that point to different data stores
+
+        authority_config: dict
+            key-value pairs needed for access to a particular data store
+            Examples include: profile names, endpoint_urls
+
+        '''
+
+
+
+
+
     # Private methods (to be implemented by subclasses of DataManager)
 
     def _update(self, archive_name, version_metadata):
@@ -383,7 +425,12 @@ class BaseDataManager(object):
 
     def _update_spec_config(self, document_name, spec):
         raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')        
+            'BaseDataManager cannot be used directly. Use a subclass.')  
+
+    def _create_authorities_table(self,table_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
 
     def _delete_table(self, table_name):
         raise NotImplementedError(

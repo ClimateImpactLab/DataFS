@@ -246,6 +246,47 @@ class DynamoDBManager(BaseDataManager):
             # Error handling for windows incompatability issue
             assert table_name not in self._get_table_names(), 'Table deletion failed'
 
+    def _create_authorities_table(self, table_name):
+        '''
+        Dynamo implementation of authorities table creation
+        Called by `create_archive_table()` in :py:class:`manager.BaseDataManager`. 
+        This table will be aliased by 'table_name.authorities'
+
+        A waiter is implemented on Dynamo to ensure table exists before executing any subsequent operations
+
+        Paramters
+        ---------
+        table_name: str
+
+        Returns
+        -------
+        None
+        '''
+
+        spec_table = table_name + '.authorities'
+        
+
+        if spec_table in self._get_table_names():
+            raise KeyError('Table "{}" already exists'.format(spec_table))
+
+        try:
+            table = self._resource.create_table(
+                TableName=spec_table,
+                KeySchema=[
+                    {'AttributeName': '_id', 'KeyType': 'HASH'}],
+                AttributeDefinitions=[
+                    {'AttributeName': '_id','AttributeType': 'S'}],
+                ProvisionedThroughput={
+                    'ReadCapacityUnits': 123,'WriteCapacityUnits': 123})
+
+            table.meta.client.get_waiter('table_exists').wait(TableName=spec_table)
+
+
+        except ValueError:
+            # Error handling for windows incompatability issue
+            assert spec_table in self._get_table_names(), 'Table creation failed'
+
+
     def _update_metadata(self, archive_name, archive_metadata):
         """
         Appends the updated_metada dict to the Metadata Attribute list

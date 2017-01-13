@@ -34,7 +34,7 @@ def _close(path):
         raise e
 
 @contextmanager
-def prep_manager(mgr_name, table_name = 'my-new-data-table'):
+def prep_manager(mgr_name, table_name ='test-data-table'):
     
 
     if mgr_name == 'mongo':
@@ -53,8 +53,7 @@ def prep_manager(mgr_name, table_name = 'my-new-data-table'):
 
         finally:
             manager_mongo.delete_table(
-                table_name,
-                raise_on_err=False)
+                table_name, raise_on_err=False)
 
     elif mgr_name == 'dynamo':
 
@@ -76,8 +75,7 @@ def prep_manager(mgr_name, table_name = 'my-new-data-table'):
 
         finally:
             manager_dynamo.delete_table(
-                table_name,
-                raise_on_err=False)
+                table_name, raise_on_err=False)
 
     else:
         raise ValueError('Manager "{}" not recognized'.format(mgr_name))

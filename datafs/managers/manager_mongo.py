@@ -60,6 +60,7 @@ class MongoDBManager(BaseDataManager):
         self._db = None
         self._coll = None
         self._spec_coll = None
+        self._authorities_coll = None
 
     @property
     def config(self):
@@ -97,6 +98,14 @@ class MongoDBManager(BaseDataManager):
             raise KeyError('Table "{}" already exists'.format(self._spec_table_name))
 
         self.db.create_collection(self._spec_table_name)
+
+    def _create_authorities_table(self, table_name):
+
+        if self._authorities_table_name in self._get_table_names():
+            raise KeyError('Table "{}" already exists'.format(self._authorities_table_name))
+
+        self.db.create_collection(self._authorities_table_name)
+
 
     def _delete_table(self, table_name):
         if table_name not in self._get_table_names():
@@ -195,6 +204,8 @@ class MongoDBManager(BaseDataManager):
                         for x in ('required_user_config', 'required_archive_metadata')]
 
         self.spec_collection.insert_many(itrbl)
+
+    
 
 
 

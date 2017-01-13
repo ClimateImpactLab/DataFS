@@ -8,7 +8,7 @@ from datafs.config.helpers import get_api, to_config_file
 
 __author__ = """Climate Impact Lab"""
 __email__ = 'jsimcock@rhg.com'
-__version__ = '0.6.4'
+__version__ = '0.6.5'
 
 _module_imports = (
     DataAPI,

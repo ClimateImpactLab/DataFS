@@ -8,7 +8,7 @@ Managing Metadata
 Metadata management is one of the core components of DataFS. Metadata is managed at the Archive level and the version level. This documentation will refer to the Archive level metadata. 
 
 
-We'll assume that your manager and authority have been set up already. Depending on usage, metadata requirements will be enforced and archive creation will be possible only with inclusion of the required metadata. 
+We'll assume that your manager and authority have been set up already. Depending on usage, metadata requirements can be enforced and archive creation will be possible only with inclusion of the required metadata. 
 
 .. code-block:: python
 
@@ -28,7 +28,7 @@ Let's check to see if we have any other archives. It looks like we only have our
 	>>> api.list()
 	... ['sample_archive']
 
-Nope just this one. So let's have a look at the metadata. 
+Nope just this one. So let's have a look at the metadata using :py:meth:`~datafs.core.data_archive.DataArchive.get_metadata`. 
 
 .. code-block:: python 
 
@@ -39,7 +39,7 @@ Nope just this one. So let's have a look at the metadata.
  	u'source': u'NASA BCSD'}
 
 
-Let's say you later on realize that you want to add another field to the archive metadata and that you also want to update on of the required fields. The archive metadata is modified in place and so you'll be able to do both at the same time. 
+Let's say you later on realize that you want to add another field to the archive metadata and that you also want to update on of the required fields. The archive metadata is modified in place and so you'll be able to do both at the same time with :py:meth:`~datafs.core.data_archive.DataArchive.update_metadata`
 
 .. code-block:: python 
 

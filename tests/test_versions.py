@@ -1,5 +1,5 @@
 
-from datafs._compat import string_types, u
+from datafs._compat import u
 from fs1.errors import (ResourceNotFoundError, NoMetaError)
 import pytest
 

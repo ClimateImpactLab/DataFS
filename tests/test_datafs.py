@@ -12,29 +12,18 @@ from __future__ import absolute_import
 
 import pytest
 
-from datafs.managers.manager_mongo import MongoDBManager
-from datafs.managers.manager_dynamo import DynamoDBManager
-from datafs._compat import string_types, u
-from datafs import DataAPI
-from fs1.osfs import OSFS
-from fs1.tempfs import TempFS
-from fs1.s3fs import S3FS
-from ast import literal_eval
+from datafs._compat import u
+from tests.resources import prep_manager
 import os
 import tempfile
-import shutil
 import hashlib
 import random
-import itertools
-import time
-import boto
-import moto
 
 from six import b
 
 try:
     PermissionError
-except:
+except NameError:
     class PermissionError(NameError):
         pass
 
@@ -48,6 +37,7 @@ def get_counter():
     while True:
         yield counter
         counter += 1
+
 
 counter = get_counter()
 
@@ -114,16 +104,22 @@ class TestHashFunction(object):
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == archive.get_latest_hash(
-        ), 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.get_latest_hash())
+
+        msg = (
+            'Manual hash "{}"'.format(direct) +
+            ' != archive hash "{}"'.format(archive.get_latest_hash()))
+        assert direct == archive.get_latest_hash(), msg
 
         # Try uploading the same file
         apihash = self.update_and_hash(archive, contents)
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == archive.get_latest_hash(
-        ), 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.get_latest_hash())
+
+        msg = (
+            'Manual hash "{}"'.format(direct) +
+            ' != archive hash "{}"'.format(archive.get_latest_hash()))
+        assert direct == archive.get_latest_hash(), msg
 
         # Update and test again!
 
@@ -136,13 +132,17 @@ class TestHashFunction(object):
         with archive.open('rb') as f:
             current = f.read()
 
-        assert contents == current, 'Latest updates "{}" !=  archive contents "{}"'.format(
+        msg = 'Latest updates "{}" !=  archive contents "{}"'.format(
             contents, current)
+        assert contents == current, msg
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == archive.get_latest_hash(
-        ), 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.get_latest_hash())
+
+        msg = (
+            'Manual hash "{}"'.format(direct) +
+            ' != archive hash "{}"'.format(archive.get_latest_hash()))
+        assert direct == archive.get_latest_hash(), msg
 
         # Update and test a different way!
 
@@ -156,11 +156,14 @@ class TestHashFunction(object):
         with archive.open('rb') as f2:
             current = f2.read()
 
-        assert contents == current, 'Latest updates "{}" !=  archive contents "{}"'.format(
+        msg = 'Latest updates "{}" !=  archive contents "{}"'.format(
             contents, current)
+        assert contents == current, msg
 
-        assert direct == archive.get_latest_hash(
-        ), 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.get_latest_hash())
+        msg = (
+            'Manual hash "{}"'.format(direct) +
+            ' != archive hash "{}"'.format(archive.get_latest_hash()))
+        assert direct == archive.get_latest_hash(), msg
 
 
 class TestArchiveCreation(object):
@@ -190,13 +193,13 @@ class TestArchiveCreation(object):
 
         var.update_metadata({'testval': 'a different test value'})
 
-        assert var.get_metadata()[
-            'testval'] == 'a different test value', "Test archive was not updated!"
+        msg = "Test archive was not updated!"
+        assert var.get_metadata()['testval'] == 'a different test value', msg
 
         # Test archive deletion
         var.delete()
 
-        with pytest.raises(KeyError) as excinfo:
+        with pytest.raises(KeyError):
             api.get_archive(archive_name)
 
     def test_api_locks(self, api, auth1, mgr_name):
@@ -204,9 +207,9 @@ class TestArchiveCreation(object):
         api.lock_manager()
         api.lock_authorities()
 
-        with pytest.raises((PermissionError, NameError)) as excinfo:
+        with pytest.raises((PermissionError, NameError)):
             with prep_manager(mgr_name) as manager:
                 api.attach_manager(manager)
 
-        with pytest.raises((PermissionError, NameError)) as excinfo:
+        with pytest.raises((PermissionError, NameError)):
             api.attach_authority('auth', auth1)

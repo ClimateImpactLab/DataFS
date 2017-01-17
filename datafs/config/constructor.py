@@ -17,7 +17,7 @@ class APIConstructor(object):
     def generate_api_from_config(config):
 
         for kw in ['user_config', 'constructor']:
-            if not kw in config['api']:
+            if kw not in config['api']:
                 config['api'][kw] = {}
 
         try:
@@ -129,9 +129,13 @@ class APIConstructor(object):
         mgr_class_name = manager_config['class']
 
         if mgr_class_name.lower()[:5] == 'mongo':
-            from datafs.managers.manager_mongo import MongoDBManager as mgr_class
+            from datafs.managers.manager_mongo import (
+                MongoDBManager as mgr_class)
+
         elif mgr_class_name.lower()[:6] == 'dynamo':
-            from datafs.managers.manager_dynamo import DynamoDBManager as mgr_class
+            from datafs.managers.manager_dynamo import (
+                DynamoDBManager as mgr_class)
+
         else:
             raise KeyError(
                 'Manager class "{}" not recognized. Choose from {}'.format(

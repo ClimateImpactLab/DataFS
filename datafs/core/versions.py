@@ -8,7 +8,8 @@ from datafs._compat import string_types
 class BumpableVersion(distutils.version.StrictVersion):
     '''
 
-    Adds bumpversion functionality to python's native :py:class:`~distutils.version.StrictVersion`
+    Adds bumpversion functionality to python's native
+    :py:class:`~distutils.version.StrictVersion`
 
     Parameters
     ----------
@@ -112,9 +113,9 @@ class BumpableVersion(distutils.version.StrictVersion):
             Traceback (most recent call last):
             ValueError: Bump kind "release" not understood
 
-        The prerelease argument increments the pre-release value. If ``kind`` is not
-        supplied simultaneously the version is bumped with a patch before entering
-        pre-release:
+        The prerelease argument increments the pre-release value. If ``kind``
+        is not supplied simultaneously the version is bumped with a patch
+        before entering pre-release:
 
         .. code-block:: python
 
@@ -177,10 +178,12 @@ class BumpableVersion(distutils.version.StrictVersion):
         .. code-block:: python
 
             >>> v = BumpableVersion('0.2b1')
-            >>> v.bump(prerelease='alpha')    # doctest: +ELLIPSIS
+            >>> v.bump(prerelease='alpha')    # doctest: \
+            +ELLIPSIS +NORMALIZE_WHITESPACE
             Traceback (most recent call last):
             ...
-            ValueError: Cannot bump version "0.2b1" to prerelease stage "alpha" - version already in beta
+            ValueError: Cannot bump version "0.2b1" to prerelease stage \
+            "alpha" - version already in beta
             >>> v.bump('minor')
             >>> v
             BumpableVersion ('0.2')
@@ -288,8 +291,10 @@ class BumpableVersion(distutils.version.StrictVersion):
                     new_prerelease = ('a', int(current_prerelease[1]) + 1)
 
                 elif current_prerelease[0] == 'b':
-                    msg = 'Cannot bump version "{}"'.format(self) +\
-                        ' to prerelease stage "alpha"'' - version already in beta'
+                    msg = (
+                        'Cannot bump version "{}"'.format(self) +
+                        ' to prerelease stage "alpha"' +
+                        ' - version already in beta')
 
                     raise ValueError(msg)
 

@@ -1,6 +1,5 @@
 
 import boto3
-#import botocore.exceptions.ClientError
 
 from datafs.managers.manager import BaseDataManager
 
@@ -26,10 +25,16 @@ class DynamoDBManager(BaseDataManager):
     def __init__(
             self,
             table_name,
-            session_args={},
-            resource_args={}):
+            session_args=None,
+            resource_args=None):
 
         super(DynamoDBManager, self).__init__(table_name)
+
+        if session_args is None:
+            session_args = {}
+
+        if resource_args is None:
+            resource_args = {}
 
         self._session_args = session_args
         self._resource_args = resource_args
@@ -80,12 +85,13 @@ class DynamoDBManager(BaseDataManager):
         dict
             list of dictionaries of version_history
         '''
+
+        command = "SET version_history = list_append(version_history, :v)"
+
         self._table.update_item(
-            Key={
-                '_id': archive_name},
-            UpdateExpression="SET version_history = list_append(version_history, :v)",
-            ExpressionAttributeValues={
-                ':v': [version_metadata]},
+            Key={'_id': archive_name},
+            UpdateExpression=command,
+            ExpressionAttributeValues={':v': [version_metadata]},
             ReturnValues='ALL_NEW')
 
     def _get_table_names(self):
@@ -96,8 +102,8 @@ class DynamoDBManager(BaseDataManager):
         Dynamo implementation of BaseDataManager create_archive_table
 
         waiter object is implemented to ensure table creation before moving on
-        this will slow down table creation. However, since we are only creating table once
-        this should no impact users.
+        this will slow down table creation. However, since we are only creating
+        table once this should no impact users.
 
         Parameters
         ----------
@@ -113,26 +119,32 @@ class DynamoDBManager(BaseDataManager):
 
         try:
             table = self._resource.create_table(
-                TableName=table_name, KeySchema=[
-                    {
-                        'AttributeName': '_id', 'KeyType': 'HASH'}, ], AttributeDefinitions=[
-                    {
-                        'AttributeName': '_id', 'AttributeType': 'S'}, ], ProvisionedThroughput={
-                    'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123})
-            table.meta.client.get_waiter(
-                'table_exists').wait(TableName=table_name)
+                TableName=table_name,
+                KeySchema=[{'AttributeName': '_id', 'KeyType': 'HASH'}],
+                AttributeDefinitions=[
+                    {'AttributeName': '_id', 'AttributeType': 'S'}],
+                ProvisionedThroughput={
+                    'ReadCapacityUnits': 123,
+                    'WriteCapacityUnits': 123})
+
+            table.meta.client.get_waiter('table_exists').wait(
+                TableName=table_name)
 
         except ValueError:
             # Error handling for windows incompatability issue
-            assert table_name in self._get_table_names(), 'Table creation failed'
+            msg = 'Table creation failed'
+            assert table_name in self._get_table_names(), msg
 
     def _create_spec_table(self, table_name):
         '''
         Dynamo implementation of User and Metadata Spec configuration
-        Called by `create_archive_table()` in :py:class:`manager.BaseDataManager`.
-        This table will additional table will be aliased by 'table_name.spec'
 
-        A waiter is implemented on Dynamo to ensure table exists before executing any subsequent operations
+        Called by `create_archive_table()` in
+        :py:class:`manager.BaseDataManager`. This table will additional table
+        will be aliased by 'table_name.spec'
+
+        A waiter is implemented on Dynamo to ensure table exists before
+        executing any subsequent operations
 
         Paramters
         ---------
@@ -163,13 +175,16 @@ class DynamoDBManager(BaseDataManager):
 
         except ValueError:
             # Error handling for windows incompatability issue
-            assert spec_table in self._get_table_names(), 'Table creation failed'
+            msg = 'Table creation failed'
+            assert spec_table in self._get_table_names(), msg
 
     def _create_spec_config(self, table_name):
         '''
         Dynamo implementation of spec config creation
-        Called by `create_archive_table()` in :py:class:`manager.BaseDataManager`
-        Simply adds two rows to the spec table
+
+        Called by `create_archive_table()` in
+        :py:class:`manager.BaseDataManager` Simply adds two rows to the spec
+        table
 
         Parameters
         ----------
@@ -196,28 +211,25 @@ class DynamoDBManager(BaseDataManager):
         _spec_table.put_item(Item=user_config)
         _spec_table.put_item(Item=archive_config)
 
-    def _update_spec_config(self, document_name, spec={}):
+    def _update_spec_config(self, document_name, spec=None):
         '''
         Dynamo implementation of project specific metadata spec
 
-
         '''
+
+        if spec is None:
+            spec = {}
 
         spec_data_current = self._spec_table.get_item(
             Key={'_id': '{}'.format(document_name)})['Item']['config']
 
-        # print(spec_data_current)
-        # keep the current state in memory
-
         spec_data_current.update(spec)
-        # print(spec_data_current)
+
         # add the updated archive_metadata object to Dynamo
-        updated = self._spec_table.update_item(
-            Key={
-                '_id': '{}'.format(document_name)},
+        self._spec_table.update_item(
+            Key={'_id': '{}'.format(document_name)},
             UpdateExpression="SET config = :v",
-            ExpressionAttributeValues={
-                ':v': spec_data_current},
+            ExpressionAttributeValues={':v': spec_data_current},
             ReturnValues='ALL_NEW')
 
     def _delete_table(self, table_name):
@@ -229,7 +241,8 @@ class DynamoDBManager(BaseDataManager):
 
         except ValueError:
             # Error handling for windows incompatability issue
-            assert table_name not in self._get_table_names(), 'Table deletion failed'
+            msg = 'Table deletion failed'
+            assert table_name not in self._get_table_names(), msg
 
     def _update_metadata(self, archive_name, archive_metadata):
         """
@@ -248,12 +261,13 @@ class DynamoDBManager(BaseDataManager):
 
         """
 
-        # keep the current state in memory
         required_metadata_keys = self._get_required_archive_metadata().keys()
+
         for k, v in archive_metadata.items():
             if k in required_metadata_keys and v is None:
                 raise ValueError(
-                    'Value for key {} is None. None cannot be a value for required metadata'.format(k))
+                    'Value for key {} is None. '.format(k) +
+                    'None cannot be a value for required metadata')
 
         archive_metadata_current = self._get_archive_metadata(archive_name)
         archive_metadata_current.update(archive_metadata)
@@ -262,12 +276,10 @@ class DynamoDBManager(BaseDataManager):
                 del archive_metadata_current[k]
 
         # add the updated archive_metadata object to Dynamo
-        updated = self._table.update_item(
-            Key={
-                '_id': archive_name},
+        self._table.update_item(
+            Key={'_id': archive_name},
             UpdateExpression="SET archive_metadata = :v",
-            ExpressionAttributeValues={
-                ':v': archive_metadata_current},
+            ExpressionAttributeValues={':v': archive_metadata_current},
             ReturnValues='ALL_NEW')
 
     def _create_archive(
@@ -299,7 +311,8 @@ class DynamoDBManager(BaseDataManager):
         if archive_name in self._get_archive_names():
 
             raise KeyError(
-                "{} already exists. Use get_archive() to view".format(archive_name))
+                "{} already exists. Use get_archive() to view".format(
+                    archive_name))
 
         else:
             self._table.put_item(Item=metadata)

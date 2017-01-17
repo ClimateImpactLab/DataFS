@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 
 from datafs.managers.manager import BaseDataManager
-from datafs.core.data_archive import DataArchive
 
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError, DuplicateKeyError
@@ -43,12 +42,15 @@ class MongoDBManager(BaseDataManager):
         Name of the data archive table
 
     client_kwargs : dict
-        Keyword arguments used in initializing a :py:class:`pymongo.MongoClient`
-        object
+        Keyword arguments used in initializing a
+        :py:class:`pymongo.MongoClient` object
     '''
 
-    def __init__(self, database_name, table_name, client_kwargs={}):
+    def __init__(self, database_name, table_name, client_kwargs=None):
         super(MongoDBManager, self).__init__(table_name)
+
+        if client_kwargs is None:
+            client_kwargs = {}
 
         # setup MongoClient
         # Arguments can be passed to the client
@@ -134,8 +136,9 @@ class MongoDBManager(BaseDataManager):
 
     @catch_timeout
     def _update(self, archive_name, version_metadata):
-        self.collection.update({"_id": archive_name},
-                               {"$push": {"version_history": version_metadata}})
+        self.collection.update(
+            {"_id": archive_name},
+            {"$push": {"version_history": version_metadata}})
 
     def _update_metadata(self, archive_name, archive_metadata):
 
@@ -143,20 +146,24 @@ class MongoDBManager(BaseDataManager):
         for key, val in archive_metadata.items():
             if key in required_metadata_keys and val is None:
                 raise ValueError(
-                    'Value for key {} is None. None cannot be a value for required metadata'.format(key))
+                    'Value for key {} is None. '.format(key) +
+                    'None cannot be a value for required metadata')
 
             elif val is None:
-                self.collection.update({"_id": archive_name}, {"$unset": {
-                                       "archive_metadata.{}".format(key): ""}})
+                self.collection.update(
+                    {"_id": archive_name},
+                    {"$unset": {"archive_metadata.{}".format(key): ""}})
 
             else:
-                self.collection.update({"_id": archive_name}, {
-                                       "$set": {"archive_metadata.{}".format(key): val}})
+                self.collection.update(
+                    {"_id": archive_name},
+                    {"$set": {"archive_metadata.{}".format(key): val}})
 
     def _update_spec_config(self, document_name, spec):
 
-        self.spec_collection.update_many({"_id": document_name}, {
-                                         "$set": {'config': spec}}, upsert=True)
+        self.spec_collection.update_many(
+            {"_id": document_name},
+            {"$set": {'config': spec}}, upsert=True)
 
     @catch_timeout
     def _create_archive(
@@ -188,8 +195,9 @@ class MongoDBManager(BaseDataManager):
         if self._spec_coll is None:
             self._spec_coll = self.db[table_name + '.spec']
 
-        itrbl = [{'_id': x, 'config': {}}
-                 for x in ('required_user_config', 'required_archive_metadata')]
+        itrbl = [
+            {'_id': x, 'config': {}}
+            for x in ('required_user_config', 'required_archive_metadata')]
 
         self.spec_collection.insert_many(itrbl)
 

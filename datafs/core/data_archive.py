@@ -544,8 +544,9 @@ class DataArchive(object):
     def download(self, filepath, version=None):
         '''
         Downloads a file from authority to local path
+
         1. First checks in cache to check if file is there and if it is, is it
-            up to date
+           up to date
         2. If it is not up to date, it will download the file to cache
         '''
 

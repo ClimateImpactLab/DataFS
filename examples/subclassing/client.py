@@ -1,6 +1,7 @@
 '''
 
-Here is an example API that you could implement: :download:`download my_api.py <../examples/subclassing/my_api.py>`
+Here is an example API that you could implement:
+:download:`download my_api.py <../examples/subclassing/my_api.py>`
 
 .. literalinclude:: ../examples/subclassing/my_api.py
 
@@ -39,7 +40,9 @@ However, users of this api still have access to all other features:
     >>> archive_2 = my_api.create(
     ...     'another archive',
     ...     authority_name='NAT-1',
-    ...     metadata={'description':'data file to be stored on network-attached-storage'})
+    ...     metadata={
+    ...         'description':
+    ...             'data file to be stored on network-attached-storage'})
     ...
     >>> with archive_2.open('w+') as f:
     ...     res = f.write(u'my new data')

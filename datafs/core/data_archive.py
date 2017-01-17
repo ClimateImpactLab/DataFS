@@ -109,9 +109,9 @@ class DataArchive(object):
         '''
         Returns a storage path for the archive and version
 
-        If the archive is versioned, the version number is used as the file path
-        and the archive path is the directory. If not, the archive path is used
-        as the file path.
+        If the archive is versioned, the version number is used as the file
+        path and the archive path is the directory. If not, the archive path is
+        used as the file path.
 
         Parameters
         ----------
@@ -124,16 +124,16 @@ class DataArchive(object):
 
         .. code-block:: python
 
-            >>> arch = DataArchive(None, 'arch', None, 'arch1', versioned=False)
+            >>> arch = DataArchive(None, 'arch', None, 'a1', versioned=False)
             >>> print(arch.get_version_path())
-            arch1
+            a1
             >>>
-            >>> ver = DataArchive(None, 'ver', None, 'arch2', versioned=True)
+            >>> ver = DataArchive(None, 'ver', None, 'a2', versioned=True)
             >>> print(ver.get_version_path('0.0.0'))
-            arch2/0.0
+            a2/0.0
             >>>
             >>> print(ver.get_version_path('0.0.1a1'))
-            arch2/0.0.1a1
+            a2/0.0.1a1
             >>>
             >>> print(ver.get_version_path('latest')) # doctest: +ELLIPSIS
             Traceback (most recent call last):
@@ -197,7 +197,7 @@ class DataArchive(object):
             bumpversion=None,
             prerelease=None,
             dependencies=None,
-            metadata={}):
+            metadata=None):
         '''
         Enter a new version to a DataArchive
 
@@ -235,6 +235,9 @@ class DataArchive(object):
 
 
         '''
+
+        if metadata is None:
+            metadata = {}
 
         latest_version = self.get_latest_version()
 
@@ -285,7 +288,10 @@ class DataArchive(object):
 
     def _get_default_dependencies(self):
         '''
-        Get default dependencies from requirements file or (if no requirements file) from previous version
+        Get default dependencies for archive
+
+        Get default dependencies from requirements file or (if no requirements
+        file) from previous version
         '''
 
         # Get default dependencies from requirements file
@@ -311,7 +317,13 @@ class DataArchive(object):
         if version_metadata.get('dependencies', None) is None:
             version_metadata['dependencies'] = self._get_default_dependencies()
 
-    def _update_manager(self, archive_metadata={}, version_metadata={}):
+    def _update_manager(self, archive_metadata=None, version_metadata=None):
+
+        if archive_metadata is None:
+            archive_metadata = {}
+
+        if version_metadata is None:
+            version_metadata = {}
 
         self._set_version_defaults(version_metadata)
 
@@ -335,7 +347,7 @@ class DataArchive(object):
             bumpversion=None,
             prerelease=None,
             dependencies=None,
-            metadata={},
+            metadata=None,
             *args,
             **kwargs):
         '''
@@ -374,6 +386,9 @@ class DataArchive(object):
 
         '''
 
+        if metadata is None:
+            metadata = {}
+
         latest_version = self.get_latest_version()
         version = _process_version(self, version)
 
@@ -403,16 +418,18 @@ class DataArchive(object):
             next_version = None
 
         # version_check returns true if fp's hash is current as of read
-        version_check = lambda chk: chk['checksum'] == version_hash
+        def version_check(chk):
+            return chk['checksum'] == version_hash
 
         # Updater updates the manager with the latest version number
-        updater = lambda checksum, algorithm: self._update_manager(
-            archive_metadata=metadata,
-            version_metadata=dict(
-                version=next_version,
-                dependencies=dependencies,
-                checksum=checksum,
-                algorithm=algorithm))
+        def updater(checksum, algorithm):
+            self._update_manager(
+                archive_metadata=metadata,
+                version_metadata=dict(
+                    version=next_version,
+                    dependencies=dependencies,
+                    checksum=checksum,
+                    algorithm=algorithm))
 
         opener = data_file.open_file(
             self.authority,
@@ -436,7 +453,7 @@ class DataArchive(object):
             bumpversion=None,
             prerelease=None,
             dependencies=None,
-            metadata={}):
+            metadata=None):
         '''
         Returns a local path for read/write
 
@@ -467,6 +484,9 @@ class DataArchive(object):
 
         '''
 
+        if metadata is None:
+            metadata = {}
+
         latest_version = self.get_latest_version()
         version = _process_version(self, version)
 
@@ -496,16 +516,18 @@ class DataArchive(object):
             next_version = None
 
         # version_check returns true if fp's hash is current as of read
-        version_check = lambda chk: chk['checksum'] == version_hash
+        def version_check(chk):
+            return chk['checksum'] == version_hash
 
         # Updater updates the manager with the latest version number
-        updater = lambda checksum, algorithm: self._update_manager(
-            archive_metadata=metadata,
-            version_metadata=dict(
-                version=next_version,
-                dependencies=dependencies,
-                checksum=checksum,
-                algorithm=algorithm))
+        def updater(checksum, algorithm):
+            self._update_manager(
+                archive_metadata=metadata,
+                version_metadata=dict(
+                    version=next_version,
+                    dependencies=dependencies,
+                    checksum=checksum,
+                    algorithm=algorithm))
 
         path = data_file.get_local_path(
             self.authority,
@@ -522,7 +544,9 @@ class DataArchive(object):
     def download(self, filepath, version=None):
         '''
         Downloads a file from authority to local path
-        1. First checks in cache to check if file is there and if it is, is it up to date
+
+        1. First checks in cache to check if file is there and if it is, is it
+           up to date
         2. If it is not up to date, it will download the file to cache
         '''
 
@@ -539,7 +563,8 @@ class DataArchive(object):
         version_hash = self.get_version_hash(version)
 
         # version_check returns true if fp's hash is current as of read
-        version_check = lambda chk: chk['checksum'] == version_hash
+        def version_check(chk):
+            return chk['checksum'] == version_hash
 
         if os.path.exists(filepath):
             if version_check(self.api.hash_file(filepath)):
@@ -672,7 +697,8 @@ class DataArchive(object):
         Parameters
         ----------
         version: str
-            string representing version number whose dependencies you are looking up
+            string representing version number whose dependencies you are
+            looking up
         '''
 
         version = _process_version(self, version)
@@ -684,7 +710,10 @@ class DataArchive(object):
 
         raise ValueError('Version {} not found'.format(version))
 
-    def set_dependencies(self, dependencies={}):
+    def set_dependencies(self, dependencies=None):
+
+        if dependencies is None:
+            dependencies = {}
 
         history = self.get_history()
         if len(history) == 0:

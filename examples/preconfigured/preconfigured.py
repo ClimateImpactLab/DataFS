@@ -11,7 +11,8 @@ Set up a connection to AWS
 To use AWS resources, you'll need credentials. These are most easily specified
 in a credentials file.
 
-We've provided a sample file :download:`here <../examples/preconfigured/credentials>`:
+We've provided a sample file
+:download:`here <../examples/preconfigured/credentials>`:
 
 .. literalinclude:: ../examples/preconfigured/credentials
     :linenos:
@@ -39,7 +40,8 @@ Now that you have a connection to AWS, you can specify how you want DataFS to
 work. DataFS borrows the idea of profiles, allowing you to have multiple
 pre-configured file managers at once.
 
-We'll set up a test profile called "example" :download:`here <../examples/preconfigured/.datafs.yml>`:
+We'll set up a test profile called "example"
+:download:`here <../examples/preconfigured/.datafs.yml>`:
 
 .. literalinclude:: ../examples/preconfigured/.datafs.yml
     :language: yaml
@@ -86,7 +88,8 @@ help users:
     ...     'username': 'your full name',
     ...     'contact': 'your email address'})
 
-Similarly, :py:meth:`~datafs.managers.BaseDataManager.set_required_archive_metadata`
+Similarly,
+:py:meth:`~datafs.managers.BaseDataManager.set_required_archive_metadata`
 sets the metadata that is required for each archive:
 
     >>> api.manager.set_required_archive_metadata({
@@ -124,10 +127,11 @@ to skip the description, an error is raised and the archive is not created:
     >>> archive = api.create(
     ...     'archive2',
     ...     authority_name='local')
-    ...  # doctest: +ELLIPSIS
+    ...  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
-    AssertionError: Required value "description" not found. Use helper=True or the --helper flag for assistance.
+    AssertionError: Required value "description" not found. Use helper=True or
+    the --helper flag for assistance.
     >>>
     >>> api.list()
     ['archive1']
@@ -139,7 +143,8 @@ Setting User Permissions
 Users can be managed using policies on AWS's admin console. An example policy
 allowing users to create, update, and find archives without allowing
 them to delete archives or to modify the required metadata specification is
-provided :download:`here <../examples/preconfigured/DynamoDB_user_policy.json>`:
+provided
+:download:`here <../examples/preconfigured/DynamoDB_user_policy.json>`:
 
 
 .. literalinclude:: ../examples/preconfigured/DynamoDB_user_policy.json

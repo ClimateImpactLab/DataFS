@@ -1,27 +1,9 @@
 
 from __future__ import absolute_import
 
-import fs1.utils
-import fs1.path
-import tempfile
-import shutil
-import time
 import os
-import warnings
 
-from fs1.osfs import OSFS
-from fs1.multifs import MultiFS
-
-from datafs import DataAPI
-from datafs.core import data_file
-from datafs.services.service import DataService
-
-from contextlib import contextmanager
-
-import pytest
-from fs1.errors import (ResourceLockedError, ResourceInvalidError)
-
-from datafs._compat import string_types, u
+from datafs._compat import u
 
 
 def test_delete_handling(api, auth1, cache):

@@ -1,6 +1,6 @@
 '''
 
-Use this tutorial to build a DataFS server using MongoDB and the local filesystem
+This tutorial builds a DataFS server with MongoDB and the local filesystem
 
 
 Running this example
@@ -223,6 +223,7 @@ Cleaning up
 Next steps
 ~~~~~~~~~~
 
-The :ref:`next tutorial <examples-aws>` describes setting up DataFS for remote obejct stores, such as with AWS storage.
+The :ref:`next tutorial <examples-aws>` describes setting up DataFS for remote
+obejct stores, such as with AWS storage.
 
 '''

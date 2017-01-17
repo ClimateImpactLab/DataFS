@@ -1,13 +1,27 @@
 
 import pytest
+
+from distutils.version import StrictVersion
+
+# hack to get around installing these packages on Travis
 has_special_dependencies = False
 
 try:
     import netCDF4
+    assert StrictVersion(netCDF4.__version__) >= '1.1'
+
+    import numpy as np
+    assert StrictVersion(np.__version__) >= '1.7'
+
+    import pandas as pd
+    assert StrictVersion(pd.__version__) >= '0.15'
+
     import xarray as xr
+    assert StrictVersion(xr.__version__) >= '0.8'
+
     has_special_dependencies = True
 
-except ImportError:
+except (ImportError, AssertionError):
     pass
 
 
@@ -49,6 +63,7 @@ def test_xarray_upload(api1, auth1):
             with xr.open_dataset(f) as ds:
                 air2 = ds.air * 2
                 ds.load()
+                assert (ds.air * 2 == air2).all()
 
         # try clearing file. we do not consider this an update.
         with archive.get_local_path() as f:

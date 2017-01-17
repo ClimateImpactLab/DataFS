@@ -6,14 +6,13 @@ from datafs._compat import open_filelike
 
 import fs1.path
 
-import os
 import hashlib
 import fnmatch
 import re
 
 try:
     PermissionError
-except:
+except NameError:
     class PermissionError(NameError):
         pass
 
@@ -24,7 +23,10 @@ class DataAPI(object):
 
     _ArchiveConstructor = DataArchive
 
-    def __init__(self, default_versions={}, **kwargs):
+    def __init__(self, default_versions=None, **kwargs):
+
+        if default_versions is None:
+            default_versions = {}
 
         self.user_config = kwargs
 
@@ -103,7 +105,7 @@ class DataAPI(object):
             archive_path=None,
             versioned=True,
             raise_on_err=True,
-            metadata={},
+            metadata=None,
             helper=False):
         '''
         Create a DataFS archive
@@ -140,6 +142,9 @@ class DataAPI(object):
 
         if archive_path is None:
             archive_path = self.create_archive_path(archive_name)
+
+        if metadata is None:
+            metadata = {}
 
         res = self.manager.create_archive(
             archive_name,

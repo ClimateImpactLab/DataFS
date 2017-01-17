@@ -4,25 +4,15 @@ from __future__ import absolute_import
 import pytest
 
 import tempfile
-import shutil
-import time
-import boto
 import moto
-import os
 import itertools
 
-import fs1.utils
 from fs1.osfs import OSFS
-from fs1.tempfs import TempFS
 from fs1.s3fs import S3FS
 
 from datafs import DataAPI
 from datafs._compat import string_types
 from datafs.core import data_file
-from datafs.services.service import DataService
-from datafs.managers.manager import BaseDataManager
-from datafs.managers.manager_mongo import MongoDBManager
-from datafs.managers.manager_dynamo import DynamoDBManager
 from tests.resources import prep_manager, _close
 
 from contextlib import contextmanager
@@ -199,9 +189,6 @@ def manager_with_spec(mgr_name):
         manager.set_required_user_config(user_config)
         manager.set_required_archive_metadata(metadata_config)
 
-        manager.required_user_config
-        manager.required_archive_metadata
-
         yield manager
 
 
@@ -339,7 +326,7 @@ def api_with_diverse_archives(mgr_name, fs_name):
 
         api.attach_manager(manager)
 
-        with prep_filesystem(fs_name) as auth:
+        with prep_filesystem(fs_name) as auth1:
 
             api.attach_authority('auth', auth1)
 
@@ -349,9 +336,11 @@ def api_with_diverse_archives(mgr_name, fs_name):
                         *indices))
 
             for indices in itertools.product(*(range(1, 4) for _ in range(5))):
-                api.create(
-                    'team{}_project{}_task{}_parameter{}_scenario{}.csv'.format(
-                        *indices))
+                archive_name = (
+                    'team{}_project{}_task{}_' +
+                    'parameter{}_scenario{}.csv').format(*indices)
+
+                api.create(archive_name)
 
             for indices in itertools.product(*(range(1, 4) for _ in range(3))):
                 api.create(

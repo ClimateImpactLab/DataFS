@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 
 import time
-import threading
 from datafs.config.helpers import check_requirements
 
 
@@ -57,7 +56,8 @@ class BaseDataManager(object):
         table_name: str
 
         Creates a table to store archives for your project
-        Also creates and populates a table with basic spec for user and metadata config
+        Also creates and populates a table with basic spec for user and
+        metadata config
 
         Returns
         -------
@@ -81,14 +81,20 @@ class BaseDataManager(object):
 
     def update_spec_config(self, document_name, spec):
         '''
-        Allows update to default setting of either user config or metadata config
-        One or the other must be selected as True.
+        Set the contents of a specification document by name
+
+        This method should not be used directly. Instead, use
+        :py:meth:`set_required_user_config` or
+        :py:meth:`set_required_archive_metadata`.
 
         Parameters:
-        table_name: str
-        user_config: bool
-        metadata_config: bool
-        \*\*spec: kwargs
+        document_name : str
+
+            Name of a specification document's key
+
+        spec : dict
+
+            Dictionary metadata specification
 
         '''
 
@@ -177,8 +183,8 @@ class BaseDataManager(object):
             archive_path,
             versioned,
             raise_on_err=True,
-            metadata={},
-            user_config={},
+            metadata=None,
+            user_config=None,
             helper=False):
         '''
         Create a new data archive
@@ -189,6 +195,12 @@ class BaseDataManager(object):
             new :py:class:`~datafs.core.data_archive.DataArchive` object
 
         '''
+
+        if metadata is None:
+            metadata = {}
+
+        if user_config is None:
+            user_config = {}
 
         check_requirements(
             to_populate=user_config,

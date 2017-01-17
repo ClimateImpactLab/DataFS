@@ -1,23 +1,28 @@
 from __future__ import absolute_import
-from datafs.managers.manager import BaseDataManager
-from datafs.core.data_archive import DataArchive
-import tempfile
-import os
 
-import pytest
 import os
+import pytest
+from distutils.version import StrictVersion
 
 # hack to get around installing these packages on Travis
 has_special_dependencies = False
 
 try:
     import netCDF4
-    import xarray as xr
+    assert StrictVersion(netCDF4.__version__) >= '1.1'
+
     import numpy as np
+    assert StrictVersion(np.__version__) >= '1.7'
+
     import pandas as pd
+    assert StrictVersion(pd.__version__) >= '0.15'
+
+    import xarray as xr
+    assert StrictVersion(xr.__version__) >= '0.8'
+
     has_special_dependencies = True
 
-except ImportError:
+except (ImportError, AssertionError):
     pass
 
 

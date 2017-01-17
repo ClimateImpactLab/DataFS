@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-from datafs.core.data_api import DataAPI
 from datafs.config.config_file import ConfigFile
 from datafs.config.helpers import (
     get_api,
     _parse_requirement,
     _interactive_config)
 from datafs._compat import u
-import os
-import re
 import click
 import sys
 import pprint
@@ -26,7 +23,7 @@ def _parse_args_as_kwargs(args):
 def _interactive_configuration(api, config, profile=None):
 
     if profile is None:
-        profile = self.default_profile
+        profile = config.default_profile
 
     profile_config = config.get_profile_config(profile)
 
@@ -381,7 +378,3 @@ def delete(ctx, archive_name):
 
     var.delete()
     click.echo('deleted archive {}'.format(var))
-
-
-if __name__ == "__main__":
-    cli()

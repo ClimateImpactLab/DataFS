@@ -1,6 +1,5 @@
 
 from contextlib import contextmanager
-import os
 
 try:
     u = unicode
@@ -22,3 +21,6 @@ def open_filelike(filelike, mode='r'):
     else:
         with open(filelike, mode) as f:
             yield f
+
+
+__all__ = (u, string_types, StringIO)

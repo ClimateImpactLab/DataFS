@@ -1,22 +1,12 @@
-from datafs.managers.manager_mongo import MongoDBManager
 from datafs.managers.manager_dynamo import DynamoDBManager
 from datafs.datafs import cli
 from datafs import DataAPI, get_api, to_config_file
 from tests.resources import _close
 import tempfile
 import os
-import click
 from click.testing import CliRunner
 import pytest
-import shutil
-import yaml
 import ast
-
-try:
-    from StringIO import StringIO
-
-except ImportError:
-    from io import StringIO
 
 
 @pytest.yield_fixture(scope='module')
@@ -234,8 +224,11 @@ def test_cli_local(test_config):
                 'Surfers Journal'])
 
         assert result.exit_code == 0
+
         # assert that we get update feedback
-        assert 'uploaded data to <DataArchive local://my_first_archive>' in result.output
+        expected = 'uploaded data to <DataArchive local://my_first_archive>'
+        assert expected in result.output
+
         # lets read the file to make sure it remains unchanged
         with open('hello.txt', 'r') as f:
             data = f.read()
@@ -380,8 +373,10 @@ def test_cli_unversioned(test_config):
                 'arch2'])
 
         assert result.exit_code == 0
+
         # assert that we get update feedback
-        assert 'uploaded data to <DataArchive local://unversioned>.' == result.output.strip()
+        expected = 'uploaded data to <DataArchive local://unversioned>.'
+        assert expected == result.output.strip()
 
         # Try re-upload
         result = runner.invoke(
@@ -411,12 +406,16 @@ def test_cli_unversioned(test_config):
 
         # test download with 'latest' version argument'
         result = runner.invoke(
-            cli, prefix + ['download', 'unversioned', 'here.txt', '--version', 'latest'])
+            cli, prefix + [
+                'download', 'unversioned', 'here.txt', '--version', 'latest'])
+
         assert result.exit_code != 0
 
         # test download with incorrect version argument
         result = runner.invoke(
-            cli, prefix + ['download', 'unversioned', 'here.txt', '--version', '0.0.1'])
+            cli, prefix + [
+                'download', 'unversioned', 'here.txt', '--version', '0.0.1'])
+
         assert result.exit_code != 0
 
         os.remove('here.txt')
@@ -548,7 +547,8 @@ def test_history(preloaded_config):
 
 def test_alternate_versions(preloaded_config):
     '''
-    Assert requirements file can be superceeded by explicit version specification
+    Assert requirements file can be superceeded by explicit version
+    specification
     '''
 
     profile, temp_file = preloaded_config
@@ -573,7 +573,8 @@ def test_alternate_versions(preloaded_config):
         # Download req_1 with version from requirements file
 
         result = runner.invoke(
-            cli, prefix + ['download', 'req_1', 'local_req_1.txt', '--version', '0.1'])
+            cli, prefix + [
+                'download', 'req_1', 'local_req_1.txt', '--version', '0.1'])
 
         assert result.exit_code == 0
 
@@ -583,7 +584,8 @@ def test_alternate_versions(preloaded_config):
         # Download req_2 with version from requirements file
 
         result = runner.invoke(
-            cli, prefix + ['download', 'req_2', 'local_req_2.txt', '--version', '0.0.1'])
+            cli, prefix + [
+                'download', 'req_2', 'local_req_2.txt', '--version', '0.0.1'])
 
         assert result.exit_code == 0
 
@@ -593,7 +595,8 @@ def test_alternate_versions(preloaded_config):
         # Download req_3 with version from requirements file
 
         result = runner.invoke(
-            cli, prefix + ['download', 'req_3', 'local_req_3.txt', '--version', '1.1a1'])
+            cli, prefix + [
+                'download', 'req_3', 'local_req_3.txt', '--version', '1.1a1'])
 
         assert result.exit_code == 0
 
@@ -634,7 +637,8 @@ def test_incorrect_versions(preloaded_config):
         # Download req_2 with version from requirements file
 
         result = runner.invoke(
-            cli, prefix + ['download', 'req_2', 'local_req_2.txt', '--version', 'latest'])
+            cli, prefix + [
+                'download', 'req_2', 'local_req_2.txt', '--version', 'latest'])
 
         assert result.exit_code == 0
 
@@ -644,7 +648,8 @@ def test_incorrect_versions(preloaded_config):
         # Download req_3 with version from requirements file
 
         result = runner.invoke(
-            cli, prefix + ['download', 'req_3', 'local_req_3.txt', '--version', '4.2'])
+            cli, prefix + [
+                'download', 'req_3', 'local_req_3.txt', '--version', '4.2'])
 
         assert result.exception
 
@@ -735,7 +740,8 @@ def test_dependency_parsing(test_config):
         assert 'arch2==0.0.1' in result.output
 
         result = runner.invoke(
-            cli, prefix + ['get_dependencies', 'dep_archive', '--version', '0.1'])
+            cli, prefix + [
+                'get_dependencies', 'dep_archive', '--version', '0.1'])
 
         assert result.exit_code == 0
 
@@ -768,7 +774,9 @@ def test_update_metadata(test_config):
             to_update.write(u'test test test')
 
         result = runner.invoke(
-            cli, prefix + ['update', 'my_next_archive', 'my_new_test_file.txt'])
+            cli, prefix + [
+                'update', 'my_next_archive', 'my_new_test_file.txt'])
+
         assert result.exit_code == 0
 
         result = runner.invoke(cli,

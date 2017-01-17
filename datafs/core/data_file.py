@@ -7,7 +7,7 @@ import time
 from fs1.osfs import OSFS
 from fs1.multifs import MultiFS
 
-from fs1.errors import (ResourceLockedError, ResourceInvalidError)
+from fs1.errors import (ResourceLockedError)
 
 from contextlib import contextmanager
 
@@ -18,7 +18,7 @@ def _close(filesys):
 
     closed = False
 
-    for i in range(5):
+    for _ in range(5):
         try:
             filesys.close()
             closed = True
@@ -87,11 +87,12 @@ def _get_write_fs():
 
     .. todo::
 
-        Evaluate options for using a cached memoryFS or streaming object instead
-        of an OSFS(tmp). This could offer significant performance improvements.
-        Writing to the cache is less of a problem since this would be done in
-        any case, though performance could be improved by writing to an
-        in-memory filesystem and then writing to both cache and auth.
+        Evaluate options for using a cached memoryFS or streaming object
+        instead of an OSFS(tmp). This could offer significant performance
+        improvements. Writing to the cache is less of a problem since this
+        would be done in any case, though performance could be improved by
+        writing to an in-memory filesystem and then writing to both cache and
+        auth.
 
     '''
 
@@ -156,7 +157,7 @@ def open_file(
         **kwargs):
     '''
 
-    Context manager for reading/writing from an archive and uploading on changes
+    Context manager for reading/writing an archive and uploading on changes
 
     Parameters
     ----------
@@ -178,7 +179,8 @@ def open_file(
     if write_path is None:
         write_path = read_path
 
-    with _choose_read_fs(authority, cache, read_path, version_check, hasher) as read_fs:
+    with _choose_read_fs(
+            authority, cache, read_path, version_check, hasher) as read_fs:
 
         write_mode = ('w' in mode) or ('a' in mode) or ('+' in mode)
 
@@ -189,7 +191,8 @@ def open_file(
                     ('r' in mode) and (
                         '+' in mode)))
 
-            with _prepare_write_fs(read_fs, cache, read_path, readwrite_mode) as write_fs:
+            with _prepare_write_fs(
+                    read_fs, cache, read_path, readwrite_mode) as write_fs:
 
                 wrapper = MultiFS()
                 wrapper.addfs('reader', read_fs)
@@ -213,7 +216,8 @@ def open_file(
                         (
                             cache
                             and (
-                                fs1.path.abspath(read_path) == fs1.path.abspath(write_path))
+                                fs1.path.abspath(read_path) ==
+                                fs1.path.abspath(write_path))
                             and cache.fs.isfile(read_path)
                         )
                     ):
@@ -250,7 +254,7 @@ def get_local_path(
         write_path=None,
         cache_on_write=False):
     '''
-    Context manager for retrieving a system path for I/O and updating on changes
+    Context manager for retrieving a system path for I/O and updating on change
 
 
     Parameters
@@ -273,9 +277,11 @@ def get_local_path(
     if write_path is None:
         write_path = read_path
 
-    with _choose_read_fs(authority, cache, read_path, version_check, hasher) as read_fs:
+    with _choose_read_fs(
+            authority, cache, read_path, version_check, hasher) as read_fs:
 
-        with _prepare_write_fs(read_fs, cache, read_path, readwrite_mode=True) as write_fs:
+        with _prepare_write_fs(
+                read_fs, cache, read_path, readwrite_mode=True) as write_fs:
 
             yield write_fs.getsyspath(read_path)
 
@@ -296,7 +302,8 @@ def get_local_path(
                         (
                             cache
                             and (
-                                fs1.path.abspath(read_path) == fs1.path.abspath(write_path))
+                                fs1.path.abspath(read_path) ==
+                                fs1.path.abspath(write_path))
                             and cache.fs.isfile(read_path)
                         )
                     ):
@@ -316,4 +323,5 @@ def get_local_path(
 
             else:
                 raise OSError(
-                    'Local file removed during execution. Archive not updated.')
+                    'Local file removed during execution. '
+                    'Archive not updated.')

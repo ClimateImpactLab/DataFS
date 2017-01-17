@@ -53,10 +53,10 @@ Let's peek under the hood to see where this data is stored:
 
     >>> url = var.authority.fs.getpathurl(var.get_version_path())
     >>> print(url)  # doctest: +ELLIPSIS
-    https://test-bucket.s3.amazonaws.com/caching/archive...AWSAccessKeyId=MY_KEY
+    https://test-bucket.s3.amazonaws.com/caching/...AWSAccessKeyId=MY_KEY
 
-Now let's set up a cache. This would typically be a local or networked directory
-but we'll use a temporary filesystem for this example:
+Now let's set up a cache. This would typically be a local or networked
+directory but we'll use a temporary filesystem for this example:
 
     >>> cache = TempFS()
     >>> api.attach_cache(cache)

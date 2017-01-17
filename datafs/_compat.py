@@ -23,4 +23,6 @@ def open_filelike(filelike, mode='r'):
             yield f
 
 
-__all__ = (u, string_types, StringIO)
+_module_contents = [u, string_types, StringIO, open_filelike]
+
+__all__ = list(map(lambda x: x.__name__, _module_contents))

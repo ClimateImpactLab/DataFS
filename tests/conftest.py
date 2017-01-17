@@ -338,7 +338,7 @@ def api_with_diverse_archives(mgr_name, fs_name):
             for indices in itertools.product(*(range(1, 4) for _ in range(5))):
                 archive_name = (
                     'team{}_project{}_task{}_' +
-                    'parameter{}_scenario{}.csv'.format(*indices))
+                    'parameter{}_scenario{}.csv').format(*indices)
 
                 api.create(archive_name)
 

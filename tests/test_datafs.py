@@ -202,14 +202,14 @@ class TestArchiveCreation(object):
         with pytest.raises(KeyError):
             api.get_archive(archive_name)
 
-    def test_api_locks(self, api, auth1, mgr_name):
+    def test_api_locks(self, api, local_auth):
 
         api.lock_manager()
         api.lock_authorities()
 
         with pytest.raises((PermissionError, NameError)):
-            with prep_manager(mgr_name) as manager:
+            with prep_manager('mongo') as manager:
                 api.attach_manager(manager)
 
         with pytest.raises((PermissionError, NameError)):
-            api.attach_authority('auth', auth1)
+            api.attach_authority('auth', local_auth)

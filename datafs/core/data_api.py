@@ -20,14 +20,11 @@ except:
 
 class DataAPI(object):
 
-
-
     DefaultAuthorityName = None
 
     _ArchiveConstructor = DataArchive
 
-
-    def __init__(self, default_versions = {}, **kwargs):
+    def __init__(self, default_versions={}, **kwargs):
 
         self.user_config = kwargs
 
@@ -63,11 +60,13 @@ class DataAPI(object):
     @property
     def manager(self):
         return self._manager
-    #set cache attr
+    # set cache attr
+
     @property
     def cache(self):
         return self._cache
-    #get the default athority setting 
+    # get the default athority setting
+
     @property
     def default_authority_name(self):
 
@@ -81,14 +80,15 @@ class DataAPI(object):
         if len(self._authorities) > 1:
             raise ValueError(
                 'Authority ambiguous. Set authority or DefaultAuthorityName.')
-        #get the zeroth key
+        # get the zeroth key
         return list(self._authorities.keys())[0]
 
-    #Do we want to provide a method for setting authorities
+    # Do we want to provide a method for setting authorities
     @property
     def default_authority(self):
         return self._authorities[self.default_authority_name]
-    #attach a metadata index
+    # attach a metadata index
+
     def attach_manager(self, manager):
 
         if self._manager_locked:
@@ -131,7 +131,7 @@ class DataAPI(object):
 
         helper : bool
             If true, interactively prompt for required metadata (default False)
-        
+
 
         '''
 
@@ -152,24 +152,23 @@ class DataAPI(object):
             helper=helper)
 
         return self._ArchiveConstructor(
-            api=self, 
+            api=self,
             **res)
 
     def get_archive(self, archive_name, default_version=None):
 
         res = self.manager.get_archive(archive_name)
-        
+
         default_version = self._default_versions.get(archive_name, None)
 
         return self._ArchiveConstructor(
-            api=self, 
-            default_version=default_version, 
+            api=self,
+            default_version=default_version,
             **res)
 
-
     def list(self, pattern=None, engine='path'):
-    
-        archives =self.manager.get_archive_names()
+
+        archives = self.manager.get_archive_names()
 
         if not pattern:
             return archives
@@ -185,7 +184,7 @@ class DataAPI(object):
 
         else:
             raise ValueError(
-                'search engine "{}" not recognized. '.format(engine) +\
+                'search engine "{}" not recognized. '.format(engine) +
                 'choose "str", "fn", or "regex"')
 
     @classmethod
@@ -293,6 +292,3 @@ class DataAPI(object):
 
         if self.cache:
             self.cache.fs.close()
-
-
-    

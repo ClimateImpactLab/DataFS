@@ -4,9 +4,11 @@ from datafs.core import data_file
 from datafs.core.versions import BumpableVersion
 from datafs._compat import string_types
 from contextlib import contextmanager
-import fs1.utils, fs1.path
+import fs1.utils
+import fs1.path
 from fs1.osfs import OSFS
 import os
+
 
 def _process_version(self, version):
     if not self.versioned and version is None:
@@ -31,13 +33,13 @@ def _process_version(self, version):
 class DataArchive(object):
 
     def __init__(
-        self, 
-        api, 
-        archive_name, 
-        authority_name, 
-        archive_path, 
-        versioned=True,
-        default_version=None):
+            self,
+            api,
+            archive_name,
+            authority_name,
+            archive_path,
+            versioned=True,
+            default_version=None):
 
         self.api = api
         self.archive_name = archive_name
@@ -56,33 +58,30 @@ class DataArchive(object):
     def versioned(self):
         return self._versioned
 
-    
     def get_latest_version(self):
 
         versions = self.get_versions()
-    
+
         if len(versions) == 0:
             return None
-    
+
         else:
             return max(versions)
-
 
     def get_versions(self):
 
         versions = self.get_history()
-    
+
         if len(versions) == 0:
             return []
 
         elif not self.versioned:
             return [None]
-    
+
         else:
-            return sorted(map(BumpableVersion, set([v['version'] for v in versions]))) 
+            return sorted(map(BumpableVersion, set(
+                [v['version'] for v in versions])))
 
-
-    
     def get_default_version(self):
 
         if not self.versioned:
@@ -96,7 +95,9 @@ class DataArchive(object):
 
             return max(versions)
 
-        matches = filter(lambda v: v==self._default_version, self.get_versions())
+        matches = filter(
+            lambda v: v == self._default_version,
+            self.get_versions())
 
         if len(matches) > 0:
             return max(matches)
@@ -104,19 +105,18 @@ class DataArchive(object):
         raise ValueError('Archive "{}" version {} not found'.format(
             self.archive_name, self._default_version))
 
-
     def get_version_path(self, version=None):
         '''
         Returns a storage path for the archive and version
 
-        If the archive is versioned, the version number is used as the file path 
-        and the archive path is the directory. If not, the archive path is used 
+        If the archive is versioned, the version number is used as the file path
+        and the archive path is the directory. If not, the archive path is used
         as the file path.
 
         Parameters
         ----------
         version : str or object
-            Version number to use as file name on versioned archives (default 
+            Version number to use as file name on versioned archives (default
             latest unless ``default_version`` set)
 
         Examples
@@ -134,7 +134,7 @@ class DataArchive(object):
             >>>
             >>> print(ver.get_version_path('0.0.1a1'))
             arch2/0.0.1a1
-            >>> 
+            >>>
             >>> print(ver.get_version_path('latest')) # doctest: +ELLIPSIS
             Traceback (most recent call last):
             ...
@@ -151,7 +151,6 @@ class DataArchive(object):
         else:
             return self.archive_path
 
-
     @property
     def authority_name(self):
         return self._authority_name
@@ -164,10 +163,8 @@ class DataArchive(object):
     def archive_path(self):
         return self._archive_path
 
-    
     def get_metadata(self):
         return self.api.manager.get_metadata(self.archive_name)
-
 
     def get_history(self):
         return self.api.manager.get_version_history(self.archive_name)
@@ -186,22 +183,21 @@ class DataArchive(object):
                 if BumpableVersion(ver['version']) == version:
                     return ver['checksum']
 
-            raise ValueError('Version "{}" not found in archive history'.format(
-                version))
+            raise ValueError(
+                'Version "{}" not found in archive history'.format(version))
 
         else:
             return self.get_latest_hash()
 
-
     def update(
-        self, 
-        filepath, 
-        cache=False, 
-        remove=False, 
-        bumpversion=None, 
-        prerelease=None, 
-        dependencies=None,
-        metadata={}):
+            self,
+            filepath,
+            cache=False,
+            remove=False,
+            bumpversion=None,
+            prerelease=None,
+            dependencies=None,
+            metadata={}):
         '''
         Enter a new version to a DataArchive
 
@@ -218,23 +214,23 @@ class DataArchive(object):
             removes a file from your local directory
 
         bumpversion : str
-            Version component to update on write if archive is versioned. Valid 
-            bumpversion values are 'major', 'minor', and 'patch', representing 
-            the three components of the strict version numbering system (e.g. 
-            "1.2.3"). If bumpversion is None the version number is not updated 
-            on write. Either bumpversion or prerelease (or both) must be a 
-            non-None value. If the archive is not versioned, bumpversion is 
+            Version component to update on write if archive is versioned. Valid
+            bumpversion values are 'major', 'minor', and 'patch', representing
+            the three components of the strict version numbering system (e.g.
+            "1.2.3"). If bumpversion is None the version number is not updated
+            on write. Either bumpversion or prerelease (or both) must be a
+            non-None value. If the archive is not versioned, bumpversion is
             ignored.
 
         prerelease : str
-            Prerelease component of archive version to update on write if 
-            archive is versioned. Valid prerelease values are 'alpha' and 
-            'beta'. Either bumpversion or prerelease (or both) must be a 
-            non-None value. If the archive is not versioned, prerelease is 
+            Prerelease component of archive version to update on write if
+            archive is versioned. Valid prerelease values are 'alpha' and
+            'beta'. Either bumpversion or prerelease (or both) must be a
+            non-None value. If the archive is not versioned, prerelease is
             ignored.
 
         metadata : dict
-            Updates to archive metadata. Pass {key: None} to remove a key from 
+            Updates to archive metadata. Pass {key: None} to remove a key from
             the archive's metadata.
 
 
@@ -260,15 +256,15 @@ class DataArchive(object):
                 latest_version = BumpableVersion()
 
             next_version = latest_version.bump(
-                    kind = bumpversion, 
-                    prerelease = prerelease,
-                    inplace=False)
+                kind=bumpversion,
+                prerelease=prerelease,
+                inplace=False)
 
         else:
             next_version = None
 
         next_path = self.get_version_path(next_version)
-        
+
         if cache:
             self.cache(next_version)
 
@@ -280,24 +276,29 @@ class DataArchive(object):
             self.authority.upload(filepath, next_path, remove=remove)
 
         self._update_manager(
-            archive_metadata=metadata, 
-            version_metadata=dict(checksum=checksum, algorithm=algorithm, version=next_version, dependencies=dependencies))
+            archive_metadata=metadata,
+            version_metadata=dict(
+                checksum=checksum,
+                algorithm=algorithm,
+                version=next_version,
+                dependencies=dependencies))
 
     def _get_default_dependencies(self):
         '''
         Get default dependencies from requirements file or (if no requirements file) from previous version
         '''
-        
+
         # Get default dependencies from requirements file
         default_dependencies = {
-            k:v for k, v in self.api._default_versions.items() if k!=self.archive_name}
-        
+            k: v for k,
+            v in self.api._default_versions.items() if k != self.archive_name}
+
         # If no requirements file or is empty:
         if len(default_dependencies) == 0:
 
             # Retrieve dependencies from last archive record
             history = self.get_history()
-            
+
             if len(history) > 0:
                 default_dependencies = history[-1].get('dependencies', {})
 
@@ -309,7 +310,6 @@ class DataArchive(object):
 
         if version_metadata.get('dependencies', None) is None:
             version_metadata['dependencies'] = self._get_default_dependencies()
-
 
     def _update_manager(self, archive_metadata={}, version_metadata={}):
 
@@ -328,7 +328,16 @@ class DataArchive(object):
     # File I/O methods
 
     @contextmanager
-    def open(self, mode='r', version=None, bumpversion=None, prerelease=None, dependencies = None, metadata={}, *args, **kwargs):
+    def open(
+            self,
+            mode='r',
+            version=None,
+            bumpversion=None,
+            prerelease=None,
+            dependencies=None,
+            metadata={},
+            *args,
+            **kwargs):
         '''
         Opens a file for read/write
 
@@ -341,28 +350,28 @@ class DataArchive(object):
             Version number of the file to open (default latest)
 
         bumpversion : str
-            Version component to update on write if archive is versioned. Valid 
-            bumpversion values are 'major', 'minor', and 'patch', representing 
-            the three components of the strict version numbering system (e.g. 
-            "1.2.3"). If bumpversion is None the version number is not updated 
-            on write. Either bumpversion or prerelease (or both) must be a 
-            non-None value. If the archive is not versioned, bumpversion is 
+            Version component to update on write if archive is versioned. Valid
+            bumpversion values are 'major', 'minor', and 'patch', representing
+            the three components of the strict version numbering system (e.g.
+            "1.2.3"). If bumpversion is None the version number is not updated
+            on write. Either bumpversion or prerelease (or both) must be a
+            non-None value. If the archive is not versioned, bumpversion is
             ignored.
 
         prerelease : str
-            Prerelease component of archive version to update on write if 
-            archive is versioned. Valid prerelease values are 'alpha' and 
-            'beta'. Either bumpversion or prerelease (or both) must be a 
-            non-None value. If the archive is not versioned, prerelease is 
+            Prerelease component of archive version to update on write if
+            archive is versioned. Valid prerelease values are 'alpha' and
+            'beta'. Either bumpversion or prerelease (or both) must be a
+            non-None value. If the archive is not versioned, prerelease is
             ignored.
 
         metadata : dict
-            Updates to archive metadata. Pass {key: None} to remove a key from 
+            Updates to archive metadata. Pass {key: None} to remove a key from
             the archive's metadata.
 
 
         args, kwargs sent to file system opener
-        
+
         '''
 
         latest_version = self.get_latest_version()
@@ -376,9 +385,9 @@ class DataArchive(object):
                 latest_version = BumpableVersion()
 
             next_version = latest_version.bump(
-                kind = bumpversion, 
-                prerelease = prerelease, 
-                inplace = False)
+                kind=bumpversion,
+                prerelease=prerelease,
+                inplace=False)
 
             msg = "Version must be bumped on write. " \
                 "Provide bumpversion and/or prerelease."
@@ -387,7 +396,7 @@ class DataArchive(object):
 
             read_path = self.get_version_path(version)
             write_path = self.get_version_path(next_version)
-        
+
         else:
             read_path = self.archive_path
             write_path = self.archive_path
@@ -400,9 +409,9 @@ class DataArchive(object):
         updater = lambda checksum, algorithm: self._update_manager(
             archive_metadata=metadata,
             version_metadata=dict(
-                version=next_version, 
-                dependencies=dependencies, 
-                checksum=checksum, 
+                version=next_version,
+                dependencies=dependencies,
+                checksum=checksum,
                 algorithm=algorithm))
 
         opener = data_file.open_file(
@@ -411,8 +420,8 @@ class DataArchive(object):
             updater,
             version_check,
             self.api.hash_file,
-            read_path, 
-            write_path, 
+            read_path,
+            write_path,
             mode=mode,
             *args,
             **kwargs)
@@ -421,7 +430,13 @@ class DataArchive(object):
             yield f
 
     @contextmanager
-    def get_local_path(self, version=None, bumpversion=None, prerelease=None, dependencies=None, metadata={}):
+    def get_local_path(
+            self,
+            version=None,
+            bumpversion=None,
+            prerelease=None,
+            dependencies=None,
+            metadata={}):
         '''
         Returns a local path for read/write
 
@@ -431,23 +446,23 @@ class DataArchive(object):
             Version number of the file to retrieve (default latest)
 
         bumpversion : str
-            Version component to update on write if archive is versioned. Valid 
-            bumpversion values are 'major', 'minor', and 'patch', representing 
-            the three components of the strict version numbering system (e.g. 
-            "1.2.3"). If bumpversion is None the version number is not updated 
-            on write. Either bumpversion or prerelease (or both) must be a 
-            non-None value. If the archive is not versioned, bumpversion is 
+            Version component to update on write if archive is versioned. Valid
+            bumpversion values are 'major', 'minor', and 'patch', representing
+            the three components of the strict version numbering system (e.g.
+            "1.2.3"). If bumpversion is None the version number is not updated
+            on write. Either bumpversion or prerelease (or both) must be a
+            non-None value. If the archive is not versioned, bumpversion is
             ignored.
 
         prerelease : str
-            Prerelease component of archive version to update on write if 
-            archive is versioned. Valid prerelease values are 'alpha' and 
-            'beta'. Either bumpversion or prerelease (or both) must be a 
-            non-None value. If the archive is not versioned, prerelease is 
+            Prerelease component of archive version to update on write if
+            archive is versioned. Valid prerelease values are 'alpha' and
+            'beta'. Either bumpversion or prerelease (or both) must be a
+            non-None value. If the archive is not versioned, prerelease is
             ignored.
 
         metadata : dict
-            Updates to archive metadata. Pass {key: None} to remove a key from 
+            Updates to archive metadata. Pass {key: None} to remove a key from
             the archive's metadata.
 
         '''
@@ -463,9 +478,9 @@ class DataArchive(object):
                 latest_version = BumpableVersion()
 
             next_version = latest_version.bump(
-                kind = bumpversion, 
-                prerelease = prerelease, 
-                inplace = False)
+                kind=bumpversion,
+                prerelease=prerelease,
+                inplace=False)
 
             msg = "Version must be bumped on write. " \
                 "Provide bumpversion and/or prerelease."
@@ -474,7 +489,7 @@ class DataArchive(object):
 
             read_path = self.get_version_path(version)
             write_path = self.get_version_path(next_version)
-        
+
         else:
             read_path = self.archive_path
             write_path = self.archive_path
@@ -487,9 +502,9 @@ class DataArchive(object):
         updater = lambda checksum, algorithm: self._update_manager(
             archive_metadata=metadata,
             version_metadata=dict(
-                version=next_version, 
-                dependencies=dependencies, 
-                checksum=checksum, 
+                version=next_version,
+                dependencies=dependencies,
+                checksum=checksum,
                 algorithm=algorithm))
 
         path = data_file.get_local_path(
@@ -504,7 +519,6 @@ class DataArchive(object):
         with path as fp:
             yield fp
 
-
     def download(self, filepath, version=None):
         '''
         Downloads a file from authority to local path
@@ -514,7 +528,7 @@ class DataArchive(object):
 
         version = _process_version(self, version)
 
-        dirname, filename= os.path.split(
+        dirname, filename = os.path.split(
             os.path.abspath(os.path.expanduser(filepath)))
 
         assert os.path.isdir(dirname), 'Directory  not found: "{}"'.format(
@@ -534,11 +548,11 @@ class DataArchive(object):
         read_path = self.get_version_path(version)
 
         with data_file._choose_read_fs(
-            self.authority, 
-            self.api.cache, 
-            read_path, 
-            version_check, 
-            self.api.hash_file) as read_fs:
+                self.authority,
+                self.api.cache,
+                read_path,
+                version_check,
+                self.api.hash_file) as read_fs:
 
             fs1.utils.copyfile(
                 read_fs,
@@ -553,7 +567,7 @@ class DataArchive(object):
         .. warning::
 
             Deleting an archive will erase all data and metadata permanently.
-            For help setting user permissions, see 
+            For help setting user permissions, see
             :ref:`Administrative Tools <admin>`
 
         '''
@@ -569,7 +583,6 @@ class DataArchive(object):
                 if self.api.cache.fs.exists(self.get_version_path(version)):
                     self.api.cache.fs.remove(self.get_version_path(version))
 
-
     def isfile(self, version=None, *args, **kwargs):
         version = _process_version(self, version)
         '''
@@ -578,7 +591,6 @@ class DataArchive(object):
 
         path = self.get_version_path(version)
         self.authority.fs.isfile(path, *args, **kwargs)
-
 
     def getinfo(self, version=None, *args, **kwargs):
         version = _process_version(self, version)
@@ -589,7 +601,6 @@ class DataArchive(object):
         path = self.get_version_path(version)
         self.authority.fs.getinfo(path, *args, **kwargs)
 
-
     def desc(self, version=None, *args, **kwargs):
         version = _process_version(self, version)
         '''
@@ -598,7 +609,6 @@ class DataArchive(object):
 
         path = self.get_version_path(version)
         self.authority.fs.desc(path, *args, **kwargs)
-
 
     def exists(self, version=None, *args, **kwargs):
         version = _process_version(self, version)
@@ -609,7 +619,6 @@ class DataArchive(object):
         path = self.get_version_path(version)
         self.authority.fs.exists(path, *args, **kwargs)
 
-
     def getmeta(self, version=None, *args, **kwargs):
         version = _process_version(self, version)
         '''
@@ -618,7 +627,6 @@ class DataArchive(object):
 
         path = self.get_version_path(version)
         self.authority.fs.getmeta(path, *args, **kwargs)
-
 
     def hasmeta(self, version=None, *args, **kwargs):
         version = _process_version(self, version)
@@ -629,14 +637,14 @@ class DataArchive(object):
         path = self.get_version_path(version)
         self.authority.fs.hasmeta(path, *args, **kwargs)
 
-
     def is_cached(self, version=None):
         version = _process_version(self, version)
         '''
         Set the cache property to start/stop file caching for this archive
         '''
 
-        if self.api.cache and self.api.cache.fs.isfile(self.get_version_path(version)):
+        if self.api.cache and self.api.cache.fs.isfile(
+                self.get_version_path(version)):
             return True
 
         return False
@@ -652,7 +660,6 @@ class DataArchive(object):
 
         assert self.api.cache.fs.isfile(
             self.get_version_path(version)), "Cache creation failed"
-
 
     def remove_from_cache(self, version=None):
         version = _process_version(self, version)
@@ -678,7 +685,7 @@ class DataArchive(object):
         raise ValueError('Version {} not found'.format(version))
 
     def set_dependencies(self, dependencies={}):
-        
+
         history = self.get_history()
         if len(history) == 0:
             raise ValueError('Cannot set dependencies on an empty archive')
@@ -689,6 +696,3 @@ class DataArchive(object):
         version_metadata['user_config'] = self.api.user_config
 
         self.api.manager.update(self.archive_name, version_metadata)
-
-
-

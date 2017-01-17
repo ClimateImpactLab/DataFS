@@ -22,4 +22,3 @@ def open_filelike(filelike, mode='r'):
     else:
         with open(filelike, mode) as f:
             yield f
-

@@ -1,7 +1,8 @@
 
 from __future__ import absolute_import
 
-import time, threading
+import time
+import threading
 from datafs.config.helpers import check_requirements
 
 
@@ -15,7 +16,7 @@ class BaseDataManager(object):
     TimestampFormat = '%Y%m%d-%H%M%S'
 
     def __init__(self, table_name):
-        
+
         self._table_name = table_name
         self._spec_table_name = table_name + '.spec'
 
@@ -30,12 +31,13 @@ class BaseDataManager(object):
     def required_user_config(self):
         if self._required_user_config is None:
             user_config = self._get_required_user_config()
-            assert isinstance(user_config, dict), 'sorry, user_config "{}" is a {}'.format(user_config, type(user_config))
+            assert isinstance(
+                user_config, dict), 'sorry, user_config "{}" is a {}'.format(
+                user_config, type(user_config))
 
             self._required_user_config = user_config
 
         return self._required_user_config
-
 
     @property
     def required_archive_metadata(self):
@@ -46,7 +48,6 @@ class BaseDataManager(object):
             self._required_archive_metadata = archive_metadata
 
         return self._required_archive_metadata
-
 
     def create_archive_table(self, table_name, raise_on_err=True):
         '''
@@ -64,12 +65,11 @@ class BaseDataManager(object):
 
 
         '''
-        
+
         if raise_on_err:
             self._create_archive_table(table_name)
             self._create_spec_table(table_name)
             self._create_spec_config(table_name)
-            
 
         else:
             try:
@@ -92,7 +92,6 @@ class BaseDataManager(object):
 
         '''
 
-
         self._update_spec_config(document_name, spec)
 
     def set_required_user_config(self, user_config):
@@ -103,12 +102,12 @@ class BaseDataManager(object):
         ----------
         user_config : dict
 
-            Dictionary of required user metadata and metadata field 
-            descriptions. All archive creation and update actions will be 
-            required to have these keys in the user_config metadata. 
+            Dictionary of required user metadata and metadata field
+            descriptions. All archive creation and update actions will be
+            required to have these keys in the user_config metadata.
 
-            If the archive or version metadata does not contain these keys, an 
-            error will be raised with the descrtiption in the value associated 
+            If the archive or version metadata does not contain these keys, an
+            error will be raised with the descrtiption in the value associated
             with the key.
 
         '''
@@ -124,12 +123,12 @@ class BaseDataManager(object):
         ----------
         metadata_config : dict
 
-            Dictionary of required archive metada and metadata field 
-            descriptions. All archives created on this manager table will 
+            Dictionary of required archive metada and metadata field
+            descriptions. All archives created on this manager table will
             be required to have these keys in their archive's metadata.
 
             If the archive metadata does not contain these keys, an error
-            will be raised with the description in the value associated with 
+            will be raised with the description in the value associated with
             the key.
 
         '''
@@ -140,7 +139,7 @@ class BaseDataManager(object):
     def delete_table(self, table_name=None, raise_on_err=True):
         if table_name is None:
             table_name = self._table_name
-            
+
         if raise_on_err:
             self._delete_table(table_name)
             self._delete_table(table_name + '.spec')
@@ -150,21 +149,17 @@ class BaseDataManager(object):
             except KeyError:
                 pass
 
-
-
-    def update(self, archive_name,  version_metadata):
+    def update(self, archive_name, version_metadata):
         '''
         Register a new version for archive ``archive_name``
-        
+
         .. note ::
-        
+
             need to implement hash checking to prevent duplicate writes
         '''
         version_metadata['updated'] = self.create_timestamp()
-        version_metadata['version'] = str(version_metadata.get('version', None))
-
-        
-
+        version_metadata['version'] = str(
+            version_metadata.get('version', None))
 
         self._update(archive_name, version_metadata)
 
@@ -224,7 +219,7 @@ class BaseDataManager(object):
                 archive_metadata)
         else:
             self._create_if_not_exists(
-                archive_name, 
+                archive_name,
                 archive_metadata)
 
         return self.get_archive(archive_name)
@@ -238,7 +233,7 @@ class BaseDataManager(object):
         archive_specification : dict
             archive_name: name of the archive to be retrieved
             authority: name of the archive's authority
-            archive_path: service path of archive 
+            archive_path: service path of archive
         '''
 
         try:
@@ -248,7 +243,6 @@ class BaseDataManager(object):
 
         except KeyError:
             raise KeyError('Archive "{}" not found'.format(archive_name))
-
 
     def get_archive_names(self):
         '''
@@ -309,7 +303,6 @@ class BaseDataManager(object):
     def get_version_history(self, archive_name):
         return self._get_version_history(archive_name)
 
-
     @classmethod
     def create_timestamp(cls):
         '''
@@ -320,7 +313,6 @@ class BaseDataManager(object):
 
         return time.strftime(cls.TimestampFormat, time.gmtime())
 
-
     # Private methods (to be implemented by subclasses of DataManager)
 
     def _update(self, archive_name, version_metadata):
@@ -328,16 +320,16 @@ class BaseDataManager(object):
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _create_archive(
-        self,
-        archive_name,
-        archive_metadata):
+            self,
+            archive_name,
+            archive_metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _create_if_not_exists(
-        self,
-        archive_name, 
-        archive_metadata):
+            self,
+            archive_name,
+            archive_metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
@@ -372,7 +364,7 @@ class BaseDataManager(object):
     def _create_archive_table(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
-        
+
     def _create_spec_table(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
@@ -383,7 +375,7 @@ class BaseDataManager(object):
 
     def _update_spec_config(self, document_name, spec):
         raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')        
+            'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _delete_table(self, table_name):
         raise NotImplementedError(
@@ -400,6 +392,3 @@ class BaseDataManager(object):
     def _get_version_history(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
-
-
-

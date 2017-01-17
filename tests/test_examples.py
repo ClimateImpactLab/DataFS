@@ -87,4 +87,3 @@ def test_subclassing():
 def test_preconfigured():
     failures, tests = doctest.testmod(preconfigured, report=True)
     assert failures == 0
-

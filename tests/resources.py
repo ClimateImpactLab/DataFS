@@ -33,9 +33,9 @@ def _close(path):
     if not closed:
         raise e
 
+
 @contextmanager
-def prep_manager(mgr_name, table_name = 'my-new-data-table'):
-    
+def prep_manager(mgr_name, table_name='my-new-data-table'):
 
     if mgr_name == 'mongo':
 
@@ -46,7 +46,6 @@ def prep_manager(mgr_name, table_name = 'my-new-data-table'):
         manager_mongo.create_archive_table(
             table_name,
             raise_on_err=False)
-
 
         try:
             yield manager_mongo
@@ -81,4 +80,3 @@ def prep_manager(mgr_name, table_name = 'my-new-data-table'):
 
     else:
         raise ValueError('Manager "{}" not recognized'.format(mgr_name))
-

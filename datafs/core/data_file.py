@@ -94,7 +94,7 @@ def _get_write_fs():
         in-memory filesystem and then writing to both cache and auth.
 
     '''
-    
+
     tmp = tempfile.mkdtemp()
 
     try:
@@ -107,10 +107,9 @@ def _get_write_fs():
 
         finally:
             _close(write_fs)
-    
+
     finally:
         shutil.rmtree(tmp)
-
 
 
 @contextmanager
@@ -210,14 +209,14 @@ def open_file(
 
                 if not version_check(checksum):
                     if (
-                            cache_on_write or 
-                            (
-                                cache 
-                                and (
-                                    fs1.path.abspath(read_path) == fs1.path.abspath(write_path))
-                                and cache.fs.isfile(read_path)
-                            )
-                        ):
+                        cache_on_write or
+                        (
+                            cache
+                            and (
+                                fs1.path.abspath(read_path) == fs1.path.abspath(write_path))
+                            and cache.fs.isfile(read_path)
+                        )
+                    ):
                         _makedirs(cache.fs, fs1.path.dirname(write_path))
                         fs1.utils.copyfile(
                             write_fs, read_path, cache.fs, write_path)
@@ -225,7 +224,7 @@ def open_file(
                         _makedirs(authority.fs, fs1.path.dirname(write_path))
                         fs1.utils.copyfile(
                             cache.fs, write_path, authority.fs, write_path)
-                        
+
                     else:
                         _makedirs(authority.fs, fs1.path.dirname(write_path))
                         fs1.utils.copyfile(
@@ -293,14 +292,14 @@ def get_local_path(
                 if not version_check(checksum):
 
                     if (
-                            cache_on_write or 
-                            (
-                                cache 
-                                and (
-                                    fs1.path.abspath(read_path) == fs1.path.abspath(write_path))
-                                and cache.fs.isfile(read_path)
-                            )
-                        ):
+                        cache_on_write or
+                        (
+                            cache
+                            and (
+                                fs1.path.abspath(read_path) == fs1.path.abspath(write_path))
+                            and cache.fs.isfile(read_path)
+                        )
+                    ):
 
                         _makedirs(cache.fs, fs1.path.dirname(write_path))
                         fs1.utils.copyfile(

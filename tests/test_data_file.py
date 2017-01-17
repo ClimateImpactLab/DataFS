@@ -23,11 +23,10 @@ from datafs._compat import string_types, u
 p = 'path/to/file/name.txt'
 
 
-
-
 def get_checker(service, filepath):
     if service.fs.isfile(filepath):
-        checksum = DataAPI.hash_file(service.fs.getsyspath(filepath))['checksum']
+        checksum = DataAPI.hash_file(
+            service.fs.getsyspath(filepath))['checksum']
     else:
         checksum = None
 

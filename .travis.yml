@@ -25,6 +25,10 @@ install:
         fi;
       bash miniconda.sh -b -p $HOME/miniconda;
       export PATH="$HOME/miniconda/bin:$PATH";
+      export PATH="$HOME/miniconda1/bin:$PATH";
+      export PATH="$HOME/miniconda2/bin:$PATH";
+      export PATH="$HOME/miniconda3/bin:$PATH";
+      export PATH="$HOME/miniconda4/bin:$PATH";
       hash -r;
       conda config --set always_yes yes --set changeps1 no;
       conda update -q conda;
@@ -43,11 +47,6 @@ install:
   - python -m pip install pytest-cov
 
 script:
-  - export PATH=/home/travis/miniconda/bin:$PATH
-  - export PATH=/home/travis/miniconda1/bin:$PATH
-  - export PATH=/home/travis/miniconda2/bin:$PATH
-  - export PATH=/home/travis/miniconda3/bin:$PATH
-  - export PATH=/home/travis/miniconda4/bin:$PATH
   - if [[ "$DATAFS_TEST_ENV" == "xarray" ]]; then
     source activate datafs;
     fi

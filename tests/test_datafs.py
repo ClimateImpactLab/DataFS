@@ -38,6 +38,7 @@ except:
     class PermissionError(NameError):
         pass
 
+
 def get_counter():
     '''
     Counts up. Ensure we don't have name collisions
@@ -113,16 +114,16 @@ class TestHashFunction(object):
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == archive.get_latest_hash(), 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, archive.get_latest_hash())
+        assert direct == archive.get_latest_hash(
+        ), 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.get_latest_hash())
 
         # Try uploading the same file
         apihash = self.update_and_hash(archive, contents)
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == archive.get_latest_hash(), 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, archive.get_latest_hash())
+        assert direct == archive.get_latest_hash(
+        ), 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.get_latest_hash())
 
         # Update and test again!
 
@@ -140,8 +141,8 @@ class TestHashFunction(object):
 
         assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
             direct, apihash)
-        assert direct == archive.get_latest_hash(), 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, archive.get_latest_hash())
+        assert direct == archive.get_latest_hash(
+        ), 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.get_latest_hash())
 
         # Update and test a different way!
 
@@ -158,8 +159,8 @@ class TestHashFunction(object):
         assert contents == current, 'Latest updates "{}" !=  archive contents "{}"'.format(
             contents, current)
 
-        assert direct == archive.get_latest_hash(), 'Manual hash "{}" != archive hash "{}"'.format(
-            direct, archive.get_latest_hash())
+        assert direct == archive.get_latest_hash(
+        ), 'Manual hash "{}" != archive hash "{}"'.format(direct, archive.get_latest_hash())
 
 
 class TestArchiveCreation(object):
@@ -198,7 +199,6 @@ class TestArchiveCreation(object):
         with pytest.raises(KeyError) as excinfo:
             api.get_archive(archive_name)
 
-
     def test_api_locks(self, api, auth1, mgr_name):
 
         api.lock_manager()
@@ -210,4 +210,3 @@ class TestArchiveCreation(object):
 
         with pytest.raises((PermissionError, NameError)) as excinfo:
             api.attach_authority('auth', auth1)
-

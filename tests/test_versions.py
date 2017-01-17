@@ -3,6 +3,7 @@ from datafs._compat import string_types, u
 from fs1.errors import (ResourceNotFoundError, NoMetaError)
 import pytest
 
+
 def test_version_tracking(api1, auth1, opener):
 
     api1.attach_authority('auth', auth1)
@@ -16,7 +17,6 @@ def test_version_tracking(api1, auth1, opener):
     assert archive.get_latest_hash() is None
     assert archive.get_version_hash() is None
 
-
     with opener(archive, 'w+', prerelease='alpha') as f:
         f.write(u('test content v0.0.1a1'))
 
@@ -27,7 +27,6 @@ def test_version_tracking(api1, auth1, opener):
 
     with opener(archive, 'r') as f:
         assert u(f.read()) == u('test content v0.0.1a1')
-
 
     with opener(archive, 'w+', bumpversion='minor', prerelease='beta') as f:
         f.write(u('test content v0.1b1'))
@@ -78,7 +77,7 @@ def test_versioned_fs_functions(api1, auth2, opener):
 
     with pytest.raises(ResourceNotFoundError):
         assert archive.getinfo()
-    
+
     with pytest.raises(NoMetaError):
         assert archive.getmeta()
 

@@ -10,7 +10,8 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 with open('requirements.txt', 'r') as req:
-    requirements_install = [l.strip() for l in req.readlines() if l.strip() != '']
+    requirements_install = [l.strip()
+                            for l in req.readlines() if l.strip() != '']
 
 with open('requirements_test.txt', 'r') as req:
     requirements_test = [l.strip() for l in req.readlines() if l.strip() != '']
@@ -32,9 +33,16 @@ setup(
     long_description=readme + '\n\n' + history,
     author="Climate Impact Lab",
     url='https://github.com/ClimateImpactLab/datafs',
-    packages=find_packages(exclude=['*.tests', '*.tests.*', 'tests.*', 'tests', 'docs', 'examples']),
-    package_dir={'datafs':
-                 'datafs'},
+    packages=find_packages(
+        exclude=[
+            '*.tests',
+            '*.tests.*',
+            'tests.*',
+            'tests',
+            'docs',
+            'examples']),
+    package_dir={
+        'datafs': 'datafs'},
     include_package_data=True,
     install_requires=requirements_install,
     entry_points=entry_points,
@@ -47,10 +55,8 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.7'
-    ],
+        'Programming Language :: Python :: 2.7'],
     test_suite='tests',
     tests_require=requirements_test,
     extras_require=extras,
-    dependency_links = dependency_links
-)
+    dependency_links=dependency_links)

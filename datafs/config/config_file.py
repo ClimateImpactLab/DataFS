@@ -45,7 +45,6 @@ class ConfigFile(object):
 
         self.parse_configfile_contents(config)
 
-
     def edit_config_file(self):
 
         click.edit(filename=self.config_file)
@@ -93,7 +92,7 @@ class ConfigFile(object):
                 'manager'].get(kw, manager_cfg[kw])
 
         authorities_cfg = {}
-        
+
         for service_name, service in api._authorities.items():
 
             authorities_cfg[service_name] = {
@@ -103,7 +102,8 @@ class ConfigFile(object):
             }
 
             if service.fs.hassyspath('/'):
-                authorities_cfg[service_name]['args'] = [service.fs.getsyspath('/')]
+                authorities_cfg[service_name]['args'] = [
+                    service.fs.getsyspath('/')]
 
         for service_name in authorities_cfg.keys():
             if service_name not in profile_config['authorities']:

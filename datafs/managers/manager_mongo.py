@@ -35,7 +35,7 @@ class MongoDBManager(BaseDataManager):
     '''
     Parameters
     ----------
-    
+
     database_name : str
         Name of the database containing the DataFS tables
 
@@ -89,12 +89,12 @@ class MongoDBManager(BaseDataManager):
 
         self.db.create_collection(self.table_name)
 
-
     def _create_spec_table(self, table_name):
 
-
         if self._spec_table_name in self._get_table_names():
-            raise KeyError('Table "{}" already exists'.format(self._spec_table_name))
+            raise KeyError(
+                'Table "{}" already exists'.format(
+                    self._spec_table_name))
 
         self.db.create_collection(self._spec_table_name)
 
@@ -111,7 +111,6 @@ class MongoDBManager(BaseDataManager):
         if table_name not in self._get_table_names():
             raise KeyError('Table "{}" not found'.format(table_name))
 
-
         return self.db[table_name]
 
     @property
@@ -119,19 +118,17 @@ class MongoDBManager(BaseDataManager):
 
         spec_table_name = self._spec_table_name
 
-
         if spec_table_name not in self._get_table_names():
             raise KeyError('Table "{}" not found'.format(spec_table_name))
 
         return self.db[spec_table_name]
-            
+
     @property
     def db(self):
         if self._db is None:
             self._db = self._client[self.database_name]
 
         return self._db
-
 
     # Private methods (to be implemented!)
 
@@ -142,23 +139,24 @@ class MongoDBManager(BaseDataManager):
 
     def _update_metadata(self, archive_name, archive_metadata):
 
-        required_metadata_keys= self._get_required_archive_metadata().keys()
-        for key,val in archive_metadata.items(): 
+        required_metadata_keys = self._get_required_archive_metadata().keys()
+        for key, val in archive_metadata.items():
             if key in required_metadata_keys and val is None:
-                raise ValueError('Value for key {} is None. None cannot be a value for required metadata'.format(key))
-
+                raise ValueError(
+                    'Value for key {} is None. None cannot be a value for required metadata'.format(key))
 
             elif val is None:
-                self.collection.update({"_id": archive_name},
-                                   {"$unset": {"archive_metadata.{}".format(key): ""}})
+                self.collection.update({"_id": archive_name}, {"$unset": {
+                                       "archive_metadata.{}".format(key): ""}})
 
             else:
-                self.collection.update({"_id": archive_name},
-                                   {"$set": {"archive_metadata.{}".format(key): val}})
+                self.collection.update({"_id": archive_name}, {
+                                       "$set": {"archive_metadata.{}".format(key): val}})
 
-    def _update_spec_config(self,document_name, spec):
+    def _update_spec_config(self, document_name, spec):
 
-        self.spec_collection.update_many({"_id": document_name}, {"$set": {'config': spec}}, upsert=True)
+        self.spec_collection.update_many({"_id": document_name}, {
+                                         "$set": {'config': spec}}, upsert=True)
 
     @catch_timeout
     def _create_archive(
@@ -184,19 +182,16 @@ class MongoDBManager(BaseDataManager):
         except KeyError:
             pass
 
-
     @catch_timeout
     def _create_spec_config(self, table_name):
 
-        if self._spec_coll == None:
+        if self._spec_coll is None:
             self._spec_coll = self.db[table_name + '.spec']
 
-        itrbl = [{'_id': x, 'config': {}} 
-                        for x in ('required_user_config', 'required_archive_metadata')]
+        itrbl = [{'_id': x, 'config': {}}
+                 for x in ('required_user_config', 'required_archive_metadata')]
 
         self.spec_collection.insert_many(itrbl)
-
-
 
     @catch_timeout
     def _get_archive_listing(self, archive_name):
@@ -217,8 +212,8 @@ class MongoDBManager(BaseDataManager):
             raise KeyError
 
         spec = ['authority_name', 'archive_path', 'versioned']
-        
-        return {k:v for k,v in res.items() if k in spec}
+
+        return {k: v for k, v in res.items() if k in spec}
 
     def _get_authority_name(self, archive_name):
 
@@ -279,14 +274,12 @@ class MongoDBManager(BaseDataManager):
     def _get_spec_documents(self, table_name):
         return [item for item in self.spec_collection.find({})]
 
-
     def _get_required_user_config(self):
 
-        return self.spec_collection.find_one({'_id': 'required_user_config'})['config']
+        return self.spec_collection.find_one(
+            {'_id': 'required_user_config'})['config']
 
     def _get_required_archive_metadata(self):
-        
-        return self.spec_collection.find_one({'_id': 'required_archive_metadata'})['config']
 
-
-    
+        return self.spec_collection.find_one(
+            {'_id': 'required_archive_metadata'})['config']

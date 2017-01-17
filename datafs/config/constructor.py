@@ -125,7 +125,7 @@ class APIConstructor(object):
             raise ValueError(
                 'Manager not fully specified. Give '
                 '"class:manager_name", e.g. "class:MongoDBManager".')
-        
+
         mgr_class_name = manager_config['class']
 
         if mgr_class_name.lower()[:5] == 'mongo':

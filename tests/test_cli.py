@@ -7,7 +7,8 @@ import tempfile
 import os
 import click
 from click.testing import CliRunner
-import pytest, shutil
+import pytest
+import shutil
 import yaml
 import ast
 
@@ -18,7 +19,6 @@ except ImportError:
     from io import StringIO
 
 
-
 @pytest.yield_fixture(scope='module')
 def manager_table():
 
@@ -26,13 +26,14 @@ def manager_table():
 
     table_name = 'my-cli-test-table'
 
-    manager = DynamoDBManager(table_name, 
-                            session_args={ 
-                                            'aws_access_key_id': "access-key-id-of-your-choice",
-                                            'aws_secret_access_key': "secret-key-of-your-choice"}, 
-                            resource_args={ 
-                                            'endpoint_url':'http://localhost:8000/','region_name':'us-east-1'}
-                            )
+    manager = DynamoDBManager(
+        table_name,
+        session_args={
+            'aws_access_key_id': "access-key-id-of-your-choice",
+            'aws_secret_access_key': "secret-key-of-your-choice"},
+        resource_args={
+            'endpoint_url': 'http://localhost:8000/',
+            'region_name': 'us-east-1'})
 
     manager.create_archive_table(table_name, raise_on_err=False)
 
@@ -52,7 +53,7 @@ def temp_dir():
 
     try:
         yield temp.replace(os.sep, '/')
-    
+
     finally:
         _close(temp)
 
@@ -88,7 +89,7 @@ profiles:
     manager:
       class: "DynamoDBManager"
       kwargs:
-        resource_args: 
+        resource_args:
             endpoint_url: "http://localhost:8000/"
             region_name: "us-east-1"
         session_args:
@@ -96,12 +97,11 @@ profiles:
             aws_secret_access_key: "secret-key-of-your-choice"
         table_name: "{table}"
 '''.format(table=manager_table, dir=temp_dir)
-    
+
     with open(temp_file, 'w+') as f:
         f.write(my_test_yaml)
 
     yield 'myapi', temp_file
-
 
 
 @pytest.yield_fixture(scope='module')
@@ -111,7 +111,7 @@ def preloaded_config(test_config):
 
     .. note::
 
-        To save on test runtime, scope == module. Tests should not modify 
+        To save on test runtime, scope == module. Tests should not modify
         these archives.
 
     '''
@@ -120,9 +120,8 @@ def preloaded_config(test_config):
 
     api = get_api(profile=profile, config_file=temp_file)
 
-    
     # Set up a couple archives with multiple versions
-    
+
     arch1 = api.create('req_1')
     arch2 = api.create('req_2')
     arch3 = api.create('req_3')
@@ -140,7 +139,7 @@ def preloaded_config(test_config):
     assert '0.1' in arch1_versions
     assert '1.0' in arch1_versions
     assert '1.1' in arch1_versions
-        
+
     with arch2.open('w+', prerelease='alpha') as f:
         f.write(u'this is archive req_2 version 0.0.1a1')
 
@@ -154,7 +153,7 @@ def preloaded_config(test_config):
     assert '0.0.1a1' in arch2_versions
     assert '0.0.1a2' in arch2_versions
     assert '0.0.1' in arch2_versions
-        
+
     with arch3.open('w+', bumpversion='major') as f:
         f.write(u'this is archive req_3 version 1.0')
 
@@ -190,12 +189,12 @@ def test_cli_local(test_config):
 
     runner = CliRunner()
 
-
-    #test for configure and create archive
-    result = runner.invoke(
-        cli, 
-        prefix + [
-        'create', 'my_first_archive', '--description', 'My test data archive'])
+    # test for configure and create archive
+    result = runner.invoke(cli,
+                           prefix + ['create',
+                                     'my_first_archive',
+                                     '--description',
+                                     'My test data archive'])
 
     assert result.exit_code == 0
     res = 'created versioned archive <DataArchive local://my_first_archive>'
@@ -203,22 +202,22 @@ def test_cli_local(test_config):
 
     result = runner.invoke(cli, prefix + ['list'])
     assert result.exit_code == 0
-    assert ['my_first_archive'] == [a for a in result.output.strip().split(' ') if len(a) > 0]
+    assert ['my_first_archive'] == [
+        a for a in result.output.strip().split(' ') if len(a) > 0]
 
-    #test the actual creation of the object from the api side
+    # test the actual creation of the object from the api side
     assert len(api2.list()) == 1
     archive = api2.get_archive('my_first_archive')
     assert archive.archive_name == 'my_first_archive'
 
-    #testing the `metadata` option
+    # testing the `metadata` option
     result = runner.invoke(cli, prefix + ['metadata', 'my_first_archive'])
     assert result.exit_code == 0
     metadata = ast.literal_eval(result.output)
     assert metadata['description'] == 'My test data archive'
-    
-    #test the api side of the operation
-    assert u'My test data archive' == archive.get_metadata()['description']
 
+    # test the api side of the operation
+    assert u'My test data archive' == archive.get_metadata()['description']
 
     with runner.isolated_filesystem():
         with open('hello.txt', 'w') as f:
@@ -226,56 +225,60 @@ def test_cli_local(test_config):
 
         # update using CLI
         result = runner.invoke(
-            cli, 
+            cli,
             prefix + [
-                'update', 
-                'my_first_archive', 
-                'hello.txt', 
-                '--source', 
+                'update',
+                'my_first_archive',
+                'hello.txt',
+                '--source',
                 'Surfers Journal'])
-        
+
         assert result.exit_code == 0
-        #assert that we get update feedback
+        # assert that we get update feedback
         assert 'uploaded data to <DataArchive local://my_first_archive>' in result.output
-        #lets read the file to make sure it remains unchanged
-        with open('hello.txt','r') as f:
+        # lets read the file to make sure it remains unchanged
+        with open('hello.txt', 'r') as f:
             data = f.read()
             assert data == 'Hoo Yah! Stay Stoked!'
 
         # Try re-upload
         result = runner.invoke(
-            cli, 
+            cli,
             prefix + [
-                'update', 
-                'my_first_archive', 
-                'hello.txt', 
-                '--source', 
+                'update',
+                'my_first_archive',
+                'hello.txt',
+                '--source',
                 'Surfers Journal'])
 
-
         assert result.exit_code == 0
-        #assert that we get update feedback
+        # assert that we get update feedback
         intended_output = ('uploaded data to <DataArchive '
-            'local://my_first_archive>. version remains 0.0.1.')
+                           'local://my_first_archive>. version remains 0.0.1.')
 
         assert intended_output == result.output.strip()
 
-    #this is testing the feed through on the api
+    # this is testing the feed through on the api
     with api2.get_archive(api2.list()[0]).open('r') as f:
         data = f.read()
         assert data == 'Hoo Yah! Stay Stoked!'
 
-    #lets check to make sure our metadata update also passed through
-    assert 'Surfers Journal' ==  api2.get_archive(api2.list()[0]).get_metadata()['source']
+    # lets check to make sure our metadata update also passed through
+    assert 'Surfers Journal' == api2.get_archive(
+        api2.list()[0]).get_metadata()['source']
 
-    
-    #test to assert metadata update
-    #test to assert file content change
+    # test to assert metadata update
+    # test to assert file content change
 
-    
     with runner.isolated_filesystem():
 
-        result = runner.invoke(cli, prefix + ['update', 'my_first_archive', '--bumpversion', 'minor', '--string', 'new version data'])
+        result = runner.invoke(cli,
+                               prefix + ['update',
+                                         'my_first_archive',
+                                         '--bumpversion',
+                                         'minor',
+                                         '--string',
+                                         'new version data'])
         assert result.exit_code == 0
 
         result = runner.invoke(cli, prefix + ['cat', 'my_first_archive'])
@@ -283,20 +286,36 @@ def test_cli_local(test_config):
 
         'new version data' in result.output
 
-        result = runner.invoke(cli, prefix + ['download', 'my_first_archive', 'here.txt', '--version', '0.0.1'])
+        result = runner.invoke(cli,
+                               prefix + ['download',
+                                         'my_first_archive',
+                                         'here.txt',
+                                         '--version',
+                                         '0.0.1'])
         assert result.exit_code == 0
 
         'Hoo Yah! Stay Stoked!' in result.output
 
         # test download of previous version
-        result = runner.invoke(cli, prefix + ['download', 'my_first_archive', 'here.txt', '--version', '0.0.1'])
+        result = runner.invoke(cli,
+                               prefix + ['download',
+                                         'my_first_archive',
+                                         'here.txt',
+                                         '--version',
+                                         '0.0.1'])
         assert result.exit_code == 0
 
         with open('here.txt', 'r') as downloaded:
             assert downloaded.read() == 'Hoo Yah! Stay Stoked!'
 
-        # test download of nonexistant version (should fail without overwriting file)
-        result = runner.invoke(cli, prefix + ['download', 'my_first_archive', 'here.txt', '--version', '3.0'])
+        # test download of nonexistant version (should fail without overwriting
+        # file)
+        result = runner.invoke(cli,
+                               prefix + ['download',
+                                         'my_first_archive',
+                                         'here.txt',
+                                         '--version',
+                                         '3.0'])
         assert result.exit_code != 0
 
         with open('here.txt', 'r') as downloaded:
@@ -304,7 +323,7 @@ def test_cli_local(test_config):
 
         os.remove('here.txt')
 
-    #teardown
+    # teardown
     result = runner.invoke(cli, prefix + ['delete', 'my_first_archive'])
 
     result = runner.invoke(cli, prefix + ['list'])
@@ -312,8 +331,6 @@ def test_cli_local(test_config):
     assert result.output == ''
 
     assert len(api2.list()) == 0
-
-
 
 
 def test_cli_unversioned(test_config):
@@ -326,12 +343,11 @@ def test_cli_unversioned(test_config):
 
     runner = CliRunner()
 
-
-    #test for configure and create archive
+    # test for configure and create archive
     result = runner.invoke(
-        cli, 
+        cli,
         prefix + [
-        'create', 'unversioned', '--not-versioned'])
+            'create', 'unversioned', '--not-versioned'])
 
     assert result.exit_code == 0
     res = 'created archive <DataArchive local://unversioned>'
@@ -339,13 +355,13 @@ def test_cli_unversioned(test_config):
 
     result = runner.invoke(cli, prefix + ['list'])
     assert result.exit_code == 0
-    assert ['unversioned'] == [a for a in result.output.strip().split(' ') if len(a) > 0]
+    assert ['unversioned'] == [
+        a for a in result.output.strip().split(' ') if len(a) > 0]
 
-    #test the actual creation of the object from the api side
+    # test the actual creation of the object from the api side
     assert len(api2.list()) == 1
     archive = api2.get_archive('unversioned')
     assert archive.archive_name == 'unversioned'
-
 
     with runner.isolated_filesystem():
         with open('hello.txt', 'w') as f:
@@ -353,58 +369,59 @@ def test_cli_unversioned(test_config):
 
         # update using CLI
         result = runner.invoke(
-            cli, 
+            cli,
             prefix + [
-                'update', 
-                'unversioned', 
-                'hello.txt', 
-                '--dependency', 
-                'arch1', 
+                'update',
+                'unversioned',
+                'hello.txt',
+                '--dependency',
+                'arch1',
                 '--dependency',
                 'arch2'])
-        
+
         assert result.exit_code == 0
-        #assert that we get update feedback
+        # assert that we get update feedback
         assert 'uploaded data to <DataArchive local://unversioned>.' == result.output.strip()
 
         # Try re-upload
         result = runner.invoke(
-            cli, 
+            cli,
             prefix + [
-                'update', 
-                'unversioned', 
+                'update',
+                'unversioned',
                 '--string',
                 'new content'])
 
-
         assert result.exit_code == 0
 
-        #assert that we get update feedback
+        # assert that we get update feedback
         intended_output = 'uploaded data to <DataArchive local://unversioned>.'
 
         assert intended_output == result.output.strip()
 
-    
     with runner.isolated_filesystem():
 
         # test download
-        result = runner.invoke(cli, prefix + ['download', 'unversioned', 'here.txt'])
+        result = runner.invoke(cli, prefix +
+                               ['download', 'unversioned', 'here.txt'])
         assert result.exit_code == 0
 
         with open('here.txt', 'r') as downloaded:
             assert downloaded.read() == 'new content'
 
         # test download with 'latest' version argument'
-        result = runner.invoke(cli, prefix + ['download', 'unversioned', 'here.txt', '--version', 'latest'])
+        result = runner.invoke(
+            cli, prefix + ['download', 'unversioned', 'here.txt', '--version', 'latest'])
         assert result.exit_code != 0
 
         # test download with incorrect version argument
-        result = runner.invoke(cli, prefix + ['download', 'unversioned', 'here.txt', '--version', '0.0.1'])
+        result = runner.invoke(
+            cli, prefix + ['download', 'unversioned', 'here.txt', '--version', '0.0.1'])
         assert result.exit_code != 0
 
         os.remove('here.txt')
 
-    #teardown
+    # teardown
     result = runner.invoke(cli, prefix + ['delete', 'unversioned'])
 
     result = runner.invoke(cli, prefix + ['list'])
@@ -414,23 +431,21 @@ def test_cli_unversioned(test_config):
     assert len(api2.list()) == 0
 
 
-
-
 def test_specified_requirements(preloaded_config):
     '''
-    Test download commands with a mix of requirements file, explicit, and 
+    Test download commands with a mix of requirements file, explicit, and
     unspecified version requirements
     '''
 
     profile, temp_file = preloaded_config
 
-    # Create a requirements file and 
+    # Create a requirements file and
 
     runner = CliRunner()
 
     prefix = [
-        '--config-file', '{}'.format(temp_file), 
-        '--profile', 'myapi', 
+        '--config-file', '{}'.format(temp_file),
+        '--profile', 'myapi',
         '--requirements', 'requirements_data_test1.txt']
 
     with runner.isolated_filesystem():
@@ -441,36 +456,34 @@ def test_specified_requirements(preloaded_config):
             reqs.write('req_1==1.0\n')
             reqs.write('req_2==0.0.1a2\n')
 
-
         # Download req_1 with version from requirements file
-        
+
         result = runner.invoke(
-            cli, 
-            prefix + ['download', 'req_1','local_req_1.txt'])
+            cli,
+            prefix + ['download', 'req_1', 'local_req_1.txt'])
 
         assert result.exit_code == 0
 
         with open('local_req_1.txt', 'r') as f:
             assert f.read() == 'this is archive req_1 version 1.0'
-        
 
         # Download req_2 with version from requirements file
 
         result = runner.invoke(
-            cli, 
-            prefix + ['download', 'req_2','local_req_2.txt'])
+            cli,
+            prefix + ['download', 'req_2', 'local_req_2.txt'])
 
         assert result.exit_code == 0
 
         with open('local_req_2.txt', 'r') as f:
             assert f.read() == 'this is archive req_2 version 0.0.1a2'
-        
 
-        # Download req_3 with version latest version (req_3 not in requirements file)
-        
+        # Download req_3 with version latest version (req_3 not in requirements
+        # file)
+
         result = runner.invoke(
-            cli, 
-            prefix + ['download', 'req_3','local_req_3.txt'])
+            cli,
+            prefix + ['download', 'req_3', 'local_req_3.txt'])
 
         assert result.exit_code == 0
 
@@ -485,25 +498,25 @@ def test_versions(preloaded_config):
 
     profile, temp_file = preloaded_config
 
-    # Create a requirements file and 
+    # Create a requirements file and
 
     runner = CliRunner()
 
     prefix = [
-        '--config-file', '{}'.format(temp_file), 
-        '--profile', 'myapi', 
+        '--config-file', '{}'.format(temp_file),
+        '--profile', 'myapi',
         '--requirements', 'requirements_data_test1.txt']
 
     with runner.isolated_filesystem():
 
         result = runner.invoke(
-            cli, 
+            cli,
             prefix + ['versions', 'req_3'])
 
         assert result.exit_code == 0
         versions = ast.literal_eval(result.output)
 
-        assert ['1.0','1.1a1','1.1'] == versions
+        assert ['1.0', '1.1a1', '1.1'] == versions
 
 
 def test_history(preloaded_config):
@@ -513,19 +526,19 @@ def test_history(preloaded_config):
 
     profile, temp_file = preloaded_config
 
-    # Create a requirements file and 
+    # Create a requirements file and
 
     runner = CliRunner()
 
     prefix = [
-        '--config-file', '{}'.format(temp_file), 
-        '--profile', 'myapi', 
+        '--config-file', '{}'.format(temp_file),
+        '--profile', 'myapi',
         '--requirements', 'requirements_data_test1.txt']
 
     with runner.isolated_filesystem():
 
         result = runner.invoke(
-            cli, 
+            cli,
             prefix + ['history', 'req_3'])
 
         assert result.exit_code == 0
@@ -540,13 +553,13 @@ def test_alternate_versions(preloaded_config):
 
     profile, temp_file = preloaded_config
 
-    # Create a requirements file and 
+    # Create a requirements file and
 
     runner = CliRunner()
 
     prefix = [
-        '--config-file', '{}'.format(temp_file), 
-        '--profile', 'myapi', 
+        '--config-file', '{}'.format(temp_file),
+        '--profile', 'myapi',
         '--requirements', 'requirements_data_test2.txt']
 
     with runner.isolated_filesystem():
@@ -557,39 +570,35 @@ def test_alternate_versions(preloaded_config):
             reqs.write('req_1==1.0\n')
             reqs.write('req_2==0.0.1a2\n')
 
-
         # Download req_1 with version from requirements file
-        
-        result = runner.invoke(cli, prefix + 
-            ['download', 'req_1','local_req_1.txt', '--version', '0.1'])
+
+        result = runner.invoke(
+            cli, prefix + ['download', 'req_1', 'local_req_1.txt', '--version', '0.1'])
 
         assert result.exit_code == 0
 
         with open('local_req_1.txt', 'r') as f:
             assert f.read() == 'this is archive req_1 version 0.1'
-        
 
         # Download req_2 with version from requirements file
 
-        result = runner.invoke(cli, prefix + 
-            ['download', 'req_2','local_req_2.txt', '--version', '0.0.1'])
+        result = runner.invoke(
+            cli, prefix + ['download', 'req_2', 'local_req_2.txt', '--version', '0.0.1'])
 
         assert result.exit_code == 0
 
         with open('local_req_2.txt', 'r') as f:
             assert f.read() == 'this is archive req_2 version 0.0.1'
-        
 
         # Download req_3 with version from requirements file
-        
-        result = runner.invoke(cli, prefix + 
-            ['download', 'req_3','local_req_3.txt', '--version', '1.1a1'])
+
+        result = runner.invoke(
+            cli, prefix + ['download', 'req_3', 'local_req_3.txt', '--version', '1.1a1'])
 
         assert result.exit_code == 0
 
         with open('local_req_3.txt', 'r') as f:
             assert f.read() == 'this is archive req_3 version 1.1a1'
-
 
 
 def test_incorrect_versions(preloaded_config):
@@ -599,13 +608,13 @@ def test_incorrect_versions(preloaded_config):
 
     profile, temp_file = preloaded_config
 
-    # Create a requirements file and 
+    # Create a requirements file and
 
     runner = CliRunner()
 
     prefix = [
-        '--config-file', '{}'.format(temp_file), 
-        '--profile', 'myapi', 
+        '--config-file', '{}'.format(temp_file),
+        '--profile', 'myapi',
         '--requirements', 'requirements_data_test3.txt']
     with runner.isolated_filesystem():
 
@@ -615,32 +624,30 @@ def test_incorrect_versions(preloaded_config):
             reqs.write('req_1==5.0\n')
             reqs.write('req_2==0.3.1a2\n')
 
-
         # Download req_1 with version from requirements file
-        
-        result = runner.invoke(cli, prefix + 
-            ['download', 'req_1','local_req_1.txt'])
+
+        result = runner.invoke(cli, prefix +
+                               ['download', 'req_1', 'local_req_1.txt'])
 
         assert result.exception
 
-
         # Download req_2 with version from requirements file
 
-        result = runner.invoke(cli, prefix + 
-            ['download', 'req_2','local_req_2.txt', '--version', 'latest'])
+        result = runner.invoke(
+            cli, prefix + ['download', 'req_2', 'local_req_2.txt', '--version', 'latest'])
 
         assert result.exit_code == 0
 
         with open('local_req_2.txt', 'r') as f:
             assert f.read() == 'this is archive req_2 version 0.0.1'
-        
 
         # Download req_3 with version from requirements file
-        
-        result = runner.invoke(cli, prefix + 
-            ['download', 'req_3','local_req_3.txt', '--version', '4.2'])
+
+        result = runner.invoke(
+            cli, prefix + ['download', 'req_3', 'local_req_3.txt', '--version', '4.2'])
 
         assert result.exception
+
 
 def test_dependency_parsing(test_config):
     '''
@@ -654,9 +661,9 @@ def test_dependency_parsing(test_config):
     runner = CliRunner()
 
     prefix = [
-                '--config-file', '{}'.format(temp_file), 
-                '--profile', 
-                'myapi']
+        '--config-file', '{}'.format(temp_file),
+        '--profile',
+        'myapi']
 
     arch1 = api.create('dep_archive')
 
@@ -665,45 +672,75 @@ def test_dependency_parsing(test_config):
         with open('my_new_test_file.txt', 'w+') as to_update:
             to_update.write(u'test test test')
 
-        result = runner.invoke(cli, prefix + ['update', 'dep_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.1.0', '--dependency', 'arch2'])
+        result = runner.invoke(cli,
+                               prefix + ['update',
+                                         'dep_archive',
+                                         'my_new_test_file.txt',
+                                         '--bumpversion',
+                                         'minor',
+                                         '--dependency',
+                                         'arch1==0.1.0',
+                                         '--dependency',
+                                         'arch2'])
         assert result.exit_code == 0
 
         assert arch1.get_latest_version() == '0.1.0'
         with arch1.open('r') as f:
-            assert f.read() == u'test test test'        
+            assert f.read() == u'test test test'
 
-        assert arch1.get_dependencies(version='0.1.0') == {'arch1': '0.1.0', 'arch2': None}
+        assert arch1.get_dependencies(version='0.1.0') == {
+            'arch1': '0.1.0', 'arch2': None}
 
-        result = runner.invoke(cli, prefix + ['set_dependencies', 'dep_archive','--dependency' , 'arch1==0.2.0', '--dependency', 'arch2==0.0.1'])
+        result = runner.invoke(cli,
+                               prefix + ['set_dependencies',
+                                         'dep_archive',
+                                         '--dependency',
+                                         'arch1==0.2.0',
+                                         '--dependency',
+                                         'arch2==0.0.1'])
 
         assert result.exit_code == 0
-        assert arch1.get_dependencies(version='0.1.0') == {'arch1': '0.2.0', 'arch2': '0.0.1'}
-
+        assert arch1.get_dependencies(
+            version='0.1.0') == {
+            'arch1': '0.2.0',
+            'arch2': '0.0.1'}
 
         with open('my_new_test_file.txt', 'w+') as to_update:
             to_update.write(u'test test test two three four')
 
-        result = runner.invoke(cli, prefix + ['update', 'dep_archive', 'my_new_test_file.txt', '--bumpversion', 'minor' , '--dependency' , 'arch1==0.2.0', '--dependency', 'arch2==0.0.1'])
+        result = runner.invoke(cli,
+                               prefix + ['update',
+                                         'dep_archive',
+                                         'my_new_test_file.txt',
+                                         '--bumpversion',
+                                         'minor',
+                                         '--dependency',
+                                         'arch1==0.2.0',
+                                         '--dependency',
+                                         'arch2==0.0.1'])
 
         assert result.exit_code == 0
 
-        assert arch1.get_dependencies(version='0.1.0') == {'arch1': '0.2.0', 'arch2': '0.0.1'}
-        
+        assert arch1.get_dependencies(
+            version='0.1.0') == {
+            'arch1': '0.2.0',
+            'arch2': '0.0.1'}
 
-        result = runner.invoke(cli, prefix + ['get_dependencies', 'dep_archive'])
+        result = runner.invoke(cli, prefix +
+                               ['get_dependencies', 'dep_archive'])
 
         assert result.exit_code == 0
 
         assert 'arch1==0.2.0' in result.output
         assert 'arch2==0.0.1' in result.output
 
-        result = runner.invoke(cli, prefix + ['get_dependencies', 'dep_archive', '--version', '0.1'])
+        result = runner.invoke(
+            cli, prefix + ['get_dependencies', 'dep_archive', '--version', '0.1'])
 
         assert result.exit_code == 0
 
         assert 'arch1==0.2.0' in result.output
         assert 'arch2==0.0.1' in result.output
-        
 
         os.remove('my_new_test_file.txt')
 
@@ -720,8 +757,8 @@ def test_update_metadata(test_config):
     runner = CliRunner()
 
     prefix = [
-                '--config-file', '{}'.format(temp_file), 
-                '--profile', 'myapi']
+        '--config-file', '{}'.format(temp_file),
+        '--profile', 'myapi']
 
     arch1 = api.create('my_next_archive')
 
@@ -730,23 +767,26 @@ def test_update_metadata(test_config):
         with open('my_new_test_file.txt', 'w+') as to_update:
             to_update.write(u'test test test')
 
-        result = runner.invoke(cli, prefix + ['update', 'my_next_archive', 'my_new_test_file.txt'])
+        result = runner.invoke(
+            cli, prefix + ['update', 'my_next_archive', 'my_new_test_file.txt'])
         assert result.exit_code == 0
 
-        result = runner.invoke(cli, prefix + ['update_metadata', 'my_next_archive', '--description', 'some_description'])
+        result = runner.invoke(cli,
+                               prefix + ['update_metadata',
+                                         'my_next_archive',
+                                         '--description',
+                                         'some_description'])
         assert result.exit_code == 0
         assert arch1.get_metadata() == {'description': 'some_description'}
 
-        
         os.remove('my_new_test_file.txt')
-
 
     arch1.delete()
 
 
 def test_sufficient_configuration(manager_with_spec, tempdir):
     '''
-    Test writing an api with required user config to a config file and then 
+    Test writing an api with required user config to a config file and then
     running configure.
     '''
 
@@ -765,7 +805,7 @@ def test_sufficient_configuration(manager_with_spec, tempdir):
     runner = CliRunner()
 
     prefix = ['--config-file', config_file, '--profile', 'conftest']
-    
+
     # Test the configuration
     result = runner.invoke(cli, prefix + ['configure'])
     assert result.exit_code == 0
@@ -773,7 +813,7 @@ def test_sufficient_configuration(manager_with_spec, tempdir):
 
 def test_insufficient_configuration(manager_with_spec, tempdir):
     '''
-    Test writing an api with required user config to a config file and then 
+    Test writing an api with required user config to a config file and then
     running configure without sufficient user_config.
     '''
 
@@ -790,7 +830,7 @@ def test_insufficient_configuration(manager_with_spec, tempdir):
     runner = CliRunner()
 
     prefix = ['--config-file', config_file, '--profile', 'conftest']
-    
+
     # Test the configuration and make sure an exception is raised
     result = runner.invoke(cli, prefix + ['configure'])
     assert result.exception
@@ -798,7 +838,7 @@ def test_insufficient_configuration(manager_with_spec, tempdir):
 
 def test_manual_configuration(manager_with_spec, tempdir):
     '''
-    Test writing an api with required user config to a config file and then 
+    Test writing an api with required user config to a config file and then
     running configure user_config specified as keyword arguments
     '''
 
@@ -815,20 +855,19 @@ def test_manual_configuration(manager_with_spec, tempdir):
     runner = CliRunner()
 
     prefix = ['--config-file', config_file, '--profile', 'conftest']
-    
+
     # Test the configuration and make sure an exception is raised
     result = runner.invoke(cli, prefix + [
-        'configure', 
-        '--contact', 
+        'configure',
+        '--contact',
         '"my_email@domain.com'])
 
     assert result.exit_code == 0
 
 
-
 def test_helper_configuration(manager_with_spec, tempdir, monkeypatch):
     '''
-    Test writing an api with required user config to a config file and then 
+    Test writing an api with required user config to a config file and then
     running configure user_config with the flag --helper
     '''
 
@@ -842,25 +881,23 @@ def test_helper_configuration(manager_with_spec, tempdir, monkeypatch):
     config_file = os.path.join(tempdir, '.datafs.yml')
     to_config_file(api=api, config_file=config_file, profile='conftest')
 
-
     assert 'contact' not in api.user_config
 
     runner = CliRunner()
 
     prefix = ['--config-file', config_file, '--profile', 'conftest']
 
-    
     def get_user_email(*args, **kwargs):
         return "my_email@domain.com"
-    
+
     # override click.prompt
     monkeypatch.setattr('click.prompt', get_user_email)
-    
+
     # Test the helper with the appropriate input stream
     result = runner.invoke(
-        cli, 
+        cli,
         prefix + ['configure', '--helper']
-        )
+    )
 
     assert result.exit_code == 0
 

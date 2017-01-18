@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
-from datafs.core.data_api import DataAPI
 from datafs.config.config_file import ConfigFile
 from datafs.config.helpers import (
-    get_api, 
-    _parse_requirement, 
+    get_api,
+    _parse_requirement,
     _interactive_config)
 from datafs._compat import u
-import os
-import re
 import click
 import sys
 import pprint
@@ -22,30 +19,32 @@ def _parse_args_as_kwargs(args):
         kwargs[args[i].lstrip('-')] = args[i + 1]
     return kwargs
 
+
 def _interactive_configuration(api, config, profile=None):
 
     if profile is None:
-        profile = self.default_profile
+        profile = config.default_profile
 
     profile_config = config.get_profile_config(profile)
 
-    #read from the required config settings in DataAPI
+    # read from the required config settings in DataAPI
     _interactive_config(
-        to_populate=profile_config['api']['user_config'], 
+        to_populate=profile_config['api']['user_config'],
         prompts=api.manager.required_user_config)
 
     config.config['profiles'][profile] = profile_config
 
+
 def _parse_dependencies(dependency_args):
-    
-    if len(dependency_args) == 0: 
+
+    if len(dependency_args) == 0:
         return None
 
     # dependencies = {}
     return dict(map(_parse_requirement, dependency_args))
 
-def _generate_api(ctx):
 
+def _generate_api(ctx):
 
     ctx.obj.config.read_config()
 
@@ -53,22 +52,37 @@ def _generate_api(ctx):
         ctx.obj.profile = ctx.obj.config.config['default-profile']
 
     ctx.obj.api = get_api(
-        profile=ctx.obj.profile, 
-        config_file=ctx.obj.config_file, 
+        profile=ctx.obj.profile,
+        config_file=ctx.obj.config_file,
         requirements=ctx.obj.requirements)
+
 
 class _DataFSInterface(object):
 
     def __init__(self):
         pass
 
-#this sets the command line environment for 
+# this sets the command line environment for
+
+
 @click.group()
 @click.option('--config-file', envvar='DATAFS_CONFIG_FILE', type=str)
-@click.option('--requirements', envvar='DATAFS_REQUIREMENTS_FILE', type=str, default='requirements_data.txt')
-@click.option('--profile', envvar='DATAFS_DEFAULT_PROFILE', type=str, default=None)
+@click.option(
+    '--requirements',
+    envvar='DATAFS_REQUIREMENTS_FILE',
+    type=str,
+    default='requirements_data.txt')
+@click.option(
+    '--profile',
+    envvar='DATAFS_DEFAULT_PROFILE',
+    type=str,
+    default=None)
 @click.pass_context
-def cli(ctx, config_file=None, requirements='requirements_data.txt', profile=None):
+def cli(
+        ctx,
+        config_file=None,
+        requirements='requirements_data.txt',
+        profile=None):
 
     ctx.obj = _DataFSInterface()
 
@@ -95,7 +109,6 @@ def configure(ctx, helper, edit):
     '''
     Update existing configuration or create a new default profile
     '''
-
 
     if edit:
         ctx.obj.config.edit_config_file()
@@ -161,17 +174,16 @@ def create(ctx, archive_name, authority_name, versioned=True, helper=False):
 @click.argument('file', default=None, required=False)
 @click.pass_context
 def update(
-    ctx, 
-    archive_name, 
-    bumpversion='patch', 
-    prerelease=None, 
-    dependency=None, 
-    string=False,
-    file=None):
+        ctx,
+        archive_name,
+        bumpversion='patch',
+        prerelease=None,
+        dependency=None,
+        string=False,
+        file=None):
 
-    
     _generate_api(ctx)
-    
+
     kwargs = _parse_args_as_kwargs(ctx.args)
     dependencies_dict = _parse_dependencies(dependency)
 
@@ -181,11 +193,11 @@ def update(
     if string:
 
         with var.open(
-            'w+', 
-            bumpversion=bumpversion, 
-            prerelease=prerelease, 
-            dependencies=dependencies_dict, 
-            metadata=kwargs) as f:
+            'w+',
+            bumpversion=bumpversion,
+            prerelease=prerelease,
+            dependencies=dependencies_dict,
+                metadata=kwargs) as f:
 
             if file is None:
                 for line in sys.stdin:
@@ -198,18 +210,18 @@ def update(
             file = click.prompt('enter filepath')
 
         var.update(
-            file, 
-            bumpversion=bumpversion, 
-            prerelease=prerelease, 
-            dependencies=dependencies_dict, 
+            file,
+            bumpversion=bumpversion,
+            prerelease=prerelease,
+            dependencies=dependencies_dict,
             metadata=kwargs)
-    
+
     new_version = var.get_latest_version()
 
     if latest_version is None and new_version is not None:
         bumpmsg = ' new version {} created.'.format(
             new_version)
-    
+
     elif new_version != latest_version:
         bumpmsg = ' version bumped {} --> {}.'.format(
             latest_version, new_version)
@@ -220,7 +232,6 @@ def update(
         bumpmsg = ''
 
     click.echo('uploaded data to {}.{}'.format(var, bumpmsg))
-
 
 
 @cli.command(
@@ -238,8 +249,6 @@ def update_metadata(ctx, archive_name):
     var.update_metadata(metadata=kwargs)
 
 
-
-
 @cli.command(
     context_settings=dict(
         ignore_unknown_options=True,
@@ -254,6 +263,7 @@ def set_dependencies(ctx, archive_name, dependency=None):
     var = ctx.obj.api.get_archive(archive_name)
 
     var.set_dependencies(dependencies=kwargs)
+
 
 @cli.command(
     context_settings=dict(
@@ -291,7 +301,6 @@ def download(ctx, archive_name, filepath, version):
     if version is None:
         version = var.get_default_version()
 
-
     var.download(filepath, version=version)
 
     archstr = var.archive_name +\
@@ -309,7 +318,7 @@ def cat(ctx, archive_name, version):
     var = ctx.obj.api.get_archive(archive_name)
 
     with var.open('r', version=version) as f:
-        for chunk in iter(lambda: f.read(1024*1024), ''):
+        for chunk in iter(lambda: f.read(1024 * 1024), ''):
             click.echo(chunk)
 
 
@@ -342,14 +351,20 @@ def versions(ctx, archive_name):
 
 
 @cli.command()
-@click.option('--pattern', default=None, help='filter archive names with a match pattern')
-@click.option('--engine', default='path', help='comparison engine: str/path/regex (default path)')
+@click.option(
+    '--pattern',
+    default=None,
+    help='filter archive names with a match pattern')
+@click.option(
+    '--engine',
+    default='path',
+    help='comparison engine: str/path/regex (default path)')
 @click.pass_context
 def list(ctx, pattern, engine):
     _generate_api(ctx)
 
     matches = ctx.obj.api.list(pattern, engine)
-    
+
     if len(matches) > 0:
         click.echo(' '.join(matches))
 
@@ -363,7 +378,3 @@ def delete(ctx, archive_name):
 
     var.delete()
     click.echo('deleted archive {}'.format(var))
-
-
-if __name__ == "__main__":
-    cli()

@@ -1,6 +1,6 @@
 '''
 
-Use this tutorial to build a DataFS server using MongoDB and the local filesystem
+This tutorial builds a DataFS server with MongoDB and the local filesystem
 
 
 Running this example
@@ -135,7 +135,7 @@ metadata that was created when it was initialized.
 
     >>> var = api.get_archive('my_first_archive')
 
-We can access the metadata for this archive through the archive's 
+We can access the metadata for this archive through the archive's
 :py:meth:`~datafs.core.DataArchive.get_metadata` method:
 
 .. code-block:: python
@@ -223,6 +223,7 @@ Cleaning up
 Next steps
 ~~~~~~~~~~
 
-The :ref:`next tutorial <examples-aws>` describes setting up DataFS for remote obejct stores, such as with AWS storage.
+The :ref:`next tutorial <examples-aws>` describes setting up DataFS for remote
+obejct stores, such as with AWS storage.
 
 '''

@@ -7,21 +7,25 @@ import os
 import re
 import click
 
+
 def _parse_requirement(requirement_line):
 
-    # should we do archive name checking here? If the statement 
+    # should we do archive name checking here? If the statement
     # doesn't split, the entire thing gets passed to api.create
     # or get_archive as the archive_name.
-    
+
     version_stmt = map(lambda s: s.strip(), requirement_line.split('=='))
 
     if len(version_stmt) == 1:
-        return version_stmt[0],  None
+        return version_stmt[0], None
     else:
         return version_stmt[0], version_stmt[1]
 
 
-def get_api(profile=None, config_file=None, requirements='requirements_data.txt'):
+def get_api(
+        profile=None,
+        config_file=None,
+        requirements='requirements_data.txt'):
     '''
     Generate a datafs.DataAPI object from a config profile
 
@@ -115,9 +119,8 @@ def get_api(profile=None, config_file=None, requirements='requirements_data.txt'
 
     profile_config = config.get_profile_config(profile)
 
-
     default_versions = {}
-    
+
     if requirements is None:
         requirements = config.config.get('requirements', None)
 
@@ -126,7 +129,7 @@ def get_api(profile=None, config_file=None, requirements='requirements_data.txt'
             for reqline in reqfile.readlines():
                 if re.search(r'^\s*$', reqline):
                     continue
-                    
+
                 archive, version = _parse_requirement(reqline)
                 default_versions[archive] = version
 
@@ -136,8 +139,6 @@ def get_api(profile=None, config_file=None, requirements='requirements_data.txt'
     APIConstructor.attach_manager_from_config(api, profile_config)
     APIConstructor.attach_services_from_config(api, profile_config)
     APIConstructor.attach_cache_from_config(api, profile_config)
-
-
 
     return api
 
@@ -151,7 +152,7 @@ def _interactive_config(to_populate, prompts):
 
     to_populate : dict
         Data dictionary to fill. Default values are taken from this dictionary.
-    
+
     prompts : dict
         Keys and prompts to use when filling ``to_populate``
     '''
@@ -160,6 +161,7 @@ def _interactive_config(to_populate, prompts):
         to_populate[kw] = click.prompt(
             prompt,
             default=to_populate.get(kw))
+
 
 def check_requirements(to_populate, prompts, helper=False):
 
@@ -174,6 +176,7 @@ def check_requirements(to_populate, prompts, helper=False):
                 'flag for assistance.'.format(kw))
 
             assert kw in to_populate, msg
+
 
 def to_config_file(api, config_file=None, profile='default'):
 

@@ -43,11 +43,14 @@ install:
   - python -m pip install pytest-cov
 
 script:
+  - export PATH=$HOME/miniconda/bin:$PATH
+  - export PATH=$HOME/miniconda2/bin:$PATH
+  - export PATH=$HOME/miniconda3/bin:$PATH
   - if [[ "$DATAFS_TEST_ENV" == "xarray" ]]; then
     source activate datafs;
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then python -m pytest ./datafs ./tests ./docs;
-    else python -m pytest ./datafs ./tests ./docs --cov --doctest-modules --cov-report term-missing;
+    else python -m pytest ./datafs ./tests ./docs --cov=datafs --cov=examples --cov=docs --doctest-modules --cov-report term-missing;
     fi
 
 deploy:

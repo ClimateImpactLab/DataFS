@@ -1,12 +1,9 @@
 
 from __future__ import absolute_import
-from datafs.core.data_api import DataAPI
 from datafs._compat import open_filelike
 import yaml
 import os
-import importlib
 import click
-import fs1
 
 
 class ConfigFile(object):
@@ -25,7 +22,7 @@ class ConfigFile(object):
                 click.get_app_dir('datafs'), 'config.yml')
 
     def parse_configfile_contents(self, config):
-        if not 'profiles' in config:
+        if 'profiles' not in config:
             config = {'profiles': {'default': config}}
 
         self.default_profile = config.get(
@@ -44,7 +41,6 @@ class ConfigFile(object):
             config = yaml.load(f)
 
         self.parse_configfile_contents(config)
-
 
     def edit_config_file(self):
 
@@ -67,7 +63,7 @@ class ConfigFile(object):
 
         profile_config = self.config['profiles'][profile]
 
-        for kw in ['api', 'manager', 'authorities', 'cache']:
+        for kw in ['api', 'manager', 'authorities']:
             profile_config[kw] = profile_config.get(kw, {})
 
         return profile_config
@@ -75,7 +71,7 @@ class ConfigFile(object):
     def get_config_from_api(self, api, profile=None):
         profile_config = self.get_profile_config(profile)
 
-        if not 'user_config' in profile_config['api']:
+        if 'user_config' not in profile_config['api']:
             profile_config['api']['user_config'] = {}
 
         for kw in api.user_config.keys():
@@ -93,7 +89,7 @@ class ConfigFile(object):
                 'manager'].get(kw, manager_cfg[kw])
 
         authorities_cfg = {}
-        
+
         for service_name, service in api._authorities.items():
 
             authorities_cfg[service_name] = {
@@ -103,15 +99,17 @@ class ConfigFile(object):
             }
 
             if service.fs.hassyspath('/'):
-                authorities_cfg[service_name]['args'] = [service.fs.getsyspath('/')]
+                authorities_cfg[service_name]['args'] = [
+                    service.fs.getsyspath('/')]
 
         for service_name in authorities_cfg.keys():
             if service_name not in profile_config['authorities']:
                 profile_config['authorities'][service_name] = {}
 
             for kw in ['service', 'args', 'kwargs']:
-                profile_config['authorities'][service_name][kw] = profile_config[
-                    'authorities'][service_name].get(kw, authorities_cfg[service_name][kw])
+                profile_config['authorities'][service_name][kw] = \
+                    profile_config['authorities'][service_name].get(
+                        kw, authorities_cfg[service_name][kw])
 
         if api.cache:
             cache_cfg = {
@@ -120,6 +118,8 @@ class ConfigFile(object):
                 'kwargs': {}
             }
 
+            profile_config['cache'] = profile_config.get('cache', {})
+            
             for kw in ['service', 'args', 'kwargs']:
                 profile_config['cache'][kw] = profile_config[
                     'cache'].get(kw, cache_cfg[kw])
@@ -162,7 +162,7 @@ class ConfigFile(object):
             >>>
             >>> api = DataAPI(
             ...      username='My Name',
-            ...      contact = 'my.email@example.com')
+            ...      contact = 'me@demo.com')
             >>>
             >>> manager = MongoDBManager(
             ...     database_name = 'MyDatabase',
@@ -199,13 +199,12 @@ class ConfigFile(object):
             profiles:
               my-api:
                 api:
-                  user_config: {contact: my.email@example.com, username: My Name}
+                  user_config: {contact: me@demo.com, username: My Name}
                 authorities:
                   local:
                     args: [...]
                     service: OSFS
                     kwargs: {}
-                cache: {}
                 manager:
                   args: []
                   class: MongoDBManager
@@ -233,13 +232,12 @@ class ConfigFile(object):
             ... profiles:
             ...   my-api:
             ...     api:
-            ...       user_config: {contact: my.email@example.com, username: My Name}
+            ...       user_config: {contact: me@demo.com, username: My Name}
             ...     authorities:
             ...       local:
             ...         args: []
             ...         service: TempFS
             ...         kwargs: {}
-            ...     cache: {}
             ...     manager:
             ...       args: []
             ...       class: MongoDBManager
@@ -269,7 +267,7 @@ class ConfigFile(object):
             profiles:
               my-api:
                 api:
-                  user_config: {contact: my.email@example.com, username: My Name}
+                  user_config: {contact: me@demo.com, username: My Name}
                 authorities:
                   local:
                     args: []

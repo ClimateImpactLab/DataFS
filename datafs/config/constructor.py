@@ -16,33 +16,23 @@ class APIConstructor(object):
     @staticmethod
     def generate_api_from_config(config):
 
-        for kw in ['user_config', 'constructor']:
-            if not kw in config['api']:
+        for kw in ['user_config']:
+            if kw not in config['api']:
                 config['api'][kw] = {}
 
-        try:
-            api_mod = importlib.import_module(
-                config['api']['constructor']['module'])
-            api_cls = api_mod.__dict__[config['api']['constructor']['class']]
-
-        except KeyError:
-            api_cls = DataAPI
-
-        api = api_cls(**config['api']['user_config'])
+        api = DataAPI(**config['api']['user_config'])
 
         return api
+
 
     @classmethod
     def attach_manager_from_config(cls, api, config):
 
         if 'manager' in config:
 
-            try:
-                manager = cls._generate_manager(config['manager'])
-                api.attach_manager(manager)
+            manager = cls._generate_manager(config['manager'])
+            api.attach_manager(manager)
 
-            except (PermissionError, KeyError):
-                pass
 
     @classmethod
     def attach_services_from_config(cls, api, config):
@@ -50,24 +40,18 @@ class APIConstructor(object):
         for service_name, service_config in config.get(
                 'authorities', {}).items():
 
-            try:
-                service = cls._generate_service(service_config)
-                api.attach_authority(service_name, service)
+            service = cls._generate_service(service_config)
+            api.attach_authority(service_name, service)
 
-            except PermissionError:
-                pass
 
     @classmethod
     def attach_cache_from_config(cls, api, config):
 
         if 'cache' in config:
 
-            try:
-                service = cls._generate_service(config['cache'])
-                api.attach_cache(service)
+            service = cls._generate_service(config['cache'])
+            api.attach_cache(service)
 
-            except (PermissionError, KeyError):
-                pass
 
     @staticmethod
     def _generate_manager(manager_config):
@@ -125,13 +109,17 @@ class APIConstructor(object):
             raise ValueError(
                 'Manager not fully specified. Give '
                 '"class:manager_name", e.g. "class:MongoDBManager".')
-        
+
         mgr_class_name = manager_config['class']
 
         if mgr_class_name.lower()[:5] == 'mongo':
-            from datafs.managers.manager_mongo import MongoDBManager as mgr_class
+            from datafs.managers.manager_mongo import (
+                MongoDBManager as mgr_class)
+
         elif mgr_class_name.lower()[:6] == 'dynamo':
-            from datafs.managers.manager_dynamo import DynamoDBManager as mgr_class
+            from datafs.managers.manager_dynamo import (
+                DynamoDBManager as mgr_class)
+
         else:
             raise KeyError(
                 'Manager class "{}" not recognized. Choose from {}'.format(

@@ -75,7 +75,6 @@ profiles:
         args:
           - "{dir}"
         service: OSFS
-    cache: {{}}
     manager:
       class: "DynamoDBManager"
       kwargs:

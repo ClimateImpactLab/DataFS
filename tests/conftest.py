@@ -4,30 +4,18 @@ from __future__ import absolute_import
 import pytest
 
 import tempfile
-import shutil
-import time
-import boto
 import moto
-import os
 import itertools
 
-import fs1.utils
 from fs1.osfs import OSFS
-from fs1.tempfs import TempFS
 from fs1.s3fs import S3FS
 
 from datafs import DataAPI
 from datafs._compat import string_types
 from datafs.core import data_file
-from datafs.services.service import DataService
-from datafs.managers.manager import BaseDataManager
-from datafs.managers.manager_mongo import MongoDBManager
-from datafs.managers.manager_dynamo import DynamoDBManager
 from tests.resources import prep_manager, _close
 
 from contextlib import contextmanager
-
-
 
 
 def pytest_generate_tests(metafunc):
@@ -58,6 +46,7 @@ def tempdir():
 
     finally:
         _close(tmpdir)
+
 
 @contextmanager
 def prep_filesystem(fs_name):
@@ -93,8 +82,6 @@ def prep_filesystem(fs_name):
 
         finally:
             m.stop()
-
-
 
 
 @pytest.yield_fixture
@@ -189,23 +176,18 @@ def manager_with_spec(mgr_name):
 
     with prep_manager(mgr_name, table_name='standalone-test-table') as manager:
 
-
         metadata_config = {
             'description': 'some metadata'
-            }
+        }
 
         user_config = {
             'username': 'Your Name',
             'contact': 'my.email@example.com'
-            
-        }
 
+        }
 
         manager.set_required_user_config(user_config)
         manager.set_required_archive_metadata(metadata_config)
-
-        manager.required_user_config
-        manager.required_archive_metadata
 
         yield manager
 
@@ -213,14 +195,14 @@ def manager_with_spec(mgr_name):
 @pytest.yield_fixture
 def api_with_spec(manager_with_spec, auth1):
 
-        api = DataAPI(
-            username='My Name',
-            contact='my.email@example.com')
+    api = DataAPI(
+        username='My Name',
+        contact='my.email@example.com')
 
-        api.attach_manager(manager_with_spec)
-        api.attach_authority('auth', auth1)
+    api.attach_manager(manager_with_spec)
+    api.attach_authority('auth', auth1)
 
-        yield api
+    yield api
 
 
 @pytest.fixture
@@ -235,24 +217,24 @@ def opener(open_func):
 
         @contextmanager
         def inner(
-            archive, 
-            mode='r', 
-            version=None, 
-            bumpversion='patch', 
-            prerelease=None, 
-            dependencies=None,
-            *args, 
-            **kwargs):
+                archive,
+                mode='r',
+                version=None,
+                bumpversion='patch',
+                prerelease=None,
+                dependencies=None,
+                *args,
+                **kwargs):
 
             with archive.open(
-                *args, 
+                *args,
                 mode=mode,
-                version=version, 
-                bumpversion=bumpversion, 
+                version=version,
+                bumpversion=bumpversion,
                 prerelease=prerelease,
-                dependencies=dependencies, 
-                **kwargs) as f:
-                
+                dependencies=dependencies,
+                    **kwargs) as f:
+
                 yield f
 
         return inner
@@ -261,21 +243,21 @@ def opener(open_func):
 
         @contextmanager
         def inner(
-            archive, 
-            mode='r', 
-            version=None, 
-            bumpversion='patch', 
-            prerelease=None, 
-            dependencies=None,
-            *args, 
-            **kwargs):
+                archive,
+                mode='r',
+                version=None,
+                bumpversion='patch',
+                prerelease=None,
+                dependencies=None,
+                *args,
+                **kwargs):
 
             with archive.get_local_path(
-                version=version, 
-                bumpversion=bumpversion, 
-                prerelease=prerelease,
-                dependencies=dependencies) as fp:
-                
+                    version=version,
+                    bumpversion=bumpversion,
+                    prerelease=prerelease,
+                    dependencies=dependencies) as fp:
+
                 with open(fp, mode=mode, *args, **kwargs) as f:
                     yield f
 
@@ -283,7 +265,6 @@ def opener(open_func):
 
     else:
         raise NameError('open_func "{}" not recognized'.format(open_func))
-
 
 
 @pytest.fixture
@@ -314,14 +295,14 @@ def datafile_opener(open_func):
                 **kwargs):
 
             with data_file.get_local_path(
-                auth, 
-                cache, 
-                update, 
-                version_check, 
-                hasher, 
-                read_path, 
-                write_path, 
-                cache_on_write) as fp:
+                    auth,
+                    cache,
+                    update,
+                    version_check,
+                    hasher,
+                    read_path,
+                    write_path,
+                    cache_on_write) as fp:
 
                 assert isinstance(fp, string_types)
 
@@ -332,8 +313,6 @@ def datafile_opener(open_func):
 
     else:
         raise NameError('open_func "{}" not recognized'.format(open_func))
-
-
 
 
 @pytest.yield_fixture
@@ -347,23 +326,23 @@ def api_with_diverse_archives(mgr_name, fs_name):
 
         api.attach_manager(manager)
 
-        with prep_filesystem(fs_name) as auth:
+        with prep_filesystem(fs_name) as auth1:
 
             api.attach_authority('auth', auth1)
 
-            for indices in itertools.product(*(range(1,4) for _ in range(5))):
+            for indices in itertools.product(*(range(1, 4) for _ in range(5))):
                 api.create(
                     'team{}_project{}_task{}_variable{}_scenario{}.nc'.format(
                         *indices))
 
+            for indices in itertools.product(*(range(1, 4) for _ in range(5))):
+                archive_name = (
+                    'team{}_project{}_task{}_' +
+                    'parameter{}_scenario{}.csv').format(*indices)
 
-            for indices in itertools.product(*(range(1,4) for _ in range(5))):
-                api.create(
-                    'team{}_project{}_task{}_parameter{}_scenario{}.csv'.format(
-                        *indices))
+                api.create(archive_name)
 
-
-            for indices in itertools.product(*(range(1,4) for _ in range(3))):
+            for indices in itertools.product(*(range(1, 4) for _ in range(3))):
                 api.create(
                     'team{}_project{}_task{}_config.txt'.format(
                         *indices))
@@ -376,6 +355,5 @@ def api_with_diverse_archives(mgr_name, fs_name):
                 'count.parameter': 3,
                 'count.config': 1
             }
-
 
             yield api

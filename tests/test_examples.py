@@ -2,12 +2,12 @@
 from __future__ import absolute_import
 
 import doctest
-import datafs
 import moto
 from examples import (local, ondisk, s3, caching)
 from examples.preconfigured import preconfigured
 from examples.subclassing import client
 from datafs.managers.manager_dynamo import DynamoDBManager
+from distutils.version import StrictVersion
 
 
 def mock_s3(func):
@@ -37,10 +37,20 @@ def test_ondisk():
 
     try:
         import netCDF4
+        assert StrictVersion(netCDF4.__version__) >= '1.1'
+
+        import numpy as np
+        assert StrictVersion(np.__version__) >= '1.7'
+
+        import pandas as pd
+        assert StrictVersion(pd.__version__) >= '0.15'
+
         import xarray as xr
+        assert StrictVersion(xr.__version__) >= '0.8'
+
         has_special_dependencies = True
 
-    except ImportError:
+    except (ImportError, AssertionError):
         pass
 
     if has_special_dependencies:
@@ -87,4 +97,3 @@ def test_subclassing():
 def test_preconfigured():
     failures, tests = doctest.testmod(preconfigured, report=True)
     assert failures == 0
-

@@ -20,20 +20,20 @@ class DataService(object):
         '''
         "Upload" a file to a service
 
-        This copies a file from the local filesystem into the ``DataService``'s 
+        This copies a file from the local filesystem into the ``DataService``'s
         filesystem. If ``remove==True``, the file is moved rather than copied.
-        
-        If ``filepath`` and ``service_path`` paths are the same, ``upload`` 
+
+        If ``filepath`` and ``service_path`` paths are the same, ``upload``
         deletes the file if ``remove==True`` and returns.
 
         Parameters
         ----------
         filepath : str
-            Relative or absolute path to the file to be uploaded on the user's 
+            Relative or absolute path to the file to be uploaded on the user's
             filesystem
 
         service_path: str
-            Path to the destination for the file on the ``DataService``'s 
+            Path to the destination for the file on the ``DataService``'s
             filesystem
 
         remove : bool

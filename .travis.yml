@@ -50,7 +50,7 @@ script:
     source activate datafs;
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then python -m pytest ./datafs ./tests ./docs;
-    else python -m pytest ./datafs ./tests ./docs --cov=datafs --cov=tests --cov=examples --cov=docs --doctest-modules --cov-report term-missing;
+    else python -m pytest ./datafs ./tests ./docs --cov=datafs --cov=examples --cov=docs --doctest-modules --cov-report term-missing;
     fi
 
 deploy:

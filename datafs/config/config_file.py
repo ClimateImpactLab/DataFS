@@ -63,7 +63,7 @@ class ConfigFile(object):
 
         profile_config = self.config['profiles'][profile]
 
-        for kw in ['api', 'manager', 'authorities', 'cache']:
+        for kw in ['api', 'manager', 'authorities']:
             profile_config[kw] = profile_config.get(kw, {})
 
         return profile_config
@@ -118,6 +118,8 @@ class ConfigFile(object):
                 'kwargs': {}
             }
 
+            profile_config['cache'] = profile_config.get('cache', {})
+            
             for kw in ['service', 'args', 'kwargs']:
                 profile_config['cache'][kw] = profile_config[
                     'cache'].get(kw, cache_cfg[kw])
@@ -203,7 +205,6 @@ class ConfigFile(object):
                     args: [...]
                     service: OSFS
                     kwargs: {}
-                cache: {}
                 manager:
                   args: []
                   class: MongoDBManager
@@ -237,7 +238,6 @@ class ConfigFile(object):
             ...         args: []
             ...         service: TempFS
             ...         kwargs: {}
-            ...     cache: {}
             ...     manager:
             ...       args: []
             ...       class: MongoDBManager

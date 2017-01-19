@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from datafs.services.service import DataService
 from datafs.core.data_archive import DataArchive
+from datafs.utils.search import interactive_search
 from datafs._compat import open_filelike
 
 import fs1.path
@@ -191,6 +192,14 @@ class DataAPI(object):
             raise ValueError(
                 'search engine "{}" not recognized. '.format(engine) +
                 'choose "str", "fn", or "regex"')
+
+    def search(self):
+
+        archive_name = interactive_search(api=self)
+
+        if archive_name:
+            return self.get_archive(archive_name)
+
 
     @classmethod
     def create_archive_path(cls, archive_name):

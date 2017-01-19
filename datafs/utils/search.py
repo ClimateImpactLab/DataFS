@@ -75,7 +75,7 @@ def parse_next_chr(curstr, selection):
             selection = max(selection-1, 0)
 
         elif list(map(ord, last)) == [27, 91, 66]:
-            selection = selection+1
+            selection = min(selection + 1, 9)
 
     elif ord(last) == 945:
         # windows-style arrow keys
@@ -86,7 +86,7 @@ def parse_next_chr(curstr, selection):
             selection = max(selection-1, 0)
 
         elif ord(direction) == 80:
-            selection = selection + 1
+            selection = min(selection + 1, 9)
 
     elif ord(last) in [8,127] and len(curstr) > 0:
         curstr = curstr[:-1]

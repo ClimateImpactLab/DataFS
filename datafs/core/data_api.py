@@ -2,8 +2,9 @@ from __future__ import absolute_import
 
 from datafs.services.service import DataService
 from datafs.core.data_archive import DataArchive
-from datafs.utils.search import interactive_search
 from datafs._compat import open_filelike
+
+import datafs.utils.search
 
 import fs1.path
 
@@ -193,12 +194,15 @@ class DataAPI(object):
                 'search engine "{}" not recognized. '.format(engine) +
                 'choose "str", "fn", or "regex"')
 
-    def search(self):
+    def search(self, query='*', interactive=False):
 
-        archive_name = interactive_search(api=self)
+        if not interactive:
+            return datafs.utils.search.search(query, api=self, limit=None)
+
+        archive_name = datafs.utils.search.interactvie_search(api=api, limit=None)
 
         if archive_name:
-            return self.get_archive(archive_name)
+            return archive_name
 
 
     @classmethod

@@ -14,7 +14,6 @@ def prep_index(indexdir, api=None, profile=None, config_file=None):
 
     schema=fields.Schema(
         title=fields.TEXT(stored=True),
-        path=fields.ID(stored=True),
         content=fields.TEXT)
 
     ix = create_in(indexdir, schema)
@@ -68,13 +67,18 @@ def parse_next_chr(curstr, selection):
 
     last = click.getchar()
 
-    if len(last) > 1:
+    if len(last) == 0:
+        raise StopIteration
+
+    elif len(last) > 1:
         # *nix-style arrow keys
 
         if list(map(ord, last)) == [27, 91, 65]:
+            # *nix arrow up
             selection = max(selection-1, 0)
 
         elif list(map(ord, last)) == [27, 91, 66]:
+            # *nix arrow down
             selection = min(selection + 1, 9)
 
     elif ord(last) == 945:
@@ -83,9 +87,11 @@ def parse_next_chr(curstr, selection):
         direction = click.getchar()
 
         if ord(direction) == 72:
+            # windows arrow up
             selection = max(selection-1, 0)
 
         elif ord(direction) == 80:
+            # windows arrow down
             selection = min(selection + 1, 9)
 
     elif ord(last) in [8,127] and len(curstr) > 0:
@@ -100,7 +106,7 @@ def parse_next_chr(curstr, selection):
     return curstr, selection
 
 
-def search(query, indexdir=None, api=None, profile=None, config_file=None):
+def search(query, indexdir=None, api=None, profile=None, config_file=None, limit=10):
     '''
     Search the index with query
     '''
@@ -111,12 +117,12 @@ def search(query, indexdir=None, api=None, profile=None, config_file=None):
 
         parsed = query_index(ix.schema, query)
         
-        results = searcher.search(parsed)
+        results = searcher.search(parsed, limit=limit)
 
         return [r['title'] for r in results]
 
 
-def interactive_search(indexdir=None, api=None, profile=None, config_file=None):
+def interactive_search(indexdir=None, api=None, profile=None, config_file=None, limit=10):
     '''
     Start an interactive search session
     '''
@@ -144,7 +150,7 @@ def interactive_search(indexdir=None, api=None, profile=None, config_file=None):
             query_string = curstr+('*' if len(curstr) > 0 and curstr[-1] != ' ' else '')
             parsed = query_index(ix.schema, query_string)
             
-            results = searcher.search(parsed)
+            results = searcher.search(parsed, limit=limit)
 
             selection = min(selection, len(results)-1)
 

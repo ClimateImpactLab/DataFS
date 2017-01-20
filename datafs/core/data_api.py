@@ -4,6 +4,8 @@ from datafs.services.service import DataService
 from datafs.core.data_archive import DataArchive
 from datafs._compat import open_filelike
 
+import datafs.utils.search
+
 import fs1.path
 
 import hashlib
@@ -191,6 +193,17 @@ class DataAPI(object):
             raise ValueError(
                 'search engine "{}" not recognized. '.format(engine) +
                 'choose "str", "fn", or "regex"')
+
+    def search(self, query='*', interactive=False):
+
+        if not interactive:
+            return datafs.utils.search.search(query, api=self, limit=None)
+
+        archive_name = datafs.utils.search.interactvie_search(api=api, limit=None)
+
+        if archive_name:
+            return archive_name
+
 
     @classmethod
     def create_archive_path(cls, archive_name):

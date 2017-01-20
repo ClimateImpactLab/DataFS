@@ -6,6 +6,7 @@ from datafs.config.helpers import (
     get_api,
     _parse_requirement,
     _interactive_config)
+from datafs.utils.search import interactive_search
 from datafs._compat import u
 import click
 import sys
@@ -370,6 +371,16 @@ def list(ctx, pattern, engine):
 
 
 @cli.command()
+@click.pass_context
+def search(ctx):
+    _generate_api(ctx)
+
+    match = interactive_search(api=ctx.obj.api)
+
+    click.echo(match)
+
+
+@cli.command()
 @click.argument('archive_name')
 @click.pass_context
 def delete(ctx, archive_name):
@@ -378,3 +389,7 @@ def delete(ctx, archive_name):
 
     var.delete()
     click.echo('deleted archive {}'.format(var))
+
+
+if __name__ == '__main__':
+    cli()

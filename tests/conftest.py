@@ -6,6 +6,7 @@ import pytest
 import tempfile
 import moto
 import itertools
+import os
 
 from fs1.osfs import OSFS
 from fs1.s3fs import S3FS
@@ -46,6 +47,17 @@ def tempdir():
 
     finally:
         _close(tmpdir)
+
+
+@pytest.yield_fixture(scope='module')
+def temp_file():
+    tmp = tempfile.NamedTemporaryFile()
+    
+    try:
+        yield tmp.name
+
+    finally:
+        os.remove(tmp.name)
 
 
 @contextmanager
@@ -101,6 +113,20 @@ def api(mgr_name, fs_name):
             yield api
 
 
+@pytest.yield_fixture(scope='module')
+def api1_module():
+
+    with prep_manager('mongo') as manager:
+
+        api = DataAPI(
+            username='My Name',
+            contact='my.email@example.com')
+
+        api.attach_manager(manager)
+
+        yield api
+
+
 @pytest.yield_fixture
 def api1(mgr_name):
 
@@ -131,6 +157,13 @@ def api2(mgr_name):
 
 @pytest.yield_fixture(scope='function')
 def local_auth():
+
+    with prep_filesystem('OSFS') as filesystem:
+        yield filesystem
+
+
+@pytest.yield_fixture(scope='module')
+def local_auth_module():
 
     with prep_filesystem('OSFS') as filesystem:
         yield filesystem

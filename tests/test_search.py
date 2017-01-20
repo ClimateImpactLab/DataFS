@@ -92,18 +92,29 @@ def test_cli_search(test_config, monkeypatch):
 
     assert res[0] == 'team2_archive2_var2'
 
-    down = r'\x1b[B' # + chr(27) + chr(91) + chr(65)
-    up = r'\x1b[A' # + chr(27) + chr(91) + chr(66)
+    # down = '\x1b' + chr(91) + chr(65) #'\x50' # + chr(27) + chr(91) + chr(65)
+    # up = '\x1b' + chr(91) + chr(66) # '\x48' # + chr(27) + chr(91) + chr(66)
 
-    # up = chr(945) + chr(72)
-    # down = chr(945) + chr(80)
-    enter = '\x1b' + chr(13)
+    # # up = chr(945) + chr(72)
+    # # down = chr(945) + chr(80)
+    # enter = '\x1b' + chr(13)
 
+    # result = runner.invoke(
+    #     cli,
+    #     prefix + ['search'],
+    #     # input='var2 team3' + enter
+    #     input='var2 team3 ' + down + down + down + up + enter
+    # )
+
+    # assert 'team3_archive2_var2' in result.output.split('\n')[-2], result.output
+
+
+    # Test the helper with the appropriate input stream
     result = runner.invoke(
         cli,
         prefix + ['search'],
-        # input='var2 team3' + enter
-        input='var2 team3 ' + down + down + down + up + enter
+        input='var2 team22' + chr(8) + ' archive2' + chr(27)
     )
 
-    assert 'team3_archive2_var2' in result.output.split('\n')[-2], result.output
+    assert result.exit_code == 0
+    assert 'team2_archive2_var2' in result.output.split('\n')[-2], result.output

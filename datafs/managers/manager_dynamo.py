@@ -60,12 +60,21 @@ class DynamoDBManager(BaseDataManager):
         """
         Returns a list of Archives in the table on Dynamo
         """
-        if len(self._table.scan(AttributesToGet=['_id'])['Items']) == 0:
+
+        response = self._table.scan()
+
+
+        if response['Count'] == 0:
             return []
         else:
-            res = [str(archive['_id']) for archive in self._table.scan(
-                AttributesToGet=['_id'])['Items']]
-            return res
+
+            data = []
+            while 'LastEvaluatedKey' in response:
+                response = self._table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+                for item in response['Items']:
+                    data.append(item['_id']) 
+
+        return data
 
     def _update(self, archive_name, version_metadata):
         '''

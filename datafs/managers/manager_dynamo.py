@@ -69,6 +69,9 @@ class DynamoDBManager(BaseDataManager):
         else:
 
             data = []
+            for item in response['Items']:
+                data.append(item['_id'])
+
             while 'LastEvaluatedKey' in response:
                 response = self._table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
                 for item in response['Items']:

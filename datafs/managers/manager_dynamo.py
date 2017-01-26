@@ -2,6 +2,7 @@
 import boto3
 
 from datafs.managers.manager import BaseDataManager
+from boto3.dynamodb.conditions import Attr
 
 
 class DynamoDBManager(BaseDataManager):
@@ -56,28 +57,27 @@ class DynamoDBManager(BaseDataManager):
 
     # Private methods
 
-    def _get_archive_names(self):
+    
+      
+    def _search(self, *args):
         """
-        Returns a list of Archives in the table on Dynamo
+        Returns a list of Archive id's in the table on Dynamo
         """
-
-        response = self._table.scan()
-
-
-        if response['Count'] == 0:
-            return []
-        else:
-
-            data = []
-            for item in response['Items']:
-                data.append(item['_id'])
-
-            while 'LastEvaluatedKey' in response:
-                response = self._table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
-                for item in response['Items']:
-                    data.append(item['_id']) 
-
-        return data
+        
+        kwargs = dict(ProjectionExpression='#id', ExpressionAttributeNames={"#id": "_id" })
+        
+        if len(args) > 0:
+            kwargs['FilterExpression'] = reduce(lambda x, y: x & y, [Attr('archive_metadata._TAGS').contains(arg) for arg in args])
+        
+        while True:
+            res = self._table.scan(**kwargs)
+            for r in res['Items']:
+                yield r['_id']
+            if 'LastEvaluatedKey' in res:
+                kwargs['ExclusiveStartKey'] = res['LastEvaluatedKey']  
+            else:
+                break
+        
 
     def _update(self, archive_name, version_metadata):
         '''
@@ -320,7 +320,7 @@ class DynamoDBManager(BaseDataManager):
         Coerce underscores to dashes
         '''
 
-        if archive_name in self._get_archive_names():
+        if archive_name in list(self._search()):
 
             raise KeyError(
                 "{} already exists. Use get_archive() to view".format(

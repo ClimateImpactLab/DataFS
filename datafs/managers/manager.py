@@ -256,13 +256,6 @@ class BaseDataManager(object):
         except KeyError:
             raise KeyError('Archive "{}" not found'.format(archive_name))
 
-    def get_archive_names(self):
-        '''
-        Returns a list of DataArchive names
-
-        '''
-        return self._get_archive_names()
-
     def get_metadata(self, archive_name):
         '''
         Retrieve the metadata for a given archive
@@ -324,6 +317,25 @@ class BaseDataManager(object):
         '''
 
         return time.strftime(cls.TimestampFormat, time.gmtime())
+
+
+    def search(self, *search_terms):
+        '''
+
+        Parameters
+        ----------
+        search_terms: str
+            strings  of terms to search for 
+
+
+        >>> api.manager.search('annual', 'county', 'tas')
+        >>> [ {u'_id': u'ACP_climate_smme_tas_county_daily_rcp85_pattern43_19810101-21001231.nc'},
+        ... {u'_id': u'ACP_climate_smme_tas_county_mon_rcp85_pattern1_198101-210012.nc'},
+        ... {u'_id': u'ACP_climate_smme_tas_county_daily_rcp45_access1-0_21000101-22001231.nc'},
+        ... {u'_id': u'ACP_climate_smme_tas_county_mon_rcp26_mri-cgcm3_198101-210012.nc'}]
+        '''
+
+        return self._search(*search_terms)
 
     # Private methods (to be implemented by subclasses of DataManager)
 
@@ -404,3 +416,10 @@ class BaseDataManager(object):
     def _get_version_history(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _search(self, search_terms):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+
+

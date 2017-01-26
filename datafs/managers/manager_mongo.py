@@ -273,7 +273,7 @@ class MongoDBManager(BaseDataManager):
 
         return self.collection.remove({'_id': archive_name})
 
-    def _get_archive_names(self):
+    def _search(self):
 
         res = self.collection.find({}, {"_id": 1})
 

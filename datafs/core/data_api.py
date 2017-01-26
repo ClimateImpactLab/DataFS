@@ -175,7 +175,7 @@ class DataAPI(object):
 
     def list(self, pattern=None, engine='path'):
 
-        archives = self.manager.get_archive_names()
+        archives = self.manager.search()
 
         if not pattern:
             return archives
@@ -194,15 +194,9 @@ class DataAPI(object):
                 'search engine "{}" not recognized. '.format(engine) +
                 'choose "str", "fn", or "regex"')
 
-    def search(self, query='*', interactive=False):
+    def search(self, *query):
 
-        if not interactive:
-            return datafs.utils.search.search(query, api=self, limit=None)
-
-        archive_name = datafs.utils.search.interactvie_search(api=api, limit=None)
-
-        if archive_name:
-            return archive_name
+        return self.manager.search(query)
 
 
     @classmethod

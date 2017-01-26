@@ -59,11 +59,11 @@ class DynamoDBManager(BaseDataManager):
 
     
       
-    def _search(self, *args):
+    def _search(self, args):
         """
         Returns a list of Archive id's in the table on Dynamo
         """
-        
+
         kwargs = dict(ProjectionExpression='#id', ExpressionAttributeNames={"#id": "_id" })
         
         if len(args) > 0:

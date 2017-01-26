@@ -352,6 +352,9 @@ def versions(ctx, archive_name):
 
 
 @cli.command()
+@click.option('--prefix', 
+    default='', 
+    help='filter archives based on initial character pattern')
 @click.option(
     '--pattern',
     default=None,
@@ -361,23 +364,27 @@ def versions(ctx, archive_name):
     default='path',
     help='comparison engine: str/path/regex (default path)')
 @click.pass_context
-def list(ctx, pattern, engine):
+def filter(ctx, prefix, pattern, engine):
     _generate_api(ctx)
 
-    matches = ctx.obj.api.list(pattern, engine)
-
-    if len(matches) > 0:
-        click.echo(' '.join(matches))
+    # want to achieve behavior like click.echo(' '.join(matches))
+    
+    for i, match in enumerate(ctx.obj.api.filter(prefix, pattern, engine)):
+        # don't print newline as end character
+        if i > 0:
+            click.echo(match)
+            #print('')
 
 
 @cli.command()
+@click.argument('query_tags', nargs=-1)
 @click.pass_context
-def search(ctx):
+def search(ctx, query_tags):
     _generate_api(ctx)
 
-    match = interactive_search(api=ctx.obj.api)
-
-    click.echo(match)
+    for i, match in enumerate(ctx.obj.api.search(*query_tags)):
+        if i > 0:
+            click.echo(match)
 
 
 @cli.command()

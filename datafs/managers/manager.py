@@ -319,23 +319,18 @@ class BaseDataManager(object):
         return time.strftime(cls.TimestampFormat, time.gmtime())
 
 
-    def search(self, *search_terms):
+    def search(self, search_terms):
         '''
 
         Parameters
         ----------
-        search_terms: str
-            strings  of terms to search for 
+        search_terms: tuple
+            strings of terms to search for 
 
 
-        >>> api.manager.search('annual', 'county', 'tas')
-        >>> [ {u'_id': u'ACP_climate_smme_tas_county_daily_rcp85_pattern43_19810101-21001231.nc'},
-        ... {u'_id': u'ACP_climate_smme_tas_county_mon_rcp85_pattern1_198101-210012.nc'},
-        ... {u'_id': u'ACP_climate_smme_tas_county_daily_rcp45_access1-0_21000101-22001231.nc'},
-        ... {u'_id': u'ACP_climate_smme_tas_county_mon_rcp26_mri-cgcm3_198101-210012.nc'}]
         '''
 
-        return self._search(*search_terms)
+        return self._search(search_terms)
 
     # Private methods (to be implemented by subclasses of DataManager)
 

@@ -45,33 +45,33 @@ def test_cli_search(test_config, monkeypatch):
 
     api = get_api(profile=profile, config_file=config_file)
 
-    api.create('team1_archive1_var1')
-    api.create('team1_archive2_var1')
-    api.create('team1_archive3_var1')
-    api.create('team2_archive1_var1')
-    api.create('team2_archive2_var1')
-    api.create('team2_archive3_var1')
-    api.create('team3_archive1_var1')
-    api.create('team3_archive2_var1')
-    api.create('team3_archive3_var1')
-    api.create('team1_archive1_var2')
-    api.create('team1_archive2_var2')
-    api.create('team1_archive3_var2')
-    api.create('team2_archive1_var2')
-    api.create('team2_archive2_var2')
-    api.create('team2_archive3_var2')
-    api.create('team3_archive1_var2')
-    api.create('team3_archive2_var2')
-    api.create('team3_archive3_var2')
-    api.create('team1_archive1_var3')
-    api.create('team1_archive2_var3')
-    api.create('team1_archive3_var3')
-    api.create('team2_archive1_var3')
-    api.create('team2_archive2_var3')
-    api.create('team2_archive3_var3')
-    api.create('team3_archive1_var3')
-    api.create('team3_archive2_var3')
-    api.create('team3_archive3_var3')
+    api.create('team1_archive1_var1', metadata=dict(_TAGS='team1'))
+    api.create('team1_archive2_var1', metadata=dict(_TAGS='team1'))
+    api.create('team1_archive3_var1', metadata=dict(_TAGS='team1'))
+    api.create('team2_archive1_var1', metadata=dict(_TAGS='team2'))
+    api.create('team2_archive2_var1', metadata=dict(_TAGS='team2'))
+    api.create('team2_archive3_var1', metadata=dict(_TAGS='team2'))
+    api.create('team3_archive1_var1', metadata=dict(_TAGS='team3'))
+    api.create('team3_archive2_var1', metadata=dict(_TAGS='team3'))
+    api.create('team3_archive3_var1', metadata=dict(_TAGS='team3'))
+    api.create('team1_archive1_var2', metadata=dict(_TAGS='team1'))
+    api.create('team1_archive2_var2', metadata=dict(_TAGS='team1'))
+    api.create('team1_archive3_var2', metadata=dict(_TAGS='team1'))
+    api.create('team2_archive1_var2', metadata=dict(_TAGS='team2'))
+    api.create('team2_archive2_var2', metadata=dict(_TAGS='team2'))
+    api.create('team2_archive3_var2', metadata=dict(_TAGS='team2'))
+    api.create('team3_archive1_var2', metadata=dict(_TAGS='team3'))
+    api.create('team3_archive2_var2', metadata=dict(_TAGS='team3'))
+    api.create('team3_archive3_var2', metadata=dict(_TAGS='team3'))
+    api.create('team1_archive1_var3', metadata=dict(_TAGS='team1'))
+    api.create('team1_archive2_var3', metadata=dict(_TAGS='team1'))
+    api.create('team1_archive3_var3', metadata=dict(_TAGS='team1'))
+    api.create('team2_archive1_var3', metadata=dict(_TAGS='team2'))
+    api.create('team2_archive2_var3', metadata=dict(_TAGS='team2'))
+    api.create('team2_archive3_var3', metadata=dict(_TAGS='team2'))
+    api.create('team3_archive1_var3', metadata=dict(_TAGS='team3'))
+    api.create('team3_archive2_var3', metadata=dict(_TAGS='team3'))
+    api.create('team3_archive3_var3', metadata=dict(_TAGS='team3'))
 
 
     runner = CliRunner()
@@ -80,15 +80,15 @@ def test_cli_search(test_config, monkeypatch):
     # Test the helper with the appropriate input stream
     result = runner.invoke(
         cli,
-        prefix + ['search'],
-        input='var2 team2 archive2'
+        prefix + ['search', '--query'],
+        input='team2'
     )
 
     assert result.exit_code == 0
     assert 'team2_archive2_var2' in result.output.split('\n')[-2], result.output
 
 
-    res = api.search('var2 team2 archive2')
+    res = api.search('team2')
 
     assert res[0] == 'team2_archive2_var2'
 

@@ -173,21 +173,53 @@ class DataAPI(object):
             default_version=default_version,
             **res)
 
-    def list(self, pattern=None, engine='path'):
+    def filter(self, prefix='', pattern=None, engine='path'):
+        '''
+
+        Performs a filtered search on entire universe of archives according to pattern or prefix. 
+
+        Parameters
+        ----------
+        prefix: str
+            string matching beginning characters of the archive or set of archives you are filtering
+
+        pattern: str
+            string matching the characters within the archive or set of arhives you are filtering on
+
+        engine: str 
+            string of value 'str', 'path', or 'regex'. That indicates the type of pattern you are filtering on
+
+        
+        Returns
+        -------
+        generator
+
+
+
+        '''
 
         archives = self.manager.search()
 
         if not pattern:
-            return archives
+            for archive in archives:
+                yield archive
 
         if engine == 'str':
-            return [x for x in archives if pattern in x]
+            for arch in archives:
+                if pattern in arch and arch.startswith(prefix):
+                    yield arch
 
         elif engine == 'path':
-            return fnmatch.filter(archives, pattern)
+            # Change to generator version of fnmatch.filter
+            
+            for arch in archives:
+                if fnmatch.fnmatch(arch, pattern) and arch.startswith(prefix):
+                    yield arch
 
         elif engine == 'regex':
-            return [arch for arch in archives if re.search(pattern, arch)]
+            for arch in archives:
+                if re.search(pattern, arch) and arch.startswith(prefix):
+                    yield arch
 
         else:
             raise ValueError(
@@ -195,6 +227,20 @@ class DataAPI(object):
                 'choose "str", "fn", or "regex"')
 
     def search(self, *query):
+        '''
+        Current Specification as of v0.6.6
+        Search archives based on tags in the archive_metadata._TAGS field 
+
+
+        Parameters
+        ---------
+        query: str
+            tags to search on. If multiple terms, provided in comma delimited string format
+
+        
+        
+
+        '''
 
         return self.manager.search(query)
 

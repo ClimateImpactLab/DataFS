@@ -23,7 +23,7 @@ def prep_index(indexdir, api=None, profile=None, config_file=None):
     if api is None:
         api = get_api(profile=profile, config_file=config_file)
 
-    for archive in api.list():
+    for archive in api.filter():
         writer.add_document(
             title=unicode(archive),
             content=unicode(' '.join(

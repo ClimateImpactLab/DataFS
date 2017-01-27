@@ -319,7 +319,7 @@ class BaseDataManager(object):
         return time.strftime(cls.TimestampFormat, time.gmtime())
 
 
-    def search(self, search_terms):
+    def search(self, search_terms, begins_with=None):
         '''
 
         Parameters
@@ -330,7 +330,7 @@ class BaseDataManager(object):
 
         '''
 
-        return self._search(search_terms)
+        return self._search(search_terms, begins_with=begins_with)
 
     # Private methods (to be implemented by subclasses of DataManager)
 

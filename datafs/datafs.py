@@ -378,11 +378,12 @@ def filter(ctx, prefix, pattern, engine):
 
 @cli.command()
 @click.argument('query_tags', nargs=-1)
+@click.option('--prefix', default=None)
 @click.pass_context
-def search(ctx, query_tags):
+def search(ctx, query_tags, prefix=None):
     _generate_api(ctx)
 
-    for i, match in enumerate(ctx.obj.api.search(*query_tags)):
+    for i, match in enumerate(ctx.obj.api.search(prefix, *query_tags)):
         if i > 0:
             click.echo(match)
 

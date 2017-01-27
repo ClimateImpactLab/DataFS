@@ -56,7 +56,7 @@ def test_cli_search(test_config, monkeypatch):
     # Test the helper with the appropriate input stream
     result = runner.invoke(
         cli,
-        prefix + ['search', 'team2']
+        prefix + ['search', 'team2', 'var2', 'archive2']
     )
 
     assert result.exit_code == 0

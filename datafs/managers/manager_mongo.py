@@ -275,7 +275,14 @@ class MongoDBManager(BaseDataManager):
 
     def _search(self, search_terms, begins_with=None):
 
-        res = self.collection.find({'archive_metadata._TAGS': tag for tag in search_terms}, {"_id": 1})
+        if len(search_terms) == 0:
+            query = {}
+        elif len(search_terms) == 1:
+            query = {'archive_metadata._TAGS': {'$in':[search_terms[0]]}}
+        else:
+            query = {'$and': [{'archive_metadata._TAGS': {'$in':[tag]}} for tag in search_terms]}
+
+        res = self.collection.find(query, {"_id": 1})
 
         for r in res:
             if (not begins_with) or r.startswith(begins_with):

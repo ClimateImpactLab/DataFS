@@ -278,9 +278,10 @@ class MongoDBManager(BaseDataManager):
         if len(search_terms) == 0:
             query = {}
         elif len(search_terms) == 1:
-            query = {'archive_metadata._TAGS': {'$in':[search_terms[0]]}}
+            query = {'archive_metadata._TAGS': {'$in': [search_terms[0]]}}
         else:
-            query = {'$and': [{'archive_metadata._TAGS': {'$in':[tag]}} for tag in search_terms]}
+            query = {'$and': [{'archive_metadata._TAGS': {
+                '$in': [tag]}} for tag in search_terms]}
 
         res = self.collection.find(query, {"_id": 1})
 

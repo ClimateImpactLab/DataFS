@@ -351,9 +351,9 @@ def versions(ctx, archive_name):
 
 
 @cli.command()
-@click.option('--prefix', 
-    default='', 
-    help='filter archives based on initial character pattern')
+@click.option('--prefix',
+              default='',
+              help='filter archives based on initial character pattern')
 @click.option(
     '--pattern',
     default=None,
@@ -367,8 +367,10 @@ def filter(ctx, prefix, pattern, engine):
     _generate_api(ctx)
 
     # want to achieve behavior like click.echo(' '.join(matches))
-    
-    for i, match in enumerate(ctx.obj.api.filter(pattern, engine, prefix=prefix)):
+
+    for i, match in enumerate(
+            ctx.obj.api.filter(
+            pattern, engine, prefix=prefix)):
 
         click.echo(match)
 

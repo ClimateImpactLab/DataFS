@@ -318,14 +318,13 @@ class BaseDataManager(object):
 
         return time.strftime(cls.TimestampFormat, time.gmtime())
 
-
     def search(self, search_terms, begins_with=None):
         '''
 
         Parameters
         ----------
         search_terms: tuple
-            strings of terms to search for 
+            strings of terms to search for
 
 
         '''
@@ -415,6 +414,3 @@ class BaseDataManager(object):
     def _search(self, search_terms):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
-
-
-

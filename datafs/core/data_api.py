@@ -198,7 +198,7 @@ class DataAPI(object):
 
         '''
 
-        archives = self.manager.search()
+        archives = self.manager.search(tuple([]))
 
         if not pattern:
             for archive in archives:

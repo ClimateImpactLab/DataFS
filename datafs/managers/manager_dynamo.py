@@ -320,14 +320,20 @@ class DynamoDBManager(BaseDataManager):
         Coerce underscores to dashes
         '''
 
-        if archive_name in list(self._search()):
+        archive_exists = False
 
+        try:
+            res = self.get_archive(archive_name)
+            archive_exists = True
+        except KeyError:
+            pass
+
+        if archive_exists:
             raise KeyError(
                 "{} already exists. Use get_archive() to view".format(
                     archive_name))
 
-        else:
-            self._table.put_item(Item=metadata)
+        self._table.put_item(Item=metadata)
 
     def _create_if_not_exists(
             self,

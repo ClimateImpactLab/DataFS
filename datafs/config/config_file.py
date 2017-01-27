@@ -154,8 +154,8 @@ class ConfigFile(object):
 
             >>> from datafs import DataAPI
             >>> from datafs.managers.manager_mongo import MongoDBManager
-            >>> from fs1.osfs import OSFS
-            >>> from fs1.tempfs import TempFS
+            >>> from fs.osfs import OSFS
+            >>> from fs.tempfs import TempFS
             >>> import os
             >>> import tempfile
             >>> import shutil
@@ -248,7 +248,7 @@ class ConfigFile(object):
             ... """)
             >>>
             >>> import datafs
-            >>> from fs1.tempfs import TempFS
+            >>> from fs.tempfs import TempFS
             >>> api = datafs.get_api(profile='my-api', config_file=conf)
             >>>
             >>> cache = TempFS()

@@ -4,7 +4,6 @@ from datafs.services.service import DataService
 from datafs.core.data_archive import DataArchive
 from datafs._compat import open_filelike
 
-import datafs.utils.search
 
 import fs1.path
 
@@ -173,7 +172,7 @@ class DataAPI(object):
             default_version=default_version,
             **res)
 
-    def filter(self, prefix='', pattern=None, engine='path'):
+    def filter(self, pattern=None, engine='path', prefix=None):
         '''
 
         Performs a filtered search on entire universe of archives according to pattern or prefix. 
@@ -198,7 +197,7 @@ class DataAPI(object):
 
         '''
 
-        archives = self.manager.search(tuple([]))
+        archives = self.manager.search(tuple([]), begins_with=prefix)
 
         if not pattern:
             for archive in archives:
@@ -206,19 +205,19 @@ class DataAPI(object):
 
         if engine == 'str':
             for arch in archives:
-                if pattern in arch and arch.startswith(prefix):
+                if pattern in arch:
                     yield arch
 
         elif engine == 'path':
             # Change to generator version of fnmatch.filter
             
             for arch in archives:
-                if fnmatch.fnmatch(arch, pattern) and arch.startswith(prefix):
+                if fnmatch.fnmatch(arch, pattern):
                     yield arch
 
         elif engine == 'regex':
             for arch in archives:
-                if re.search(pattern, arch) and arch.startswith(prefix):
+                if re.search(pattern, arch):
                     yield arch
 
         else:
@@ -226,7 +225,7 @@ class DataAPI(object):
                 'search engine "{}" not recognized. '.format(engine) +
                 'choose "str", "fn", or "regex"')
 
-    def search(self, *query):
+    def search(self, *query, **kwargs):
         '''
         Current Specification as of v0.6.6
         Search archives based on tags in the archive_metadata._TAGS field 
@@ -234,15 +233,17 @@ class DataAPI(object):
 
         Parameters
         ---------
-        query: str
+        *query: str
             tags to search on. If multiple terms, provided in comma delimited string format
 
-        
-        
+        prefix : str
+            start of archive name. Providing a start string improves search speed.
 
         '''
 
-        return self.manager.search(query)
+        prefix=kwargs.get('prefix')
+
+        return self.manager.search(query, begins_with=prefix)
 
 
     @classmethod

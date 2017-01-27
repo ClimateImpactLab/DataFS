@@ -6,7 +6,6 @@ from datafs.config.helpers import (
     get_api,
     _parse_requirement,
     _interactive_config)
-from datafs.utils.search import interactive_search
 from datafs._compat import u
 import click
 import sys
@@ -369,22 +368,23 @@ def filter(ctx, prefix, pattern, engine):
 
     # want to achieve behavior like click.echo(' '.join(matches))
     
-    for i, match in enumerate(ctx.obj.api.filter(prefix, pattern, engine)):
-        # don't print newline as end character
-        if i > 0:
-            click.echo(match)
-            #print(' ')
+    for i, match in enumerate(ctx.obj.api.filter(pattern, engine, prefix=prefix)):
+
+        click.echo(match)
 
 
 @cli.command()
 @click.argument('query_tags', nargs=-1)
+@click.option('--prefix', default=None)
 @click.pass_context
-def search(ctx, query_tags):
+def search(ctx, query_tags, prefix=None):
     _generate_api(ctx)
 
-    for i, match in enumerate(ctx.obj.api.search(*query_tags)):
-        if i > 0:
-            click.echo(match)
+    assert isinstance(query_tags, tuple)
+
+    for i, match in enumerate(ctx.obj.api.search(*query_tags, prefix=prefix)):
+
+        click.echo(match)
 
 
 @cli.command()

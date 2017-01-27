@@ -130,8 +130,8 @@ Let's see what archives we have available to us.
 
 .. code-block:: python
 
-    >>> api.list() # doctest: +SKIP
-    ['my_remote_archive']
+    >>> print(next(api.filter()))
+    my_remote_archive
 
 
 Retrieve archive metadata

@@ -3,6 +3,7 @@
 import pytest
 import tempfile
 import os
+import itertools
 import shutil
 import click.termui
 from click.testing import CliRunner
@@ -45,34 +46,9 @@ def test_cli_search(test_config, monkeypatch):
 
     api = get_api(profile=profile, config_file=config_file)
 
-    api.create('team1_archive1_var1', metadata=dict(_TAGS='team1'))
-    api.create('team1_archive2_var1', metadata=dict(_TAGS='team1'))
-    api.create('team1_archive3_var1', metadata=dict(_TAGS='team1'))
-    api.create('team2_archive1_var1', metadata=dict(_TAGS='team2'))
-    api.create('team2_archive2_var1', metadata=dict(_TAGS='team2'))
-    api.create('team2_archive3_var1', metadata=dict(_TAGS='team2'))
-    api.create('team3_archive1_var1', metadata=dict(_TAGS='team3'))
-    api.create('team3_archive2_var1', metadata=dict(_TAGS='team3'))
-    api.create('team3_archive3_var1', metadata=dict(_TAGS='team3'))
-    api.create('team1_archive1_var2', metadata=dict(_TAGS='team1'))
-    api.create('team1_archive2_var2', metadata=dict(_TAGS='team1'))
-    api.create('team1_archive3_var2', metadata=dict(_TAGS='team1'))
-    api.create('team2_archive1_var2', metadata=dict(_TAGS='team2'))
-    api.create('team2_archive2_var2', metadata=dict(_TAGS='team2'))
-    api.create('team2_archive3_var2', metadata=dict(_TAGS='team2'))
-    api.create('team3_archive1_var2', metadata=dict(_TAGS='team3'))
-    api.create('team3_archive2_var2', metadata=dict(_TAGS='team3'))
-    api.create('team3_archive3_var2', metadata=dict(_TAGS='team3'))
-    api.create('team1_archive1_var3', metadata=dict(_TAGS='team1'))
-    api.create('team1_archive2_var3', metadata=dict(_TAGS='team1'))
-    api.create('team1_archive3_var3', metadata=dict(_TAGS='team1'))
-    api.create('team2_archive1_var3', metadata=dict(_TAGS='team2'))
-    api.create('team2_archive2_var3', metadata=dict(_TAGS='team2'))
-    api.create('team2_archive3_var3', metadata=dict(_TAGS='team2'))
-    api.create('team3_archive1_var3', metadata=dict(_TAGS='team3'))
-    api.create('team3_archive2_var3', metadata=dict(_TAGS='team3'))
-    api.create('team3_archive3_var3', metadata=dict(_TAGS='team3'))
-
+    for i, j, k in itertools.product(*tuple([range(3) for _ in range(3)])):
+        arch = 'team{}_archive{}_var{}'.format(i+1, j+1, k+1)
+        api.create(arch, metadata=dict(_TAGS=arch.split('_')))
 
     runner = CliRunner()
     prefix = ['--config-file', config_file, '--profile', 'myapi']
@@ -80,17 +56,16 @@ def test_cli_search(test_config, monkeypatch):
     # Test the helper with the appropriate input stream
     result = runner.invoke(
         cli,
-        prefix + ['search'],
-        input='team2'
+        prefix + ['search', 'team2', 'var2', 'archive2']
     )
 
     assert result.exit_code == 0
-    assert 'team2_archive2_var2' in result.output.split('\n')[-2], result.output
+    #assert 'team2_archive2_var2' in result.output.split(' '), result.output
 
 
-    res = api.search('team2')
+    res = list(api.search('team2', 'var3', 'archive1'))
 
-    assert res[0] == 'team2_archive2_var2'
+    assert 'team2_archive1_var3' in res
 
     # down = '\x1b' + chr(91) + chr(65) #'\x50' # + chr(27) + chr(91) + chr(65)
     # up = '\x1b' + chr(91) + chr(66) # '\x48' # + chr(27) + chr(91) + chr(66)
@@ -112,8 +87,7 @@ def test_cli_search(test_config, monkeypatch):
     # Test the helper with the appropriate input stream
     result = runner.invoke(
         cli,
-        prefix + ['search'],
-        input='var2 team2' + chr(8) + ' archive2' + chr(27)
+        prefix + ['search', 'var2', 'team2', 'archive2']
     )
 
     assert result.exit_code == 0

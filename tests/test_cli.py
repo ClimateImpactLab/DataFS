@@ -193,7 +193,7 @@ def test_cli_local(test_config):
     assert result.exit_code == 0
     assert ['my_first_archive'] == [result.output.strip()]
 
-    assert len(result.output.strip()) == 1
+    assert len(result.output.strip().split('\n')) == 1
     # test the actual creation of the object from the api side
     assert len(list(api2.filter())) == 1
     archive = api2.get_archive('my_first_archive')

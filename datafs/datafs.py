@@ -369,11 +369,12 @@ def filter(ctx, prefix, pattern, engine):
 
     # want to achieve behavior like click.echo(' '.join(matches))
     
-    for i, match in enumerate(ctx.obj.api.filter(prefix, pattern, engine)):
-        # don't print newline as end character
+    for i, match in enumerate(ctx.obj.api.filter(pattern, engine, prefix=prefix)):
+
         if i > 0:
-            click.echo(match)
-            #print('')
+            click.echo(' ', nl=False)
+
+        click.echo(match, nl=False)
 
 
 @cli.command()
@@ -384,8 +385,11 @@ def search(ctx, query_tags, prefix=None):
     _generate_api(ctx)
 
     for i, match in enumerate(ctx.obj.api.search(prefix, *query_tags)):
+
         if i > 0:
-            click.echo(match)
+            click.echo(' ', nl=False)
+
+        click.echo(match, nl=False)
 
 
 @cli.command()

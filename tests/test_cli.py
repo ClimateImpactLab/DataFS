@@ -189,13 +189,13 @@ def test_cli_local(test_config):
     res = 'created versioned archive <DataArchive local://my_first_archive>'
     assert result.output.strip() == res
 
-    result = runner.invoke(cli, prefix + ['list'])
+    result = runner.invoke(cli, prefix + ['filter'])
     assert result.exit_code == 0
     assert ['my_first_archive'] == [
         a for a in result.output.strip().split(' ') if len(a) > 0]
 
     # test the actual creation of the object from the api side
-    assert len(api2.list()) == 1
+    assert len(list(api2.filter())) == 1
     archive = api2.get_archive('my_first_archive')
     assert archive.archive_name == 'my_first_archive'
 
@@ -251,13 +251,13 @@ def test_cli_local(test_config):
         assert intended_output == result.output.strip()
 
     # this is testing the feed through on the api
-    with api2.get_archive(api2.list()[0]).open('r') as f:
+    with api2.get_archive(list(api2.filter())[0]).open('r') as f:
         data = f.read()
         assert data == 'Hoo Yah! Stay Stoked!'
 
     # lets check to make sure our metadata update also passed through
     assert 'Surfers Journal' == api2.get_archive(
-        api2.list()[0]).get_metadata()['source']
+        list(api2.filter())[0]).get_metadata()['source']
 
     # test to assert metadata update
     # test to assert file content change
@@ -318,11 +318,11 @@ def test_cli_local(test_config):
     # teardown
     result = runner.invoke(cli, prefix + ['delete', 'my_first_archive'])
 
-    result = runner.invoke(cli, prefix + ['list'])
+    result = runner.invoke(cli, prefix + ['filter'])
     assert result.exit_code == 0
     assert result.output == ''
 
-    assert len(api2.list()) == 0
+    assert len(list(api2.filter())) == 0
 
 
 def test_cli_unversioned(test_config):
@@ -345,13 +345,13 @@ def test_cli_unversioned(test_config):
     res = 'created archive <DataArchive local://unversioned>'
     assert result.output.strip() == res
 
-    result = runner.invoke(cli, prefix + ['list'])
+    result = runner.invoke(cli, prefix + ['filter'])
     assert result.exit_code == 0
     assert ['unversioned'] == [
         a for a in result.output.strip().split(' ') if len(a) > 0]
 
     # test the actual creation of the object from the api side
-    assert len(api2.list()) == 1
+    assert len(list(api2.filter())) == 1
     archive = api2.get_archive('unversioned')
     assert archive.archive_name == 'unversioned'
 
@@ -422,11 +422,11 @@ def test_cli_unversioned(test_config):
     # teardown
     result = runner.invoke(cli, prefix + ['delete', 'unversioned'])
 
-    result = runner.invoke(cli, prefix + ['list'])
+    result = runner.invoke(cli, prefix + ['filter'])
     assert result.exit_code == 0
     assert result.output == ''
 
-    assert len(api2.list()) == 0
+    assert len(list(api2.filter())) == 0
 
 
 def test_specified_requirements(preloaded_config):

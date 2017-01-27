@@ -373,7 +373,7 @@ def filter(ctx, prefix, pattern, engine):
         # don't print newline as end character
         if i > 0:
             click.echo(match)
-            #print('')
+            #print(' ')
 
 
 @cli.command()

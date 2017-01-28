@@ -13,7 +13,7 @@ Set up the workspace
 
     >>> from datafs import DataAPI
     >>> from datafs.managers.manager_mongo import MongoDBManager
-    >>> from fs.s3fs import S3FS
+    >>> from fs1.s3fs import S3FS
 
 Initialize the API
 

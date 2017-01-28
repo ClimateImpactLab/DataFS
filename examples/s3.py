@@ -27,7 +27,7 @@ We need a few things for this example:
 
     >>> from datafs.managers.manager_mongo import MongoDBManager
     >>> from datafs import DataAPI
-    >>> from fs.tempfs import TempFS
+    >>> from fs1.tempfs import TempFS
     >>> import os
     >>> import tempfile
     >>> import shutil
@@ -44,7 +44,7 @@ This time, we'll import PyFilesystem's S3 Filesystem abstraction:
 
 .. code-block:: python
 
-    >>> from fs.s3fs import S3FS
+    >>> from fs1.s3fs import S3FS
 
 Additionally, you'll need MongoDB and pymongo installed
 and a MongoDB instance running.

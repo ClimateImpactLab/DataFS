@@ -8,8 +8,8 @@ import moto
 import itertools
 import os
 
-from fs.osfs import OSFS
-from fs.s3fs import S3FS
+from fs1.osfs import OSFS
+from fs1.s3fs import S3FS
 
 from datafs import DataAPI
 from datafs._compat import string_types

@@ -1,7 +1,7 @@
 
 from datafs import DataAPI
 import importlib
-import fs
+import fs1
 import pkgutil
 
 
@@ -152,7 +152,7 @@ class APIConstructor(object):
             >>> tmp = APIConstructor._generate_service(
             ...     {'service': 'TempFS'})
             ...
-            >>> from fs.tempfs import TempFS
+            >>> from fs1.tempfs import TempFS
             >>> assert isinstance(tmp, TempFS)
             >>> import os
             >>> assert os.path.isdir(tmp.getsyspath('/'))
@@ -171,7 +171,7 @@ class APIConstructor(object):
             ...         'args': [tempdir]
             ...     })
             ...
-            >>> from fs.osfs import OSFS
+            >>> from fs1.osfs import OSFS
             >>> assert isinstance(local, OSFS)
             >>> import os
             >>> assert os.path.isdir(local.getsyspath('/'))
@@ -196,7 +196,7 @@ class APIConstructor(object):
             ...         }
             ...     })
             ...
-            >>> from fs.s3fs import S3FS
+            >>> from fs1.s3fs import S3FS
             >>> assert isinstance(s3, S3FS)
             >>> m.stop()
 
@@ -204,14 +204,14 @@ class APIConstructor(object):
 
         filesystems = []
 
-        for importer, modname, ispkg in pkgutil.iter_modules(fs.__path__):
+        for importer, modname, ispkg in pkgutil.iter_modules(fs1.__path__):
             if modname.endswith('fs'):
                 filesystems.append(modname)
 
         service_mod_name = service_config['service'].lower()
 
         assert_msg = 'Filesystem "{}" not found in pyFilesystem {}'.format(
-            service_mod_name, fs.__version__)
+            service_mod_name, fs1.__version__)
 
         assert service_mod_name in filesystems, assert_msg
 

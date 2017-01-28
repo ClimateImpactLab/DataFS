@@ -5,7 +5,7 @@ from datafs.core.data_archive import DataArchive
 from datafs._compat import open_filelike
 
 
-import fs.path
+import fs1.path
 
 import hashlib
 import fnmatch
@@ -301,7 +301,7 @@ class DataAPI(object):
 
         '''
 
-        return fs.path.join(*tuple(archive_name.split('_')))
+        return fs1.path.join(*tuple(archive_name.split('_')))
 
     def delete_archive(self, archive_name):
         '''

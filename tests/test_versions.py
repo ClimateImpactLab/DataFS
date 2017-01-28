@@ -1,6 +1,6 @@
 
 from datafs._compat import u
-from fs.errors import (ResourceNotFoundError, NoMetaError)
+from fs1.errors import (ResourceNotFoundError, NoMetaError)
 import pytest
 
 

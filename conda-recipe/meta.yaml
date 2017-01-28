@@ -4,8 +4,8 @@ package:
   version: "0.6.6"
 
 source:
-  git_rev: 2.2.2
-  git_url: https://github.com/postgis/postgis.git
+  git_rev: v0.6.6
+  git_url: https://github.com/ClimateImpactLab/DataFS.git
 
 #  patches:
    # List any patch files here
@@ -35,7 +35,6 @@ requirements:
     - click >=6.0
     - pyyaml >=3.0
     - fs1 >=0.6
-    - whoosh >=2.6
 
   run:
     - python
@@ -43,7 +42,6 @@ requirements:
     - click >=6.0
     - pyyaml >=3.0
     - fs1 >=0.6
-    - whoosh >=2.6
 
 test:
   # Python imports
@@ -81,7 +79,7 @@ test:
     # - nose
 
 about:
-  home: https://github.com/ClimateImpactLab/datafs
+  home: https://github.com/ClimateImpactLab/DataFS
   license: MIT License
   summary: "DataFS is an abstraction layer for data storage systems. It manages file versions and metadata using a json-like storage system like AWS's DynamoDB and relies on PyFilesystem to abstract file storage, allowing you to store files locally and on the cloud in a seamless interface."
   license_family: MIT

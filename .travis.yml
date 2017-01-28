@@ -10,25 +10,24 @@ env:
   matrix:
     - DATAFS_TEST_ENV=basic
     - DATAFS_TEST_ENV=xarray
-    - DATAFS_TEST_ENV=conda
+    - DATAFS_TEST_ENV=conda_deploy
 
 matrix:
   allow_failures:
     - python: pypy
       env: DATAFS_TEST_ENV=xarray
     - python: pypy
-      env: DATAFS_TEST_ENV=conda
+      env: DATAFS_TEST_ENV=conda_deploy
 
 
 install:
-  - if [[ "$DATAFS_TEST_ENV" == "xarray" ]] || [[ "$DATAFS_TEST_ENV" == "conda" ]]; then
+  - if [[ "$DATAFS_TEST_ENV" == "xarray" ]] || [[ "$DATAFS_TEST_ENV" == "conda_deploy" ]]; then
       if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
           wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
         else
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
         fi;
       bash miniconda.sh -b -p $HOME/miniconda;
-      export PATH="$HOME/miniconda/bin:$PATH";
       export PATH="$HOME/miniconda2/bin:$PATH";
       hash -r;
       conda update --yes -q conda;
@@ -39,7 +38,7 @@ install:
       conda install -q h5py netCDF4 xarray dask numpy scipy pandas h5py hdf5 numba blaze scipy bottleneck dask;
     fi
 
-  - if [[ "$DATAFS_TEST_ENV" == "conda" ]]; then
+  - if [[ "$DATAFS_TEST_ENV" == "conda_deploy" ]]; then
       conda update --yes -q conda;
       conda update --yes -q conda-build;
       conda build conda-recipe;
@@ -57,9 +56,7 @@ install:
     fi
 
 script:
-  - export PATH=$HOME/miniconda/bin:$PATH
   - export PATH=$HOME/miniconda2/bin:$PATH
-  - export PATH=$HOME/miniconda3/bin:$PATH
   - python -m pytest ./datafs ./tests ./docs --cov=datafs --cov=examples --cov=docs --doctest-modules --cov-report term-missing
 
 services:

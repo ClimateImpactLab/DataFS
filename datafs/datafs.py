@@ -6,7 +6,6 @@ from datafs.config.helpers import (
     get_api,
     _parse_requirement,
     _interactive_config)
-from datafs.utils.search import interactive_search
 from datafs._compat import u
 import click
 import sys
@@ -352,6 +351,9 @@ def versions(ctx, archive_name):
 
 
 @cli.command()
+@click.option('--prefix',
+              default='',
+              help='filter archives based on initial character pattern')
 @click.option(
     '--pattern',
     default=None,
@@ -361,23 +363,30 @@ def versions(ctx, archive_name):
     default='path',
     help='comparison engine: str/path/regex (default path)')
 @click.pass_context
-def list(ctx, pattern, engine):
+def filter(ctx, prefix, pattern, engine):
     _generate_api(ctx)
 
-    matches = ctx.obj.api.list(pattern, engine)
+    # want to achieve behavior like click.echo(' '.join(matches))
 
-    if len(matches) > 0:
-        click.echo(' '.join(matches))
+    for i, match in enumerate(
+            ctx.obj.api.filter(
+            pattern, engine, prefix=prefix)):
+
+        click.echo(match)
 
 
 @cli.command()
+@click.argument('query_tags', nargs=-1)
+@click.option('--prefix', default=None)
 @click.pass_context
-def search(ctx):
+def search(ctx, query_tags, prefix=None):
     _generate_api(ctx)
 
-    match = interactive_search(api=ctx.obj.api)
+    assert isinstance(query_tags, tuple)
 
-    click.echo(match)
+    for i, match in enumerate(ctx.obj.api.search(*query_tags, prefix=prefix)):
+
+        click.echo(match)
 
 
 @cli.command()

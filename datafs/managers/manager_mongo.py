@@ -273,11 +273,21 @@ class MongoDBManager(BaseDataManager):
 
         return self.collection.remove({'_id': archive_name})
 
-    def _get_archive_names(self):
+    def _search(self, search_terms, begins_with=None):
 
-        res = self.collection.find({}, {"_id": 1})
+        if len(search_terms) == 0:
+            query = {}
+        elif len(search_terms) == 1:
+            query = {'archive_metadata._TAGS': {'$in': [search_terms[0]]}}
+        else:
+            query = {'$and': [{'archive_metadata._TAGS': {
+                '$in': [tag]}} for tag in search_terms]}
 
-        return [r['_id'] for r in res]
+        res = self.collection.find(query, {"_id": 1})
+
+        for r in res:
+            if (not begins_with) or r.startswith(begins_with):
+                yield r['_id']
 
     def _get_spec_documents(self, table_name):
         return [item for item in self.spec_collection.find({})]

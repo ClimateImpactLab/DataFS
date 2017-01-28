@@ -99,7 +99,6 @@ deploy:
   # Deploy to Anaconda.org
   - provider: script
     script: ./deploy_anaconda.sh
-    # on:
-    #   branch: master
-
     skip_cleanup: true
+    on:
+      branch: master

@@ -43,7 +43,7 @@ install:
       conda update --yes -q conda;
       conda update --yes -q conda-build;
       conda build conda-recipe;
-      conda install --use-local $PACKAGENAME;
+      conda install --use-local datafs;
 
     else
       python setup.py install;

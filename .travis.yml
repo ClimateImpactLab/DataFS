@@ -41,7 +41,7 @@ install:
 
   - if [[ "$DATAFS_TEST_ENV" == "conda" ]]; then
       conda build conda-recipe;
-      conda install --use-local datafs;
+      conda install --use-local $PACKAGENAME;
 
     else
       python setup.py install;

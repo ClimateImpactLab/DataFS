@@ -35,6 +35,7 @@ requirements:
     - click >=6.0
     - pyyaml >=3.0
     - fs1 >=0.6
+    - whoosh >=2.6
 
   run:
     - python
@@ -42,6 +43,7 @@ requirements:
     - click >=6.0
     - pyyaml >=3.0
     - fs1 >=0.6
+    - whoosh >=2.6
 
 test:
   # Python imports

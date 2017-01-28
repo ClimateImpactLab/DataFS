@@ -35,11 +35,13 @@ install:
       conda config --set always_yes yes --set changeps1 no --set anaconda_upload no;
       conda info -a;
 
-      conda create -q -n datafs python=$TRAVIS_PYTHON_VERSION pip requests conda-build jinja2 anaconda-client h5py netCDF4 xarray dask numpy scipy pandas h5py hdf5 numba blaze scipy bottleneck dask;
-      source activate datafs;
+      conda install -q python=$TRAVIS_PYTHON_VERSION pip requests conda-build jinja2 anaconda-client;
+      conda install -q h5py netCDF4 xarray dask numpy scipy pandas h5py hdf5 numba blaze scipy bottleneck dask;
     fi
 
   - if [[ "$DATAFS_TEST_ENV" == "conda" ]]; then
+      conda update --yes -q conda;
+      conda update --yes -q conda-build;
       conda build conda-recipe;
       conda install --use-local $PACKAGENAME;
 
@@ -58,12 +60,7 @@ script:
   - export PATH=$HOME/miniconda/bin:$PATH
   - export PATH=$HOME/miniconda2/bin:$PATH
   - export PATH=$HOME/miniconda3/bin:$PATH
-  - if [[ "$DATAFS_TEST_ENV" == "xarray" ]] || [[ "$DATAFS_TEST_ENV" == "conda" ]]; then
-    source activate datafs;
-    fi
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then python -m pytest ./datafs ./tests ./docs;
-    else python -m pytest ./datafs ./tests ./docs --cov=datafs --cov=examples --cov=docs --doctest-modules --cov-report term-missing;
-    fi
+  - python -m pytest ./datafs ./tests ./docs --cov=datafs --cov=examples --cov=docs --doctest-modules --cov-report term-missing
 
 services:
   - mongodb

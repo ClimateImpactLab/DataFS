@@ -35,7 +35,6 @@ requirements:
     - click >=6.0
     - pyyaml >=3.0
     - fs1 >=0.6
-    - whoosh >=2.6
 
   run:
     - python
@@ -43,7 +42,6 @@ requirements:
     - click >=6.0
     - pyyaml >=3.0
     - fs1 >=0.6
-    - whoosh >=2.6
 
 test:
   # Python imports
@@ -53,7 +51,6 @@ test:
     - datafs.core
     - datafs.managers
     - datafs.services
-    - datafs.utils
 
   commands:
     # You can put test commands to be run here.  Use this to test that the

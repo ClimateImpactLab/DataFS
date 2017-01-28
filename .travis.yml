@@ -16,6 +16,9 @@ matrix:
   allow_failures:
     - python: pypy
       env: DATAFS_TEST_ENV=xarray
+    - python: pypy
+      env: DATAFS_TEST_ENV=conda
+
 
 install:
   - if [[ "$DATAFS_TEST_ENV" == "xarray" ]] || [[ "$DATAFS_TEST_ENV" == "conda" ]]; then
@@ -28,8 +31,8 @@ install:
       export PATH="$HOME/miniconda/bin:$PATH";
       export PATH="$HOME/miniconda2/bin:$PATH";
       hash -r;
-      conda config --set always_yes yes --set changeps1 no --set anaconda_upload no;
       conda update --yes -q conda;
+      conda config --set always_yes yes --set changeps1 no --set anaconda_upload no;
       conda info -a;
 
       conda create -q -n datafs python=$TRAVIS_PYTHON_VERSION pip requests conda-build jinja2 anaconda-client h5py netCDF4 xarray dask numpy scipy pandas h5py hdf5 numba blaze scipy bottleneck dask;

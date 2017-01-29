@@ -48,7 +48,7 @@ def test_cli_search(test_config, monkeypatch):
 
     for i, j, k in itertools.product(*tuple([range(3) for _ in range(3)])):
         arch = 'team{}_archive{}_var{}'.format(i+1, j+1, k+1)
-        api.create(arch, metadata=dict(_TAGS=arch.split('_')))
+        api.create(arch, metadata=dict(description='archive_{} description'.format(j)), tags=[_ for _ in arch.split('_')])
 
     runner = CliRunner()
     prefix = ['--config-file', config_file, '--profile', 'myapi']

@@ -107,6 +107,7 @@ class DataAPI(object):
             versioned=True,
             raise_on_err=True,
             metadata=None,
+            tags=None,
             helper=False):
         '''
         Create a DataFS archive
@@ -154,6 +155,7 @@ class DataAPI(object):
             versioned=versioned,
             raise_on_err=raise_on_err,
             metadata=metadata,
+            tags=tags,
             user_config=self.user_config,
             helper=helper)
 

@@ -185,6 +185,7 @@ class BaseDataManager(object):
             raise_on_err=True,
             metadata=None,
             user_config=None,
+            tags=None,
             helper=False):
         '''
         Create a new data archive
@@ -202,6 +203,9 @@ class BaseDataManager(object):
         if user_config is None:
             user_config = {}
 
+        if tags is None:
+            tags = []
+
         check_requirements(
             to_populate=user_config,
             prompts=self.required_user_config,
@@ -218,7 +222,8 @@ class BaseDataManager(object):
             'archive_path': archive_path,
             'versioned': versioned,
             'version_history': [],
-            'archive_metadata': metadata
+            'archive_metadata': metadata,
+            'tags': tags
         }
         archive_metadata.update(user_config)
 
@@ -334,6 +339,30 @@ class BaseDataManager(object):
 
     # Private methods (to be implemented by subclasses of DataManager)
 
+    def get_tags(self,archive_name):
+        '''
+        Returns the list of tags associated with an archive
+        '''
+
+        return self._get_tags(archive_name)
+
+    def update_tags(self, archive_name, tags):
+        '''
+        Sets the tag-field in metadata manager
+
+        Parameters
+        ----------
+        archive_name: str
+            name of archive
+
+        tags: list
+            list of strings of archive tags
+
+        '''
+
+        return self._update_tags(archive_name, tags)
+
+
     def _update(self, archive_name, version_metadata):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
@@ -415,6 +444,15 @@ class BaseDataManager(object):
     def _search(self, search_terms):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_tags(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _update_tags(self, archive_name, tags):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
 
 
 

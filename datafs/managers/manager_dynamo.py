@@ -66,8 +66,11 @@ class DynamoDBManager(BaseDataManager):
 
         kwargs = dict(ProjectionExpression='#id', ExpressionAttributeNames={"#id": "_id" })
         
+
+        #this is not the intended future implementation
+        #We will search on a unique attr called 'tags' not associated with metadata
         if len(search_terms) > 0:
-            kwargs['FilterExpression'] = reduce(lambda x, y: x & y, [Attr('archive_metadata._TAGS').contains(arg) for arg in search_terms])
+            kwargs['FilterExpression'] = reduce(lambda x, y: x & y, [Attr('tags').contains(arg) for arg in search_terms])
         
         if begins_with:
             if 'FilterExpression' in kwargs:
@@ -423,3 +426,27 @@ class DynamoDBManager(BaseDataManager):
 
     def _get_spec_documents(self, table_name):
         return self._resource.Table(table_name + '.spec').scan()['Items']
+
+    def _get_tags(self, archive_name):
+
+        res = self._get_archive_listing(archive_name)
+
+        return res['tags']
+
+    def _update_tags(self, archive_name, tags):
+
+        updated_tag_list = []
+        current_tags = self._get_tags(archive_name)
+        for tag in tags:
+            if tag not in current_tags:
+                updated_tag_list.append(tag)
+
+
+        res = self._table.update_item(
+                Key={'_id': archive_name},
+                UpdateExpression="SET tags = :t",
+                ExpressionAttributeValues={':t': updated_tag_list},
+                ReturnValues='ALL_NEW')
+
+        return ('Updated tag list:',res)
+        

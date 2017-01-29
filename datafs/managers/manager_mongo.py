@@ -278,15 +278,36 @@ class MongoDBManager(BaseDataManager):
         if len(search_terms) == 0:
             query = {}
         elif len(search_terms) == 1:
-            query = {'archive_metadata._TAGS': {'$in':[search_terms[0]]}}
+            query = {'tags': {'$in':[search_terms[0]]}}
         else:
-            query = {'$and': [{'archive_metadata._TAGS': {'$in':[tag]}} for tag in search_terms]}
+            query = {'$and': [{'tags': {'$in':[tag]}} for tag in search_terms]}
 
         res = self.collection.find(query, {"_id": 1})
 
         for r in res:
             if (not begins_with) or r.startswith(begins_with):
                 yield r['_id']
+
+    def _get_tags(self, archive_name):
+
+        res = self._get_archive_listing(archive_name)
+
+        return res['tags']
+
+    def _update_tags(self, archive_name, tags):
+
+        updated_tag_list = []
+        current_tags = self._get_tags(archive_name)
+        for tag in tags:
+            if tag not in current_tags:
+                updated_tag_list.append(tag)
+
+
+        self.collection.update(
+            {"_id": archive_name},
+            {"$push": {"tags": updated_tag_list}})
+
+
 
     def _get_spec_documents(self, table_name):
         return [item for item in self.spec_collection.find({})]

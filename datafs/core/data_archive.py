@@ -49,7 +49,6 @@ class DataArchive(object):
 
         self._versioned = versioned
         self._default_version = default_version
-        self._tags = None
 
     def __repr__(self):
         return "<{} {}://{}>".format(self.__class__.__name__,
@@ -59,9 +58,6 @@ class DataArchive(object):
     def versioned(self):
         return self._versioned
     
-    @property
-    def tags(self):
-        return self._tags
 
     def get_latest_version(self):
 
@@ -202,7 +198,6 @@ class DataArchive(object):
             bumpversion=None,
             prerelease=None,
             dependencies=None,
-            tags=None,
             metadata=None):
         '''
         Enter a new version to a DataArchive
@@ -234,9 +229,6 @@ class DataArchive(object):
             'beta'. Either bumpversion or prerelease (or both) must be a
             non-None value. If the archive is not versioned, prerelease is
             ignored.
-
-        tags: list
-            List of strings. These will enable search. 
 
         metadata : dict
             Updates to archive metadata. Pass {key: None} to remove a key from
@@ -287,7 +279,6 @@ class DataArchive(object):
 
         self._update_manager(
             archive_metadata=metadata,
-            tags=tags,
             version_metadata=dict(
                 checksum=checksum,
                 algorithm=algorithm,
@@ -325,7 +316,7 @@ class DataArchive(object):
         if version_metadata.get('dependencies', None) is None:
             version_metadata['dependencies'] = self._get_default_dependencies()
 
-    def _update_manager(self, archive_metadata=None, tags=None, version_metadata=None):
+    def _update_manager(self, archive_metadata=None, version_metadata=None):
 
         if archive_metadata is None:
             archive_metadata = {}
@@ -333,16 +324,11 @@ class DataArchive(object):
         if version_metadata is None:
             version_metadata = {}
 
-        if tags is None:
-            tags = []
-
-
         self._set_version_defaults(version_metadata)
 
         # update records in self.api.manager
         self.api.manager.update(self.archive_name, version_metadata)
         self.update_metadata(archive_metadata)
-        self.update_tags(tags)
 
     def update_metadata(self, metadata):
 
@@ -361,7 +347,6 @@ class DataArchive(object):
             prerelease=None,
             dependencies=None,
             metadata=None,
-            tags=None,
             *args,
             **kwargs):
         '''
@@ -402,9 +387,6 @@ class DataArchive(object):
 
         if metadata is None:
             metadata = {}
-        
-        if tags is None:
-            tags = []
 
         latest_version = self.get_latest_version()
         version = _process_version(self, version)
@@ -442,7 +424,6 @@ class DataArchive(object):
         def updater(checksum, algorithm):
             self._update_manager(
                 archive_metadata=metadata,
-                tags=tags,
                 version_metadata=dict(
                     version=next_version,
                     dependencies=dependencies,
@@ -471,8 +452,7 @@ class DataArchive(object):
             bumpversion=None,
             prerelease=None,
             dependencies=None,
-            metadata=None, 
-            tags=None):
+            metadata=None):
         '''
         Returns a local path for read/write
 
@@ -506,9 +486,6 @@ class DataArchive(object):
         if metadata is None:
             metadata = {}
 
-        if tags is None:
-            tags = []
-
         latest_version = self.get_latest_version()
         version = _process_version(self, version)
 
@@ -545,7 +522,6 @@ class DataArchive(object):
         def updater(checksum, algorithm):
             self._update_manager(
                 archive_metadata=metadata,
-                tags=tags,
                 version_metadata=dict(
                     version=next_version,
                     dependencies=dependencies,
@@ -753,15 +729,10 @@ class DataArchive(object):
         Returns a list of tags for the archive
         '''
 
-        if self._tags is None:
-            tags = self.api.manager.get_tags(self.archive_name)
-            self._tags = tags
-
-        return self._tags
+        return self.api.manager.get_tags(self.archive_name)
 
 
-
-    def update_tags(self, *tags):
+    def add_tags(self, *tags):
         '''
         Set tags for a given archive
         '''
@@ -773,7 +744,27 @@ class DataArchive(object):
             except:
                 AssertionError, 'tags must be strings'
         
-        self._tags = self.api.manager.update_tags(self.archive_name, tags)
+        self.api.manager.add_tags(self.archive_name, tags)
+
+
+    def delete_tags(self, *tags):
+        '''
+
+        Deletes tags for a given archive
+
+        '''
+        for tag in tags:
+            try:
+                isinstance(tag, string_types)
+                
+            except:
+                AssertionError, 'tags must be strings'
+
+        self.api.manager.delete_tags(self.archive_name, tags)
+
+
+
+
 
 
 

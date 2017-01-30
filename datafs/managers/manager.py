@@ -185,7 +185,6 @@ class BaseDataManager(object):
             raise_on_err=True,
             metadata=None,
             user_config=None,
-            tags=None,
             helper=False):
         '''
         Create a new data archive
@@ -203,9 +202,6 @@ class BaseDataManager(object):
         if user_config is None:
             user_config = {}
 
-        if tags is None:
-            tags = []
-
         check_requirements(
             to_populate=user_config,
             prompts=self.required_user_config,
@@ -222,8 +218,8 @@ class BaseDataManager(object):
             'archive_path': archive_path,
             'versioned': versioned,
             'version_history': [],
-            'archive_metadata': metadata,
-            'tags': tags
+            'archive_metadata': metadata, 
+            'tags': []
         }
         archive_metadata.update(user_config)
 
@@ -346,22 +342,58 @@ class BaseDataManager(object):
 
         return self._get_tags(archive_name)
 
-    def update_tags(self, archive_name, tags):
+
+    def add_tags(self, archive_name, tags):
         '''
-        Sets the tag-field in metadata manager
+        Add tags to an archive
 
         Parameters
         ----------
-        archive_name: str
-            name of archive
+        archive_name:s tr
+            Name of archive
 
-        tags: list
-            list of strings of archive tags
+        tags: list or tuple of strings
+            tags to add to the archive
+
 
         '''
+        updated_tag_list = list(self._get_tags(archive_name))
+        for tag in tags:
+            if tag not in updated_tag_list:
+                updated_tag_list.append(tag)
 
-        return self._update_tags(archive_name, tags)
+        self._set_tags(archive_name, updated_tag_list)
 
+    def delete_tags(self, archive_name, tags):
+        '''
+        Delete tags from an archive
+
+        Parameters
+        ----------
+        archive_name:s tr
+            Name of archive
+
+        tags: list or tuple of strings
+            tags to delete from the archive
+    
+
+        '''
+        updated_tag_list = list(self._get_tags(archive_name))
+        for tag in tags:
+            if tag in updated_tag_list:
+                updated_tag_list.remove(tag)
+
+        self._set_tags(archive_name, updated_tag_list)
+
+    def _get_archive_spec(self, archive_name):
+        res = self._get_archive_listing(archive_name)
+
+        if res is None:
+            raise KeyError
+
+        spec = ['authority_name', 'archive_path', 'versioned']
+
+        return {k: v for k, v in res.items() if k in spec}
 
     def _update(self, archive_name, version_metadata):
         raise NotImplementedError(
@@ -449,9 +481,10 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _update_tags(self, archive_name, tags):
+    def _set_tags(self, archive_name, updated_tag_list):
         raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
+            'BaseDataManager cannot be used directly. Use a subclass.') 
+
 
 
 

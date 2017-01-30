@@ -372,16 +372,6 @@ class DynamoDBManager(BaseDataManager):
 
         return res['archive_metadata']
 
-    def _get_archive_spec(self, archive_name):
-        res = self._get_archive_listing(archive_name)
-
-        if res is None:
-            raise KeyError
-
-        spec = ['authority_name', 'archive_path', 'versioned']
-
-        return {k: v for k, v in res.items() if k in spec}
-
     def _get_authority_name(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
@@ -433,20 +423,23 @@ class DynamoDBManager(BaseDataManager):
 
         return res['tags']
 
-    def _update_tags(self, archive_name, tags):
+    def _set_tags(self, archive_name, updated_tag_list):
 
-
-        updated_tag_list = [_ for _ in self._get_tags(archive_name)]
-        for tag in tags:
-            if tag not in updated_tag_list:
-                updated_tag_list.append(tag)
-
-
-        res = self._table.update_item(
+        self._table.update_item(
                 Key={'_id': archive_name},
                 UpdateExpression="SET tags = :t",
                 ExpressionAttributeValues={':t': updated_tag_list},
                 ReturnValues='ALL_NEW')
 
-        #return ('Updated tag list:',res)
+        
+
+    # def _delete_tags(self, archive_name, updated_tag_list):
+
+    #     self._set_tags(archive_name, updated_tag_list)
+
+    # def _add_tags(self, archive_name, updated_tag_list):
+
+    #     self._set_tags(archive_name, updated_tag_list)
+
+
         

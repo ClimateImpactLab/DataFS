@@ -213,16 +213,6 @@ class MongoDBManager(BaseDataManager):
 
         return self.collection.find_one({'_id': archive_name})
 
-    def _get_archive_spec(self, archive_name):
-        res = self._get_archive_listing(archive_name)
-
-        if res is None:
-            raise KeyError
-
-        spec = ['authority_name', 'archive_path', 'versioned']
-
-        return {k: v for k, v in res.items() if k in spec}
-
     def _get_authority_name(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
@@ -294,19 +284,19 @@ class MongoDBManager(BaseDataManager):
 
         return res['tags']
 
-    def _update_tags(self, archive_name, tags):
-
-        updated_tag_list = [_ for _ in self._get_tags(archive_name)]
-        for tag in tags:
-            if tag not in updated_tag_list:
-                updated_tag_list.append(tag)
-
+    def _set_tags(self, archive_name, updated_tag_list):
 
         self.collection.update(
             {"_id": archive_name},
             {"$set": {"tags": updated_tag_list}})
 
+    # def _delete_tags(self, archive_name, updated_tag_list):
 
+    #     self._set_tags(archive_name, updated_tag_list)
+
+    # def _add_tags(self, archive_name, updated_tag_list):
+
+    #     self._set_tags(archive_name, updated_tag_list)
 
     def _get_spec_documents(self, table_name):
         return [item for item in self.spec_collection.find({})]

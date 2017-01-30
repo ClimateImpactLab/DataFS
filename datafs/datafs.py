@@ -387,6 +387,7 @@ def search(ctx, query_tags, prefix=None):
         click.echo(match)
 
 
+
 @cli.command()
 @click.argument('archive_name')
 @click.pass_context

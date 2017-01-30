@@ -107,7 +107,6 @@ class DataAPI(object):
             versioned=True,
             raise_on_err=True,
             metadata=None,
-            tags=None,
             helper=False):
         '''
         Create a DataFS archive
@@ -155,7 +154,6 @@ class DataAPI(object):
             versioned=versioned,
             raise_on_err=raise_on_err,
             metadata=metadata,
-            tags=tags,
             user_config=self.user_config,
             helper=helper)
 
@@ -229,8 +227,7 @@ class DataAPI(object):
 
     def search(self, *query, **kwargs):
         '''
-        Current Specification as of v0.6.6
-        Search archives based on tags in the archive_metadata._TAGS field 
+        Searches based on tags specified by users
 
 
         Parameters

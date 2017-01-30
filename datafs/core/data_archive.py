@@ -342,7 +342,7 @@ class DataArchive(object):
         # update records in self.api.manager
         self.api.manager.update(self.archive_name, version_metadata)
         self.update_metadata(archive_metadata)
-        self.update_tags(self.archive_name, tags)
+        self.update_tags(tags)
 
     def update_metadata(self, metadata):
 
@@ -754,14 +754,14 @@ class DataArchive(object):
         '''
 
         if self._tags is None:
-            tags = self.api.manager.get_tags()
+            tags = self.api.manager.get_tags(self.archive_name)
             self._tags = tags
 
         return self._tags
 
 
 
-    def update_tags(self, archive_name, tags):
+    def update_tags(self, *tags):
         '''
         Set tags for a given archive
         '''
@@ -769,6 +769,7 @@ class DataArchive(object):
         for tag in tags:
             try:
                 isinstance(tag, string_types)
+                
             except:
                 AssertionError, 'tags must be strings'
         

@@ -296,16 +296,15 @@ class MongoDBManager(BaseDataManager):
 
     def _update_tags(self, archive_name, tags):
 
-        updated_tag_list = []
-        current_tags = self._get_tags(archive_name)
+        updated_tag_list = [_ for _ in self._get_tags(archive_name)]
         for tag in tags:
-            if tag not in current_tags:
+            if tag not in updated_tag_list:
                 updated_tag_list.append(tag)
 
 
         self.collection.update(
             {"_id": archive_name},
-            {"$push": {"tags": updated_tag_list}})
+            {"$set": {"tags": updated_tag_list}})
 
 
 

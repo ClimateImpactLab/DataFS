@@ -204,7 +204,7 @@ class APIConstructor(object):
 
         filesystems = []
 
-        for importer, modname, ispkg in pkgutil.iter_modules(fs.__path__):
+        for importer, modname, _ in pkgutil.iter_modules(fs.__path__):
             if modname.endswith('fs'):
                 filesystems.append(modname)
 

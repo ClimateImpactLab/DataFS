@@ -411,6 +411,6 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _search(self, search_terms):
+    def _search(self, search_terms, begins_with=None):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')

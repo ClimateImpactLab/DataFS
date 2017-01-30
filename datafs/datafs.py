@@ -350,7 +350,7 @@ def versions(ctx, archive_name):
     click.echo(pprint.pformat(map(str, var.get_versions())))
 
 
-@cli.command()
+@click.command()
 @click.option('--prefix',
               default='',
               help='filter archives based on initial character pattern')
@@ -363,7 +363,7 @@ def versions(ctx, archive_name):
     default='path',
     help='comparison engine: str/path/regex (default path)')
 @click.pass_context
-def filter(ctx, prefix, pattern, engine):
+def filter_archives(ctx, prefix, pattern, engine):
     _generate_api(ctx)
 
     # want to achieve behavior like click.echo(' '.join(matches))
@@ -373,6 +373,8 @@ def filter(ctx, prefix, pattern, engine):
             pattern, engine, prefix=prefix)):
 
         click.echo(match)
+
+cli.add_command(filter_archives, name='filter')
 
 
 @cli.command()

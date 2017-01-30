@@ -110,10 +110,10 @@ def test_tagging_update_and_get(api_with_spec):
 
     result = arch.get_tags()
     assert 'tag1' and 'tag2' and  'tag3' in result
+    assert len(result) == 3
 
 
 
-    #assert arch.get_tags() == ['tag3', 'tag1', 'tag2'] 
 
 
 

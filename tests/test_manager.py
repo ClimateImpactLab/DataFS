@@ -77,6 +77,7 @@ class TestMetadataRequirements:
                 'my_other_test_archive', metadata={
                     'another_string': 'to break the test'})
 
+
 class TestManager:
 
     def test_error_handling(self, api):

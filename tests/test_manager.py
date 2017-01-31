@@ -78,7 +78,7 @@ class TestMetadataRequirements:
                     'another_string': 'to break the test'})
 
 
-class TestManagers(object):
+class TestManager:
 
     def test_error_handling(self, api):
 

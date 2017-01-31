@@ -2,6 +2,8 @@
 import boto3
 
 from datafs.managers.manager import BaseDataManager
+from boto3.dynamodb.conditions import Attr, Key
+from functools import reduce
 
 
 class DynamoDBManager(BaseDataManager):
@@ -56,16 +58,37 @@ class DynamoDBManager(BaseDataManager):
 
     # Private methods
 
-    def _get_archive_names(self):
+    def _search(self, search_terms, begins_with=None):
         """
-        Returns a list of Archives in the table on Dynamo
+        Returns a list of Archive id's in the table on Dynamo
         """
-        if len(self._table.scan(AttributesToGet=['_id'])['Items']) == 0:
-            return []
-        else:
-            res = [str(archive['_id']) for archive in self._table.scan(
-                AttributesToGet=['_id'])['Items']]
-            return res
+
+        kwargs = dict(
+            ProjectionExpression='#id',
+            ExpressionAttributeNames={
+                "#id": "_id"})
+
+        if len(search_terms) > 0:
+            kwargs['FilterExpression'] = reduce(lambda x, y: x & y, [Attr(
+             'archive_metadata._TAGS').contains(arg) for arg in search_terms])
+
+        if begins_with:
+            if 'FilterExpression' in kwargs:
+                kwargs['FilterExpression'] = kwargs[
+                    'FilterExpression'] & Key('_id').begins_with(begins_with)
+
+            else:
+                kwargs['FilterExpression'] = Key(
+                    '_id').begins_with(begins_with)
+
+        while True:
+            res = self._table.scan(**kwargs)
+            for r in res['Items']:
+                yield r['_id']
+            if 'LastEvaluatedKey' in res:
+                kwargs['ExclusiveStartKey'] = res['LastEvaluatedKey']
+            else:
+                break
 
     def _update(self, archive_name, version_metadata):
         '''
@@ -308,14 +331,20 @@ class DynamoDBManager(BaseDataManager):
         Coerce underscores to dashes
         '''
 
-        if archive_name in self._get_archive_names():
+        archive_exists = False
 
+        try:
+            self.get_archive(archive_name)
+            archive_exists = True
+        except KeyError:
+            pass
+
+        if archive_exists:
             raise KeyError(
                 "{} already exists. Use get_archive() to view".format(
                     archive_name))
 
-        else:
-            self._table.put_item(Item=metadata)
+        self._table.put_item(Item=metadata)
 
     def _create_if_not_exists(
             self,

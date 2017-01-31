@@ -256,13 +256,6 @@ class BaseDataManager(object):
         except KeyError:
             raise KeyError('Archive "{}" not found'.format(archive_name))
 
-    def get_archive_names(self):
-        '''
-        Returns a list of DataArchive names
-
-        '''
-        return self._get_archive_names()
-
     def get_metadata(self, archive_name):
         '''
         Retrieve the metadata for a given archive
@@ -324,6 +317,19 @@ class BaseDataManager(object):
         '''
 
         return time.strftime(cls.TimestampFormat, time.gmtime())
+
+    def search(self, search_terms, begins_with=None):
+        '''
+
+        Parameters
+        ----------
+        search_terms: tuple
+            strings of terms to search for
+
+
+        '''
+
+        return self._search(search_terms, begins_with=begins_with)
 
     # Private methods (to be implemented by subclasses of DataManager)
 
@@ -402,5 +408,9 @@ class BaseDataManager(object):
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _get_version_history(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _search(self, search_terms, begins_with=None):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')

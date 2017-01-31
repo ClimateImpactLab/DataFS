@@ -1,8 +1,8 @@
 from datafs import DataAPI
 from datafs.core.data_archive import DataArchive
 from datafs.managers.manager_dynamo import DynamoDBManager
-from fs1.s3fs import S3FS
-from fs1.osfs import OSFS
+from fs.s3fs import S3FS
+from fs.osfs import OSFS
 
 import tempfile
 import shutil

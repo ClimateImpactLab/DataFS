@@ -5,8 +5,8 @@ Setup
 
     >>> from datafs.managers.manager_mongo import MongoDBManager
     >>> from datafs import DataAPI
-    >>> from fs1.tempfs import TempFS
-    >>> from fs1.s3fs import S3FS
+    >>> from fs.tempfs import TempFS
+    >>> from fs.s3fs import S3FS
     >>> import os
     >>> import tempfile
     >>> import shutil

@@ -4,9 +4,9 @@ from datafs.core import data_file
 from datafs.core.versions import BumpableVersion
 from datafs._compat import string_types
 from contextlib import contextmanager
-import fs1.utils
-import fs1.path
-from fs1.osfs import OSFS
+import fs.utils
+import fs.path
+from fs.osfs import OSFS
 import os
 
 
@@ -57,6 +57,7 @@ class DataArchive(object):
     @property
     def versioned(self):
         return self._versioned
+    
 
     def get_latest_version(self):
 
@@ -146,7 +147,7 @@ class DataArchive(object):
         version = _process_version(self, version)
 
         if self.versioned:
-            return fs1.path.join(self.archive_path, str(version))
+            return fs.path.join(self.archive_path, str(version))
 
         else:
             return self.archive_path
@@ -232,8 +233,6 @@ class DataArchive(object):
         metadata : dict
             Updates to archive metadata. Pass {key: None} to remove a key from
             the archive's metadata.
-
-
         '''
 
         if metadata is None:
@@ -528,7 +527,6 @@ class DataArchive(object):
                     dependencies=dependencies,
                     checksum=checksum,
                     algorithm=algorithm))
-
         path = data_file.get_local_path(
             self.authority,
             self.api.cache,
@@ -579,7 +577,7 @@ class DataArchive(object):
                 version_check,
                 self.api.hash_file) as read_fs:
 
-            fs1.utils.copyfile(
+            fs.utils.copyfile(
                 read_fs,
                 read_path,
                 local,
@@ -609,64 +607,64 @@ class DataArchive(object):
                     self.api.cache.fs.remove(self.get_version_path(version))
 
     def isfile(self, version=None, *args, **kwargs):
-        version = _process_version(self, version)
         '''
         Check whether the path exists and is a file
         '''
+        version = _process_version(self, version)
 
         path = self.get_version_path(version)
         self.authority.fs.isfile(path, *args, **kwargs)
 
     def getinfo(self, version=None, *args, **kwargs):
-        version = _process_version(self, version)
         '''
         Return information about the path e.g. size, mtime
         '''
+        version = _process_version(self, version)
 
         path = self.get_version_path(version)
         self.authority.fs.getinfo(path, *args, **kwargs)
 
     def desc(self, version=None, *args, **kwargs):
-        version = _process_version(self, version)
         '''
         Return a short descriptive text regarding a path
         '''
+        version = _process_version(self, version)
 
         path = self.get_version_path(version)
         self.authority.fs.desc(path, *args, **kwargs)
 
     def exists(self, version=None, *args, **kwargs):
-        version = _process_version(self, version)
         '''
         Check whether a path exists as file or directory
         '''
+        version = _process_version(self, version)
 
         path = self.get_version_path(version)
         self.authority.fs.exists(path, *args, **kwargs)
 
     def getmeta(self, version=None, *args, **kwargs):
-        version = _process_version(self, version)
         '''
         Get the value of a filesystem meta value, if it exists
         '''
+        version = _process_version(self, version)
 
         path = self.get_version_path(version)
         self.authority.fs.getmeta(path, *args, **kwargs)
 
     def hasmeta(self, version=None, *args, **kwargs):
-        version = _process_version(self, version)
         '''
         Check if a filesystem meta value exists
         '''
+        version = _process_version(self, version)
 
         path = self.get_version_path(version)
         self.authority.fs.hasmeta(path, *args, **kwargs)
 
     def is_cached(self, version=None):
-        version = _process_version(self, version)
         '''
         Set the cache property to start/stop file caching for this archive
         '''
+        version = _process_version(self, version)
 
         if self.api.cache and self.api.cache.fs.isfile(
                 self.get_version_path(version)):
@@ -725,3 +723,52 @@ class DataArchive(object):
         version_metadata['user_config'] = self.api.user_config
 
         self.api.manager.update(self.archive_name, version_metadata)
+
+    def get_tags(self):
+        '''
+        Returns a list of tags for the archive
+        '''
+
+        return self.api.manager.get_tags(self.archive_name)
+
+
+    def add_tags(self, *tags):
+        '''
+        Set tags for a given archive
+        '''
+        
+        for tag in tags:
+            try:
+                isinstance(tag, string_types)
+                
+            except:
+                AssertionError, 'tags must be strings'
+        
+        self.api.manager.add_tags(self.archive_name, tags)
+
+
+    def delete_tags(self, *tags):
+        '''
+
+        Deletes tags for a given archive
+
+        '''
+        for tag in tags:
+            try:
+                isinstance(tag, string_types)
+                
+            except:
+                AssertionError, 'tags must be strings'
+
+        self.api.manager.delete_tags(self.archive_name, tags)
+
+
+
+
+
+
+
+
+
+ 
+

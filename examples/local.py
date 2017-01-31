@@ -26,7 +26,7 @@ We need a few things for this example:
 
     >>> from datafs.managers.manager_mongo import MongoDBManager
     >>> from datafs import DataAPI
-    >>> from fs1.osfs import OSFS
+    >>> from fs.osfs import OSFS
     >>> import os
     >>> import tempfile
     >>> import shutil

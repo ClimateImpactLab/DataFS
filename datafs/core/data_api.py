@@ -4,9 +4,8 @@ from datafs.services.service import DataService
 from datafs.core.data_archive import DataArchive
 from datafs._compat import open_filelike
 
-import datafs.utils.search
 
-import fs1.path
+import fs.path
 
 import hashlib
 import fnmatch
@@ -173,37 +172,84 @@ class DataAPI(object):
             default_version=default_version,
             **res)
 
-    def list(self, pattern=None, engine='path'):
+    def filter(self, pattern=None, engine='path', prefix=None):
+        '''
 
-        archives = self.manager.get_archive_names()
+        Performs a filtered search on entire universe of archives
+        according to pattern or prefix.
+
+        Parameters
+        ----------
+        prefix: str
+            string matching beginning characters of the archive or set of
+            archives you are filtering
+
+        pattern: str
+            string matching the characters within the archive or set of
+            archives you are filtering on
+
+        engine: str
+            string of value 'str', 'path', or 'regex'. That indicates the
+            type of pattern you are filtering on
+
+
+        Returns
+        -------
+        generator
+
+
+
+        '''
+
+        archives = self.manager.search(tuple([]), begins_with=prefix)
 
         if not pattern:
-            return archives
+            for archive in archives:
+                yield archive
 
         if engine == 'str':
-            return [x for x in archives if pattern in x]
+            for arch in archives:
+                if pattern in arch:
+                    yield arch
 
         elif engine == 'path':
-            return fnmatch.filter(archives, pattern)
+            # Change to generator version of fnmatch.filter
+
+            for arch in archives:
+                if fnmatch.fnmatch(arch, pattern):
+                    yield arch
 
         elif engine == 'regex':
-            return [arch for arch in archives if re.search(pattern, arch)]
+            for arch in archives:
+                if re.search(pattern, arch):
+                    yield arch
 
         else:
             raise ValueError(
                 'search engine "{}" not recognized. '.format(engine) +
                 'choose "str", "fn", or "regex"')
 
-    def search(self, query='*', interactive=False):
+    def search(self, *query, **kwargs):
+        '''
+        Searches based on tags specified by users
 
-        if not interactive:
-            return datafs.utils.search.search(query, api=self, limit=None)
 
-        archive_name = datafs.utils.search.interactvie_search(api=api, limit=None)
 
-        if archive_name:
-            return archive_name
+        Parameters
+        ---------
+        query: str
+            tags to search on. If multiple terms, provided in comma delimited
+            string format
 
+        prefix : str
+            start of archive name. Providing a start string improves search
+            speed.
+
+        '''
+
+        prefix = kwargs.get('prefix')
+
+        return self.manager.search(query, begins_with=prefix)
 
     @classmethod
     def create_archive_path(cls, archive_name):
@@ -257,7 +303,7 @@ class DataAPI(object):
 
         '''
 
-        return fs1.path.join(*tuple(archive_name.split('_')))
+        return fs.path.join(*tuple(archive_name.split('_')))
 
     def delete_archive(self, archive_name):
         '''

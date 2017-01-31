@@ -213,16 +213,6 @@ class MongoDBManager(BaseDataManager):
 
         return self.collection.find_one({'_id': archive_name})
 
-    def _get_archive_spec(self, archive_name):
-        res = self._get_archive_listing(archive_name)
-
-        if res is None:
-            raise KeyError
-
-        spec = ['authority_name', 'archive_path', 'versioned']
-
-        return {k: v for k, v in res.items() if k in spec}
-
     def _get_authority_name(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
@@ -273,11 +263,32 @@ class MongoDBManager(BaseDataManager):
 
         return self.collection.remove({'_id': archive_name})
 
-    def _get_archive_names(self):
+    def _search(self, search_terms, begins_with=None):
 
-        res = self.collection.find({}, {"_id": 1})
+        if len(search_terms) == 0:
+            query = {}
+        elif len(search_terms) == 1:
+            query = {'tags': {'$in':[search_terms[0]]}}
+        else:
+            query = {'$and': [{'tags': {'$in':[tag]}} for tag in search_terms]}
 
-        return [r['_id'] for r in res]
+        res = self.collection.find(query, {"_id": 1})
+
+        for r in res:
+            if (not begins_with) or r.startswith(begins_with):
+                yield r['_id']
+
+    def _get_tags(self, archive_name):
+
+        res = self._get_archive_listing(archive_name)
+
+        return res['tags']
+
+    def _set_tags(self, archive_name, updated_tag_list):
+
+        self.collection.update(
+            {"_id": archive_name},
+            {"$set": {"tags": updated_tag_list}})
 
     def _get_spec_documents(self, table_name):
         return [item for item in self.spec_collection.find({})]

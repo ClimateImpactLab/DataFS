@@ -7,6 +7,7 @@ from tests.resources import _close
 from datafs.datafs import cli
 from datafs import get_api, to_config_file
 
+
 @pytest.yield_fixture(scope='module')
 def temp_dir():
 
@@ -40,7 +41,8 @@ def test_cli_search(test_config, monkeypatch):
 
     for i, j, k in itertools.product(*tuple([range(3) for _ in range(3)])):
         arch = 'team{}_archive{}_var{}'.format(i+1, j+1, k+1)
-        api.create(arch, metadata=dict(description='archive_{}_{}_{} description'.format(i,j,k)))
+        api.create(arch, metadata={
+                'description': 'archive_{}_{}_{} description'.format(i, j, k)})
 
         _arch = api.get_archive(arch)
         for _ in arch.split('_'):
@@ -57,7 +59,7 @@ def test_cli_search(test_config, monkeypatch):
 
     assert result.exit_code == 0
 
-    assert 'team2_archive2_var2' in result.output.split('\n')[-2], result.output
+    assert 'team2_archive2_var2' in result.output.split('\n')[-2]
 
     res = list(api.search('team2', 'var3', 'archive1'))
 
@@ -70,4 +72,4 @@ def test_cli_search(test_config, monkeypatch):
     )
 
     assert result.exit_code == 0
-    assert 'team2_archive2_var2' in result.output.split('\n')[-2], result.output
+    assert 'team2_archive2_var2' in result.output.split('\n')[-2]

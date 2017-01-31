@@ -218,7 +218,7 @@ class BaseDataManager(object):
             'archive_path': archive_path,
             'versioned': versioned,
             'version_history': [],
-            'archive_metadata': metadata, 
+            'archive_metadata': metadata,
             'tags': []
         }
         archive_metadata.update(user_config)
@@ -326,21 +326,20 @@ class BaseDataManager(object):
         ----------
         search_terms: str
             strings of terms to search for
-            If called as `api.manager.search()`, `search_terms` should be a list or a tuple of strings
+
+            If called as `api.manager.search()`, `search_terms` should be a
+            list or a tuple of strings
 
         '''
 
         return self._search(search_terms, begins_with=begins_with)
 
-    # Private methods (to be implemented by subclasses of DataManager)
-
-    def get_tags(self,archive_name):
+    def get_tags(self, archive_name):
         '''
         Returns the list of tags associated with an archive
         '''
 
         return self._get_tags(archive_name)
-
 
     def add_tags(self, archive_name, tags):
         '''
@@ -373,7 +372,7 @@ class BaseDataManager(object):
 
         tags: list or tuple of strings
             tags to delete from the archive
-    
+
         '''
         updated_tag_list = list(self._get_tags(archive_name))
         for tag in tags:
@@ -391,6 +390,32 @@ class BaseDataManager(object):
         spec = ['authority_name', 'archive_path', 'versioned']
 
         return {k: v for k, v in res.items() if k in spec}
+
+    def _get_archive_metadata(self, archive_name):
+
+        return self._get_archive_listing(archive_name)['archive_metadata']
+
+    def _get_authority_name(self, archive_name):
+
+        return self._get_archive_listing(archive_name)['authority_name']
+
+    def _get_archive_path(self, archive_name):
+
+        return self._get_archive_listing(archive_name)['archive_path']
+
+    def _get_version_history(self, archive_name):
+
+        return self._get_archive_listing(archive_name)['version_history']
+
+    def _get_tags(self, archive_name):
+
+        return self._get_archive_listing(archive_name)['tags']
+
+    # Private methods (to be implemented by subclasses of DataManager)
+
+    def _get_archive_listing(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _update(self, archive_name, version_metadata):
         raise NotImplementedError(
@@ -414,19 +439,7 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_archive_metadata(self, archive_name):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
     def _get_latest_hash(self, archive_name):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
-    def _get_authority_name(self, archive_name):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
-    def _get_archive_path(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
@@ -466,19 +479,10 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _get_version_history(self, archive_name):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
     def _search(self, search_terms, begins_with=None):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
-    def _get_tags(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _set_tags(self, archive_name, updated_tag_list):
         raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.') 
-
+            'BaseDataManager cannot be used directly. Use a subclass.')

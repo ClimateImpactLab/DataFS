@@ -52,7 +52,7 @@ def tempdir():
 @pytest.yield_fixture(scope='module')
 def temp_file():
     tmp = tempfile.NamedTemporaryFile()
-    
+
     try:
         yield tmp.name
 

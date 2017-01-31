@@ -92,10 +92,11 @@ def cli(
     ctx.obj.requirements = requirements
     ctx.obj.profile = profile
 
-    @ctx.call_on_close
     def teardown():
         if hasattr(ctx.obj, 'api'):
             ctx.obj.api.close()
+
+    ctx.call_on_close(teardown)
 
 
 @cli.command(
@@ -368,11 +369,11 @@ def filter_archives(ctx, prefix, pattern, engine):
 
     # want to achieve behavior like click.echo(' '.join(matches))
 
-    for i, match in enumerate(
-            ctx.obj.api.filter(
-            pattern, engine, prefix=prefix)):
+    for match in ctx.obj.api.filter(
+            pattern, engine, prefix=prefix):
 
         click.echo(match)
+
 
 cli.add_command(filter_archives, name='filter')
 
@@ -386,10 +387,9 @@ def search(ctx, query_tags, prefix=None):
 
     assert isinstance(query_tags, tuple)
 
-    for i, match in enumerate(ctx.obj.api.search(*query_tags, prefix=prefix)):
+    for match in ctx.obj.api.search(*query_tags, prefix=prefix):
 
         click.echo(match)
-
 
 
 @cli.command()

@@ -57,7 +57,6 @@ class DataArchive(object):
     @property
     def versioned(self):
         return self._versioned
-    
 
     def get_latest_version(self):
 
@@ -140,7 +139,6 @@ class DataArchive(object):
             Traceback (most recent call last):
             ...
             AttributeError: 'NoneType' object has no attribute 'manager'
-
 
         '''
 
@@ -731,21 +729,15 @@ class DataArchive(object):
 
         return self.api.manager.get_tags(self.archive_name)
 
-
     def add_tags(self, *tags):
         '''
         Set tags for a given archive
         '''
-        
-        for tag in tags:
-            try:
-                isinstance(tag, string_types)
-                
-            except:
-                AssertionError, 'tags must be strings'
-        
-        self.api.manager.add_tags(self.archive_name, tags)
 
+        for tag in tags:
+            assert isinstance(tag, string_types), 'tags must be strings'
+
+        self.api.manager.add_tags(self.archive_name, tags)
 
     def delete_tags(self, *tags):
         '''
@@ -754,21 +746,6 @@ class DataArchive(object):
 
         '''
         for tag in tags:
-            try:
-                isinstance(tag, string_types)
-                
-            except:
-                AssertionError, 'tags must be strings'
+            assert isinstance(tag, string_types), 'tags must be strings'
 
         self.api.manager.delete_tags(self.archive_name, tags)
-
-
-
-
-
-
-
-
-
- 
-

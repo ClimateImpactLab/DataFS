@@ -136,6 +136,10 @@ class TestBaseManager:
         with pytest.raises(NotImplementedError):
             base_manager._get_archives()
 
+    def test_get_archive_listing(self, base_manager):
+        with pytest.raises(NotImplementedError):
+            base_manager._get_archive_metadata('archive_name')
+
     def test_get_archive_metadata(self, base_manager):
         with pytest.raises(NotImplementedError):
             base_manager._get_archive_metadata('archive_name')

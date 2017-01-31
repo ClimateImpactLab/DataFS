@@ -211,43 +211,12 @@ class MongoDBManager(BaseDataManager):
             MongoDB specific results - do not expose to user
         '''
 
-        return self.collection.find_one({'_id': archive_name})
-
-    def _get_authority_name(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        if res is None:
-            raise KeyError
-
-        return res['authority_name']
-
-    def _get_archive_path(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        if res is None:
-            raise KeyError
-
-        return res['archive_path']
-
-    def _get_archive_metadata(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        if res is None:
-            raise KeyError
-
-        return res['archive_metadata']
-
-    def _get_version_history(self, archive_name):
-
         res = self.collection.find_one({'_id': archive_name})
 
         if res is None:
             raise KeyError
 
-        return res['version_history']
+        return res
 
     def _get_latest_hash(self, archive_name):
 
@@ -268,21 +237,16 @@ class MongoDBManager(BaseDataManager):
         if len(search_terms) == 0:
             query = {}
         elif len(search_terms) == 1:
-            query = {'tags': {'$in':[search_terms[0]]}}
+            query = {'tags': {'$in': [search_terms[0]]}}
         else:
-            query = {'$and': [{'tags': {'$in':[tag]}} for tag in search_terms]}
+            query = {
+                '$and': [{'tags': {'$in': [tag]}} for tag in search_terms]}
 
         res = self.collection.find(query, {"_id": 1})
 
         for r in res:
             if (not begins_with) or r.startswith(begins_with):
                 yield r['_id']
-
-    def _get_tags(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['tags']
 
     def _set_tags(self, archive_name, updated_tag_list):
 

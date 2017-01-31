@@ -63,11 +63,15 @@ class DynamoDBManager(BaseDataManager):
 
         """
 
-        kwargs = dict(ProjectionExpression='#id', ExpressionAttributeNames={"#id": "_id" })        
+        kwargs = dict(
+            ProjectionExpression='#id',
+            ExpressionAttributeNames={"#id": "_id"})
 
         if len(search_terms) > 0:
-            kwargs['FilterExpression'] = reduce(lambda x, y: x & y, [Attr('tags').contains(arg) for arg in search_terms])
-        
+            kwargs['FilterExpression'] = reduce(
+                lambda x, y: x & y,
+                [Attr('tags').contains(arg) for arg in search_terms])
+
         if begins_with:
             if 'FilterExpression' in kwargs:
                 kwargs['FilterExpression'] = kwargs[
@@ -363,30 +367,6 @@ class DynamoDBManager(BaseDataManager):
         '''
         return self._table.get_item(Key={'_id': archive_name})['Item']
 
-    def _get_archive_metadata(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['archive_metadata']
-
-    def _get_authority_name(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['authority_name']
-
-    def _get_archive_path(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['archive_path']
-
-    def _get_version_history(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['version_history']
-
     def _get_latest_hash(self, archive_name):
 
         version_history = self._get_version_history(archive_name)
@@ -413,12 +393,6 @@ class DynamoDBManager(BaseDataManager):
 
     def _get_spec_documents(self, table_name):
         return self._resource.Table(table_name + '.spec').scan()['Items']
-
-    def _get_tags(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['tags']
 
     def _set_tags(self, archive_name, updated_tag_list):
 

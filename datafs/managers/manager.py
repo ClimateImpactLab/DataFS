@@ -156,7 +156,7 @@ class BaseDataManager(object):
         if table_name + '.spec' not in self.table_names:
             if raise_on_err:
                 raise KeyError(
-                'Table "{}.spec" not found'.format(table_name + '.spec'))
+                    'Table "{}.spec" not found'.format(table_name + '.spec'))
 
         else:
             self._delete_table(table_name + '.spec')
@@ -457,18 +457,7 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _create_if_not_exists(
-            self,
-            archive_name,
-            archive_metadata):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
     def _get_archives(self):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
-    def _get_latest_hash(self, archive_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 

@@ -218,7 +218,8 @@ class BaseDataManager(object):
             'archive_path': archive_path,
             'versioned': versioned,
             'version_history': [],
-            'archive_metadata': metadata
+            'archive_metadata': metadata, 
+            'tags': []
         }
         archive_metadata.update(user_config)
 
@@ -323,15 +324,73 @@ class BaseDataManager(object):
 
         Parameters
         ----------
-        search_terms: tuple
+        search_terms: str
             strings of terms to search for
-
+            If called as `api.manager.search()`, `search_terms` should be a list or a tuple of strings
 
         '''
 
         return self._search(search_terms, begins_with=begins_with)
 
     # Private methods (to be implemented by subclasses of DataManager)
+
+    def get_tags(self,archive_name):
+        '''
+        Returns the list of tags associated with an archive
+        '''
+
+        return self._get_tags(archive_name)
+
+
+    def add_tags(self, archive_name, tags):
+        '''
+        Add tags to an archive
+
+        Parameters
+        ----------
+        archive_name:s tr
+            Name of archive
+
+        tags: list or tuple of strings
+            tags to add to the archive
+
+        '''
+        updated_tag_list = list(self._get_tags(archive_name))
+        for tag in tags:
+            if tag not in updated_tag_list:
+                updated_tag_list.append(tag)
+
+        self._set_tags(archive_name, updated_tag_list)
+
+    def delete_tags(self, archive_name, tags):
+        '''
+        Delete tags from an archive
+
+        Parameters
+        ----------
+        archive_name:s tr
+            Name of archive
+
+        tags: list or tuple of strings
+            tags to delete from the archive
+    
+        '''
+        updated_tag_list = list(self._get_tags(archive_name))
+        for tag in tags:
+            if tag in updated_tag_list:
+                updated_tag_list.remove(tag)
+
+        self._set_tags(archive_name, updated_tag_list)
+
+    def _get_archive_spec(self, archive_name):
+        res = self._get_archive_listing(archive_name)
+
+        if res is None:
+            raise KeyError
+
+        spec = ['authority_name', 'archive_path', 'versioned']
+
+        return {k: v for k, v in res.items() if k in spec}
 
     def _update(self, archive_name, version_metadata):
         raise NotImplementedError(
@@ -414,3 +473,12 @@ class BaseDataManager(object):
     def _search(self, search_terms, begins_with=None):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _get_tags(self, archive_name):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.')
+
+    def _set_tags(self, archive_name, updated_tag_list):
+        raise NotImplementedError(
+            'BaseDataManager cannot be used directly. Use a subclass.') 
+

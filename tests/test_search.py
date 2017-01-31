@@ -40,7 +40,11 @@ def test_cli_search(test_config, monkeypatch):
 
     for i, j, k in itertools.product(*tuple([range(3) for _ in range(3)])):
         arch = 'team{}_archive{}_var{}'.format(i+1, j+1, k+1)
-        api.create(arch, metadata=dict(_TAGS=arch.split('_')))
+        api.create(arch, metadata=dict(description='archive_{}_{}_{} description'.format(i,j,k)))
+
+        _arch = api.get_archive(arch)
+        for _ in arch.split('_'):
+            _arch.add_tags(_)
 
     runner = CliRunner()
     prefix = ['--config-file', config_file, '--profile', 'myapi']
@@ -52,6 +56,8 @@ def test_cli_search(test_config, monkeypatch):
     )
 
     assert result.exit_code == 0
+
+    assert 'team2_archive2_var2' in result.output.split('\n')[-2], result.output
 
     res = list(api.search('team2', 'var3', 'archive1'))
 

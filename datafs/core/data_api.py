@@ -231,11 +231,13 @@ class DataAPI(object):
 
     def search(self, *query, **kwargs):
         '''
-        Current Specification as of v0.6.6
-        Search archives based on tags in the archive_metadata._TAGS field
+        Searches based on tags specified by users
+
+
+
         Parameters
         ---------
-        *query: str
+        query: str
             tags to search on. If multiple terms, provided in comma delimited
             string format
 

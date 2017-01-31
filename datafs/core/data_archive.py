@@ -57,6 +57,7 @@ class DataArchive(object):
     @property
     def versioned(self):
         return self._versioned
+    
 
     def get_latest_version(self):
 
@@ -232,8 +233,6 @@ class DataArchive(object):
         metadata : dict
             Updates to archive metadata. Pass {key: None} to remove a key from
             the archive's metadata.
-
-
         '''
 
         if metadata is None:
@@ -528,7 +527,6 @@ class DataArchive(object):
                     dependencies=dependencies,
                     checksum=checksum,
                     algorithm=algorithm))
-
         path = data_file.get_local_path(
             self.authority,
             self.api.cache,
@@ -725,3 +723,52 @@ class DataArchive(object):
         version_metadata['user_config'] = self.api.user_config
 
         self.api.manager.update(self.archive_name, version_metadata)
+
+    def get_tags(self):
+        '''
+        Returns a list of tags for the archive
+        '''
+
+        return self.api.manager.get_tags(self.archive_name)
+
+
+    def add_tags(self, *tags):
+        '''
+        Set tags for a given archive
+        '''
+        
+        for tag in tags:
+            try:
+                isinstance(tag, string_types)
+                
+            except:
+                AssertionError, 'tags must be strings'
+        
+        self.api.manager.add_tags(self.archive_name, tags)
+
+
+    def delete_tags(self, *tags):
+        '''
+
+        Deletes tags for a given archive
+
+        '''
+        for tag in tags:
+            try:
+                isinstance(tag, string_types)
+                
+            except:
+                AssertionError, 'tags must be strings'
+
+        self.api.manager.delete_tags(self.archive_name, tags)
+
+
+
+
+
+
+
+
+
+ 
+

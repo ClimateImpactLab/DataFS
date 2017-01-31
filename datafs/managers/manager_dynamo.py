@@ -1,4 +1,3 @@
-
 import boto3
 
 from datafs.managers.manager import BaseDataManager
@@ -61,17 +60,14 @@ class DynamoDBManager(BaseDataManager):
     def _search(self, search_terms, begins_with=None):
         """
         Returns a list of Archive id's in the table on Dynamo
+
         """
 
-        kwargs = dict(
-            ProjectionExpression='#id',
-            ExpressionAttributeNames={
-                "#id": "_id"})
+        kwargs = dict(ProjectionExpression='#id', ExpressionAttributeNames={"#id": "_id" })        
 
         if len(search_terms) > 0:
-            kwargs['FilterExpression'] = reduce(lambda x, y: x & y, [Attr(
-             'archive_metadata._TAGS').contains(arg) for arg in search_terms])
-
+            kwargs['FilterExpression'] = reduce(lambda x, y: x & y, [Attr('tags').contains(arg) for arg in search_terms])
+        
         if begins_with:
             if 'FilterExpression' in kwargs:
                 kwargs['FilterExpression'] = kwargs[
@@ -373,16 +369,6 @@ class DynamoDBManager(BaseDataManager):
 
         return res['archive_metadata']
 
-    def _get_archive_spec(self, archive_name):
-        res = self._get_archive_listing(archive_name)
-
-        if res is None:
-            raise KeyError
-
-        spec = ['authority_name', 'archive_path', 'versioned']
-
-        return {k: v for k, v in res.items() if k in spec}
-
     def _get_authority_name(self, archive_name):
 
         res = self._get_archive_listing(archive_name)
@@ -427,3 +413,17 @@ class DynamoDBManager(BaseDataManager):
 
     def _get_spec_documents(self, table_name):
         return self._resource.Table(table_name + '.spec').scan()['Items']
+
+    def _get_tags(self, archive_name):
+
+        res = self._get_archive_listing(archive_name)
+
+        return res['tags']
+
+    def _set_tags(self, archive_name, updated_tag_list):
+
+        self._table.update_item(
+                Key={'_id': archive_name},
+                UpdateExpression="SET tags = :t",
+                ExpressionAttributeValues={':t': updated_tag_list},
+                ReturnValues='ALL_NEW')

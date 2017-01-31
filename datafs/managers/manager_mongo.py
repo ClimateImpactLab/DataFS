@@ -176,19 +176,6 @@ class MongoDBManager(BaseDataManager):
         except DuplicateKeyError:
             raise KeyError('Archive "{}" already exists'.format(archive_name))
 
-    def _create_if_not_exists(
-            self,
-            archive_name,
-            metadata):
-
-        try:
-            self._create_archive(
-                archive_name,
-                metadata)
-
-        except KeyError:
-            pass
-
     @catch_timeout
     def _create_spec_config(self, table_name):
 
@@ -217,16 +204,6 @@ class MongoDBManager(BaseDataManager):
             raise KeyError
 
         return res
-
-    def _get_latest_hash(self, archive_name):
-
-        version_history = self._get_version_history(archive_name)
-
-        if len(version_history) == 0:
-            return None
-
-        else:
-            return version_history[-1]['checksum']
 
     def _delete_archive_record(self, archive_name):
 

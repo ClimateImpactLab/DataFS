@@ -146,14 +146,20 @@ class BaseDataManager(object):
         if table_name is None:
             table_name = self._table_name
 
-        if raise_on_err:
-            self._delete_table(table_name)
-            self._delete_table(table_name + '.spec')
+        if table_name not in self.table_names:
+            if raise_on_err:
+                raise KeyError('Table "{}" not found'.format(table_name))
+
         else:
-            try:
-                self._delete_table(table_name)
-            except KeyError:
-                pass
+            self._delete_table(table_name)
+
+        if table_name + '.spec' not in self.table_names:
+            if raise_on_err:
+                raise KeyError(
+                'Table "{}.spec" not found'.format(table_name + '.spec'))
+
+        else:
+            self._delete_table(table_name + '.spec')
 
     def update(self, archive_name, version_metadata):
         '''
@@ -410,6 +416,29 @@ class BaseDataManager(object):
     def _get_tags(self, archive_name):
 
         return self._get_archive_listing(archive_name)['tags']
+
+    def _get_latest_hash(self, archive_name):
+
+        version_history = self._get_version_history(archive_name)
+
+        if len(version_history) == 0:
+            return None
+
+        else:
+            return version_history[-1]['checksum']
+
+    def _create_if_not_exists(
+            self,
+            archive_name,
+            metadata):
+
+        try:
+            self._create_archive(
+                archive_name,
+                metadata)
+
+        except KeyError:
+            pass
 
     # Private methods (to be implemented by subclasses of DataManager)
 

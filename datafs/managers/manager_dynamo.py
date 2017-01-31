@@ -256,8 +256,6 @@ class DynamoDBManager(BaseDataManager):
             ReturnValues='ALL_NEW')
 
     def _delete_table(self, table_name):
-        if table_name not in self._get_table_names():
-            raise KeyError('Table "{}" not found'.format(table_name))
 
         try:
             self._resource.Table(table_name).delete()
@@ -346,17 +344,6 @@ class DynamoDBManager(BaseDataManager):
 
         self._table.put_item(Item=metadata)
 
-    def _create_if_not_exists(
-            self,
-            archive_name,
-            metadata):
-        try:
-            self._create_archive(
-                archive_name,
-                metadata)
-        except KeyError:
-            pass
-
     def _get_archive_listing(self, archive_name):
         '''
         Return full document for ``{_id:'archive_name'}``
@@ -366,16 +353,6 @@ class DynamoDBManager(BaseDataManager):
             DynamoDB specific results - do not expose to user
         '''
         return self._table.get_item(Key={'_id': archive_name})['Item']
-
-    def _get_latest_hash(self, archive_name):
-
-        version_history = self._get_version_history(archive_name)
-
-        if len(version_history) == 0:
-            return None
-
-        else:
-            return version_history[-1]['checksum']
 
     def _get_required_user_config(self):
 

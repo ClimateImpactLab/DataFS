@@ -290,14 +290,6 @@ class MongoDBManager(BaseDataManager):
             {"_id": archive_name},
             {"$set": {"tags": updated_tag_list}})
 
-    # def _delete_tags(self, archive_name, updated_tag_list):
-
-    #     self._set_tags(archive_name, updated_tag_list)
-
-    # def _add_tags(self, archive_name, updated_tag_list):
-
-    #     self._set_tags(archive_name, updated_tag_list)
-
     def _get_spec_documents(self, table_name):
         return [item for item in self.spec_collection.find({})]
 

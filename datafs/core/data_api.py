@@ -175,20 +175,24 @@ class DataAPI(object):
     def filter(self, pattern=None, engine='path', prefix=None):
         '''
 
-        Performs a filtered search on entire universe of archives according to pattern or prefix. 
+        Performs a filtered search on entire universe of archives
+        according to pattern or prefix.
 
         Parameters
         ----------
         prefix: str
-            string matching beginning characters of the archive or set of archives you are filtering
+            string matching beginning characters of the archive or set of
+            archives you are filtering
 
         pattern: str
-            string matching the characters within the archive or set of arhives you are filtering on
+            string matching the characters within the archive or set of
+            archives you are filtering on
 
-        engine: str 
-            string of value 'str', 'path', or 'regex'. That indicates the type of pattern you are filtering on
+        engine: str
+            string of value 'str', 'path', or 'regex'. That indicates the
+            type of pattern you are filtering on
 
-        
+
         Returns
         -------
         generator
@@ -210,7 +214,7 @@ class DataAPI(object):
 
         elif engine == 'path':
             # Change to generator version of fnmatch.filter
-            
+
             for arch in archives:
                 if fnmatch.fnmatch(arch, pattern):
                     yield arch
@@ -230,20 +234,22 @@ class DataAPI(object):
         Searches based on tags specified by users
 
 
+
         Parameters
         ---------
-        *query: str
-            tags to search on. If multiple terms, provided in comma delimited string format
+        query: str
+            tags to search on. If multiple terms, provided in comma delimited
+            string format
 
         prefix : str
-            start of archive name. Providing a start string improves search speed.
+            start of archive name. Providing a start string improves search
+            speed.
 
         '''
 
-        prefix=kwargs.get('prefix')
+        prefix = kwargs.get('prefix')
 
         return self.manager.search(query, begins_with=prefix)
-
 
     @classmethod
     def create_archive_path(cls, archive_name):

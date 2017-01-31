@@ -348,7 +348,6 @@ def test_cli_unversioned(test_config):
     result = runner.invoke(cli, prefix + ['filter'])
     assert result.exit_code == 0
     assert ['unversioned'] == [result.output.strip()]
-    #assert result.output == ''
 
     # test the actual creation of the object from the api side
     assert len(list(api2.filter())) == 1

@@ -319,15 +319,14 @@ class BaseDataManager(object):
 
         return time.strftime(cls.TimestampFormat, time.gmtime())
 
-
     def search(self, search_terms, begins_with=None):
         '''
 
         Parameters
         ----------
-        search_terms: tuple
-            strings of terms to search for 
-
+        search_terms: str
+            strings of terms to search for
+            If called as `api.manager.search()`, `search_terms` should be a list or a tuple of strings
 
         '''
 
@@ -355,7 +354,6 @@ class BaseDataManager(object):
         tags: list or tuple of strings
             tags to add to the archive
 
-
         '''
         updated_tag_list = list(self._get_tags(archive_name))
         for tag in tags:
@@ -376,7 +374,6 @@ class BaseDataManager(object):
         tags: list or tuple of strings
             tags to delete from the archive
     
-
         '''
         updated_tag_list = list(self._get_tags(archive_name))
         for tag in tags:
@@ -473,7 +470,7 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _search(self, search_terms):
+    def _search(self, search_terms, begins_with=None):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
@@ -484,8 +481,4 @@ class BaseDataManager(object):
     def _set_tags(self, archive_name, updated_tag_list):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.') 
-
-
-
-
 

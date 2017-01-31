@@ -5,12 +5,6 @@ import fs
 import pkgutil
 
 
-try:
-    PermissionError
-except NameError:
-    from datafs.core.data_api import PermissionError
-
-
 class APIConstructor(object):
 
     @staticmethod
@@ -24,7 +18,6 @@ class APIConstructor(object):
 
         return api
 
-
     @classmethod
     def attach_manager_from_config(cls, api, config):
 
@@ -32,7 +25,6 @@ class APIConstructor(object):
 
             manager = cls._generate_manager(config['manager'])
             api.attach_manager(manager)
-
 
     @classmethod
     def attach_services_from_config(cls, api, config):
@@ -43,7 +35,6 @@ class APIConstructor(object):
             service = cls._generate_service(service_config)
             api.attach_authority(service_name, service)
 
-
     @classmethod
     def attach_cache_from_config(cls, api, config):
 
@@ -51,7 +42,6 @@ class APIConstructor(object):
 
             service = cls._generate_service(config['cache'])
             api.attach_cache(service)
-
 
     @staticmethod
     def _generate_manager(manager_config):
@@ -214,7 +204,7 @@ class APIConstructor(object):
 
         filesystems = []
 
-        for importer, modname, ispkg in pkgutil.iter_modules(fs.__path__):
+        for importer, modname, _ in pkgutil.iter_modules(fs.__path__):
             if modname.endswith('fs'):
                 filesystems.append(modname)
 

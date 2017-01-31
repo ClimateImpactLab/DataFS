@@ -1,11 +1,7 @@
-
-
 import pytest
 import tempfile
 import os
 import itertools
-import shutil
-import click.termui
 from click.testing import CliRunner
 from tests.resources import _close
 from datafs.datafs import cli
@@ -15,7 +11,6 @@ from datafs import get_api, to_config_file
 def temp_dir():
 
     # setup data directory
-
     temp = tempfile.mkdtemp()
 
     try:
@@ -25,12 +20,9 @@ def temp_dir():
         _close(temp)
 
 
-
-
-
 @pytest.yield_fixture(scope='module')
 def test_config(api1_module, local_auth_module, temp_dir):
-    
+
     api1_module.attach_authority('local', local_auth_module)
 
     temp_file = os.path.join(temp_dir, 'config.yml')
@@ -64,29 +56,12 @@ def test_cli_search(test_config, monkeypatch):
     )
 
     assert result.exit_code == 0
-    assert 'team2_archive2_var2' in result.output.split('\n')[-2], result.output
 
+    assert 'team2_archive2_var2' in result.output.split('\n')[-2], result.output
 
     res = list(api.search('team2', 'var3', 'archive1'))
 
     assert 'team2_archive1_var3' in res
-
-    # down = '\x1b' + chr(91) + chr(65) #'\x50' # + chr(27) + chr(91) + chr(65)
-    # up = '\x1b' + chr(91) + chr(66) # '\x48' # + chr(27) + chr(91) + chr(66)
-
-    # # up = chr(945) + chr(72)
-    # # down = chr(945) + chr(80)
-    # enter = '\x1b' + chr(13)
-
-    # result = runner.invoke(
-    #     cli,
-    #     prefix + ['search'],
-    #     # input='var2 team3' + enter
-    #     input='var2 team3 ' + down + down + down + up + enter
-    # )
-
-    # assert 'team3_archive2_var2' in result.output.split('\n')[-2], result.output
-
 
     # Test the helper with the appropriate input stream
     result = runner.invoke(

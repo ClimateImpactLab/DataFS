@@ -119,7 +119,7 @@ class ConfigFile(object):
             }
 
             profile_config['cache'] = profile_config.get('cache', {})
-            
+
             for kw in ['service', 'args', 'kwargs']:
                 profile_config['cache'][kw] = profile_config[
                     'cache'].get(kw, cache_cfg[kw])

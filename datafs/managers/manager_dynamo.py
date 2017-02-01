@@ -31,14 +31,8 @@ class DynamoDBManager(BaseDataManager):
 
         super(DynamoDBManager, self).__init__(table_name)
 
-        if session_args is None:
-            session_args = {}
-
-        if resource_args is None:
-            resource_args = {}
-
-        self._session_args = session_args
-        self._resource_args = resource_args
+        self._session_args = {} if session_args is None else session_args
+        self._resource_args = {} if resource_args is None else resource_args
 
         self._session = boto3.Session(**session_args)
         self._resource = self._session.resource('dynamodb', **resource_args)
@@ -191,14 +185,11 @@ class DynamoDBManager(BaseDataManager):
         _spec_table.put_item(Item=user_config)
         _spec_table.put_item(Item=archive_config)
 
-    def _update_spec_config(self, document_name, spec=None):
+    def _update_spec_config(self, document_name, spec):
         '''
         Dynamo implementation of project specific metadata spec
 
         '''
-
-        if spec is None:
-            spec = {}
 
         spec_data_current = self._spec_table.get_item(
             Key={'_id': '{}'.format(document_name)})['Item']['config']

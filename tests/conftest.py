@@ -373,7 +373,8 @@ def api_with_diverse_archives(request):
                 raise_on_err=True,
                 metadata={},
                 user_config={},
-                helper=False)
+                helper=False,
+                tags=os.path.splitext(archive_name)[0].split('_'))
 
         with prep_filesystem('OSFS') as auth1:
 

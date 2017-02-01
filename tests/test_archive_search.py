@@ -51,7 +51,6 @@ def test_substr_search(api_with_diverse_archives):
     assert len(config_files) == api_with_diverse_archives.TEST_ATTRS[
         'archives.config']
 
-
 def test_regex_search(api_with_diverse_archives):
 
     # Test the total number of "variable" archives
@@ -174,3 +173,64 @@ def test_tagging_update_and_get(api_with_spec):
     result_delete = arch.get_tags()
     assert 'tag1' not in result_delete
     assert len(result_delete) == 2
+
+
+def test_begins_with_filter(api_with_diverse_archives):
+    variables = list(
+        api_with_diverse_archives.filter(
+            prefix='team1_project1_task1_var'))
+
+    assert len(variables) == (
+        api_with_diverse_archives.TEST_ATTRS['archives.variable']
+        / (api_with_diverse_archives.TEST_ATTRS['count.variable'] ** 3))
+
+
+def test_begins_with_filter_pattern(api_with_diverse_archives):
+    variables = list(
+        api_with_diverse_archives.filter(
+            prefix='team1_project1_task1_var',
+            pattern='*_scenario1.nc',
+            engine='path'))
+
+    assert len(variables) == (
+        api_with_diverse_archives.TEST_ATTRS['archives.variable']
+        / (api_with_diverse_archives.TEST_ATTRS['count.variable'] ** 4))
+
+
+def test_begins_with_tag_search(api_with_diverse_archives):
+    
+    variables = list(
+        api_with_diverse_archives.search(
+            'variable2',
+            prefix='team1_project1_task1_var')
+            )
+
+    assert len(variables) == (
+        api_with_diverse_archives.TEST_ATTRS['archives.variable']
+        / (api_with_diverse_archives.TEST_ATTRS['count.variable'] ** 4))
+
+    variables = list(
+        api_with_diverse_archives.search(
+            'variable2',
+            'scenario2',
+            'team1',
+            prefix='team1_project1_task1_var')
+            )
+
+    assert len(variables) == (
+        api_with_diverse_archives.TEST_ATTRS['archives.variable']
+        / (api_with_diverse_archives.TEST_ATTRS['count.variable'] ** 5))
+
+
+def test_begins_with_null_tag_search(api_with_diverse_archives):
+
+    variables = list(
+        api_with_diverse_archives.search(
+            'parameter1',
+            'team1',
+            prefix='team1_project1_task1_var')
+            )
+
+    assert len(variables) == 0
+
+

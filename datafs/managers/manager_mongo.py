@@ -214,7 +214,7 @@ class MongoDBManager(BaseDataManager):
 
 
         for r in res:
-            if (not begins_with) or r.startswith(begins_with):
+            if (not begins_with) or r['_id'].startswith(begins_with):
                 yield r['_id']
 
     def _set_tags(self, archive_name, updated_tag_list):

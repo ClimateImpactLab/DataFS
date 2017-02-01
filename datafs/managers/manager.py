@@ -191,6 +191,7 @@ class BaseDataManager(object):
             raise_on_err=True,
             metadata=None,
             user_config=None,
+            tags=None,
             helper=False):
         '''
         Create a new data archive
@@ -210,6 +211,7 @@ class BaseDataManager(object):
             raise_on_err=raise_on_err,
             metadata=metadata,
             user_config=user_config,
+            tags=tags,
             helper=helper)
 
         if raise_on_err:
@@ -232,6 +234,7 @@ class BaseDataManager(object):
             raise_on_err=True,
             metadata=None,
             user_config=None,
+            tags=None,
             helper=False):
 
         if metadata is None:
@@ -239,6 +242,9 @@ class BaseDataManager(object):
 
         if user_config is None:
             user_config = {}
+
+        if tags is None:
+            tags = []
 
         check_requirements(
             to_populate=user_config,
@@ -257,7 +263,7 @@ class BaseDataManager(object):
             'versioned': versioned,
             'version_history': [],
             'archive_metadata': metadata,
-            'tags': []
+            'tags': tags
         }
         archive_metadata.update(user_config)
 

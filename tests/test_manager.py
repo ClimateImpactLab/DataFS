@@ -101,14 +101,12 @@ def test_error_handling(api):
 def test_table_deletion(api):
 
     with pytest.raises(KeyError):
-        api.manager._delete_table('nonexistant-table')
+        api.manager.delete_table('nonexistant-table')
 
-    api.manager._delete_table(api.manager._table_name)
+    api.manager.delete_table(api.manager._table_name)
 
     with pytest.raises((KeyError, ClientError)):
         api.manager._update('nonexistant_archive', {})
-
-    api.manager._delete_table(api.manager._spec_table_name)
 
     with pytest.raises((KeyError, ClientError)):
         api.manager._update_spec_config('required_user_config', {})

@@ -146,14 +146,14 @@ class BaseDataManager(object):
         if table_name is None:
             table_name = self._table_name
 
-        if table_name not in self.table_names:
+        if table_name not in self._get_table_names():
             if raise_on_err:
                 raise KeyError('Table "{}" not found'.format(table_name))
 
         else:
             self._delete_table(table_name)
 
-        if table_name + '.spec' not in self.table_names:
+        if table_name + '.spec' not in self._get_table_names():
             if raise_on_err:
                 raise KeyError(
                     'Table "{}.spec" not found'.format(table_name + '.spec'))

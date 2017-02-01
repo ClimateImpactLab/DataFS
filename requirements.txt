@@ -1,4 +1,4 @@
 click==6.7
 PyYAML==3.12
-fs==0.5.5a1
+fs==2.0.0
 whoosh==2.7.4

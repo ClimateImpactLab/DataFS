@@ -212,7 +212,6 @@ class MongoDBManager(BaseDataManager):
 
         res = self.collection.find(query, {"_id": 1})
 
-
         for r in res:
             if (not begins_with) or r['_id'].startswith(begins_with):
                 yield r['_id']

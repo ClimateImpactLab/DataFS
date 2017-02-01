@@ -363,7 +363,7 @@ def api_with_diverse_archives(request):
             contact='my.email@example.com')
 
         api.attach_manager(manager)
-        
+
         def direct_create_archive_spec(archive_name):
             return api.manager._create_archive_metadata(
                 archive_name=archive_name,
@@ -410,7 +410,7 @@ def api_with_diverse_archives(request):
                 archive_names.append(archive_name)
 
             batch_size = 500
-            
+
             for st_ind in range(0, len(archive_names), batch_size):
                 current_batch = archive_names[st_ind:st_ind+batch_size]
 

@@ -31,14 +31,8 @@ class DynamoDBManager(BaseDataManager):
 
         super(DynamoDBManager, self).__init__(table_name)
 
-        if session_args is None:
-            session_args = {}
-
-        if resource_args is None:
-            resource_args = {}
-
-        self._session_args = session_args
-        self._resource_args = resource_args
+        self._session_args = {} if session_args is None else session_args
+        self._resource_args = {} if resource_args is None else resource_args
 
         self._session = boto3.Session(**session_args)
         self._resource = self._session.resource('dynamodb', **resource_args)
@@ -158,49 +152,6 @@ class DynamoDBManager(BaseDataManager):
             msg = 'Table creation failed'
             assert table_name in self._get_table_names(), msg
 
-    def _create_spec_table(self, table_name):
-        '''
-        Dynamo implementation of User and Metadata Spec configuration
-
-        Called by `create_archive_table()` in
-        :py:class:`manager.BaseDataManager`. This table will additional table
-        will be aliased by 'table_name.spec'
-
-        A waiter is implemented on Dynamo to ensure table exists before
-        executing any subsequent operations
-
-        Paramters
-        ---------
-        table_name: str
-
-        Returns
-        -------
-        None
-        '''
-
-        spec_table = table_name + '.spec'
-
-        if spec_table in self._get_table_names():
-            raise KeyError('Table "{}" already exists'.format(spec_table))
-
-        try:
-            table = self._resource.create_table(
-                TableName=spec_table,
-                KeySchema=[
-                    {'AttributeName': '_id', 'KeyType': 'HASH'}],
-                AttributeDefinitions=[
-                    {'AttributeName': '_id', 'AttributeType': 'S'}],
-                ProvisionedThroughput={
-                    'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123})
-
-            table.meta.client.get_waiter(
-                'table_exists').wait(TableName=spec_table)
-
-        except ValueError:
-            # Error handling for windows incompatability issue
-            msg = 'Table creation failed'
-            assert spec_table in self._get_table_names(), msg
-
     def _create_spec_config(self, table_name):
         '''
         Dynamo implementation of spec config creation
@@ -234,14 +185,11 @@ class DynamoDBManager(BaseDataManager):
         _spec_table.put_item(Item=user_config)
         _spec_table.put_item(Item=archive_config)
 
-    def _update_spec_config(self, document_name, spec=None):
+    def _update_spec_config(self, document_name, spec):
         '''
         Dynamo implementation of project specific metadata spec
 
         '''
-
-        if spec is None:
-            spec = {}
 
         spec_data_current = self._spec_table.get_item(
             Key={'_id': '{}'.format(document_name)})['Item']['config']

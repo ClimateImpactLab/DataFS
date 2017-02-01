@@ -178,11 +178,6 @@ def test_create_archive_table(base_manager):
         base_manager._create_archive_table('table_name')
 
 
-def test_create_spec_table(base_manager):
-    with pytest.raises(NotImplementedError):
-        base_manager._create_spec_table('table_name')
-
-
 def test_create_spec_config(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._create_spec_config('table_name')

@@ -72,8 +72,8 @@ class APIConstructor(object):
 
         >>> mgr = APIConstructor._generate_manager({
         ...     'class': 'DynamoDBManager',
-        ...     'args': ['data-from-yaml'],
         ...     'kwargs': {
+        ...         'table_name': 'data-from-yaml',
         ...         'session_args': {
         ...             'aws_access_key_id': "access-key-id-of-your-choice",
         ...             'aws_secret_access_key': "secret-key-of-your-choice"},
@@ -89,8 +89,8 @@ class APIConstructor(object):
         >>> 'data-from-yaml' in mgr.table_names
         False
         >>> mgr.create_archive_table('data-from-yaml')
-        >>> print(mgr.table_names[0])
-        data-from-yaml
+        >>> 'data-from-yaml' in mgr.table_names
+        True
         >>> mgr.delete_table('data-from-yaml')
 
         '''

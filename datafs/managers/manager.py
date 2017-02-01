@@ -68,13 +68,13 @@ class BaseDataManager(object):
 
         if raise_on_err:
             self._create_archive_table(table_name)
-            self._create_spec_table(table_name)
+            self._create_archive_table(table_name+'.spec')
             self._create_spec_config(table_name)
 
         else:
             try:
                 self._create_archive_table(table_name)
-                self._create_spec_table(table_name)
+                self._create_archive_table(table_name+'.spec')
                 self._create_spec_config(table_name)
             except KeyError:
                 pass
@@ -191,6 +191,7 @@ class BaseDataManager(object):
             raise_on_err=True,
             metadata=None,
             user_config=None,
+            tags=None,
             helper=False):
         '''
         Create a new data archive
@@ -202,11 +203,48 @@ class BaseDataManager(object):
 
         '''
 
+        archive_metadata = self._create_archive_metadata(
+            archive_name=archive_name,
+            authority_name=authority_name,
+            archive_path=archive_path,
+            versioned=versioned,
+            raise_on_err=raise_on_err,
+            metadata=metadata,
+            user_config=user_config,
+            tags=tags,
+            helper=helper)
+
+        if raise_on_err:
+            self._create_archive(
+                archive_name,
+                archive_metadata)
+        else:
+            self._create_if_not_exists(
+                archive_name,
+                archive_metadata)
+
+        return self.get_archive(archive_name)
+
+    def _create_archive_metadata(
+            self,
+            archive_name,
+            authority_name,
+            archive_path,
+            versioned,
+            raise_on_err=True,
+            metadata=None,
+            user_config=None,
+            tags=None,
+            helper=False):
+
         if metadata is None:
             metadata = {}
 
         if user_config is None:
             user_config = {}
+
+        if tags is None:
+            tags = []
 
         check_requirements(
             to_populate=user_config,
@@ -225,23 +263,14 @@ class BaseDataManager(object):
             'versioned': versioned,
             'version_history': [],
             'archive_metadata': metadata,
-            'tags': []
+            'tags': tags
         }
         archive_metadata.update(user_config)
 
         archive_metadata['creation_date'] = archive_metadata.get(
             'creation_date', self.create_timestamp())
 
-        if raise_on_err:
-            self._create_archive(
-                archive_name,
-                archive_metadata)
-        else:
-            self._create_if_not_exists(
-                archive_name,
-                archive_metadata)
-
-        return self.get_archive(archive_name)
+        return archive_metadata
 
     def get_archive(self, archive_name):
         '''
@@ -470,10 +499,6 @@ class BaseDataManager(object):
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _create_archive_table(self, table_name):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
-    def _create_spec_table(self, table_name):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 

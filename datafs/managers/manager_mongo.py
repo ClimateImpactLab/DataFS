@@ -89,16 +89,7 @@ class MongoDBManager(BaseDataManager):
         if table_name in self._get_table_names():
             raise KeyError('Table "{}" already exists'.format(table_name))
 
-        self.db.create_collection(self.table_name)
-
-    def _create_spec_table(self, table_name):
-
-        if self._spec_table_name in self._get_table_names():
-            raise KeyError(
-                'Table "{}" already exists'.format(
-                    self._spec_table_name))
-
-        self.db.create_collection(self._spec_table_name)
+        self.db.create_collection(table_name)
 
     def _delete_table(self, table_name):
         if table_name not in self._get_table_names():
@@ -222,7 +213,7 @@ class MongoDBManager(BaseDataManager):
         res = self.collection.find(query, {"_id": 1})
 
         for r in res:
-            if (not begins_with) or r.startswith(begins_with):
+            if (not begins_with) or r['_id'].startswith(begins_with):
                 yield r['_id']
 
     def _set_tags(self, archive_name, updated_tag_list):

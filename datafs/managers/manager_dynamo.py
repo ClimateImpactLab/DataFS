@@ -158,49 +158,6 @@ class DynamoDBManager(BaseDataManager):
             msg = 'Table creation failed'
             assert table_name in self._get_table_names(), msg
 
-    def _create_spec_table(self, table_name):
-        '''
-        Dynamo implementation of User and Metadata Spec configuration
-
-        Called by `create_archive_table()` in
-        :py:class:`manager.BaseDataManager`. This table will additional table
-        will be aliased by 'table_name.spec'
-
-        A waiter is implemented on Dynamo to ensure table exists before
-        executing any subsequent operations
-
-        Paramters
-        ---------
-        table_name: str
-
-        Returns
-        -------
-        None
-        '''
-
-        spec_table = table_name + '.spec'
-
-        if spec_table in self._get_table_names():
-            raise KeyError('Table "{}" already exists'.format(spec_table))
-
-        try:
-            table = self._resource.create_table(
-                TableName=spec_table,
-                KeySchema=[
-                    {'AttributeName': '_id', 'KeyType': 'HASH'}],
-                AttributeDefinitions=[
-                    {'AttributeName': '_id', 'AttributeType': 'S'}],
-                ProvisionedThroughput={
-                    'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123})
-
-            table.meta.client.get_waiter(
-                'table_exists').wait(TableName=spec_table)
-
-        except ValueError:
-            # Error handling for windows incompatability issue
-            msg = 'Table creation failed'
-            assert spec_table in self._get_table_names(), msg
-
     def _create_spec_config(self, table_name):
         '''
         Dynamo implementation of spec config creation

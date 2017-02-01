@@ -348,44 +348,92 @@ def datafile_opener(open_func):
         raise NameError('open_func "{}" not recognized'.format(open_func))
 
 
-@pytest.yield_fixture
-def api_with_diverse_archives(mgr_name, fs_name):
+@pytest.yield_fixture(scope='session', params=['mongo', 'dynamo'])
+def api_with_diverse_archives(request):
 
-    with prep_manager(mgr_name) as manager:
+    ITERATIONS = 7
+    VARS = 5
+    PARS = 5
+    CONF = 3
+
+    with prep_manager(request.param) as manager:
 
         api = DataAPI(
             username='My Name',
             contact='my.email@example.com')
 
         api.attach_manager(manager)
+        
+        def direct_create_archive_spec(archive_name):
+            return api.manager._create_archive_metadata(
+                archive_name=archive_name,
+                authority_name='auth',
+                archive_path='/'.join(archive_name.split('_')),
+                versioned=True,
+                raise_on_err=True,
+                metadata={},
+                user_config={},
+                helper=False)
 
-        with prep_filesystem(fs_name) as auth1:
+        with prep_filesystem('OSFS') as auth1:
 
             api.attach_authority('auth', auth1)
 
-            for indices in itertools.product(*(range(1, 4) for _ in range(5))):
-                api.create(
+            archive_names = []
+
+            for indices in itertools.product(*(
+                    range(1, ITERATIONS+1) for _ in range(VARS))):
+
+                archive_name = (
                     'team{}_project{}_task{}_variable{}_scenario{}.nc'.format(
                         *indices))
 
-            for indices in itertools.product(*(range(1, 4) for _ in range(5))):
+                archive_names.append(archive_name)
+
+            for indices in itertools.product(*(
+                    range(1, ITERATIONS+1) for _ in range(PARS))):
+
                 archive_name = (
                     'team{}_project{}_task{}_' +
                     'parameter{}_scenario{}.csv').format(*indices)
 
-                api.create(archive_name)
+                archive_names.append(archive_name)
 
-            for indices in itertools.product(*(range(1, 4) for _ in range(3))):
-                api.create(
+            for indices in itertools.product(*(
+                    range(1, ITERATIONS+1) for _ in range(CONF))):
+
+                archive_name = (
                     'team{}_project{}_task{}_config.txt'.format(
                         *indices))
 
+                archive_names.append(archive_name)
+
+            batch_size = 500
+            
+            for st_ind in range(0, len(archive_names), batch_size):
+                current_batch = archive_names[st_ind:st_ind+batch_size]
+
+                new_archives = list(map(
+                    direct_create_archive_spec, current_batch))
+
+                if request.param == 'mongo':
+                    api.manager.collection.insert_many(new_archives)
+
+                elif request.param == 'dynamo':
+                    with api.manager._table.batch_writer() as batch:
+                        for item in new_archives:
+                            batch.put_item(Item=item)
+
+                else:
+                    raise ValueError('Manager "{}" not recognized'.format(
+                        request.param))
+
             api.TEST_ATTRS = {
-                'archives.variable': 243,
-                'archives.parameter': 243,
-                'archives.config': 27,
-                'count.variable': 3,
-                'count.parameter': 3,
+                'archives.variable': ITERATIONS**VARS,
+                'archives.parameter': ITERATIONS**PARS,
+                'archives.config': ITERATIONS**CONF,
+                'count.variable': ITERATIONS,
+                'count.parameter': ITERATIONS,
                 'count.config': 1
             }
 

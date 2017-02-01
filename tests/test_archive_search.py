@@ -1,3 +1,17 @@
+
+def test_get_all_archives(api_with_diverse_archives):
+
+    # Test the total number of archives
+    variables = list(
+        api_with_diverse_archives.filter())
+
+    total = (
+        api_with_diverse_archives.TEST_ATTRS['archives.variable']
+        + api_with_diverse_archives.TEST_ATTRS['archives.parameter']
+        + api_with_diverse_archives.TEST_ATTRS['archives.config'])
+
+    assert len(variables) == total
+
 def test_substr_search(api_with_diverse_archives):
 
     # Test the total number of "variable" archives

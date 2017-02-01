@@ -89,16 +89,7 @@ class MongoDBManager(BaseDataManager):
         if table_name in self._get_table_names():
             raise KeyError('Table "{}" already exists'.format(table_name))
 
-        self.db.create_collection(self.table_name)
-
-    def _create_spec_table(self, table_name):
-
-        if self._spec_table_name in self._get_table_names():
-            raise KeyError(
-                'Table "{}" already exists'.format(
-                    self._spec_table_name))
-
-        self.db.create_collection(self._spec_table_name)
+        self.db.create_collection(table_name)
 
     def _delete_table(self, table_name):
         if table_name not in self._get_table_names():
@@ -219,11 +210,38 @@ class MongoDBManager(BaseDataManager):
             query = {
                 '$and': [{'tags': {'$in': [tag]}} for tag in search_terms]}
 
-        res = self.collection.find(query, {"_id": 1})
+        max_results = 50000
+        last_key = None
 
-        for r in res:
-            if (not begins_with) or r.startswith(begins_with):
-                yield r['_id']
+        while True:
+            if last_key is None:
+                paged_query = query
+
+            else:
+                if len(query) > 0:
+                    paged_query = {'$and':
+                        query.get('$and', [query])
+                        + [{'_id': {'$gt': last_key}}]}
+
+                else:
+                    paged_query = {'_id': {'$gt': last_key}}
+
+            res = self.collection.find(
+                paged_query, {"_id": 1}).limit(max_results)
+
+            read = False
+
+            for r in res:
+
+                read = True
+
+                if (not begins_with) or r['_id'].startswith(begins_with):
+                    yield r['_id']
+
+            if not read:
+                break
+
+            last_key = r['_id']
 
     def _set_tags(self, archive_name, updated_tag_list):
 

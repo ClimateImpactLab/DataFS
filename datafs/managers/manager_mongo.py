@@ -210,38 +210,12 @@ class MongoDBManager(BaseDataManager):
             query = {
                 '$and': [{'tags': {'$in': [tag]}} for tag in search_terms]}
 
-        max_results = 50000
-        last_key = None
+        res = self.collection.find(query, {"_id": 1})
 
-        while True:
-            if last_key is None:
-                paged_query = query
 
-            else:
-                if len(query) > 0:
-                    paged_query = {'$and':
-                        query.get('$and', [query])
-                        + [{'_id': {'$gt': last_key}}]}
-
-                else:
-                    paged_query = {'_id': {'$gt': last_key}}
-
-            res = self.collection.find(
-                paged_query, {"_id": 1}).limit(max_results)
-
-            read = False
-
-            for r in res:
-
-                read = True
-
-                if (not begins_with) or r['_id'].startswith(begins_with):
-                    yield r['_id']
-
-            if not read:
-                break
-
-            last_key = r['_id']
+        for r in res:
+            if (not begins_with) or r.startswith(begins_with):
+                yield r['_id']
 
     def _set_tags(self, archive_name, updated_tag_list):
 

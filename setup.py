@@ -21,7 +21,7 @@ with open('HISTORY.rst') as history_file:
 requirements_install = [
     'click>=6.0',
     'PyYAML>=3.0',
-    'fs>=0.5.5a1',
+    'fs==0.5.5a1',
     'whoosh>=2.6'
     ]
 

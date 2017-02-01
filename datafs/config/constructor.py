@@ -1,14 +1,8 @@
 
 from datafs import DataAPI
 import importlib
-import fs1
+import fs
 import pkgutil
-
-
-try:
-    PermissionError
-except NameError:
-    from datafs.core.data_api import PermissionError
 
 
 class APIConstructor(object):
@@ -24,7 +18,6 @@ class APIConstructor(object):
 
         return api
 
-
     @classmethod
     def attach_manager_from_config(cls, api, config):
 
@@ -32,7 +25,6 @@ class APIConstructor(object):
 
             manager = cls._generate_manager(config['manager'])
             api.attach_manager(manager)
-
 
     @classmethod
     def attach_services_from_config(cls, api, config):
@@ -43,7 +35,6 @@ class APIConstructor(object):
             service = cls._generate_service(service_config)
             api.attach_authority(service_name, service)
 
-
     @classmethod
     def attach_cache_from_config(cls, api, config):
 
@@ -51,7 +42,6 @@ class APIConstructor(object):
 
             service = cls._generate_service(config['cache'])
             api.attach_cache(service)
-
 
     @staticmethod
     def _generate_manager(manager_config):
@@ -82,8 +72,8 @@ class APIConstructor(object):
 
         >>> mgr = APIConstructor._generate_manager({
         ...     'class': 'DynamoDBManager',
-        ...     'args': ['data-from-yaml'],
         ...     'kwargs': {
+        ...         'table_name': 'data-from-yaml',
         ...         'session_args': {
         ...             'aws_access_key_id': "access-key-id-of-your-choice",
         ...             'aws_secret_access_key': "secret-key-of-your-choice"},
@@ -99,8 +89,8 @@ class APIConstructor(object):
         >>> 'data-from-yaml' in mgr.table_names
         False
         >>> mgr.create_archive_table('data-from-yaml')
-        >>> print(mgr.table_names[0])
-        data-from-yaml
+        >>> 'data-from-yaml' in mgr.table_names
+        True
         >>> mgr.delete_table('data-from-yaml')
 
         '''
@@ -162,7 +152,7 @@ class APIConstructor(object):
             >>> tmp = APIConstructor._generate_service(
             ...     {'service': 'TempFS'})
             ...
-            >>> from fs1.tempfs import TempFS
+            >>> from fs.tempfs import TempFS
             >>> assert isinstance(tmp, TempFS)
             >>> import os
             >>> assert os.path.isdir(tmp.getsyspath('/'))
@@ -181,7 +171,7 @@ class APIConstructor(object):
             ...         'args': [tempdir]
             ...     })
             ...
-            >>> from fs1.osfs import OSFS
+            >>> from fs.osfs import OSFS
             >>> assert isinstance(local, OSFS)
             >>> import os
             >>> assert os.path.isdir(local.getsyspath('/'))
@@ -206,7 +196,7 @@ class APIConstructor(object):
             ...         }
             ...     })
             ...
-            >>> from fs1.s3fs import S3FS
+            >>> from fs.s3fs import S3FS
             >>> assert isinstance(s3, S3FS)
             >>> m.stop()
 
@@ -214,18 +204,18 @@ class APIConstructor(object):
 
         filesystems = []
 
-        for importer, modname, ispkg in pkgutil.iter_modules(fs1.__path__):
+        for _, modname, _ in pkgutil.iter_modules(fs.__path__):
             if modname.endswith('fs'):
                 filesystems.append(modname)
 
         service_mod_name = service_config['service'].lower()
 
         assert_msg = 'Filesystem "{}" not found in pyFilesystem {}'.format(
-            service_mod_name, fs1.__version__)
+            service_mod_name, fs.__version__)
 
         assert service_mod_name in filesystems, assert_msg
 
-        svc_module = importlib.import_module('fs1.{}'.format(service_mod_name))
+        svc_module = importlib.import_module('fs.{}'.format(service_mod_name))
         svc_class = svc_module.__dict__[service_config['service']]
 
         service = svc_class(*service_config.get('args', []),

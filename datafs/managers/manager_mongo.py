@@ -89,16 +89,7 @@ class MongoDBManager(BaseDataManager):
         if table_name in self._get_table_names():
             raise KeyError('Table "{}" already exists'.format(table_name))
 
-        self.db.create_collection(self.table_name)
-
-    def _create_spec_table(self, table_name):
-
-        if self._spec_table_name in self._get_table_names():
-            raise KeyError(
-                'Table "{}" already exists'.format(
-                    self._spec_table_name))
-
-        self.db.create_collection(self._spec_table_name)
+        self.db.create_collection(table_name)
 
     def _delete_table(self, table_name):
         if table_name not in self._get_table_names():
@@ -176,19 +167,6 @@ class MongoDBManager(BaseDataManager):
         except DuplicateKeyError:
             raise KeyError('Archive "{}" already exists'.format(archive_name))
 
-    def _create_if_not_exists(
-            self,
-            archive_name,
-            metadata):
-
-        try:
-            self._create_archive(
-                archive_name,
-                metadata)
-
-        except KeyError:
-            pass
-
     @catch_timeout
     def _create_spec_config(self, table_name):
 
@@ -211,73 +189,38 @@ class MongoDBManager(BaseDataManager):
             MongoDB specific results - do not expose to user
         '''
 
-        return self.collection.find_one({'_id': archive_name})
-
-    def _get_archive_spec(self, archive_name):
-        res = self._get_archive_listing(archive_name)
-
-        if res is None:
-            raise KeyError
-
-        spec = ['authority_name', 'archive_path', 'versioned']
-
-        return {k: v for k, v in res.items() if k in spec}
-
-    def _get_authority_name(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        if res is None:
-            raise KeyError
-
-        return res['authority_name']
-
-    def _get_archive_path(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        if res is None:
-            raise KeyError
-
-        return res['archive_path']
-
-    def _get_archive_metadata(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        if res is None:
-            raise KeyError
-
-        return res['archive_metadata']
-
-    def _get_version_history(self, archive_name):
-
         res = self.collection.find_one({'_id': archive_name})
 
         if res is None:
             raise KeyError
 
-        return res['version_history']
-
-    def _get_latest_hash(self, archive_name):
-
-        version_history = self._get_version_history(archive_name)
-
-        if len(version_history) == 0:
-            return None
-
-        else:
-            return version_history[-1]['checksum']
+        return res
 
     def _delete_archive_record(self, archive_name):
 
         return self.collection.remove({'_id': archive_name})
 
-    def _get_archive_names(self):
+    def _search(self, search_terms, begins_with=None):
 
-        res = self.collection.find({}, {"_id": 1})
+        if len(search_terms) == 0:
+            query = {}
+        elif len(search_terms) == 1:
+            query = {'tags': {'$in': [search_terms[0]]}}
+        else:
+            query = {
+                '$and': [{'tags': {'$in': [tag]}} for tag in search_terms]}
 
-        return [r['_id'] for r in res]
+        res = self.collection.find(query, {"_id": 1})
+
+        for r in res:
+            if (not begins_with) or r['_id'].startswith(begins_with):
+                yield r['_id']
+
+    def _set_tags(self, archive_name, updated_tag_list):
+
+        self.collection.update(
+            {"_id": archive_name},
+            {"$set": {"tags": updated_tag_list}})
 
     def _get_spec_documents(self, table_name):
         return [item for item in self.spec_collection.find({})]

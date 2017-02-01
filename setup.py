@@ -1,7 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+'''
+DataFS is an abstraction layer for data storage systems.
+
+DataFS is a package manager for data. It manages file versions, dependencies,
+and metadata for individual use or large organizations.
+'''
+
 
 from setuptools import setup, find_packages
+
+description = __doc__
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -12,7 +21,7 @@ with open('HISTORY.rst') as history_file:
 requirements_install = [
     'click>=6.0',
     'PyYAML>=3.0',
-    'fs1>=0.6',
+    'fs>=0.5.5a1',
     'whoosh>=2.6'
     ]
 
@@ -40,8 +49,8 @@ entry_points = '[console_scripts]\ndatafs=datafs.datafs:cli'
 
 setup(
     name='datafs',
-    version='0.6.6',
-    description="DataFS is an abstraction layer for data storage systems. It manages file versions and metadata using a json-like storage system like AWS's DynamoDB and relies on PyFilesystem to abstract file storage, allowing you to store files locally and on the cloud in a seamless interface.",
+    version='0.6.7',
+    description=description,
     long_description=readme + '\n\n' + history,
     author="Climate Impact Lab",
     url='https://github.com/ClimateImpactLab/datafs',

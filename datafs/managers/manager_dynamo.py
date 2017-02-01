@@ -1,7 +1,8 @@
-
 import boto3
 
 from datafs.managers.manager import BaseDataManager
+from boto3.dynamodb.conditions import Attr, Key
+from functools import reduce
 
 
 class DynamoDBManager(BaseDataManager):
@@ -30,14 +31,8 @@ class DynamoDBManager(BaseDataManager):
 
         super(DynamoDBManager, self).__init__(table_name)
 
-        if session_args is None:
-            session_args = {}
-
-        if resource_args is None:
-            resource_args = {}
-
-        self._session_args = session_args
-        self._resource_args = resource_args
+        self._session_args = {} if session_args is None else session_args
+        self._resource_args = {} if resource_args is None else resource_args
 
         self._session = boto3.Session(**session_args)
         self._resource = self._session.resource('dynamodb', **resource_args)
@@ -56,16 +51,38 @@ class DynamoDBManager(BaseDataManager):
 
     # Private methods
 
-    def _get_archive_names(self):
+    def _search(self, search_terms, begins_with=None):
         """
-        Returns a list of Archives in the table on Dynamo
+        Returns a list of Archive id's in the table on Dynamo
+
         """
-        if len(self._table.scan(AttributesToGet=['_id'])['Items']) == 0:
-            return []
-        else:
-            res = [str(archive['_id']) for archive in self._table.scan(
-                AttributesToGet=['_id'])['Items']]
-            return res
+
+        kwargs = dict(
+            ProjectionExpression='#id',
+            ExpressionAttributeNames={"#id": "_id"})
+
+        if len(search_terms) > 0:
+            kwargs['FilterExpression'] = reduce(
+                lambda x, y: x & y,
+                [Attr('tags').contains(arg) for arg in search_terms])
+
+        if begins_with:
+            if 'FilterExpression' in kwargs:
+                kwargs['FilterExpression'] = kwargs[
+                    'FilterExpression'] & Key('_id').begins_with(begins_with)
+
+            else:
+                kwargs['FilterExpression'] = Key(
+                    '_id').begins_with(begins_with)
+
+        while True:
+            res = self._table.scan(**kwargs)
+            for r in res['Items']:
+                yield r['_id']
+            if 'LastEvaluatedKey' in res:
+                kwargs['ExclusiveStartKey'] = res['LastEvaluatedKey']
+            else:
+                break
 
     def _update(self, archive_name, version_metadata):
         '''
@@ -135,49 +152,6 @@ class DynamoDBManager(BaseDataManager):
             msg = 'Table creation failed'
             assert table_name in self._get_table_names(), msg
 
-    def _create_spec_table(self, table_name):
-        '''
-        Dynamo implementation of User and Metadata Spec configuration
-
-        Called by `create_archive_table()` in
-        :py:class:`manager.BaseDataManager`. This table will additional table
-        will be aliased by 'table_name.spec'
-
-        A waiter is implemented on Dynamo to ensure table exists before
-        executing any subsequent operations
-
-        Paramters
-        ---------
-        table_name: str
-
-        Returns
-        -------
-        None
-        '''
-
-        spec_table = table_name + '.spec'
-
-        if spec_table in self._get_table_names():
-            raise KeyError('Table "{}" already exists'.format(spec_table))
-
-        try:
-            table = self._resource.create_table(
-                TableName=spec_table,
-                KeySchema=[
-                    {'AttributeName': '_id', 'KeyType': 'HASH'}],
-                AttributeDefinitions=[
-                    {'AttributeName': '_id', 'AttributeType': 'S'}],
-                ProvisionedThroughput={
-                    'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123})
-
-            table.meta.client.get_waiter(
-                'table_exists').wait(TableName=spec_table)
-
-        except ValueError:
-            # Error handling for windows incompatability issue
-            msg = 'Table creation failed'
-            assert spec_table in self._get_table_names(), msg
-
     def _create_spec_config(self, table_name):
         '''
         Dynamo implementation of spec config creation
@@ -211,14 +185,11 @@ class DynamoDBManager(BaseDataManager):
         _spec_table.put_item(Item=user_config)
         _spec_table.put_item(Item=archive_config)
 
-    def _update_spec_config(self, document_name, spec=None):
+    def _update_spec_config(self, document_name, spec):
         '''
         Dynamo implementation of project specific metadata spec
 
         '''
-
-        if spec is None:
-            spec = {}
 
         spec_data_current = self._spec_table.get_item(
             Key={'_id': '{}'.format(document_name)})['Item']['config']
@@ -233,8 +204,6 @@ class DynamoDBManager(BaseDataManager):
             ReturnValues='ALL_NEW')
 
     def _delete_table(self, table_name):
-        if table_name not in self._get_table_names():
-            raise KeyError('Table "{}" not found'.format(table_name))
 
         try:
             self._resource.Table(table_name).delete()
@@ -308,25 +277,20 @@ class DynamoDBManager(BaseDataManager):
         Coerce underscores to dashes
         '''
 
-        if archive_name in self._get_archive_names():
+        archive_exists = False
 
+        try:
+            self.get_archive(archive_name)
+            archive_exists = True
+        except KeyError:
+            pass
+
+        if archive_exists:
             raise KeyError(
                 "{} already exists. Use get_archive() to view".format(
                     archive_name))
 
-        else:
-            self._table.put_item(Item=metadata)
-
-    def _create_if_not_exists(
-            self,
-            archive_name,
-            metadata):
-        try:
-            self._create_archive(
-                archive_name,
-                metadata)
-        except KeyError:
-            pass
+        self._table.put_item(Item=metadata)
 
     def _get_archive_listing(self, archive_name):
         '''
@@ -337,50 +301,6 @@ class DynamoDBManager(BaseDataManager):
             DynamoDB specific results - do not expose to user
         '''
         return self._table.get_item(Key={'_id': archive_name})['Item']
-
-    def _get_archive_metadata(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['archive_metadata']
-
-    def _get_archive_spec(self, archive_name):
-        res = self._get_archive_listing(archive_name)
-
-        if res is None:
-            raise KeyError
-
-        spec = ['authority_name', 'archive_path', 'versioned']
-
-        return {k: v for k, v in res.items() if k in spec}
-
-    def _get_authority_name(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['authority_name']
-
-    def _get_archive_path(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['archive_path']
-
-    def _get_version_history(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['version_history']
-
-    def _get_latest_hash(self, archive_name):
-
-        version_history = self._get_version_history(archive_name)
-
-        if len(version_history) == 0:
-            return None
-
-        else:
-            return version_history[-1]['checksum']
 
     def _get_required_user_config(self):
 
@@ -398,3 +318,11 @@ class DynamoDBManager(BaseDataManager):
 
     def _get_spec_documents(self, table_name):
         return self._resource.Table(table_name + '.spec').scan()['Items']
+
+    def _set_tags(self, archive_name, updated_tag_list):
+
+        self._table.update_item(
+                Key={'_id': archive_name},
+                UpdateExpression="SET tags = :t",
+                ExpressionAttributeValues={':t': updated_tag_list},
+                ReturnValues='ALL_NEW')

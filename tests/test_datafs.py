@@ -70,146 +70,144 @@ string_tests = [
     os.linesep.join(['ajfdsaion', 'daf', 'adfadsffdadsf'])]
 
 
-class TestHashFunction(object):
+def update_and_hash(arch, contents):
+    '''
+    Save contents to archive ``arch`` and return the DataAPI's hash value
+    '''
 
-    def update_and_hash(self, arch, contents):
-        '''
-        Save contents to archive ``arch`` and return the DataAPI's hash value
-        '''
+    f = tempfile.NamedTemporaryFile(delete=False)
 
-        f = tempfile.NamedTemporaryFile(delete=False)
+    try:
+        f.write(contents)
+        f.close()
 
-        try:
-            f.write(contents)
-            f.close()
+        apihash = arch.api.hash_file(f.name)['checksum']
+        arch.update(f.name)
 
-            apihash = arch.api.hash_file(f.name)['checksum']
-            arch.update(f.name)
+    finally:
+        os.remove(f.name)
 
-        finally:
-            os.remove(f.name)
-
-        return apihash
-
-    @pytest.mark.parametrize('contents', string_tests)
-    def test_hashfuncs(self, archive, contents):
-        '''
-        Run through a number of iterations of the hash functions
-        '''
-
-        contents = u(contents)
-
-        direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
-        apihash = self.update_and_hash(archive, contents)
-
-        assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
-            direct, apihash)
-
-        msg = (
-            'Manual hash "{}"'.format(direct) +
-            ' != archive hash "{}"'.format(archive.get_latest_hash()))
-        assert direct == archive.get_latest_hash(), msg
-
-        # Try uploading the same file
-        apihash = self.update_and_hash(archive, contents)
-
-        assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
-            direct, apihash)
-
-        msg = (
-            'Manual hash "{}"'.format(direct) +
-            ' != archive hash "{}"'.format(archive.get_latest_hash()))
-        assert direct == archive.get_latest_hash(), msg
-
-        # Update and test again!
-
-        contents = u((os.linesep).join(
-            [contents, contents, 'line 3!' + contents]))
-
-        direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
-        apihash = self.update_and_hash(archive, contents)
-
-        with archive.open('rb') as f:
-            current = f.read()
-
-        msg = 'Latest updates "{}" !=  archive contents "{}"'.format(
-            contents, current)
-        assert contents == current, msg
-
-        assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
-            direct, apihash)
-
-        msg = (
-            'Manual hash "{}"'.format(direct) +
-            ' != archive hash "{}"'.format(archive.get_latest_hash()))
-        assert direct == archive.get_latest_hash(), msg
-
-        # Update and test a different way!
-
-        contents = u((os.linesep).join([contents, 'more!!!', contents]))
-
-        direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
-
-        with archive.open('wb+') as f:
-            f.write(b(contents))
-
-        with archive.open('rb') as f2:
-            current = f2.read()
-
-        msg = 'Latest updates "{}" !=  archive contents "{}"'.format(
-            contents, current)
-        assert contents == current, msg
-
-        msg = (
-            'Manual hash "{}"'.format(direct) +
-            ' != archive hash "{}"'.format(archive.get_latest_hash()))
-        assert direct == archive.get_latest_hash(), msg
+    return apihash
 
 
-class TestArchiveCreation(object):
+@pytest.mark.parametrize('contents', string_tests)
+def test_hashfuncs(archive, contents):
+    '''
+    Run through a number of iterations of the hash functions
+    '''
 
-    def test_create_archive(self, api):
-        archive_name = 'test_recreation_error'
+    contents = u(contents)
 
-        api.create(archive_name, metadata={'testval': 'my test value'})
-        var = api.get_archive(archive_name)
+    direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
+    apihash = update_and_hash(archive, contents)
 
-        testval = var.get_metadata()['testval']
+    assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
+        direct, apihash)
 
-        with pytest.raises(KeyError) as excinfo:
-            api.create(archive_name)
+    msg = (
+        'Manual hash "{}"'.format(direct) +
+        ' != archive hash "{}"'.format(archive.get_latest_hash()))
+    assert direct == archive.get_latest_hash(), msg
 
-        assert "already exists" in str(excinfo.value)
+    # Try uploading the same file
+    apihash = update_and_hash(archive, contents)
 
-        api.create(
-            archive_name,
-            metadata={
-                'testval': 'a different test value'},
-            raise_on_err=False)
-        var = api.get_archive(archive_name)
+    assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
+        direct, apihash)
 
-        assert testval == var.get_metadata()[
-            'testval'], "Test archive was incorrectly updated!"
+    msg = (
+        'Manual hash "{}"'.format(direct) +
+        ' != archive hash "{}"'.format(archive.get_latest_hash()))
+    assert direct == archive.get_latest_hash(), msg
 
-        var.update_metadata({'testval': 'a different test value'})
+    # Update and test again!
 
-        msg = "Test archive was not updated!"
-        assert var.get_metadata()['testval'] == 'a different test value', msg
+    contents = u((os.linesep).join(
+        [contents, contents, 'line 3!' + contents]))
 
-        # Test archive deletion
-        var.delete()
+    direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
+    apihash = update_and_hash(archive, contents)
 
-        with pytest.raises(KeyError):
-            api.get_archive(archive_name)
+    with archive.open('rb') as f:
+        current = f.read()
 
-    def test_api_locks(self, api, local_auth):
+    msg = 'Latest updates "{}" !=  archive contents "{}"'.format(
+        contents, current)
+    assert contents == current, msg
 
-        api.lock_manager()
-        api.lock_authorities()
+    assert direct == apihash, 'Manual hash "{}" != api hash "{}"'.format(
+        direct, apihash)
 
-        with pytest.raises((PermissionError, NameError)):
-            with prep_manager('mongo') as manager:
-                api.attach_manager(manager)
+    msg = (
+        'Manual hash "{}"'.format(direct) +
+        ' != archive hash "{}"'.format(archive.get_latest_hash()))
+    assert direct == archive.get_latest_hash(), msg
 
-        with pytest.raises((PermissionError, NameError)):
-            api.attach_authority('auth', local_auth)
+    # Update and test a different way!
+
+    contents = u((os.linesep).join([contents, 'more!!!', contents]))
+
+    direct = hashlib.md5(contents.encode('utf-8')).hexdigest()
+
+    with archive.open('wb+') as f:
+        f.write(b(contents))
+
+    with archive.open('rb') as f2:
+        current = f2.read()
+
+    msg = 'Latest updates "{}" !=  archive contents "{}"'.format(
+        contents, current)
+    assert contents == current, msg
+
+    msg = (
+        'Manual hash "{}"'.format(direct) +
+        ' != archive hash "{}"'.format(archive.get_latest_hash()))
+    assert direct == archive.get_latest_hash(), msg
+
+
+def test_create_archive(api):
+    archive_name = 'test_recreation_error'
+
+    api.create(archive_name, metadata={'testval': 'my test value'})
+    var = api.get_archive(archive_name)
+
+    testval = var.get_metadata()['testval']
+
+    with pytest.raises(KeyError) as excinfo:
+        api.create(archive_name)
+
+    assert "already exists" in str(excinfo.value)
+
+    api.create(
+        archive_name,
+        metadata={
+            'testval': 'a different test value'},
+        raise_on_err=False)
+    var = api.get_archive(archive_name)
+
+    assert testval == var.get_metadata()[
+        'testval'], "Test archive was incorrectly updated!"
+
+    var.update_metadata({'testval': 'a different test value'})
+
+    msg = "Test archive was not updated!"
+    assert var.get_metadata()['testval'] == 'a different test value', msg
+
+    # Test archive deletion
+    var.delete()
+
+    with pytest.raises(KeyError):
+        api.get_archive(archive_name)
+
+
+def test_api_locks(api, local_auth):
+
+    api.lock_manager()
+    api.lock_authorities()
+
+    with pytest.raises((PermissionError, NameError)):
+        with prep_manager('mongo') as manager:
+            api.attach_manager(manager)
+
+    with pytest.raises((PermissionError, NameError)):
+        api.attach_authority('auth', local_auth)

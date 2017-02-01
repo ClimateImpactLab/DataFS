@@ -1,13 +1,13 @@
 
-import fs1.utils
-import fs1.path
+import fs.utils
+import fs.path
 import tempfile
 import shutil
 import time
-from fs1.osfs import OSFS
-from fs1.multifs import MultiFS
+from fs.osfs import OSFS
+from fs.multifs import MultiFS
 
-from fs1.errors import (ResourceLockedError)
+from fs.errors import (ResourceLockedError)
 
 from contextlib import contextmanager
 
@@ -35,7 +35,7 @@ def _makedirs(filesystem, path):
 
 
 def _touch(filesystem, path):
-    _makedirs(filesystem, fs1.path.dirname(path))
+    _makedirs(filesystem, fs.path.dirname(path))
     if not filesystem.isfile(path):
         filesystem.createfile(path)
 
@@ -59,7 +59,7 @@ def _choose_read_fs(authority, cache, read_path, version_check, hasher):
             yield cache.fs
 
         elif authority.fs.isfile(read_path):
-            fs1.utils.copyfile(
+            fs.utils.copyfile(
                 authority.fs,
                 read_path,
                 cache.fs,
@@ -67,13 +67,13 @@ def _choose_read_fs(authority, cache, read_path, version_check, hasher):
             yield cache.fs
 
         else:
-            _makedirs(authority.fs, fs1.path.dirname(read_path))
-            _makedirs(cache.fs, fs1.path.dirname(read_path))
+            _makedirs(authority.fs, fs.path.dirname(read_path))
+            _makedirs(cache.fs, fs.path.dirname(read_path))
             yield cache.fs
 
     else:
         if not authority.fs.isfile(read_path):
-            _makedirs(authority.fs, fs1.path.dirname(read_path))
+            _makedirs(authority.fs, fs.path.dirname(read_path))
 
         yield authority.fs
 
@@ -131,7 +131,7 @@ def _prepare_write_fs(read_fs, cache, read_path, readwrite_mode=True):
                 _touch(write_fs, read_path)
 
                 if read_fs.isfile(read_path):
-                    fs1.utils.copyfile(
+                    fs.utils.copyfile(
                         read_fs, read_path, write_fs, read_path)
 
         else:
@@ -216,22 +216,22 @@ def open_file(
                         (
                             cache
                             and (
-                                fs1.path.abspath(read_path) ==
-                                fs1.path.abspath(write_path))
+                                fs.path.abspath(read_path) ==
+                                fs.path.abspath(write_path))
                             and cache.fs.isfile(read_path)
                         )
                     ):
-                        _makedirs(cache.fs, fs1.path.dirname(write_path))
-                        fs1.utils.copyfile(
+                        _makedirs(cache.fs, fs.path.dirname(write_path))
+                        fs.utils.copyfile(
                             write_fs, read_path, cache.fs, write_path)
 
-                        _makedirs(authority.fs, fs1.path.dirname(write_path))
-                        fs1.utils.copyfile(
+                        _makedirs(authority.fs, fs.path.dirname(write_path))
+                        fs.utils.copyfile(
                             cache.fs, write_path, authority.fs, write_path)
 
                     else:
-                        _makedirs(authority.fs, fs1.path.dirname(write_path))
-                        fs1.utils.copyfile(
+                        _makedirs(authority.fs, fs.path.dirname(write_path))
+                        fs.utils.copyfile(
                             write_fs, read_path, authority.fs, write_path)
 
                     update(**checksum)
@@ -302,22 +302,22 @@ def get_local_path(
                         (
                             cache
                             and (
-                                fs1.path.abspath(read_path) ==
-                                fs1.path.abspath(write_path))
+                                fs.path.abspath(read_path) ==
+                                fs.path.abspath(write_path))
                             and cache.fs.isfile(read_path)
                         )
                     ):
 
-                        _makedirs(cache.fs, fs1.path.dirname(write_path))
-                        fs1.utils.copyfile(
+                        _makedirs(cache.fs, fs.path.dirname(write_path))
+                        fs.utils.copyfile(
                             write_fs, read_path, cache.fs, write_path)
 
-                        _makedirs(authority.fs, fs1.path.dirname(write_path))
-                        fs1.utils.copyfile(
+                        _makedirs(authority.fs, fs.path.dirname(write_path))
+                        fs.utils.copyfile(
                             cache.fs, write_path, authority.fs, write_path)
                     else:
-                        _makedirs(authority.fs, fs1.path.dirname(write_path))
-                        fs1.utils.copyfile(
+                        _makedirs(authority.fs, fs.path.dirname(write_path))
+                        fs.utils.copyfile(
                             write_fs, read_path, authority.fs, write_path)
                     update(**checksum)
 

@@ -49,7 +49,7 @@ entry_points = '[console_scripts]\ndatafs=datafs.datafs:cli'
 
 setup(
     name='datafs',
-    version='0.6.6',
+    version='0.6.7',
     description=description,
     long_description=readme + '\n\n' + history,
     author="Climate Impact Lab",

@@ -9,31 +9,29 @@ from datafs.config.helpers import (
     _parse_requirement,
     _interactive_config)
 from datafs._compat import u
-from datafs import DataAPI
-from datafs.core.data_archive import DataArchive
 import click
 import sys
 import pprint
 
 
-def _parse_args_and_kwargs(args):
+def _parse_args_and_kwargs(passed_args):
 
     args = []
     kwargs = {}
 
     has_kwargs = False
 
-    while len(args) > 0:
+    while len(passed_args) > 0:
 
-        arg = args.pop(0)
+        arg = passed_args.pop(0)
 
         if arg[:2] == '--':
             has_kwargs = True
 
-            if not len(args) > 0:
+            if not len(passed_args) > 0:
                 raise ValueError('Argument "{}" not recognized'.format(arg))
 
-            kwargs[arg[2:]] = args.pop(0)
+            kwargs[arg[2:]] = passed_args.pop(0)
 
         else:
             if has_kwargs:
@@ -48,8 +46,7 @@ def _parse_args_and_kwargs(args):
 
 def _interactive_configuration(api, config, profile=None):
 
-    if profile is None:
-        profile = config.default_profile
+    profile = config.default_profile if profile is None else profile
 
     profile_config = config.get_profile_config(profile)
 
@@ -118,7 +115,7 @@ def cli(
     '''
     An abstraction layer for data storage systems
 
-    DataFS is a package manager for data. It manages file versions, 
+    DataFS is a package manager for data. It manages file versions,
     dependencies, and metadata for individual use or large organizations.
 
     For more information, see the docs at https://datafs.readthedocs.io
@@ -196,7 +193,9 @@ def create(ctx, archive_name, authority_name, versioned=True, helper=False):
     '''
 
     _generate_api(ctx)
-    _, kwargs = _parse_args_and_kwargs(ctx.args)
+    args, kwargs = _parse_args_and_kwargs(ctx.args)
+    assert len(args) == 0, 'Unrecognized arguments: "{}"'.format(args)
+
     var = ctx.obj.api.create(
         archive_name,
         authority_name=authority_name,
@@ -234,7 +233,9 @@ def update(
 
     _generate_api(ctx)
 
-    _, kwargs = _parse_args_and_kwargs(ctx.args)
+    args, kwargs = _parse_args_and_kwargs(ctx.args)
+    assert len(args) == 0, 'Unrecognized arguments: "{}"'.format(args)
+
     dependencies_dict = _parse_dependencies(dependency)
 
     var = ctx.obj.api.get_archive(archive_name)
@@ -297,7 +298,8 @@ def update_metadata(ctx, archive_name):
     '''
 
     _generate_api(ctx)
-    _, kwargs = _parse_args_and_kwargs(ctx.args)
+    args, kwargs = _parse_args_and_kwargs(ctx.args)
+    assert len(args) == 0, 'Unrecognized arguments: "{}"'.format(args)
 
     var = ctx.obj.api.get_archive(archive_name)
 
@@ -347,7 +349,7 @@ def get_dependencies(ctx, archive_name, version):
     dependencies = var.get_dependencies(version=version)
     for arch, dep in dependencies.items():
         if dep is None:
-            deps.append(dep)
+            deps.append(arch)
         else:
             deps.append('{}=={}'.format(arch, dep))
 
@@ -458,10 +460,16 @@ def filter_archives(ctx, prefix, pattern, engine):
 
     # want to achieve behavior like click.echo(' '.join(matches))
 
-    for match in ctx.obj.api.filter(
-            pattern, engine, prefix=prefix):
+    for i, match in enumerate(ctx.obj.api.filter(
+            pattern, engine, prefix=prefix)):
 
-        click.echo(match)
+        if i > 0:
+            click.echo(' ', nl=False)
+
+        click.echo(match, nl=False)
+
+    click.echo('')
+
 
 cli.add_command(filter_archives, name='filter')
 
@@ -482,9 +490,14 @@ def search(ctx, query_tags, prefix=None):
 
     assert isinstance(query_tags, tuple)
 
-    for match in ctx.obj.api.search(*query_tags, prefix=prefix):
+    for i, match in enumerate(ctx.obj.api.search(*query_tags, prefix=prefix)):
 
-        click.echo(match)
+        if i > 0:
+            click.echo(' ', nl=False)
+
+        click.echo(match, nl=False)
+
+    click.echo('\n', nl=False)
 
 
 @cli.command(short_help='Delete an archive')

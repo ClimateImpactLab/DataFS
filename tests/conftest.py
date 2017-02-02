@@ -38,26 +38,39 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize('open_func', ['open_file', 'get_local_path'])
 
 
-@pytest.yield_fixture
-def tempdir():
+@contextmanager
+def make_temp_dir():
     tmpdir = tempfile.mkdtemp()
 
     try:
-        yield tmpdir
+        yield tmpdir.replace(os.sep, '/')
 
     finally:
         _close(tmpdir)
 
 
+@pytest.yield_fixture(scope='function')
+def tempdir():
+    with make_temp_dir() as tmp:
+        yield tmp
+
+
+@pytest.yield_fixture(scope='module')
+def temp_dir_mod():
+    with make_temp_dir() as tmp:
+        yield tmp
+
+
 @pytest.yield_fixture(scope='module')
 def temp_file():
-    tmp = tempfile.NamedTemporaryFile()
+    tmp = tempfile.NamedTemporaryFile(delete=False)
 
     try:
-        yield tmp.name
+        yield tmp.name.replace(os.sep, '/')
 
     finally:
-        os.remove(tmp.name)
+        tmp.close()
+        _close(tmp.name)
 
 
 @contextmanager
@@ -65,17 +78,12 @@ def prep_filesystem(fs_name):
 
     if fs_name == 'OSFS':
 
-        tmpdir = tempfile.mkdtemp()
-
-        try:
-            local = OSFS(tmpdir)
+        with make_temp_dir() as tmp:
+            local = OSFS(tmp)
 
             yield local
 
             local.close()
-
-        finally:
-            _close(tmpdir)
 
     elif fs_name == 'S3FS':
 

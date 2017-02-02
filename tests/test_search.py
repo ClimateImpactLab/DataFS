@@ -1,32 +1,17 @@
 import pytest
-import tempfile
 import os
 import itertools
 from click.testing import CliRunner
-from tests.resources import _close
 from datafs.datafs import cli
 from datafs import get_api, to_config_file
 
 
 @pytest.yield_fixture(scope='module')
-def temp_dir():
-
-    # setup data directory
-    temp = tempfile.mkdtemp()
-
-    try:
-        yield temp.replace(os.sep, '/')
-
-    finally:
-        _close(temp)
-
-
-@pytest.yield_fixture(scope='module')
-def test_config(api1_module, local_auth_module, temp_dir):
+def test_config(api1_module, local_auth_module, temp_dir_mod):
 
     api1_module.attach_authority('local', local_auth_module)
 
-    temp_file = os.path.join(temp_dir, 'config.yml')
+    temp_file = os.path.join(temp_dir_mod, 'config.yml')
 
     to_config_file(api1_module, config_file=temp_file, profile='myapi')
 
@@ -58,8 +43,7 @@ def test_cli_search(test_config, monkeypatch):
     )
 
     assert result.exit_code == 0
-
-    assert 'team2_archive2_var2' in result.output.split('\n')[-2]
+    assert 'team2_archive2_var2' in result.output.strip().split(' ')[0]
 
     res = list(api.search('team2', 'var3', 'archive1'))
 
@@ -72,4 +56,4 @@ def test_cli_search(test_config, monkeypatch):
     )
 
     assert result.exit_code == 0
-    assert 'team2_archive2_var2' in result.output.split('\n')[-2]
+    assert 'team2_archive2_var2' in result.output.strip().split(' ')[0]

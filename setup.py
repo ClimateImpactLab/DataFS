@@ -21,7 +21,7 @@ with open('HISTORY.rst') as history_file:
 requirements_install = [
     'click>=6.0',
     'PyYAML>=3.0',
-    'fs>=0.5.5a1',
+    'fs==0.5.5a1',
     'whoosh>=2.6'
     ]
 
@@ -49,7 +49,7 @@ entry_points = '[console_scripts]\ndatafs=datafs.datafs:cli'
 
 setup(
     name='datafs',
-    version='0.6.7',
+    version='0.6.8',
     description=description,
     long_description=readme + '\n\n' + history,
     author="Climate Impact Lab",

@@ -10,16 +10,14 @@ You can create archives from within python or using the :ref:`command line inter
 
 Create an archive using the :py:meth:`datafs.DataAPI.create` command.
 
-.. code-block:: python
-
-    >>> archive = api.create('my/archive/name')
+.. include:: ../examples/snippets/pythonapi_creating_archives.py
+    :start-after: ## EXAMPLE-BLOCK-1-START
+    :end-before: ## EXAMPLE-BLOCK-1-END
 
 Naming Archives
 ---------------
 
-Archives can be named anything, as long as the data service you use can handle the name.
-
-For example, Amazon's S3 storage cannot handle underscores in object names. If you create an archive with underscores in the name, you will receive an error on write (rather than on archive creation). Since this is an error specific to the storate service, we do not catch this error on creation.
+Archives can be named anything, as long as the data service you use can handle the name. If create an archive with a name illegal for the corresponding data service, you will receive an error on write (rather than on archive creation). Since this is an error specific to the storate service, we do not catch this error on creation.
 
 
 Specifying an Authority
@@ -27,18 +25,21 @@ Specifying an Authority
 
 If you have more than one authority, you will need to specify an authority on archive creation:
 
-.. code-block:: python
+.. include:: ../examples/snippets/pythonapi_creating_archives.py
+    :start-after: ## EXAMPLE-BLOCK-2-START
+    :end-before: ## EXAMPLE-BLOCK-2-END
 
-    >>> archive = api.create(
-    ...     'my_archive_name',
-    ...     authority_name='my_authority')
+This can be done using the ``authority_name`` argument:
+
+.. include:: ../examples/snippets/pythonapi_creating_archives.py
+    :start-after: ## EXAMPLE-BLOCK-3-START
+    :end-before: ## EXAMPLE-BLOCK-3-END
 
 Alternatively, you can set the :py:attr:`~datafs.core.data_api.DataAPI.DefaultAuthorityName` attribute:
 
-.. code-block:: python
-
-	>>> api.DefaultAuthorityName = 'my_authority'
-    >>> archive = api.create('my_archive_name')
+.. include:: ../examples/snippets/pythonapi_creating_archives.py
+    :start-after: ## EXAMPLE-BLOCK-4-START
+    :end-before: ## EXAMPLE-BLOCK-4-END
 
 
 Adding Metadata
@@ -46,14 +47,9 @@ Adding Metadata
 
 Arbitrary metadata can be added using the ``metadata`` dictionary argument:
 
-.. code-block:: python
-
-    >>> archive = api.create(
-    ...     'my_archive_name',
-    ...     metadata={
-    ...         'description': 'my test archive',
-    ...         'source': 'Burke et al (2015)',
-    ...         'doi': '10.1038/nature15725'})
+.. include:: ../examples/snippets/pythonapi_creating_archives.py
+    :start-after: ## EXAMPLE-BLOCK-5-START
+    :end-before: ## EXAMPLE-BLOCK-5-END
 
 
 Required Metadata
@@ -63,16 +59,9 @@ Administrators can set up metadata requirements using the manager's :ref:`admin`
 
 For example, when connected to a manager requiring the `'description'` field:
 
-.. code-block:: python
-
-    >>> archive = api.create(
-    ...     'my_archive_name',
-    ...     metadata={
-    ...         'source': 'Burke et al (2015)',
-    ...         'doi': '10.1038/nature15725'})
-    Traceback (most recent call last):
-    ...
-    AssertionError: Required value "description" not found. Use helper=True or the --helper flag for assistance.
+.. include:: ../examples/snippets/pythonapi_creating_archives.py
+    :start-after: ## EXAMPLE-BLOCK-6-START
+    :end-before: ## EXAMPLE-BLOCK-6-END
 
 Trying again with a "description" field will work as expected.
 
@@ -81,14 +70,8 @@ Using the Helper
 
 Instead of providing all fields in the ``create`` call, you can optionally use the ``helper`` argument. Setting ``helper=True`` will start an interactive prompt, requesting each required item of metadata:
 
-.. code-block:: python
-
-    >>> archive = api.create(
-    ...     'my_archive_name',
-    ...     metadata={
-    ...         'source': 'Burke et al (2015)',
-    ...         'doi': '10.1038/nature15725'},
-    ...         helper=True)
-	Enter a description: 
+.. include:: ../examples/snippets/pythonapi_creating_archives.py
+    :start-after: ## EXAMPLE-BLOCK-7-START
+    :end-before: ## EXAMPLE-BLOCK-7-END
 
 

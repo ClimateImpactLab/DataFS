@@ -6,6 +6,12 @@ import moto
 from examples import (local, ondisk, s3, caching)
 from examples.preconfigured import preconfigured
 from examples.subclassing import client
+from examples.snippets import (
+    pythonapi_creating_archives,
+    pythonapi_dependencies,
+    pythonapi_io,
+    pythonapi_metadata,
+    pythonapi_versioning)
 from datafs.managers.manager_dynamo import DynamoDBManager
 from distutils.version import StrictVersion
 
@@ -26,7 +32,7 @@ def mock_s3(func):
 
 
 def test_local():
-    failures, tests = doctest.testmod(local, report=True)
+    failures, _ = doctest.testmod(local, report=True)
     assert failures == 0
 
 
@@ -54,21 +60,21 @@ def test_ondisk():
         pass
 
     if has_special_dependencies:
-        failures, tests = doctest.testmod(ondisk, report=True)
+        failures, _ = doctest.testmod(ondisk, report=True)
         assert failures == 0
 
 
 @mock_s3
 def test_s3():
 
-    failures, tests = doctest.testmod(s3, report=True)
+    failures, _ = doctest.testmod(s3, report=True)
     assert failures == 0
 
 
 @mock_s3
 def test_caching():
 
-    failures, tests = doctest.testmod(caching, report=True)
+    failures, _ = doctest.testmod(caching, report=True)
     assert failures == 0
 
 
@@ -88,12 +94,37 @@ def test_subclassing():
 
     manager.create_archive_table(table_name, raise_on_err=False)
 
-    failures, tests = doctest.testmod(client, report=True)
+    failures, _ = doctest.testmod(client, report=True)
     assert failures == 0
 
     manager.delete_table(table_name)
 
 
 def test_preconfigured():
-    failures, tests = doctest.testmod(preconfigured, report=True)
+    failures, _ = doctest.testmod(preconfigured, report=True)
+    assert failures == 0
+
+
+def test_docs_pythonapi_creating_archives():
+    failures, _ = doctest.testmod(pythonapi_creating_archives, report=True)
+    assert failures == 0
+
+
+def test_docs_pythonapi_dependencies():
+    failures, _ = doctest.testmod(pythonapi_dependencies, report=True)
+    assert failures == 0
+
+
+def test_docs_pythonapi_io():
+    failures, _ = doctest.testmod(pythonapi_io, report=True)
+    assert failures == 0
+
+
+def test_docs_pythonapi_metadata():
+    failures, _ = doctest.testmod(pythonapi_metadata, report=True)
+    assert failures == 0
+
+
+def test_docs_pythonapi_versioning():
+    failures, _ = doctest.testmod(pythonapi_versioning, report=True)
     assert failures == 0

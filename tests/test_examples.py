@@ -6,6 +6,9 @@ import moto
 from examples import (local, ondisk, s3, caching)
 from examples.preconfigured import preconfigured
 from examples.subclassing import client
+from examples.snippets import (
+    pythonapi_creating_archives,
+    pythonapi_metadata)
 from datafs.managers.manager_dynamo import DynamoDBManager
 from distutils.version import StrictVersion
 
@@ -96,4 +99,13 @@ def test_subclassing():
 
 def test_preconfigured():
     failures, tests = doctest.testmod(preconfigured, report=True)
+    assert failures == 0
+
+def test_docs_pythonapi_creating_archives():
+    failures, tests = doctest.testmod(pythonapi_creating_archives, report=True)
+    assert failures == 0
+
+
+def test_docs_pythonapi_metadata():
+    failures, tests = doctest.testmod(pythonapi_metadata, report=True)
     assert failures == 0

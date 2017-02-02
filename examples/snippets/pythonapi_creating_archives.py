@@ -177,7 +177,7 @@
     ...         'doi': '10.1038/nature15725'},
     ...         helper=True) # doctest: +SKIP
     ...
-    Enter a description: 
+    Enter a description:
 
 ## EXAMPLE-BLOCK-7-END
 

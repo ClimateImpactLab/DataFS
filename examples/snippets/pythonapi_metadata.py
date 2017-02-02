@@ -45,10 +45,10 @@
 .. code-block:: python
 
     >>> sample_archive = api.create(
-    ...    'sample_archive', 
+    ...    'sample_archive',
     ...     metadata = {
-    ...         'oneline_description': 'tas by admin region', 
-    ...         'source': 'NASA BCSD', 
+    ...         'oneline_description': 'tas by admin region',
+    ...         'source': 'NASA BCSD',
     ...         'notes': 'important note'})
     ...
 
@@ -70,7 +70,7 @@
 
 ## EXAMPLE-BLOCK-3-START
 
-.. code-block:: python 
+.. code-block:: python
 
     >>> sample_archive.get_metadata() # doctest: +SKIP
     {u'notes': u'important note', u'oneline_description': u'tas by admin region
@@ -93,7 +93,7 @@
 
 ## EXAMPLE-BLOCK-4-START
 
-.. code-block:: python 
+.. code-block:: python
 
     >>> sample_archive.update_metadata(dict(
     ...     source='NOAAs better temp data',
@@ -105,7 +105,7 @@
 
 ## EXAMPLE-BLOCK-5-START
 
-.. code-block:: python 
+.. code-block:: python
 
     >>> sample_archive.get_metadata() # doctest: +SKIP
     {u'notes': u'important note', u'oneline_description': u'tas by admin region
@@ -130,7 +130,7 @@
 
 ## EXAMPLE-BLOCK-6-START
 
-.. code-block:: python 
+.. code-block:: python
 
     >>> sample_archive.update_metadata(dict(related_links=None))
     >>>

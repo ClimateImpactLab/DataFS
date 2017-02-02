@@ -1,10 +1,11 @@
-'''
+r'''
 
 ## SETUP-START
 
     >>> from datafs.managers.manager_mongo import MongoDBManager
     >>> from datafs import DataAPI
     >>> from fs.osfs import OSFS
+    >>> import datafs
     >>> import os
     >>> import tempfile
     >>> import shutil
@@ -48,12 +49,20 @@
     >>> with my_archive.open('w+', 
     ...     dependencies={'archive2': '1.1', 'archive3': None}) as f:
     ...
-    ...     f.write(u'contents depend on archive 2 v1.1')
+    ...     res = f.write(u'contents depend on archive 2 v1.1')
     ...
-    >>> archive.get_dependencies()
+    >>> my_archive.get_dependencies() # doctest: +SKIP
     {'archive2': '1.1', 'archive3': None}
 
 ## EXAMPLE-BLOCK-1-END
+
+.. code-block:: python
+
+    >>> my_archive.get_dependencies() == {
+    ...     'archive2': '1.1', 'archive3': None}
+    ...
+    True
+
 
 
 ## EXAMPLE-BLOCK-2-START
@@ -62,7 +71,7 @@
 
     >>> with my_archive.open('w+') as f:
     ...
-    ...     f.write(u'contents depend on archive 2 v1.2')
+    ...     res = f.write(u'contents depend on archive 2 v1.2')
     ...
     >>> my_archive.set_dependencies({'archive2': '1.2'})
     >>> my_archive.get_dependencies()
@@ -85,8 +94,9 @@
 
 .. code-block:: python
 
-    >>> with open('requirements_data.txt') as f:
-    ...     f.write(u'dep1==1.0\ndep2==0.4.1a3')
+    >>> with open('requirements_data.txt', 'w+') as f:
+    ...     res = f.write(u'dep1==1.0\ndep2==0.4.1a3')
+    ...
 
 ## EXAMPLE-BLOCK-4-START
 
@@ -97,7 +107,7 @@
     >>>
     >>> archive = api.get_archive('my_archive')
     >>> with archive.open('w+') as f:
-    ...     f.write(u'depends on dep1 and dep2')
+    ...     res = f.write(u'depends on dep1 and dep2')
     ...
     >>> archive.get_dependencies()
     {'dep1': '1.0', 'dep2': '0.4.1a3'}
@@ -128,10 +138,16 @@
 
 .. code-block:: python
 
-    >>> archive.get_dependencies(version='0.0.1')
+    >>> archive.get_dependencies(version='0.0.1') # doctest: +SKIP
     {'archive2': '1.1', 'archive3': None}
 
 ## EXAMPLE-BLOCK-7-END
+
+.. code-block:: python
+
+    >>> archive.get_dependencies(version='0.0.1') == {
+    ...     'archive2': '1.1', 'archive3': None}
+    True
 
 
 ## TEARDOWN-START
@@ -151,7 +167,6 @@
 
     >>> api.manager.delete_table('TestFiles')
     >>> local.close()
-    >>> local2.close()
     >>> shutil.rmtree(temp)
 
 ## TEARDOWN-END

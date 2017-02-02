@@ -1,9 +1,7 @@
 import pytest
-import tempfile
 import os
 import itertools
 from click.testing import CliRunner
-from tests.resources import _close
 from datafs.datafs import cli
 from datafs import get_api, to_config_file
 

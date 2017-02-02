@@ -9,8 +9,6 @@ from datafs.config.helpers import (
     _parse_requirement,
     _interactive_config)
 from datafs._compat import u
-from datafs import DataAPI
-from datafs.core.data_archive import DataArchive
 import click
 import sys
 import pprint
@@ -117,7 +115,7 @@ def cli(
     '''
     An abstraction layer for data storage systems
 
-    DataFS is a package manager for data. It manages file versions, 
+    DataFS is a package manager for data. It manages file versions,
     dependencies, and metadata for individual use or large organizations.
 
     For more information, see the docs at https://datafs.readthedocs.io
@@ -302,7 +300,6 @@ def update_metadata(ctx, archive_name):
     _generate_api(ctx)
     args, kwargs = _parse_args_and_kwargs(ctx.args)
     assert len(args) == 0, 'Unrecognized arguments: "{}"'.format(args)
-
 
     var = ctx.obj.api.get_archive(archive_name)
 

@@ -5,8 +5,10 @@ import yaml
 import os
 import click
 
+
 class ProfileNotFoundError(KeyError):
     pass
+
 
 class ConfigFile(object):
 
@@ -61,7 +63,8 @@ class ConfigFile(object):
             profile = self.default_profile
 
         if profile not in self.config['profiles']:
-            raise ProfileNotFoundError('Profile "{}" not found'.format(profile))
+            raise ProfileNotFoundError(
+                'Profile "{}" not found'.format(profile))
 
         profile_config = self.config['profiles'][profile]
 
@@ -75,7 +78,10 @@ class ConfigFile(object):
         try:
             profile_config = self.get_profile_config(profile)
         except ProfileNotFoundError:
-            self.config['profiles'][profile] = {'api':{}, 'manager':{}, 'authorities':{}}
+
+            self.config['profiles'][profile] = {
+                'api': {}, 'manager': {}, 'authorities': {}}
+
             profile_config = self.config['profiles'][profile]
 
         if 'user_config' not in profile_config['api']:

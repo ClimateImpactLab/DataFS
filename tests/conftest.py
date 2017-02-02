@@ -37,6 +37,7 @@ def pytest_generate_tests(metafunc):
     if 'open_func' in metafunc.fixturenames:
         metafunc.parametrize('open_func', ['open_file', 'get_local_path'])
 
+
 @contextmanager
 def make_temp_dir():
     tmpdir = tempfile.mkdtemp()
@@ -46,6 +47,7 @@ def make_temp_dir():
 
     finally:
         _close(tmpdir)
+
 
 @pytest.yield_fixture(scope='function')
 def tempdir():

@@ -1,8 +1,6 @@
 from datafs.managers.manager_dynamo import DynamoDBManager
 from datafs.datafs import cli
 from datafs import DataAPI, get_api, to_config_file
-from tests.resources import _close
-import tempfile
 import os
 from click.testing import CliRunner
 import pytest
@@ -593,22 +591,27 @@ def test_kwarg_handling(preloaded_config):
 
     # Assert error raised on improper arg
 
-    result = runner.invoke(cli, prefix +
-        ['update_metadata', 'req_1', 'something', '--description', 'other'])
+    result = runner.invoke(
+        cli,
+        prefix + [
+            'update_metadata', 'req_1', 'something', '--description', 'other'])
 
     assert result.exception
 
     # Assert error raised on mid-kwarg arg
 
-    result = runner.invoke(cli, prefix +
-        ['update_metadata', 'req_1', '--description', 'something', 'other'])
+    result = runner.invoke(
+        cli,
+        prefix + [
+            'update_metadata', 'req_1', '--description', 'something', 'other'])
 
     assert result.exception
 
     # Assert error raised on flag
 
-    result = runner.invoke(cli, prefix +
-        ['update_metadata', 'req_1', '--flag'])
+    result = runner.invoke(
+        cli,
+        prefix + ['update_metadata', 'req_1', '--flag'])
 
     assert result.exception
 
@@ -625,27 +628,30 @@ def test_multiple_search(preloaded_config):
     runner = CliRunner()
 
     prefix = [
-        '--config-file', '{}'.format(temp_file),
-        '--profile', 'myapi']
+            '--config-file', '{}'.format(temp_file),
+            '--profile', 'myapi']
 
     # Assert error raised on improper arg
 
-    result = runner.invoke(cli, prefix +
-        ['search'])
+    result = runner.invoke(
+        cli,
+        prefix + ['search'])
 
     assert len(result.output.strip().split(' ')) == 3
 
     # Assert error raised on mid-kwarg arg
 
-    result = runner.invoke(cli, prefix +
-        ['filter'])
+    result = runner.invoke(
+        cli,
+        prefix + ['filter'])
 
     assert len(result.output.strip().split(' ')) == 3
 
     # Assert error raised on flag
 
-    result = runner.invoke(cli, prefix +
-        ['filter', '--pattern', 'req_[12]', '--engine', 'regex'])
+    result = runner.invoke(
+        cli,
+        prefix + ['filter', '--pattern', 'req_[12]', '--engine', 'regex'])
 
     assert len(result.output.strip().split(' ')) == 2
 
@@ -867,7 +873,7 @@ def test_update_metadata(test_config, monkeypatch):
             cli,
             prefix + ['update', 'my_next_archive', '--string'],
             input='my new contents\ncan be piped in')
-        
+
         assert result.exit_code == 0
 
         result = runner.invoke(cli, prefix + ['cat', 'my_next_archive'])

@@ -16,24 +16,24 @@ import sys
 import pprint
 
 
-def _parse_args_and_kwargs(args):
+def _parse_args_and_kwargs(passed_args):
 
     args = []
     kwargs = {}
 
     has_kwargs = False
 
-    while len(args) > 0:
+    while len(passed_args) > 0:
 
-        arg = args.pop(0)
+        arg = passed_args.pop(0)
 
         if arg[:2] == '--':
             has_kwargs = True
 
-            if not len(args) > 0:
+            if not len(passed_args) > 0:
                 raise ValueError('Argument "{}" not recognized'.format(arg))
 
-            kwargs[arg[2:]] = args.pop(0)
+            kwargs[arg[2:]] = passed_args.pop(0)
 
         else:
             if has_kwargs:
@@ -196,7 +196,9 @@ def create(ctx, archive_name, authority_name, versioned=True, helper=False):
     '''
 
     _generate_api(ctx)
-    _, kwargs = _parse_args_and_kwargs(ctx.args)
+    args, kwargs = _parse_args_and_kwargs(ctx.args)
+    assert len(args) == 0, 'Unrecognized arguments: "{}"'.format(args)
+
     var = ctx.obj.api.create(
         archive_name,
         authority_name=authority_name,
@@ -206,6 +208,16 @@ def create(ctx, archive_name, authority_name, versioned=True, helper=False):
 
     verstring = 'versioned archive' if versioned else 'archive'
     click.echo('created {} {}'.format(verstring, var))
+
+@cli.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+        allow_extra_args=True))
+@click.pass_context
+def test(ctx):
+    args, kwargs = _parse_args_and_kwargs(ctx.args)
+    click.echo(args)
+    click.echo(kwargs)
 
 
 @cli.command(
@@ -234,7 +246,9 @@ def update(
 
     _generate_api(ctx)
 
-    _, kwargs = _parse_args_and_kwargs(ctx.args)
+    args, kwargs = _parse_args_and_kwargs(ctx.args)
+    assert len(args) == 0, 'Unrecognized arguments: "{}"'.format(args)
+
     dependencies_dict = _parse_dependencies(dependency)
 
     var = ctx.obj.api.get_archive(archive_name)
@@ -297,7 +311,9 @@ def update_metadata(ctx, archive_name):
     '''
 
     _generate_api(ctx)
-    _, kwargs = _parse_args_and_kwargs(ctx.args)
+    args, kwargs = _parse_args_and_kwargs(ctx.args)
+    assert len(args) == 0, 'Unrecognized arguments: "{}"'.format(args)
+
 
     var = ctx.obj.api.get_archive(archive_name)
 
@@ -461,7 +477,8 @@ def filter_archives(ctx, prefix, pattern, engine):
     for match in ctx.obj.api.filter(
             pattern, engine, prefix=prefix):
 
-        click.echo(match)
+        click.echo(match, nl=False)
+        click.echo(' ', nl=False)
 
 cli.add_command(filter_archives, name='filter')
 

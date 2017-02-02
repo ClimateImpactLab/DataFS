@@ -8,7 +8,10 @@ from examples.preconfigured import preconfigured
 from examples.subclassing import client
 from examples.snippets import (
     pythonapi_creating_archives,
-    pythonapi_metadata)
+    pythonapi_dependencies,
+    pythonapi_io,
+    pythonapi_metadata,
+    pythonapi_versioning)
 from datafs.managers.manager_dynamo import DynamoDBManager
 from distutils.version import StrictVersion
 
@@ -101,11 +104,23 @@ def test_preconfigured():
     failures, tests = doctest.testmod(preconfigured, report=True)
     assert failures == 0
 
+
 def test_docs_pythonapi_creating_archives():
     failures, tests = doctest.testmod(pythonapi_creating_archives, report=True)
     assert failures == 0
 
+def test_docs_pythonapi_dependencies():
+    failures, tests = doctest.testmod(pythonapi_dependencies, report=True)
+    assert failures == 0
+
+def test_docs_pythonapi_io():
+    failures, tests = doctest.testmod(pythonapi_io, report=True)
+    assert failures == 0
 
 def test_docs_pythonapi_metadata():
     failures, tests = doctest.testmod(pythonapi_metadata, report=True)
+    assert failures == 0
+
+def test_docs_pythonapi_versioning():
+    failures, tests = doctest.testmod(pythonapi_versioning, report=True)
     assert failures == 0

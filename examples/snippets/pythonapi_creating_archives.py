@@ -41,6 +41,7 @@
 
 
 ## EXAMPLE-BLOCK-1-START
+
 .. code-block:: python
 
     >>> archive = api.create('my/archive/name')
@@ -59,7 +60,9 @@
     >>> local2 = OSFS(temp)
     >>> api.attach_authority('local2', local)
 
+
 ## EXAMPLE-BLOCK-2-START
+
 .. code-block:: python
 
     >>> archive = api.create('my_archive_name')# doctest: +ELLIPSIS
@@ -69,7 +72,9 @@
 
 ## EXAMPLE-BLOCK-2-END
 
+
 ## EXAMPLE-BLOCK-3-START
+
 .. code-block:: python
 
     >>> archive = api.create(
@@ -88,8 +93,8 @@
     ...
 
 
-
 ## EXAMPLE-BLOCK-4-START
+
 .. code-block:: python
 
     >>> api.DefaultAuthorityName = 'my_authority'
@@ -108,6 +113,7 @@
 
 
 ## EXAMPLE-BLOCK-5-START
+
 .. code-block:: python
 
     >>> archive = api.create(
@@ -119,6 +125,7 @@
     ...
 
 ## EXAMPLE-BLOCK-5-END
+
 
 .. code-block:: python
 
@@ -133,6 +140,7 @@
 
 
 ## EXAMPLE-BLOCK-6-START
+
 .. code-block:: python
 
     >>> archive = api.create(
@@ -159,6 +167,7 @@
 
 
 ## EXAMPLE-BLOCK-7-START
+
 .. code-block:: python
 
     >>> archive = api.create(

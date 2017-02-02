@@ -1,23 +1,49 @@
 # -*- coding: utf-8 -*-
 
+
 from __future__ import absolute_import
+
 from datafs.config.config_file import ConfigFile
 from datafs.config.helpers import (
     get_api,
     _parse_requirement,
     _interactive_config)
 from datafs._compat import u
+from datafs import DataAPI
+from datafs.core.data_archive import DataArchive
 import click
 import sys
 import pprint
 
 
-def _parse_args_as_kwargs(args):
-    assert len(args) % 2 == 0
+def _parse_args_and_kwargs(args):
+
+    args = []
     kwargs = {}
-    for i in range(0, len(args), 2):
-        kwargs[args[i].lstrip('-')] = args[i + 1]
-    return kwargs
+
+    has_kwargs = False
+
+    while len(args) > 0:
+
+        arg = args.pop(0)
+
+        if arg[:2] == '--':
+            has_kwargs = True
+
+            if not len(args) > 0:
+                raise ValueError('Argument "{}" not recognized'.format(arg))
+
+            kwargs[arg[2:]] = args.pop(0)
+
+        else:
+            if has_kwargs:
+                raise ValueError(
+                    'Positional argument "{}" after keyword arguments'.format(
+                        arg))
+
+            args.append(arg)
+
+    return args, kwargs
 
 
 def _interactive_configuration(api, config, profile=None):
@@ -65,24 +91,38 @@ class _DataFSInterface(object):
 # this sets the command line environment for
 
 
-@click.group()
-@click.option('--config-file', envvar='DATAFS_CONFIG_FILE', type=str)
+@click.group(short_help='An abstraction layer for data storage systems')
+@click.option(
+    '--config-file',
+    envvar='DATAFS_CONFIG_FILE',
+    type=str,
+    help='Specify a configuration file')
 @click.option(
     '--requirements',
     envvar='DATAFS_REQUIREMENTS_FILE',
     type=str,
-    default='requirements_data.txt')
+    default='requirements_data.txt',
+    help='Specify a requirements file')
 @click.option(
     '--profile',
     envvar='DATAFS_DEFAULT_PROFILE',
     type=str,
-    default=None)
+    default=None,
+    help='Specify a config profile')
 @click.pass_context
 def cli(
         ctx,
         config_file=None,
         requirements='requirements_data.txt',
         profile=None):
+    '''
+    An abstraction layer for data storage systems
+
+    DataFS is a package manager for data. It manages file versions, 
+    dependencies, and metadata for individual use or large organizations.
+
+    For more information, see the docs at https://datafs.readthedocs.io
+    '''
 
     ctx.obj = _DataFSInterface()
 
@@ -103,12 +143,12 @@ def cli(
     context_settings=dict(
         ignore_unknown_options=True,
         allow_extra_args=True))
-@click.option('--helper', is_flag=True)
-@click.option('--edit', is_flag=True)
+@click.option('--helper', is_flag=True, help='Prompt for user metadata')
+@click.option('--edit', is_flag=True, help='Edit the config file manually')
 @click.pass_context
 def configure(ctx, helper, edit):
     '''
-    Update existing configuration or create a new default profile
+    Update configuration
     '''
 
     if edit:
@@ -143,15 +183,20 @@ def configure(ctx, helper, edit):
 @cli.command(
     context_settings=dict(
         ignore_unknown_options=True,
-        allow_extra_args=True))
+        allow_extra_args=True),
+    short_help='Create an archive')
 @click.argument('archive_name')
 @click.option('--authority_name', default=None)
 @click.option('--versioned/--not-versioned', default=True)
 @click.option('--helper', is_flag=True)
 @click.pass_context
 def create(ctx, archive_name, authority_name, versioned=True, helper=False):
+    '''
+    Create an archive
+    '''
+
     _generate_api(ctx)
-    kwargs = _parse_args_as_kwargs(ctx.args)
+    _, kwargs = _parse_args_and_kwargs(ctx.args)
     var = ctx.obj.api.create(
         archive_name,
         authority_name=authority_name,
@@ -166,7 +211,8 @@ def create(ctx, archive_name, authority_name, versioned=True, helper=False):
 @cli.command(
     context_settings=dict(
         ignore_unknown_options=True,
-        allow_extra_args=True))
+        allow_extra_args=True),
+    short_help='Update an archive with new contents')
 @click.argument('archive_name')
 @click.option('--bumpversion', default='patch')
 @click.option('--prerelease', default=None)
@@ -182,10 +228,13 @@ def update(
         dependency=None,
         string=False,
         file=None):
+    '''
+    Update an archive with new contents
+    '''
 
     _generate_api(ctx)
 
-    kwargs = _parse_args_as_kwargs(ctx.args)
+    _, kwargs = _parse_args_and_kwargs(ctx.args)
     dependencies_dict = _parse_dependencies(dependency)
 
     var = ctx.obj.api.get_archive(archive_name)
@@ -238,12 +287,17 @@ def update(
 @cli.command(
     context_settings=dict(
         ignore_unknown_options=True,
-        allow_extra_args=True))
+        allow_extra_args=True),
+    short_help='Update an archive\'s metadata')
 @click.argument('archive_name')
 @click.pass_context
 def update_metadata(ctx, archive_name):
+    '''
+    Update an archive's metadata
+    '''
+
     _generate_api(ctx)
-    kwargs = _parse_args_as_kwargs(ctx.args)
+    _, kwargs = _parse_args_and_kwargs(ctx.args)
 
     var = ctx.obj.api.get_archive(archive_name)
 
@@ -253,11 +307,16 @@ def update_metadata(ctx, archive_name):
 @cli.command(
     context_settings=dict(
         ignore_unknown_options=True,
-        allow_extra_args=True))
+        allow_extra_args=True),
+    short_help='Set the dependencies of an archive')
 @click.argument('archive_name')
 @click.option('--dependency', multiple=True)
 @click.pass_context
 def set_dependencies(ctx, archive_name, dependency=None):
+    '''
+    Set the dependencies of an archive
+    '''
+
     _generate_api(ctx)
     kwargs = _parse_dependencies(dependency)
 
@@ -269,11 +328,16 @@ def set_dependencies(ctx, archive_name, dependency=None):
 @cli.command(
     context_settings=dict(
         ignore_unknown_options=True,
-        allow_extra_args=True))
+        allow_extra_args=True),
+    short_help='List the dependencies of an archive')
 @click.argument('archive_name')
 @click.option('--version', default=None)
 @click.pass_context
 def get_dependencies(ctx, archive_name, version):
+    '''
+    List the dependencies of an archive
+    '''
+
     _generate_api(ctx)
 
     var = ctx.obj.api.get_archive(archive_name)
@@ -290,12 +354,16 @@ def get_dependencies(ctx, archive_name, version):
     click.echo('\n'.join(deps))
 
 
-@cli.command()
+@cli.command(short_help='Download an archive')
 @click.argument('archive_name')
 @click.argument('filepath')
 @click.option('--version', default=None)
 @click.pass_context
 def download(ctx, archive_name, filepath, version):
+    '''
+    Download an archive
+    '''
+
     _generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
 
@@ -310,11 +378,15 @@ def download(ctx, archive_name, filepath, version):
     click.echo('downloaded {} to {}'.format(archstr, filepath))
 
 
-@cli.command()
+@cli.command(short_help='Echo the contents of an archive')
 @click.argument('archive_name')
 @click.option('--version', default=None)
 @click.pass_context
 def cat(ctx, archive_name, version):
+    '''
+    Echo the contents of an archive
+    '''
+
     _generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
 
@@ -323,38 +395,51 @@ def cat(ctx, archive_name, version):
             click.echo(chunk)
 
 
-@cli.command()
+@cli.command(short_help='Get an archive\'s metadata')
 @click.argument('archive_name')
 @click.pass_context
 def metadata(ctx, archive_name):
+    '''
+    Get an archive's metadata
+    '''
+
     _generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
     click.echo(pprint.pformat(var.get_metadata()))
 
 
-@cli.command()
+@cli.command(short_help='Get archive history')
 @click.argument('archive_name')
 @click.pass_context
 def history(ctx, archive_name):
+    '''
+    Get archive history
+    '''
+
     _generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
     click.echo(pprint.pformat(var.get_history()))
 
 
-@cli.command()
+@cli.command(short_help='Get an archive\'s versions')
 @click.argument('archive_name')
 @click.pass_context
 def versions(ctx, archive_name):
+    '''
+    Get an archive's versions
+    '''
+
     _generate_api(ctx)
 
     var = ctx.obj.api.get_archive(archive_name)
     click.echo(pprint.pformat(map(str, var.get_versions())))
 
 
-@click.command()
-@click.option('--prefix',
-              default='',
-              help='filter archives based on initial character pattern')
+@click.command(short_help='List all archives matching filter criteria')
+@click.option(
+    '--prefix',
+    default=None,
+    help='filter archives based on initial character pattern')
 @click.option(
     '--pattern',
     default=None,
@@ -365,6 +450,10 @@ def versions(ctx, archive_name):
     help='comparison engine: str/path/regex (default path)')
 @click.pass_context
 def filter_archives(ctx, prefix, pattern, engine):
+    '''
+    List all archives matching filter criteria
+    '''
+
     _generate_api(ctx)
 
     # want to achieve behavior like click.echo(' '.join(matches))
@@ -374,15 +463,21 @@ def filter_archives(ctx, prefix, pattern, engine):
 
         click.echo(match)
 
-
 cli.add_command(filter_archives, name='filter')
 
 
-@cli.command()
+@cli.command(short_help='List all archives matching tag search criteria')
 @click.argument('query_tags', nargs=-1)
-@click.option('--prefix', default=None)
+@click.option(
+    '--prefix',
+    default=None,
+    help='filter archives based on initial character pattern')
 @click.pass_context
 def search(ctx, query_tags, prefix=None):
+    '''
+    List all archives matching tag search criteria
+    '''
+
     _generate_api(ctx)
 
     assert isinstance(query_tags, tuple)
@@ -392,10 +487,14 @@ def search(ctx, query_tags, prefix=None):
         click.echo(match)
 
 
-@cli.command()
+@cli.command(short_help='Delete an archive')
 @click.argument('archive_name')
 @click.pass_context
 def delete(ctx, archive_name):
+    '''
+    Delete an archive
+    '''
+
     _generate_api(ctx)
     var = ctx.obj.api.get_archive(archive_name)
 

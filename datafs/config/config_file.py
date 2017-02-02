@@ -71,11 +71,12 @@ class ConfigFile(object):
         return profile_config
 
     def get_config_from_api(self, api, profile=None):
-        
+
         try:
             profile_config = self.get_profile_config(profile)
         except ProfileNotFoundError:
-            profile_config = {'api':{}, 'manager':{}, 'authorities':{}}
+            self.config['profiles'][profile] = {'api':{}, 'manager':{}, 'authorities':{}}
+            profile_config = self.config['profiles'][profile]
 
         if 'user_config' not in profile_config['api']:
             profile_config['api']['user_config'] = {}

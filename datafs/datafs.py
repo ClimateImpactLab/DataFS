@@ -48,8 +48,7 @@ def _parse_args_and_kwargs(passed_args):
 
 def _interactive_configuration(api, config, profile=None):
 
-    if profile is None:
-        profile = config.default_profile
+    profile = config.default_profile if profile is None else profile
 
     profile_config = config.get_profile_config(profile)
 
@@ -209,16 +208,6 @@ def create(ctx, archive_name, authority_name, versioned=True, helper=False):
     verstring = 'versioned archive' if versioned else 'archive'
     click.echo('created {} {}'.format(verstring, var))
 
-@cli.command(
-    context_settings=dict(
-        ignore_unknown_options=True,
-        allow_extra_args=True))
-@click.pass_context
-def test(ctx):
-    args, kwargs = _parse_args_and_kwargs(ctx.args)
-    click.echo(args)
-    click.echo(kwargs)
-
 
 @cli.command(
     context_settings=dict(
@@ -363,7 +352,7 @@ def get_dependencies(ctx, archive_name, version):
     dependencies = var.get_dependencies(version=version)
     for arch, dep in dependencies.items():
         if dep is None:
-            deps.append(dep)
+            deps.append(arch)
         else:
             deps.append('{}=={}'.format(arch, dep))
 
@@ -474,11 +463,16 @@ def filter_archives(ctx, prefix, pattern, engine):
 
     # want to achieve behavior like click.echo(' '.join(matches))
 
-    for match in ctx.obj.api.filter(
-            pattern, engine, prefix=prefix):
+    for i, match in enumerate(ctx.obj.api.filter(
+            pattern, engine, prefix=prefix)):
+
+        if i > 0:
+            click.echo(' ', nl=False)
 
         click.echo(match, nl=False)
-        click.echo(' ', nl=False)
+
+    click.echo('')
+
 
 cli.add_command(filter_archives, name='filter')
 
@@ -499,9 +493,14 @@ def search(ctx, query_tags, prefix=None):
 
     assert isinstance(query_tags, tuple)
 
-    for match in ctx.obj.api.search(*query_tags, prefix=prefix):
+    for i, match in enumerate(ctx.obj.api.search(*query_tags, prefix=prefix)):
 
-        click.echo(match)
+        if i > 0:
+            click.echo(' ', nl=False)
+
+        click.echo(match, nl=False)
+
+    click.echo('\n', nl=False)
 
 
 @cli.command(short_help='Delete an archive')

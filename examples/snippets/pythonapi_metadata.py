@@ -1,46 +1,63 @@
 '''
 
-## SETUP-START
+.. _snippets-pythonapi-metadata:
 
-    >>> from datafs.managers.manager_mongo import MongoDBManager
-    >>> from datafs import DataAPI
-    >>> from fs.osfs import OSFS
-    >>> import os
-    >>> import tempfile
-    >>> import shutil
-    >>>
-    >>> # overload unicode for python 3 compatability:
-    >>>
-    >>> try:
-    ...     unicode = unicode
-    ... except NameError:
-    ...     unicode = str
+Python API: Managing Metadata
+=============================
+
+This is the tested source code for the snippets used in
+:ref:`pythonapi-metadata`. The config file we're using in this example
+can be downloaded :download:`here <../examples/snippets/resources/datafs.yml>`.
+
+
+Setup
+-----
+
+.. code-block:: python
+
+    >>> import datafs
+    >>> from fs.tempfs import TempFS
+
+We test with the following setup:
+
+.. code-block:: python
+
+    >>> api = datafs.get_api(
+    ...     config_file='examples/snippets/resources/datafs.yml')
     ...
-    >>> api = DataAPI(
-    ...      username='My Name',
-    ...      contact = 'my.email@example.com')
-    ...
-    >>> manager = MongoDBManager(
-    ...     database_name = 'MyDatabase',
-    ...     table_name = 'TestFiles')
-    ...
-    >>> manager.create_archive_table('TestFiles', raise_on_err=False)
-    >>> api.attach_manager(manager)
-    >>> temp = tempfile.mkdtemp()
-    >>> local = OSFS(temp)
-    >>> api.attach_authority('local', local)
-    >>> api.default_authority # doctest: +ELLIPSIS
-    <DataService:OSFS object at ...>
+
+This assumes that you have a config file at the above location. The config file
+we're using in this example can be downloaded
+:download:`here <../examples/snippets/resources/datafs.yml>`.
+
+clean up any previous test failures
+
+.. code-block:: python
+
     >>> try:
     ...     api.delete_archive('sample_archive')
+    ... except (KeyError, OSError):
+    ...     pass
+    ...
+    >>> try:
+    ...     api.manager.delete_table('DataFiles')
     ... except KeyError:
     ...     pass
     ...
 
-## SETUP-END
+Add a fresh manager table:
+
+.. code-block:: python
+    
+    >>> api.manager.create_archive_table('DataFiles')
 
 
-## EXAMPLE-BLOCK-1-START
+Example 1
+---------
+
+Displayed example 1 code
+
+.. EXAMPLE-BLOCK-1-START
 
 .. code-block:: python
 
@@ -52,10 +69,15 @@
     ...         'notes': 'important note'})
     ...
 
-## EXAMPLE-BLOCK-1-END
+.. EXAMPLE-BLOCK-1-END
 
 
-## EXAMPLE-BLOCK-2-START
+Example 2
+---------
+
+Displayed example 2 code
+
+.. EXAMPLE-BLOCK-2-START
 
 .. code-block:: python
 
@@ -65,10 +87,15 @@
     sample_archive
 
 
-## EXAMPLE-BLOCK-2-END
+.. EXAMPLE-BLOCK-2-END
 
 
-## EXAMPLE-BLOCK-3-START
+Example 3
+---------
+
+Displayed example 3 code
+
+.. EXAMPLE-BLOCK-3-START
 
 .. code-block:: python
 
@@ -76,10 +103,10 @@
     {u'notes': u'important note', u'oneline_description': u'tas by admin region
     ', u'source': u'NASA BCSD'}
 
-## EXAMPLE-BLOCK-3-END
+.. EXAMPLE-BLOCK-3-END
 
-
-# Check this just to make sure
+The last line of this test cannot be tested directly (exact dictionary
+formatting is unstable), so is tested in a second block:
 
 .. code-block:: python
 
@@ -91,7 +118,13 @@
     True
 
 
-## EXAMPLE-BLOCK-4-START
+
+Example 4
+---------
+
+Displayed example 4 code
+
+.. EXAMPLE-BLOCK-4-START
 
 .. code-block:: python
 
@@ -100,10 +133,15 @@
     ...     related_links='http://wwww.noaa.gov'))
     ...
 
-## EXAMPLE-BLOCK-4-END
+.. EXAMPLE-BLOCK-4-END
 
 
-## EXAMPLE-BLOCK-5-START
+Example 5
+---------
+
+Displayed example 5 code
+
+.. EXAMPLE-BLOCK-5-START
 
 .. code-block:: python
 
@@ -112,10 +150,10 @@
     ', u'source': u'NOAAs better temp data', u'related_links': u'http://wwww.no
     aa.gov'}
 
-## EXAMPLE-BLOCK-5-END
+.. EXAMPLE-BLOCK-5-END
 
-
-# Check this just to make sure
+The last line of this test cannot be tested directly (exact dictionary
+formatting is unstable), so is tested in a second block:
 
 .. code-block:: python
 
@@ -128,7 +166,12 @@
     True
 
 
-## EXAMPLE-BLOCK-6-START
+Example 6
+---------
+
+Displayed example 6 code
+
+.. EXAMPLE-BLOCK-6-START
 
 .. code-block:: python
 
@@ -138,10 +181,11 @@
     {u'notes': u'important note', u'oneline_description': u'tas by admin region
     ', u'source': u'NOAAs better temp data'}
 
-## EXAMPLE-BLOCK-6-END
+.. EXAMPLE-BLOCK-6-END
 
 
-# Check this just to make sure
+The last line of this test cannot be tested directly (exact dictionary
+formatting is unstable), so is tested in a second block:
 
 .. code-block:: python
 
@@ -153,7 +197,9 @@
     True
 
 
-## TEARDOWN-START
+
+Teardown
+--------
 
 .. code-block:: python
 
@@ -163,9 +209,7 @@
     ...     pass
     ...
 
-    >>> api.manager.delete_table('TestFiles')
-    >>> shutil.rmtree(temp)
+    >>> api.manager.delete_table('DataFiles')
 
-## TEARDOWN-END
 
 '''

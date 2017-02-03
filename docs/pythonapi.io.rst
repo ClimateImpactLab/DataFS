@@ -5,6 +5,8 @@ Reading and Writing Files
 =========================
 
 
+View the source for the code samples on this page in :ref:`snippets-pythonapi-io`.
+
 Writing Archive Files
 ---------------------
 

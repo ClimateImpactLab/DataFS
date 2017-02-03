@@ -1,6 +1,7 @@
 
 from __future__ import absolute_import
 
+import pytest
 import doctest
 import moto
 from examples import (local, ondisk, s3, caching)
@@ -16,6 +17,7 @@ from datafs.managers.manager_dynamo import DynamoDBManager
 from distutils.version import StrictVersion
 
 
+@pytest.mark.examples
 def mock_s3(func):
     def inner(*args, **kwargs):
 
@@ -31,11 +33,13 @@ def mock_s3(func):
     return inner
 
 
+@pytest.mark.examples
 def test_local():
     failures, _ = doctest.testmod(local, report=True)
     assert failures == 0
 
 
+@pytest.mark.examples
 @mock_s3
 def test_ondisk():
 
@@ -64,6 +68,7 @@ def test_ondisk():
         assert failures == 0
 
 
+@pytest.mark.examples
 @mock_s3
 def test_s3():
 
@@ -71,6 +76,7 @@ def test_s3():
     assert failures == 0
 
 
+@pytest.mark.examples
 @mock_s3
 def test_caching():
 
@@ -78,6 +84,7 @@ def test_caching():
     assert failures == 0
 
 
+@pytest.mark.examples
 def test_subclassing():
 
     table_name = 'project_data'
@@ -100,31 +107,37 @@ def test_subclassing():
     manager.delete_table(table_name)
 
 
+@pytest.mark.examples
 def test_preconfigured():
     failures, _ = doctest.testmod(preconfigured, report=True)
     assert failures == 0
 
 
+@pytest.mark.examples
 def test_docs_pythonapi_creating_archives():
     failures, _ = doctest.testmod(pythonapi_creating_archives, report=True)
     assert failures == 0
 
 
+@pytest.mark.examples
 def test_docs_pythonapi_dependencies():
     failures, _ = doctest.testmod(pythonapi_dependencies, report=True)
     assert failures == 0
 
 
+@pytest.mark.examples
 def test_docs_pythonapi_io():
     failures, _ = doctest.testmod(pythonapi_io, report=True)
     assert failures == 0
 
 
+@pytest.mark.examples
 def test_docs_pythonapi_metadata():
     failures, _ = doctest.testmod(pythonapi_metadata, report=True)
     assert failures == 0
 
 
+@pytest.mark.examples
 def test_docs_pythonapi_versioning():
     failures, _ = doctest.testmod(pythonapi_versioning, report=True)
     assert failures == 0

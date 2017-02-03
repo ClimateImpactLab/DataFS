@@ -1,7 +1,7 @@
 
 from datafs.config.config_file import ConfigFile
 from datafs.config.constructor import APIConstructor
-from datafs._compat import open_filelike
+from datafs._compat import open_filelike, string_types
 
 import os
 import re
@@ -25,7 +25,7 @@ def _parse_requirement(requirement_line):
 def get_api(
         profile=None,
         config_file=None,
-        requirements='requirements_data.txt'):
+        requirements=None):
     '''
     Generate a datafs.DataAPI object from a config profile
 
@@ -124,14 +124,27 @@ def get_api(
     if requirements is None:
         requirements = config.config.get('requirements', None)
 
-    if requirements is not None and os.path.isfile(requirements):
-        with open_filelike(requirements, 'r') as reqfile:
-            for reqline in reqfile.readlines():
-                if re.search(r'^\s*$', reqline):
-                    continue
+    if requirements is not None and not os.path.isfile(requirements):
+        for reqline in re.split(r'[\r\n;]+', requirements):
+            if re.search(r'^\s*$', reqline):
+                continue
 
-                archive, version = _parse_requirement(reqline)
-                default_versions[archive] = version
+            archive, version = _parse_requirement(reqline)
+            default_versions[archive] = version
+
+    else:
+        if requirements is None:
+            requirements = 'requirements_data.txt'
+
+        if os.path.isfile(requirements):
+            with open_filelike(requirements, 'r') as reqfile:
+                for reqline in reqfile.readlines():
+                    if re.search(r'^\s*$', reqline):
+                        continue
+
+                    archive, version = _parse_requirement(reqline)
+                    default_versions[archive] = version
+
 
     api = APIConstructor.generate_api_from_config(profile_config)
     api._default_versions.update(default_versions)

@@ -1,0 +1,11 @@
+default-profile: my-data
+profiles:
+    my-data:
+        manager:
+            class: MongoDBManager
+            kwargs:
+                database_name: 'MyDatabase'
+                table_name: 'DataFiles'
+        authorities:
+            local:
+                service: TempFS

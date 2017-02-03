@@ -8,8 +8,9 @@ One of the main features of DataFS is its ability to manage versions of archives
 
 
 
-We'll assume you have an api created and configured with a manager and authority. On :py:meth:`~datafs.DataAPI.create`, versioning is true by default. Should you want to turn it off just set ``versioned=False``. 
+We'll assume you have an api created and configured with a manager and authority. On :py:meth:`~datafs.DataAPI.create`, versioning is true by default. Should you want to turn it off just set ``versioned=False``.
 
+View the source for the code samples on this page in :ref:`snippets-pythonapi-versioning`.
 
 Setting a Version
 -----------------
@@ -99,10 +100,3 @@ We can see that this is our first version that saved as a prerelease alpha.
 To see more information on versioning check out :py:class:`~datafs.core.versions.BumpableVersion`. 
 
 
-
-
-
-
-
-
- 

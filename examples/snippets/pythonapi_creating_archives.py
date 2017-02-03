@@ -1,5 +1,4 @@
-r'''
-
+'''
 .. _snippets-pythonapi-creating-archives:
 
 Python API: Creating Archives

@@ -48,7 +48,7 @@ clean up any previous test failures
 Add a fresh manager table:
 
 .. code-block:: python
-    
+
     >>> api.manager.create_archive_table('DataFiles')
 
 

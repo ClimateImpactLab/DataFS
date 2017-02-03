@@ -47,7 +47,7 @@ clean up any previous test failures
 Add a fresh manager table:
 
 .. code-block:: python
-    
+
     >>> api.manager.create_archive_table('DataFiles')
 
 
@@ -62,7 +62,7 @@ Displayed example 1 code
 .. code-block:: python
 
     >>> my_archive = api.create('my_archive')
-    >>> with my_archive.open('w+', 
+    >>> with my_archive.open('w+',
     ...     dependencies={'archive2': '1.1', 'archive3': None}) as f:
     ...
     ...     res = f.write(u'contents depend on archive 2 v1.1')

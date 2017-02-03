@@ -1,7 +1,7 @@
 
 from datafs.config.config_file import ConfigFile
 from datafs.config.constructor import APIConstructor
-from datafs._compat import open_filelike, string_types
+from datafs._compat import open_filelike
 
 import os
 import re
@@ -144,7 +144,6 @@ def get_api(
 
                     archive, version = _parse_requirement(reqline)
                     default_versions[archive] = version
-
 
     api = APIConstructor.generate_api_from_config(profile_config)
     api._default_versions.update(default_versions)

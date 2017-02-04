@@ -163,9 +163,9 @@ def test_cli_local(test_config):
 
     result = runner.invoke(cli, prefix + ['filter'])
     assert result.exit_code == 0
-    assert 'my_first_archive' in result.output.strip().split(' ')
+    assert 'my_first_archive' in result.output.strip().split('\n')
 
-    assert len(result.output.strip().split(' ')) == 1
+    assert len(result.output.strip().split('\n')) == 1
     # test the actual creation of the object from the api side
     assert len(list(api2.filter())) == 1
     archive = api2.get_archive('my_first_archive')
@@ -637,7 +637,7 @@ def test_multiple_search(preloaded_config):
         cli,
         prefix + ['search'])
 
-    assert len(result.output.strip().split(' ')) == 3
+    assert len(result.output.strip().split('\n')) == 3
 
     # Assert error raised on mid-kwarg arg
 
@@ -645,7 +645,7 @@ def test_multiple_search(preloaded_config):
         cli,
         prefix + ['filter'])
 
-    assert len(result.output.strip().split(' ')) == 3
+    assert len(result.output.strip().split('\n')) == 3
 
     # Assert error raised on flag
 
@@ -653,7 +653,7 @@ def test_multiple_search(preloaded_config):
         cli,
         prefix + ['filter', '--pattern', 'req_[12]', '--engine', 'regex'])
 
-    assert len(result.output.strip().split(' ')) == 2
+    assert len(result.output.strip().split('\n')) == 2
 
 
 def test_incorrect_versions(preloaded_config):

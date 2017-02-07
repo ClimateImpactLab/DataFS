@@ -43,7 +43,7 @@ def test_cli_search(test_config, monkeypatch):
     )
 
     assert result.exit_code == 0
-    assert 'team2_archive2_var2' in result.output.strip().split(' ')[0]
+    assert 'team2_archive2_var2' in result.output.strip().split('\n')[0]
 
     res = list(api.search('team2', 'var3', 'archive1'))
 
@@ -56,4 +56,4 @@ def test_cli_search(test_config, monkeypatch):
     )
 
     assert result.exit_code == 0
-    assert 'team2_archive2_var2' in result.output.strip().split(' ')[0]
+    assert 'team2_archive2_var2' in result.output.strip().split('\n')[0]

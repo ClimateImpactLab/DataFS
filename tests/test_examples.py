@@ -14,7 +14,7 @@ from examples.snippets import (
     pythonapi_metadata,
     pythonapi_versioning)
 from datafs.managers.manager_dynamo import DynamoDBManager
-from distutils.version import StrictVersion
+from tests.resources import has_special_dependencies
 
 
 @pytest.mark.examples
@@ -42,26 +42,6 @@ def test_local():
 @pytest.mark.examples
 @mock_s3
 def test_ondisk():
-
-    has_special_dependencies = False
-
-    try:
-        import netCDF4
-        assert StrictVersion(netCDF4.__version__) >= '1.1'
-
-        import numpy as np
-        assert StrictVersion(np.__version__) >= '1.7'
-
-        import pandas as pd
-        assert StrictVersion(pd.__version__) >= '0.15'
-
-        import xarray as xr
-        assert StrictVersion(xr.__version__) >= '0.8'
-
-        has_special_dependencies = True
-
-    except (ImportError, AssertionError):
-        pass
 
     if has_special_dependencies:
         failures, _ = doctest.testmod(ondisk, report=True)

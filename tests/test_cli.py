@@ -1,8 +1,6 @@
 from datafs.managers.manager_dynamo import DynamoDBManager
 from datafs.datafs import cli
 from datafs import DataAPI, get_api, to_config_file
-from tests.resources import _close
-import tempfile
 import os
 from click.testing import CliRunner
 import pytest
@@ -35,33 +33,7 @@ def manager_table():
 
 
 @pytest.yield_fixture(scope='module')
-def temp_dir():
-
-    # setup data directory
-
-    temp = tempfile.mkdtemp()
-
-    try:
-        yield temp.replace(os.sep, '/')
-
-    finally:
-        _close(temp)
-
-
-@pytest.yield_fixture(scope='module')
-def temp_file():
-    tmp = tempfile.NamedTemporaryFile(delete=False)
-
-    try:
-        yield tmp.name.replace(os.sep, '/')
-
-    finally:
-        tmp.close()
-        _close(tmp.name)
-
-
-@pytest.yield_fixture(scope='module')
-def test_config(manager_table, temp_dir, temp_file):
+def test_config(manager_table, temp_dir_mod, temp_file):
     my_test_yaml = r'''
 default-profile: myapi
 profiles:
@@ -85,7 +57,7 @@ profiles:
             aws_access_key_id: "access-key-id-of-your-choice"
             aws_secret_access_key: "secret-key-of-your-choice"
         table_name: "{table}"
-'''.format(table=manager_table, dir=temp_dir)
+'''.format(table=manager_table, dir=temp_dir_mod)
 
     with open(temp_file, 'w+') as f:
         f.write(my_test_yaml)
@@ -191,7 +163,7 @@ def test_cli_local(test_config):
 
     result = runner.invoke(cli, prefix + ['filter'])
     assert result.exit_code == 0
-    assert ['my_first_archive'] == [result.output.strip()]
+    assert 'my_first_archive' in result.output.strip().split('\n')
 
     assert len(result.output.strip().split('\n')) == 1
     # test the actual creation of the object from the api side
@@ -320,7 +292,7 @@ def test_cli_local(test_config):
 
     result = runner.invoke(cli, prefix + ['filter'])
     assert result.exit_code == 0
-    assert result.output == ''
+    assert result.output.strip() == ''
 
     assert len(list(api2.filter())) == 0
 
@@ -423,7 +395,7 @@ def test_cli_unversioned(test_config):
 
     result = runner.invoke(cli, prefix + ['filter'])
     assert result.exit_code == 0
-    assert result.output == ''
+    assert result.output.strip() == ''
 
     assert len(list(api2.filter())) == 0
 
@@ -602,6 +574,88 @@ def test_alternate_versions(preloaded_config):
             assert f.read() == 'this is archive req_3 version 1.1a1'
 
 
+def test_kwarg_handling(preloaded_config):
+    '''
+    Assert errors raised when attempting to pull invalid versions
+    '''
+
+    profile, temp_file = preloaded_config
+
+    # Create a requirements file and
+
+    runner = CliRunner()
+
+    prefix = [
+        '--config-file', '{}'.format(temp_file),
+        '--profile', 'myapi']
+
+    # Assert error raised on improper arg
+
+    result = runner.invoke(
+        cli,
+        prefix + [
+            'update_metadata', 'req_1', 'something', '--description', 'other'])
+
+    assert result.exception
+
+    # Assert error raised on mid-kwarg arg
+
+    result = runner.invoke(
+        cli,
+        prefix + [
+            'update_metadata', 'req_1', '--description', 'something', 'other'])
+
+    assert result.exception
+
+    # Assert error raised on flag
+
+    result = runner.invoke(
+        cli,
+        prefix + ['update_metadata', 'req_1', '--flag'])
+
+    assert result.exception
+
+
+def test_multiple_search(preloaded_config):
+    '''
+    Assert errors raised when attempting to pull invalid versions
+    '''
+
+    profile, temp_file = preloaded_config
+
+    # Create a requirements file and
+
+    runner = CliRunner()
+
+    prefix = [
+            '--config-file', '{}'.format(temp_file),
+            '--profile', 'myapi']
+
+    # Assert error raised on improper arg
+
+    result = runner.invoke(
+        cli,
+        prefix + ['search'])
+
+    assert len(result.output.strip().split('\n')) == 3
+
+    # Assert error raised on mid-kwarg arg
+
+    result = runner.invoke(
+        cli,
+        prefix + ['filter'])
+
+    assert len(result.output.strip().split('\n')) == 3
+
+    # Assert error raised on flag
+
+    result = runner.invoke(
+        cli,
+        prefix + ['filter', '--pattern', 'req_[12]', '--engine', 'regex'])
+
+    assert len(result.output.strip().split('\n')) == 2
+
+
 def test_incorrect_versions(preloaded_config):
     '''
     Assert errors raised when attempting to pull invalid versions
@@ -746,10 +800,32 @@ def test_dependency_parsing(test_config):
         assert 'arch1==0.2.0' in result.output
         assert 'arch2==0.0.1' in result.output
 
+        result = runner.invoke(cli,
+                               prefix + ['set_dependencies',
+                                         'dep_archive',
+                                         '--dependency',
+                                         'arch1==0.2.0',
+                                         '--dependency',
+                                         'arch2'])
+
+        assert result.exit_code == 0
+
+        result = runner.invoke(
+            cli, prefix + [
+                'get_dependencies', 'dep_archive'])
+
+        assert result.exit_code == 0
+
+        assert 'arch1==0.2.0' in result.output
+        assert 'arch2' in result.output
+        assert 'arch2==' not in result.output
+
         os.remove('my_new_test_file.txt')
 
+    api.delete_archive('dep_archive')
 
-def test_update_metadata(test_config):
+
+def test_update_metadata(test_config, monkeypatch):
     '''
     Update archive metadata with a description from the CLI
     '''
@@ -771,9 +847,15 @@ def test_update_metadata(test_config):
         with open('my_new_test_file.txt', 'w+') as to_update:
             to_update.write(u'test test test')
 
+        def get_input_file(*args, **kwargs):
+            return 'my_new_test_file.txt'
+
+        # override click.prompt
+        monkeypatch.setattr('click.prompt', get_input_file)
+
         result = runner.invoke(
             cli, prefix + [
-                'update', 'my_next_archive', 'my_new_test_file.txt'])
+                'update', 'my_next_archive'])
 
         assert result.exit_code == 0
 
@@ -786,6 +868,20 @@ def test_update_metadata(test_config):
         assert arch1.get_metadata() == {'description': 'some_description'}
 
         os.remove('my_new_test_file.txt')
+
+        result = runner.invoke(
+            cli,
+            prefix + ['update', 'my_next_archive', '--string'],
+            input='my new contents\ncan be piped in')
+
+        assert result.exit_code == 0
+
+        result = runner.invoke(cli, prefix + ['cat', 'my_next_archive'])
+
+        assert result.exit_code == 0
+
+        assert 'my new contents' in result.output.strip().split('\n')
+        assert 'can be piped in' in result.output.strip().split('\n')
 
     arch1.delete()
 

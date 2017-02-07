@@ -6,6 +6,10 @@ import os
 import click
 
 
+class ProfileNotFoundError(KeyError):
+    pass
+
+
 class ConfigFile(object):
 
     def __init__(self, config_file=None, default_profile='default'):
@@ -59,7 +63,8 @@ class ConfigFile(object):
             profile = self.default_profile
 
         if profile not in self.config['profiles']:
-            self.config['profiles'][profile] = {}
+            raise ProfileNotFoundError(
+                'Profile "{}" not found'.format(profile))
 
         profile_config = self.config['profiles'][profile]
 
@@ -69,7 +74,15 @@ class ConfigFile(object):
         return profile_config
 
     def get_config_from_api(self, api, profile=None):
-        profile_config = self.get_profile_config(profile)
+
+        try:
+            profile_config = self.get_profile_config(profile)
+        except ProfileNotFoundError:
+
+            self.config['profiles'][profile] = {
+                'api': {}, 'manager': {}, 'authorities': {}}
+
+            profile_config = self.config['profiles'][profile]
 
         if 'user_config' not in profile_config['api']:
             profile_config['api']['user_config'] = {}

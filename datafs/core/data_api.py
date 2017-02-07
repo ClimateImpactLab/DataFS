@@ -142,6 +142,9 @@ class DataAPI(object):
         if authority_name is None:
             authority_name = self.default_authority_name
 
+        if authority_name not in self._authorities:
+            raise KeyError('Authority "{}" not found'.format(authority_name))
+
         if archive_path is None:
             archive_path = self.create_archive_path(archive_name)
 

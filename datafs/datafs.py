@@ -463,12 +463,8 @@ def filter_archives(ctx, prefix, pattern, engine):
     for i, match in enumerate(ctx.obj.api.filter(
             pattern, engine, prefix=prefix)):
 
-        if i > 0:
-            click.echo(' ', nl=False)
-
         click.echo(match, nl=False)
-
-    click.echo('')
+        print('')
 
 
 cli.add_command(filter_archives, name='filter')
@@ -492,12 +488,8 @@ def search(ctx, query_tags, prefix=None):
 
     for i, match in enumerate(ctx.obj.api.search(*query_tags, prefix=prefix)):
 
-        if i > 0:
-            click.echo(' ', nl=False)
-
         click.echo(match, nl=False)
-
-    click.echo('\n', nl=False)
+        print('')
 
 
 @cli.command(short_help='Delete an archive')

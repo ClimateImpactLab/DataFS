@@ -12,6 +12,8 @@ You specify dependencies from within python or using the :ref:`command line inte
 
     Dependencies are not currently validated in any way, so entering a dependency that is not a valid archive name or version will not raise an error.
 
+View the source for the code samples on this page in :ref:`snippets-pythonapi-dependencies`.
+
 
 Specifying Dependencies
 -----------------------
@@ -25,17 +27,9 @@ Dependencies can be set when using the ``dependencies`` argument to :py:class:`~
 
 For example:
 
-.. code-block:: python
-
-    >>> my_archive = api.create('my_archive')
-    >>> with my_archive.open('w+', 
-    ...     dependencies={'archive2': '1.1', 'archive3': None}) as f:
-    ...
-    ...     f.write(u'contents depend on archive 2 v1.1')
-    ...
-    >>> archive.get_dependencies()
-    {'archive2': '1.1', 'archive3': None}
-
+.. include:: ../examples/snippets/pythonapi_dependencies.py
+    :start-after: .. EXAMPLE-BLOCK-1-START
+    :end-before: .. EXAMPLE-BLOCK-1-END
 
 
 After write
@@ -43,15 +37,9 @@ After write
 
 Dependencies can also be added to the latest version of an archive using the :py:meth:`~datafs.core.data_archive.DataArchive.set_dependencies` method:
 
-.. code-block:: python
-
-    >>> with my_archive.open('w+') as f:
-    ...
-    ...     f.write(u'contents depend on archive 2 v1.2')
-    ...
-    >>> my_archive.set_dependencies({'archive2': '1.2'})
-    >>> my_archive.get_dependencies()
-    {'archive2': '1.2'}
+.. include:: ../examples/snippets/pythonapi_dependencies.py
+    :start-after: .. EXAMPLE-BLOCK-2-START
+    :end-before: .. EXAMPLE-BLOCK-2-END
 
 
 Using a requirements file
@@ -61,39 +49,30 @@ If a requirements file is present at api creation, all archives written with tha
 
 For example, with the following requirements file as ``requirements_data.txt``:
 
-.. code-block:: text
-    :linenos:
+.. include:: ../examples/snippets/pythonapi_dependencies.py
+    :start-after: .. EXAMPLE-BLOCK-3-START
+    :end-before: .. EXAMPLE-BLOCK-3-END
 
-    dep1==1.0
-    dep2==0.4.1a3
 
 Archives written while in this working directory will have these requirements:
 
-.. code-block:: python
-
-    >>> api = datafs.get_api(
-    ...     requirements_file='requirements_data.txt')
-    >>>
-    >>> archive = api.get_archive('my_archive')
-    >>> with archive.open('w+') as f:
-    ...     f.write(u'depends on dep1 and dep2')
-    ...
-    >>> archive.get_dependencies()
-    {'dep1': '1.0', 'dep2': '0.4.1a3'}
+.. include:: ../examples/snippets/pythonapi_dependencies.py
+    :start-after: .. EXAMPLE-BLOCK-4-START
+    :end-before: .. EXAMPLE-BLOCK-4-END
 
 Using Dependencies
 ------------------
 
 Retrieve dependencies with :py:class:`~datafs.core.data_archive.DataArchive`'s :py:meth:`~datafs.core.data_archive.DataArchive.get_dependencies` method:
 
-.. code-block:: python
+.. include:: ../examples/snippets/pythonapi_dependencies.py
+    :start-after: .. EXAMPLE-BLOCK-5-START
+    :end-before: .. EXAMPLE-BLOCK-5-END
 
-    >>> archive.get_dependencies()
-    {'dep1': '1.0', 'dep2': '0.4.1a3'}
 
 Get dependencies for older versions using the ``version`` argument:
 
-.. code-block:: python
+.. include:: ../examples/snippets/pythonapi_dependencies.py
+    :start-after: .. EXAMPLE-BLOCK-6-START
+    :end-before: .. EXAMPLE-BLOCK-6-END
 
-    >>> archive.get_dependencies(version='0.0.1')
-    {'archive2': '1.1', 'archive3': None}

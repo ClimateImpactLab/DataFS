@@ -22,6 +22,7 @@ Contents:
    history
    datafs
    examples
+   samples
 
 Indices and tables
 ==================

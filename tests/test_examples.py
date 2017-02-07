@@ -42,7 +42,6 @@ def test_local():
 @pytest.mark.examples
 @mock_s3
 def test_ondisk():
-
     if has_special_dependencies:
         failures, _ = doctest.testmod(ondisk, report=True)
         assert failures == 0
@@ -107,8 +106,9 @@ def test_docs_pythonapi_dependencies():
 
 @pytest.mark.examples
 def test_docs_pythonapi_io():
-    failures, _ = doctest.testmod(pythonapi_io, report=True)
-    assert failures == 0
+    if has_special_dependencies: 
+        failures, _ = doctest.testmod(pythonapi_io, report=True)
+        assert failures == 0
 
 
 @pytest.mark.examples

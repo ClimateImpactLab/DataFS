@@ -4,11 +4,11 @@ import pytest
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_1(setup):
+def test_cli_snippet_1(cli_setup):
 
-    runner, api, config_file, prefix = setup
+    runner, api, config_file, prefix = cli_setup
 
-    validate_command(setup, '''
+    validate_command(cli_setup, '''
 
 .. EXAMPLE-BLOCK-1-START
 
@@ -25,11 +25,11 @@ def test_cli_snippet_1(setup):
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_2(setup_dual_auth):
+def test_cli_snippet_2(cli_setup_dual_auth):
 
-    runner, api, config_file, prefix = setup_dual_auth
+    runner, api, config_file, prefix = cli_setup_dual_auth
 
-    validate_command(setup_dual_auth, '''
+    validate_command(cli_setup_dual_auth, '''
 
 .. EXAMPLE-BLOCK-2-START
 
@@ -46,11 +46,11 @@ def test_cli_snippet_2(setup_dual_auth):
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_3(setup):
+def test_cli_snippet_3(cli_setup):
 
-    runner, api, config_file, prefix = setup
+    runner, api, config_file, prefix = cli_setup
 
-    validate_command(setup, '''
+    validate_command(cli_setup, '''
 
 .. EXAMPLE-BLOCK-3-START
 
@@ -67,14 +67,14 @@ def test_cli_snippet_3(setup):
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_4(setup):
+def test_cli_snippet_4(cli_setup):
 
-    runner, api, config_file, prefix = setup
+    runner, api, config_file, prefix = cli_setup
 
     api.manager.set_required_archive_metadata({
         'description': 'Archive description'})
 
-    validate_command(setup, '''
+    validate_command(cli_setup, '''
 
 .. EXAMPLE-BLOCK-4-START
 
@@ -94,9 +94,9 @@ def test_cli_snippet_4(setup):
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_5(setup, monkeypatch):
+def test_cli_snippet_5(cli_setup, monkeypatch):
 
-    runner, api, config_file, prefix = setup
+    runner, api, config_file, prefix = cli_setup
     api.manager.set_required_archive_metadata({
         'description': 'Enter a description'})
 
@@ -106,7 +106,7 @@ def test_cli_snippet_5(setup, monkeypatch):
     # override click.prompt
     monkeypatch.setattr('click.prompt', get_description)
 
-    validate_command(setup, '''
+    validate_command(cli_setup, '''
 
 .. EXAMPLE-BLOCK-5-START
 

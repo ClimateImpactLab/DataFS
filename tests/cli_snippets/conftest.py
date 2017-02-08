@@ -38,7 +38,7 @@ def setup_runner_resource(config_file, table_name, archive_name):
 
 
 @pytest.yield_fixture(scope='function')
-def setup():
+def cli_setup():
     config_file = 'examples/snippets/resources/datafs.yml'
     table_name = 'DataFiles'
     archive_name = 'my_archive'
@@ -48,7 +48,7 @@ def setup():
 
 
 @pytest.yield_fixture(scope='function')
-def setup_dual_auth():
+def cli_setup_dual_auth():
     config_file = 'examples/snippets/resources/datafs_dual_auth.yml'
     table_name = 'OtherFiles'
     archive_name = 'my_archive'

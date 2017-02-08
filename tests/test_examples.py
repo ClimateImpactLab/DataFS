@@ -106,7 +106,7 @@ def test_docs_pythonapi_dependencies():
 
 @pytest.mark.examples
 def test_docs_pythonapi_io():
-    if has_special_dependencies: 
+    if has_special_dependencies:
         failures, _ = doctest.testmod(pythonapi_io, report=True)
         assert failures == 0
 

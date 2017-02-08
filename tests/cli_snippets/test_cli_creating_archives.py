@@ -6,13 +6,17 @@ from contextlib import contextmanager
 import shlex
 import re
 import pytest
-import traceback
 
 
 def get_command(string):
-    parsed = re.search(r'\ *\$ (?P<cmd>datafs[^\n]+)(?P<response>(\n\ +[^\n]+)*)', string)
+    parsed = re.search(
+        r'\ *\$ (?P<cmd>datafs[^\n]+)(?P<response>(\n\ +[^\n]+)*)',
+        string)
+
     command = shlex.split(parsed.group('cmd'))[1:]
-    response = '\n'.join(map(lambda s: s.strip(), parsed.group('response').strip().split('\n')))
+    response = '\n'.join(map(
+        lambda s: s.strip(),
+        parsed.group('response').strip().split('\n')))
 
     lines = response.split('\n')
     if lines[0] == 'Traceback (most recent call last):':
@@ -34,11 +38,11 @@ def validate_command(config, command, error=False):
 
     if error:
         assert result.exit_code != 0
-        assert exception == result.exc_info[0].__name__ + ': ' + str(result.exc_info[1])
+        fmt = result.exc_info[0].__name__ + ': ' + str(result.exc_info[1])
+        assert exception == fmt
     else:
         assert result.exit_code == 0
         assert result.output.strip() == response
-
 
 
 @contextmanager
@@ -47,7 +51,6 @@ def setup_runner_resource(config_file, table_name, archive_name):
     # setup
 
     runner = CliRunner()
-
 
     api = get_api(config_file=config_file)
 
@@ -149,7 +152,7 @@ def test_cli_snippet_3(setup):
 
 .. code-block:: bash
 
-    $ datafs create my_archive_name --source 'Burke et al (2015)' --doi '10.1038/nature15725' --description 'my test archive'
+    $ datafs create my_archive_name --description 'my test archive'
     created versioned archive <DataArchive local://my_archive_name>
 
 .. EXAMPLE-BLOCK-3-END
@@ -159,13 +162,13 @@ def test_cli_snippet_3(setup):
     api.delete_archive('my_archive_name')
 
 
-
 @pytest.mark.cli_snippets
 def test_cli_snippet_4(setup):
 
     runner, api, config_file, prefix = setup
 
-    api.manager.set_required_archive_metadata({'description': 'Archive description'})
+    api.manager.set_required_archive_metadata({
+        'description': 'Archive description'})
 
     validate_command(setup, '''
 
@@ -181,7 +184,7 @@ def test_cli_snippet_4(setup):
 
 .. EXAMPLE-BLOCK-4-END
 
-''', error = True)
+''', error=True)
 
     api.manager.set_required_archive_metadata({})
 
@@ -190,8 +193,8 @@ def test_cli_snippet_4(setup):
 def test_cli_snippet_5(setup, monkeypatch):
 
     runner, api, config_file, prefix = setup
-    api.manager.set_required_archive_metadata({'description': 'Enter a description'})
-
+    api.manager.set_required_archive_metadata({
+        'description': 'Enter a description'})
 
     def get_description(*args, **kwargs):
         return "my_description"
@@ -213,4 +216,3 @@ def test_cli_snippet_5(setup, monkeypatch):
 ''')
 
     api.delete_archive('my_archive_name')
-

@@ -61,9 +61,10 @@ Example 1
     >>> with open('sample_archive.txt', 'w+', ) as f:
     ...     f.write(u'this is a sample archive')
     ...
-    >>>
-    >>> sample_archive = api.create('sample_archive', metadata=dict(description='metadata description'))
-    >>>
+    >>> sample_archive = api.create(
+    ...     'sample_archive',
+    ...     metadata = {'description': 'metadata description'})
+    ...
     >>> sample_archive.update('sample_archive.txt', prerelease='alpha')
 
 .. EXAMPLE-BLOCK-1-END
@@ -109,8 +110,8 @@ Example 4
 
 .. code-block:: python
 
-	>>> sample_archive.get_latest_version()
-	BumpableVersion ('0.1')
+    >>> sample_archive.get_latest_version()
+    BumpableVersion ('0.1')
 
 .. EXAMPLE-BLOCK-4-END
 
@@ -122,8 +123,8 @@ Example 5
 
 .. code-block:: python
 
-   	>>> sample_archive.get_latest_hash()
-	u'510d0e2eadd19514788e8fdf91e3bd5c'
+    >>> sample_archive.get_latest_hash()
+    u'510d0e2eadd19514788e8fdf91e3bd5c'
 
 .. EXAMPLE-BLOCK-5-END
 
@@ -135,10 +136,13 @@ Example 6
 
 .. code-block:: python
 
-   	>>> sample_archive1 = api.get_archive('sample_archive', default_version='0.0.1a1')
+    >>> sample_archive1 = api.get_archive(
+    ...     'sample_archive',
+    ...     default_version='0.0.1a1')
+    ...
     >>> with sample_archive1.open('r') as f:
     ...    print(f.read())
-    ...   
+    ...
     Sample archive with more text so we can bumpversion
 
 .. EXAMPLE-BLOCK-6-END

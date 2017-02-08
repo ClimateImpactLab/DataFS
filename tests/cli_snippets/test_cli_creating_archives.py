@@ -6,7 +6,7 @@ import pytest
 @pytest.mark.cli_snippets
 def test_cli_snippet_1(cli_setup):
 
-    runner, api, config_file, prefix = cli_setup
+    _, api, _, _ = cli_setup
 
     validate_command(cli_setup, '''
 
@@ -27,7 +27,7 @@ def test_cli_snippet_1(cli_setup):
 @pytest.mark.cli_snippets
 def test_cli_snippet_2(cli_setup_dual_auth):
 
-    runner, api, config_file, prefix = cli_setup_dual_auth
+    _, api, _, _ = cli_setup_dual_auth
 
     validate_command(cli_setup_dual_auth, '''
 
@@ -35,7 +35,7 @@ def test_cli_snippet_2(cli_setup_dual_auth):
 
 .. code-block:: bash
 
-    $ datafs create my_archive --authority_name "my_authority"
+    $ datafs create my_archive333 --authority_name "my_authority"
     created versioned archive <DataArchive my_authority://my_archive>
 
 .. EXAMPLE-BLOCK-2-END
@@ -48,7 +48,7 @@ def test_cli_snippet_2(cli_setup_dual_auth):
 @pytest.mark.cli_snippets
 def test_cli_snippet_3(cli_setup):
 
-    runner, api, config_file, prefix = cli_setup
+    _, api, _, _ = cli_setup
 
     validate_command(cli_setup, '''
 
@@ -69,7 +69,7 @@ def test_cli_snippet_3(cli_setup):
 @pytest.mark.cli_snippets
 def test_cli_snippet_4(cli_setup):
 
-    runner, api, config_file, prefix = cli_setup
+    _, api, _, _ = cli_setup
 
     api.manager.set_required_archive_metadata({
         'description': 'Archive description'})
@@ -96,7 +96,8 @@ def test_cli_snippet_4(cli_setup):
 @pytest.mark.cli_snippets
 def test_cli_snippet_5(cli_setup, monkeypatch):
 
-    runner, api, config_file, prefix = cli_setup
+    _, api, _, _ = cli_setup
+
     api.manager.set_required_archive_metadata({
         'description': 'Enter a description'})
 

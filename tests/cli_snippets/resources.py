@@ -4,6 +4,10 @@ import re
 
 
 def get_command(string):
+    '''
+    Parses command into the command line arguments and expected stdin/stderr
+    '''
+
     parsed = re.search(
         r'\ *\$ (?P<cmd>datafs[^\n]+)(?P<response>(\n\ +[^\n]+)*)',
         string)
@@ -24,6 +28,9 @@ def get_command(string):
 
 
 def validate_command(config, command, error=False):
+    '''
+    Checks the result of running command against expected output
+    '''
 
     runner, api, config_file, prefix = config
 

@@ -1,14 +1,11 @@
 
-from tests.cli_snippets.resources import validate_command
 import pytest
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_1(cli_setup):
+def test_cli_snippet_1(cli_validator):
 
-    _, api, _, _ = cli_setup
-
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-1-START
 
@@ -19,17 +16,19 @@ def test_cli_snippet_1(cli_setup):
 
 .. EXAMPLE-BLOCK-1-END
 
-''')
+Snippet 1 teardown
 
-    api.delete_archive('my_archive')
+.. code-block:: bash
+
+    $ datafs delete my_archive
+
+''')
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_2(cli_setup_dual_auth):
+def test_cli_snippet_2(cli_validator_dual_auth):
 
-    _, api, _, _ = cli_setup_dual_auth
-
-    validate_command(cli_setup_dual_auth, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-2-START
 
@@ -40,9 +39,13 @@ def test_cli_snippet_2(cli_setup_dual_auth):
 
 .. EXAMPLE-BLOCK-2-END
 
-''')
+Snippet 2 teardown
 
-    api.delete_archive('my_archive')
+.. code-block:: bash
+
+    $ datafs delete my_archive
+
+''')
 
 
 @pytest.mark.cli_snippets
@@ -50,7 +53,7 @@ def test_cli_snippet_3(cli_setup):
 
     _, api, _, _ = cli_setup
 
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-3-START
 
@@ -61,20 +64,22 @@ def test_cli_snippet_3(cli_setup):
 
 .. EXAMPLE-BLOCK-3-END
 
-''')
+Snippet 3 teardown
 
-    api.delete_archive('my_archive')
+.. code-block:: bash
+
+    $ datafs delete my_archive
+
+''')
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_4(cli_setup):
+def test_cli_snippet_4(cli_validator_with_description):
 
     _, api, _, _ = cli_setup
 
-    api.manager.set_required_archive_metadata({
-        'description': 'Archive description'})
 
-    validate_command(cli_setup, '''
+    cli_validator_with_description('''
 
 .. EXAMPLE-BLOCK-4-START
 
@@ -94,7 +99,7 @@ def test_cli_snippet_4(cli_setup):
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_5(cli_setup, monkeypatch):
+def test_cli_snippet_5(cli_validator_with_description, monkeypatch):
 
     _, api, _, _ = cli_setup
 
@@ -107,7 +112,7 @@ def test_cli_snippet_5(cli_setup, monkeypatch):
     # override click.prompt
     monkeypatch.setattr('click.prompt', get_description)
 
-    validate_command(cli_setup, '''
+    cli_validator_with_description('''
 
 .. EXAMPLE-BLOCK-5-START
 
@@ -118,6 +123,11 @@ def test_cli_snippet_5(cli_setup, monkeypatch):
 
 .. EXAMPLE-BLOCK-5-END
 
+Snippet 5 teardown
+
+.. code-block:: bash
+
+    $ datafs delete my_archive
+
 ''')
 
-    api.delete_archive('my_archive')

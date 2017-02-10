@@ -1,28 +1,31 @@
 
-from tests.cli_snippets.resources import validate_command
 import pytest
 import os
 import ast
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippets(cli_setup):
-
-    _, api, _, _ = cli_setup
-
-    api.create('my_archive')
+def test_cli_snippets(cli_validator):
 
     # Snippet 1
 
-    validate_command(cli_setup, '''
+    cli_validator('''
+
+Snippet 1 setup
+
+.. code-block:: bash
+
+    $ datafs create my_archive
 
 .. EXAMPLE-BLOCK-1-START
 
+.. code-block:: bash
+
     $ datafs my_archive metadata
     {u'acta non verba': u'deeds not words', 
-     u'actiones secundum fidei': 'action follows belief',
+     u'actiones secundum fidei': u'action follows belief',
      u'ad undas': u'to the waves',
-     u'as victoriam': 'for victory'}
+     u'as victoriam': u'for victory'}
 
 .. EXAMPLE-BLOCK-1-END
 
@@ -30,7 +33,7 @@ def test_cli_snippets(cli_setup):
 
     # Snippet 2
 
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-2-START
 
@@ -38,14 +41,13 @@ def test_cli_snippets(cli_setup):
 
     $ datafs update_metadata my_archive 'acta non verba' 'Action is better than words' 'ad atrumque paratas' 'prepared for either alternative'
 
-
 .. EXAMPLE-BLOCK-2-END
 
 ''')
 
     # Snippet 3
 
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-3-START
 
@@ -60,5 +62,11 @@ def test_cli_snippets(cli_setup):
      u'ad atrumque paratas': u'prepared for either alternative'}
 
 .. EXAMPLE-BLOCK-3-END
+
+Teardown
+
+.. code-block:: bash
+
+    $ datafs delete my_archive
 
 ''')

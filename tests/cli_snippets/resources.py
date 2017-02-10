@@ -1,90 +1,126 @@
-from datafs.datafs import cli
 import shlex
 import re
 import traceback
 
+class CommandLineTester(object):
 
-def get_command(string):
-    r"""
-    Parses command into the command line arguments and expected stdin/stderr
+    def __init__(self, call_engines=None, default=None):
 
-    Example
-    -------
+        if call_engines is None:
+            call_engines = {}
 
-    .. code-block:: python
+        self.call_engines = call_engines
 
-        >>> test = '''
-        ... .. code-block:: bash
-        ... 
-        ...     $ echo "my string" 
-        ...     ['echo', 'my string']
-        ...
-        ... '''
-        >>> next(get_command(test))
-        (['echo', 'my string'], "['echo', 'my string']", None)
+        self.default = default
 
-    .. code-block:: python
+    def get_command(self, string):
+        r"""
+        Parses command into the command line arguments and expected stdin/stderr
 
-        >>> test = '''
-        ...
-        ... .. code-block:: bash
-        ... 
-        ...     $ pytest test_nonexistant.py --cov=datafs --cov=examples \
-        ...     >   --cov=docs --doctest-modules --cov-report term-missing
-        ...     Traceback (most recent call last):
-        ...     ...
-        ...     ERROR: file not found: test_nonexistant.py
-        ...
-        ... '''
-        >>> next(get_command(test))
-        (['pytest', 'test_nonexistant.py', '--cov=datafs', '--cov=examples', '--cov=docs', '--doctest-modules', '--cov-report', 'term-missing'], None, 'ERROR: file not found: test_nonexistant.py')
+        Example
+        -------
 
+        .. code-block:: python
 
+            >>> test = '''
+            ... .. code-block:: bash
+            ... 
+            ...     $ echo "my string" 
+            ...     ['echo', 'my string']
+            ...
+            ... '''
+            >>> next(get_command(test))
+            (['echo', 'my string'], "['echo', 'my string']", None)
 
-    """
+        .. code-block:: python
 
-    for parsed in re.finditer(
-            (r'(?P<cmd>\$\s+[^\n]+(\\\s*\n\s+\>\ +[^\n]+)*)'
-            +r'(?P<res>(\n\ +[^\$\>\s][^\n]*)*)?'),
-            string):
-
-        cmd = parsed.group('cmd').split('\n')
-
-        formatted = map(
-            lambda s: re.sub(r'\s*[\$\>]\s*', ' ', s.strip()).strip(), cmd)
-
-        command = shlex.split(' '.join(formatted))
-
-        response = '\n'.join(map(
-            lambda s: s.strip(),
-            parsed.group('res').strip().split('\n')))
-
-        lines = response.split('\n')
-        if lines[0] == 'Traceback (most recent call last):':
-            response = None
-            exception = ' '.join(map(lambda s: s.strip(), lines[2:]))
-        else:
-            exception = None
-
-        yield command, response, exception
+            >>> test = '''
+            ...
+            ... .. code-block:: bash
+            ... 
+            ...     $ pytest test_nonexistant.py --cov=datafs --cov=examples \
+            ...     >   --cov=docs --doctest-modules --cov-report term-missing
+            ...     Traceback (most recent call last):
+            ...     ...
+            ...     ERROR: file not found: test_nonexistant.py
+            ...
+            ... '''
+            >>> next(get_command(test))
+            (['pytest', 'test_nonexistant.py', '--cov=datafs', '--cov=examples', '--cov=docs', '--doctest-modules', '--cov-report', 'term-missing'], None, 'ERROR: file not found: test_nonexistant.py')
 
 
-def validate_command(config, command, error=False, interpreter=None):
-    '''
-    Checks the result of running command against expected output
-    '''
 
-    if interpreter is None:
-        interpreter = lambda x: x
+        """
 
-    runner, api, config_file, prefix = config
+        for parsed in re.finditer(
+                (r'(?P<cmd>\$\s+[^\n]+(\\\s*\n\s+\>\ +[^\n]+)*)'
+                +r'(?P<res>(\n\ +[^\$\>\s][^\n]*)*)?'),
+                string):
 
-    for command, response, exception in get_command(command):
+            cmd = parsed.group('cmd').split('\n')
 
-        if (len(command) == 0) or (command[0] != 'datafs'):
-            continue
+            formatted = map(
+                lambda s: re.sub(r'\s*[$>]\s*', ' ', s.strip()).strip(), cmd)
 
-        result = runner.invoke(cli, prefix + command[1:])
+            command = shlex.split(' '.join(formatted))
+
+            response = '\n'.join(map(
+                lambda s: s.strip(),
+                parsed.group('res').strip().split('\n')))
+
+            lines = response.split('\n')
+            if lines[0] == 'Traceback (most recent call last):':
+                response = None
+                exception = ' '.join(map(lambda s: s.strip(), lines[2:]))
+            else:
+                exception = None
+
+            yield command, response, exception
+
+
+    def validate(self, config, command, error=False, interpreter=None):
+        '''
+        Checks the result of running command against expected output
+        '''
+
+        if interpreter is None:
+            interpreter = lambda x: x
+
+
+        for command, expected, exception in get_command(command):
+
+            if (len(command) == 0):
+                continue
+     
+            if command[0] not in self.call_engines:
+                raise ValueError('Command "{}" not allowed. Add command caller to call_engines to whitelist.'.format(command[0]))
+
+            call_engine = self.call_engines[command[0]]
+
+            result = call_engine.validate(
+                command[1:],
+                error=error,
+                interpreter=interpreter)
+
+class CommandValidator(object):
+    
+    def validate(self, command, error=False, interpreter=None):
+        raise NotImplementedError
+
+class ClickValidator(CommandValidator):
+
+    def __init__(self, app, prefix=None):
+        super(ClickValidator, self).__init__()
+
+        self.app = app
+
+        if prefix is None:
+            prefix = []
+
+        self.prefix = prefix
+
+    def validate(self, command, error=False, interpreter=None):
+        result = runner.invoke(self.app, self.prefix + command)
 
         if error:
             assert result.exit_code != 0, result.output
@@ -95,8 +131,18 @@ def validate_command(config, command, error=False, interpreter=None):
             if result.exit_code != 0:
                 raise ValueError("Errors encountered in execution: {}".format(msg))
 
-            msg = '{0} != {1}\n\n+ {0}\n- {1}'.format(result.output, response)
-            assert interpreter(result.output.strip()) == interpreter(response), msg
+            msg = '{0} != {1}\n\n+ {0}\n- {1}'.format(result.output, expected)
+            assert interpreter(result.output.strip()) == interpreter(expected), msg
+
+
+class SkipValidator(CommandValidator):
+
+    def __init__(self, app, prefix=None):
+        super(SkipValidator, self).__init__()
+
+    def validate(self, command, error=False, interpreter=None):
+        pass
+
 
 if __name__ == '__main__':
     import doctest

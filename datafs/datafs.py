@@ -98,7 +98,7 @@ class _DataFSInterface(object):
     '--requirements',
     envvar='DATAFS_REQUIREMENTS_FILE',
     type=str,
-    default='requirements_data.txt',
+    default=None,
     help='Specify a requirements file')
 @click.option(
     '--profile',
@@ -110,7 +110,7 @@ class _DataFSInterface(object):
 def cli(
         ctx,
         config_file=None,
-        requirements='requirements_data.txt',
+        requirements=None,
         profile=None):
     '''
     An abstraction layer for data storage systems

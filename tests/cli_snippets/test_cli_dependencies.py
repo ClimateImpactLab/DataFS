@@ -1,18 +1,15 @@
 
-from tests.cli_snippets.resources import validate_command
 import pytest
 import os
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_1(cli_setup):
-
-    runner, api, config_file, prefix = cli_setup
+def test_cli_snippet_1(cli_validator):
 
     with open('arch.txt', 'w+') as f:
         f.write('contents depend on archive 2 v1.1')
 
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-1-START
 
@@ -38,7 +35,7 @@ def test_cli_snippet_1(cli_setup):
 
     # Code snippet 2
 
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-2-START
 
@@ -51,18 +48,21 @@ def test_cli_snippet_1(cli_setup):
 
 .. EXAMPLE-BLOCK-2-END
 
-''')
+Example 2 teardown
 
-    api.delete_archive('my_archive')
+.. code-block:: bash
+
+    $ datafs delete my_archive
+
+''')
 
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_3(cli_setup):
+def test_cli_snippet_3(cli_validator):
 
-    runner, api, config_file, prefix = cli_setup
 
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-3-START
 
@@ -79,14 +79,14 @@ def test_cli_snippet_3(cli_setup):
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_4(cli_setup):
+def test_cli_snippet_4(cli_validator, cli_setup):
 
     runner, api, config_file, prefix = cli_setup
 
     api.manager.set_required_archive_metadata({
         'description': 'Archive description'})
 
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-4-START
 
@@ -106,7 +106,7 @@ def test_cli_snippet_4(cli_setup):
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_5(cli_setup, monkeypatch):
+def test_cli_snippet_5(cli_validator, cli_setup, monkeypatch):
 
     runner, api, config_file, prefix = cli_setup
     api.manager.set_required_archive_metadata({
@@ -118,7 +118,7 @@ def test_cli_snippet_5(cli_setup, monkeypatch):
     # override click.prompt
     monkeypatch.setattr('click.prompt', get_description)
 
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-5-START
 
@@ -129,6 +129,12 @@ def test_cli_snippet_5(cli_setup, monkeypatch):
 
 .. EXAMPLE-BLOCK-5-END
 
+Snippet 5 teardown
+
+.. code-block:: bash
+
+    $ datafs delete my_archive
+
 ''')
 
-    api.delete_archive('my_archive')
+    api.manager.set_required_archive_metadata({})

@@ -1,30 +1,28 @@
 
-from tests.cli_snippets.resources import validate_command
 import pytest
 import os
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_1(cli_setup):
+def test_cli_snippets(cli_validator):
 
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-1-START
 
 .. code-block:: bash
 
-    $ datafs create my_archive metadata 'useful metadata'
+    $ datafs create my_archive \
+    >   --my_metadata_field 'useful metadata'
     created versioned archive <DataArchive local://my_archive>
 
 .. EXAMPLE-BLOCK-1-END
 
 ''')
 
+    # Snippet 2
 
-@pytest.mark.cli_snippets
-def test_cli_snippet_2(cli_setup):
-
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-2-START
 
@@ -38,31 +36,27 @@ def test_cli_snippet_2(cli_setup):
 ''')
 
 
+    # Snippet 3
 
-@pytest.mark.cli_snippets
-def test_cli_snippet_3(cli_setup):
-
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-3-START
 
 .. code-block:: bash
 
     $ datafs update my_archive --bumpversion patch --string 'Aliquando et insanire iucundum est'
-    uploaded data to <DataArchive local://my_archive>. version bumped 0.0.1 --> 0.0.2
+    uploaded data to <DataArchive local://my_archive>. version bumped 0.0.1 --> 0.0.2.
 
     $ datafs update my_archive --bumpversion minor --string 'animum debes mutare non caelum'
-    uploaded data to <DataArchive local://sample_arch>. version bumped 0.0.2 --> 0.1.
+    uploaded data to <DataArchive local://my_archive>. version bumped 0.0.2 --> 0.1.
 
 .. EXAMPLE-BLOCK-3-END
 
 ''')
 
+    # Snippet 4
 
-@pytest.mark.cli_snippets
-def test_cli_snippet_4(cli_setup):
-
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-4-START
 
@@ -75,11 +69,9 @@ def test_cli_snippet_4(cli_setup):
 
 ''')
 
+    # Snippet 5
 
-@pytest.mark.cli_snippets
-def test_cli_snippet_5(cli_setup, monkeypatch):
-
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-5-START
 

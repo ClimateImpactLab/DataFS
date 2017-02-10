@@ -1,15 +1,14 @@
 
-from tests.cli_snippets.resources import validate_command
 import pytest
 import os
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippets(cli_setup):
+def test_cli_snippets(cli_validator):
 
     # snippet 1
 
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-1-START
 
@@ -19,11 +18,8 @@ def test_cli_snippets(cli_setup):
 
 .. EXAMPLE-BLOCK-1-END
 
-''')
 
-    # snippet 2
-
-    validate_command(cli_setup, '''
+Snippet 2
 
 .. EXAMPLE-BLOCK-2-START
 
@@ -34,11 +30,8 @@ def test_cli_snippets(cli_setup):
 
 .. EXAMPLE-BLOCK-2-END
 
-''')
 
-    # snippet 3
-
-    validate_command(cli_setup, '''
+Snippet 3
 
 .. EXAMPLE-BLOCK-3-START
 
@@ -49,11 +42,8 @@ def test_cli_snippets(cli_setup):
 
 .. EXAMPLE-BLOCK-3-END
 
-''')
 
-    # snippet 4
-
-    validate_command(cli_setup, '''
+Snippet 4
 
 .. EXAMPLE-BLOCK-4-START
 
@@ -64,32 +54,26 @@ def test_cli_snippets(cli_setup):
 
 .. EXAMPLE-BLOCK-4-END
 
-''')
 
-    # snippet 5
-
-    validate_command(cli_setup, '''
+Snippet 5
 
 .. EXAMPLE-BLOCK-5-START
 
 .. code-block:: bash
 
-    $ datafs download my_archive '~/data/my_archive.txt'
-    downloaded  v0.0.1 to /Users/data/my_archive.txt
+    $ datafs download my_archive 'my_archive.txt'
+    downloaded  v0.0.1 to my_archive.txt
 
 .. EXAMPLE-BLOCK-5-END
 
-''')
 
-    # snippet 6
-
-    validate_command(cli_setup, '''
+Snippet 6
 
 .. EXAMPLE-BLOCK-6-START
 
 .. code-block:: bash
     
-    $ cat ~/data/my_archive.txt
+    $ cat my_archive.txt
     barba crescit caput nescit
 
 .. EXAMPLE-BLOCK-6-END
@@ -98,38 +82,37 @@ def test_cli_snippets(cli_setup):
 
     # snippet 7
 
-    validate_command(cli_setup, '''
+    cli_validator('''
 
 .. EXAMPLE-BLOCK-7-START
 
 .. code-block:: bash
 
-    $ datafs update my_archive ~/data/my_archive.txt
+    $ datafs update my_archive my_archive.txt
     uploaded data to <DataArchive local://my_archive>. version bumped 0.0.1 --> 0.0.2
 
 .. EXAMPLE-BLOCK-7-END
 
-''')
 
-    # snippet 8
-
-    validate_command(cli_setup, '''
+Snippet 8
 
 .. EXAMPLE-BLOCK-8-START
 
 .. code-block:: bash
 
-    $ datafs download my_archive ~/data/my_archive_placeholder.txt
-    downloaded  v0.0.2 to /Users/data/my_archive_placeholder.txt
+    $ datafs download my_archive my_archive_placeholder.txt
+    downloaded  v0.0.2 to my_archive_placeholder.txt
     
-    $ cat ~/data/my_archive_placeholder.txt
+    $ cat my_archive_placeholder.txt
     barba crescit caput nescit
     luctuat nec mergitur
 
 .. EXAMPLE-BLOCK-8-END
 
+Teardown
+
+.. code-block:: bash
+
+    $ datafs delete my_archive
+
 ''')
-
-    _, api, _, _ = cli_setup
-
-    api.delete_archive('my_archive')

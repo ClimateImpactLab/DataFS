@@ -1,9 +1,10 @@
-
 from click.testing import CliRunner
 from datafs import get_api
+from datafs.datafs import cli
 from contextlib import contextmanager
 import pytest
 
+from fs.tempfs import TempFS
 
 @contextmanager
 def setup_runner_resource(config_file, table_name, archive_name):
@@ -55,3 +56,63 @@ def cli_setup_dual_auth():
 
     with setup_runner_resource(config_file, table_name, archive_name) as setup:
         yield setup
+
+
+@pytest.yield_fixture(scope='function')
+def cli_validator(cli_setup):
+    
+    runner, api, config_file, prefix = cli_setup
+
+    tester = CommandLineTester()
+    tester.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
+    
+    skipped = ['echo', 'cat']
+
+    tester.call_engines.update({
+        cmd: SkipValidator() for cmd in skipped})
+
+    yield tester.validate
+
+@pytest.yield_fixture(scope='function')
+def cli_validator_with_description(cli_setup):
+    
+    runner, api, config_file, prefix = cli_setup
+
+    api.manager.set_required_archive_metadata({
+        'description': 'Archive description'})
+
+    tester = CommandLineTester()
+    tester.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
+    
+    skipped = ['echo', 'cat']
+
+    tester.call_engines.update({
+        cmd: SkipValidator() for cmd in skipped})
+
+    try:
+        yield tester.validate
+
+    finally:
+        api.manager.set_required_archive_metadata({})
+
+
+@pytest.yield_fixture(scope='function')
+def cli_validator_dual_auth(cli_setup):
+    
+    runner, api, config_file, prefix = cli_setup
+
+    api.add_authority('my_authority', TempFS())
+
+    tester = CommandLineTester()
+    tester.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
+    
+    skipped = ['echo', 'cat']
+
+    tester.call_engines.update({
+        cmd: SkipValidator() for cmd in skipped})
+
+    try:
+        yield tester.validate
+
+    finally:
+        api.authorities['my_authority'].fs.close()

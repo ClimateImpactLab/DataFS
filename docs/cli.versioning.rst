@@ -54,24 +54,3 @@ How can we get a specific version?
     :start-after: .. EXAMPLE-BLOCK-5-START
     :end-before: .. EXAMPLE-BLOCK-5-END
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -59,7 +59,6 @@ Now let's read this to make sure we got what we want
     :end-before: .. EXAMPLE-BLOCK-6-END
 
 
-
 Writing to Archives with Filepaths
 ----------------------------------
 

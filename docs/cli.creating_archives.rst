@@ -19,7 +19,7 @@ Naming Archives
 
 Archives can be named anything, as long as the data service you use can handle the name.
 
-For example, Amazon's S3 storage cannot handle underscores in object names. If you create an archive with underscores in the name, you will receive an error on write (rather than on archive creation). Since this is an error specific to the storate service, we do not catch this error on creation.
+For example, Amazon's S3 storage cannot handle underscores in object names. If you create an archive with underscores in the name, you will receive an error on write (rather than on archive creation). Since this is an error specific to the storage service, we do not catch this error on creation.
 
 
 Specifying an Authority

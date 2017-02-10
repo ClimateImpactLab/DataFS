@@ -14,12 +14,12 @@ We'll assume you have your api configured with a manager and an authority. Check
 Listing Archives
 ----------------
 
-If I want to first check to see if I have any archives I can use the `list` command. Here we see we don't currently have any archives
+If I want to first check to see if I have any archives I can use the `filter` command. Here we see we don't currently have any archives
 
 
 .. code-block:: bash
 
-	datafs list
+	datafs filter
 	[]
 
 So let's create an archive so we have something to work with. 
@@ -34,7 +34,7 @@ Now when we list we see our archive. Great!
 
 .. code-block:: bash
 
-	datafs list
+	datafs filter
 	[<DataArchive osfs://sample_archive>]
 
 

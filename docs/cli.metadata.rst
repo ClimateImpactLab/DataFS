@@ -13,11 +13,11 @@ Viewing Metadata
 ----------------
 
 
-We'll keep working with our ``sample_archive`` that we created earlier. Right now we'll take a look at our metadata. Depending 
+We'll keep working with our ``sample_archive`` that we created earlier. Right now we'll take a look at our metadata. 
 
 .. code-block:: bash
 	
-	datafs sample_archive metadata
+	$ datafs sample_archive metadata
 	{u'acta non verba': u'deeds not words', 
 	 u'actiones secundum fidei': 'action follows belief',
 	 u'ad undas': u'to the waves',
@@ -33,7 +33,7 @@ Updating Metadata
 
 .. code-block:: bash
 
-	datafs update_metadata sample_archive 'acta non verba' 'Action is better than words' 'ad atrumque paratas' 'prepared for either alternative'
+	$ datafs update_metadata sample_archive 'acta non verba' 'Action is better than words' 'ad atrumque paratas' 'prepared for either alternative'
 
 
 
@@ -42,7 +42,7 @@ We'll need to read the metadata again to check to see if we succeeded
 
 .. code-block:: bash
 
-	datafs metadata sample_archive
+	$ datafs metadata sample_archive
 
 	{u'acta non verba': u'Action is better than words', 
 	 u'actiones secundum fidei': u'action follows belief',
@@ -53,6 +53,5 @@ We'll need to read the metadata again to check to see if we succeeded
 
 Great!
 
-It should be noted that the command line tool does not deal with whitespaces well so you'll need to wrap text in quotes if it refers to a single entry. The command line tool is looking for key value pairs. To preserve this symmetry you'll need to use quotations around some entries. 
-
+It should be noted that the command line tool does not deal with whitespaces well so you'll need to wrap text in quotes if it refers to a single entry. 
 

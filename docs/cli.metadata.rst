@@ -15,14 +15,9 @@ Viewing Metadata
 
 We'll keep working with our ``sample_archive`` that we created earlier. Right now we'll take a look at our metadata. Depending 
 
-.. code-block:: bash
-	
-	datafs sample_archive metadata
-	{u'acta non verba': u'deeds not words', 
-	 u'actiones secundum fidei': 'action follows belief',
-	 u'ad undas': u'to the waves',
-	 u'as victoriam': 'for victory'}
-
+.. include:: ../tests/cli_snippets/test_cli_metadata.py
+    :start-after: .. EXAMPLE-BLOCK-1-START
+    :end-before: .. EXAMPLE-BLOCK-1-END
 
 Let's say that we want to change one and add another entry. How can we do this?
 
@@ -31,25 +26,18 @@ Updating Metadata
 -----------------
 
 
-.. code-block:: bash
-
-	datafs update_metadata sample_archive 'acta non verba' 'Action is better than words' 'ad atrumque paratas' 'prepared for either alternative'
+.. include:: ../tests/cli_snippets/test_cli_metadata.py
+    :start-after: .. EXAMPLE-BLOCK-2-START
+    :end-before: .. EXAMPLE-BLOCK-2-END
 
 
 
 We'll need to read the metadata again to check to see if we succeeded
 
 
-.. code-block:: bash
-
-	datafs metadata sample_archive
-
-	{u'acta non verba': u'Action is better than words', 
-	 u'actiones secundum fidei': u'action follows belief',
-	 u'ad undas': u'to the waves',
-	 u'as victoriam': u'for victory', 
-	 u'ad atrumque paratas': u'prepared for either alternative'}
-
+.. include:: ../tests/cli_snippets/test_cli_metadata.py
+    :start-after: .. EXAMPLE-BLOCK-3-START
+    :end-before: .. EXAMPLE-BLOCK-3-END
 
 Great!
 

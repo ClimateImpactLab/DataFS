@@ -69,10 +69,13 @@ def get_command(string):
         yield command, response, exception
 
 
-def validate_command(config, command, error=False):
+def validate_command(config, command, error=False, interpreter=None):
     '''
     Checks the result of running command against expected output
     '''
+
+    if interpreter is None:
+        interpreter = lambda x: x
 
     runner, api, config_file, prefix = config
 
@@ -93,7 +96,7 @@ def validate_command(config, command, error=False):
                 raise ValueError("Errors encountered in execution: {}".format(msg))
 
             msg = '{0} != {1}\n\n+ {0}\n- {1}'.format(result.output, response)
-            assert result.output.strip() == response, msg
+            assert interpreter(result.output.strip()) == interpreter(response), msg
 
 if __name__ == '__main__':
     import doctest

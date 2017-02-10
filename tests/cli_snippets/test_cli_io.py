@@ -5,7 +5,9 @@ import os
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_1(cli_setup):
+def test_cli_snippets(cli_setup):
+
+    # snippet 1
 
     validate_command(cli_setup, '''
 
@@ -19,9 +21,7 @@ def test_cli_snippet_1(cli_setup):
 
 ''')
 
-
-@pytest.mark.cli_snippets
-def test_cli_snippet_2(cli_setup):
+    # snippet 2
 
     validate_command(cli_setup, '''
 
@@ -29,17 +29,14 @@ def test_cli_snippet_2(cli_setup):
 
 .. code-block:: bash
 
-    $ datafs create sample_archive 
-    created versioned archive <DataArchive osfs://sample_archive>
+    $ datafs create my_archive 
+    created versioned archive <DataArchive local://my_archive>
 
 .. EXAMPLE-BLOCK-2-END
 
 ''')
 
-
-
-@pytest.mark.cli_snippets
-def test_cli_snippet_3(cli_setup):
+    # snippet 3
 
     validate_command(cli_setup, '''
 
@@ -48,15 +45,13 @@ def test_cli_snippet_3(cli_setup):
 .. code-block:: bash
 
     $ datafs filter
-    sample_archive
+    my_archive
 
 .. EXAMPLE-BLOCK-3-END
 
 ''')
 
-
-@pytest.mark.cli_snippets
-def test_cli_snippet_4(cli_setup):
+    # snippet 4
 
     validate_command(cli_setup, '''
 
@@ -64,16 +59,14 @@ def test_cli_snippet_4(cli_setup):
 
 .. code-block:: bash
 
-    datafs update sample_archive --string 'barba crescit caput nescit'
-    uploaded data to <DataArchive osfs://sample_archive>. new version 0.0.1 created.
+    $ datafs update my_archive --string 'barba crescit caput nescit'
+    uploaded data to <DataArchive local://my_archive>. new version 0.0.1 created.
 
 .. EXAMPLE-BLOCK-4-END
 
 ''')
 
-
-@pytest.mark.cli_snippets
-def test_cli_snippet_5(cli_setup, monkeypatch):
+    # snippet 5
 
     validate_command(cli_setup, '''
 
@@ -81,16 +74,14 @@ def test_cli_snippet_5(cli_setup, monkeypatch):
 
 .. code-block:: bash
 
-    datafs download sample_archive '~/data/sample_archive.txt'
-    downloaded  v0.0.1 to /Users/data/sample_archive.txt
+    $ datafs download my_archive '~/data/my_archive.txt'
+    downloaded  v0.0.1 to /Users/data/my_archive.txt
 
 .. EXAMPLE-BLOCK-5-END
 
 ''')
 
-
-@pytest.mark.cli_snippets
-def test_cli_snippet_6(cli_setup, monkeypatch):
+    # snippet 6
 
     validate_command(cli_setup, '''
 
@@ -98,16 +89,14 @@ def test_cli_snippet_6(cli_setup, monkeypatch):
 
 .. code-block:: bash
     
-    cat ~/data/sample_archive.txt
+    $ cat ~/data/my_archive.txt
     barba crescit caput nescit
 
 .. EXAMPLE-BLOCK-6-END
 
 ''')
 
-
-@pytest.mark.cli_snippets
-def test_cli_snippet_7(cli_setup, monkeypatch):
+    # snippet 7
 
     validate_command(cli_setup, '''
 
@@ -115,16 +104,14 @@ def test_cli_snippet_7(cli_setup, monkeypatch):
 
 .. code-block:: bash
 
-    datafs update sample_archive ~/data/sample_archive.txt
-    uploaded data to <DataArchive osfs://sample_archive>. version bumped 0.0.1 --> 0.0.2
+    $ datafs update my_archive ~/data/my_archive.txt
+    uploaded data to <DataArchive local://my_archive>. version bumped 0.0.1 --> 0.0.2
 
 .. EXAMPLE-BLOCK-7-END
 
 ''')
 
-
-@pytest.mark.cli_snippets
-def test_cli_snippet_8(cli_setup, monkeypatch):
+    # snippet 8
 
     validate_command(cli_setup, '''
 
@@ -132,10 +119,10 @@ def test_cli_snippet_8(cli_setup, monkeypatch):
 
 .. code-block:: bash
 
-    datafs download sample_archive ~/data/sample_archive_placeholder.txt
-    downloaded  v0.0.2 to /Users/data/sample_archive_placeholder.txt
+    $ datafs download my_archive ~/data/my_archive_placeholder.txt
+    downloaded  v0.0.2 to /Users/data/my_archive_placeholder.txt
     
-    cat ~/data/sample_archive_placeholder.txt
+    $ cat ~/data/my_archive_placeholder.txt
     barba crescit caput nescit
     luctuat nec mergitur
 
@@ -143,3 +130,6 @@ def test_cli_snippet_8(cli_setup, monkeypatch):
 
 ''')
 
+    _, api, _, _ = cli_setup
+
+    api.delete_archive('my_archive')

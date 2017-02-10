@@ -6,6 +6,8 @@ import traceback
 
 def get_command(string):
     r"""
+    Parses command into the command line arguments and expected stdin/stderr
+
     Example
     -------
 
@@ -68,6 +70,9 @@ def get_command(string):
 
 
 def validate_command(config, command, error=False):
+    '''
+    Checks the result of running command against expected output
+    '''
 
     runner, api, config_file, prefix = config
 

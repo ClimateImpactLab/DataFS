@@ -35,7 +35,7 @@ def test_cli_snippet_2(cli_setup_dual_auth):
 
 .. code-block:: bash
 
-    $ datafs create my_archive333 --authority_name "my_authority"
+    $ datafs create my_archive --authority_name "my_authority"
     created versioned archive <DataArchive my_authority://my_archive>
 
 .. EXAMPLE-BLOCK-2-END

@@ -38,12 +38,9 @@ def test_cli_snippet_1(cli_setup):
 
     # Code snippet 2
 
-    runner, api, config_file, prefix = cli_setup
-
-
     validate_command(cli_setup, '''
 
-.. EXAMPLE-BLOCK-1-START
+.. EXAMPLE-BLOCK-2-START
 
 .. code-block:: bash
 
@@ -52,7 +49,7 @@ def test_cli_snippet_1(cli_setup):
     $ datafs get_dependencies my_archive
     archive2==1.2
 
-.. EXAMPLE-BLOCK-1-END
+.. EXAMPLE-BLOCK-2-END
 
 ''')
 

@@ -19,14 +19,14 @@ If I want to first check to see if I have any archives I can use the `filter` co
 
 .. code-block:: bash
 
-	datafs filter
+	$ datafs filter
 	[]
 
 So let's create an archive so we have something to work with. 
 
 .. code-block:: bash
 
-	datafs create sample_archive 
+	$ datafs create sample_archive 
 	created versioned archive <DataArchive osfs://sample_archive>
 
 
@@ -34,7 +34,7 @@ Now when we list we see our archive. Great!
 
 .. code-block:: bash
 
-	datafs filter
+	$ datafs filter
 	[<DataArchive osfs://sample_archive>]
 
 
@@ -46,7 +46,7 @@ This time we will simply demonstrate how you can
 
 .. code-block:: bash
 
-	datafs update sample_archive --string 'barba crescit caput nescit'
+	$ datafs update sample_archive --string 'barba crescit caput nescit'
 	uploaded data to <DataArchive osfs://sample_archive>. new version 0.0.1 created.
 
 
@@ -60,7 +60,7 @@ Reading from Archives
 
 .. code-block:: bash
 
-	datafs download sample_archive '~/data/sample_archive.txt'
+	$ datafs download sample_archive '~/data/sample_archive.txt'
 	downloaded  v0.0.1 to /Users/data/sample_archive.txt
 
 
@@ -69,7 +69,7 @@ Now let's read this to make sure we got what we want
 
 .. code-block:: bash
 	
-	cat ~/data/sample_archive.txt
+	$ cat ~/data/sample_archive.txt
 	barba crescit caput nescit
 
 
@@ -81,7 +81,7 @@ Let's say we made some major edits to our sample_archive locally and we want to 
 
 .. code-block:: bash
 
-	datafs update sample_archive ~/data/sample_archive.txt
+	$ datafs update sample_archive ~/data/sample_archive.txt
 	uploaded data to <DataArchive osfs://sample_archive>. version bumped 0.0.1 --> 0.0.2
 
 
@@ -90,10 +90,10 @@ And now to read this file, let's download to a different spot and read from ther
 
 .. code-block:: bash
 
-	datafs download sample_archive ~/data/sample_archive_placeholder.txt
+	$ datafs download sample_archive ~/data/sample_archive_placeholder.txt
 	downloaded  v0.0.2 to /Users/data/sample_archive_placeholder.txt
 	
-	cat ~/data/sample_archive_placeholder.txt
+	$ cat ~/data/sample_archive_placeholder.txt
 	barba crescit caput nescit
 	luctuat nec mergitur
 

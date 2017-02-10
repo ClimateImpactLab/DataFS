@@ -86,11 +86,8 @@ Let's just double check that we indeed have our file
 
 
 
-
-
 Writing Streaming Objects
 -------------------------
-
 
 If you are working with certain packages like pandas, or xarray that need a filepath, the interaction is slightly modified from typical file objects. Let's first create the dataset we want to write to. The method we'll use for this operation is 
 :py:meth:`datafs.core.DataArchive.get_local_path` and xarray's `open_dataset <http://xarray.pydata.org/en/stable/generated/xarray.open_dataset.html>`_ method

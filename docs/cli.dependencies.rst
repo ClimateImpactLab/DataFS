@@ -82,7 +82,7 @@ Retrieve dependencies with the ``dependencies`` command:
 
 .. code-block:: bash
 
-    datafs get_dependencies my_archive
+    $ datafs get_dependencies my_archive
     {'dep1': '1.0', 'dep2': '0.4.1a3'}
 
 Get dependencies for older versions using the ``--version`` argument:

@@ -12,8 +12,8 @@ We'll assume we have our api configured and that our manager and authority is al
 
 .. code-block:: bash
 
-	datafs create sample_archive metadata 'useful metadata'
-	created versioned archive <DataArchive osfs://sample_archive>
+	$ datafs create sample_archive metadata 'useful metadata'
+	created versioned archive <DataArchive local://sample_archive>
 
 
 So now we have our archive being tracked by manager. 
@@ -22,7 +22,7 @@ So now we have our archive being tracked by manager.
 
 .. code-block:: bash
 
-	datafs update sample_archive --string 'barba crescit caput nescit'
+	$ datafs update sample_archive --string 'barba crescit caput nescit'
 	uploaded data to <DataArchive osfs://sample_archive>. new version 0.0.1 created.
 
 
@@ -35,13 +35,13 @@ If you wanted to specify a prerelease or a minor release you would do either of 
 
 .. code-block:: bash
 
-	datafs update sample_archive --bumpversion patch --string 'Aliquando et insanire iucundum est'
+	$ datafs update sample_archive --bumpversion patch --string 'Aliquando et insanire iucundum est'
 	uploaded data to <DataArchive osfs://sample_archive>. version bumped 0.0.1 --> 0.0.2
 
 
 .. code-block:: bash
 
-	datafs update sample_archive --bumpversion minor --string 'animum debes mutare non caelum'
+	$ datafs update sample_archive --bumpversion minor --string 'animum debes mutare non caelum'
 	uploaded data to <DataArchive osfs://sample_arch>. version bumped 0.0.2 --> 0.1.
 
 
@@ -52,7 +52,7 @@ What if we want to view our versions?
 
 .. code-block:: bash
 
-	datafs versions sample_archive 
+	$ datafs versions sample_archive 
 	['0.0.1', '0.0.2', '0.1']
 
 
@@ -64,7 +64,7 @@ How can we get a specific version?
 
 .. code-block:: bash
 
-	datafs download sample_archive /Users/data/sample_archive_versioned.txt --version 0.0.2
+	$ datafs download sample_archive /Users/data/sample_archive_versioned.txt --version 0.0.2
 	downloaded v.0.0.2 to /Users/data/sample_archive_versioned.txt
 
 

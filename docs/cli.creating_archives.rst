@@ -12,7 +12,8 @@ Create an archive using the ``create`` command:
 
 .. code-block:: bash
 	
-	$ datafs create my_archive_name 
+	$ datafs create my_archive_name
+    created versioned archive <DataArchive local://my_archive_name>
 
 Naming Archives
 ---------------
@@ -30,6 +31,7 @@ If you have more than one authority, you will need to specify an authority on ar
 .. code-block:: bash
 	
 	$ datafs create my_archive_name --authority_name "my_authority"
+    created versioned archive <DataArchive local://my_archive_name>
 
 
 Adding Metadata
@@ -40,6 +42,9 @@ Arbitrary metadata can be added as keyword arguments:
 .. code-block:: bash
 
     $ datafs create my_archive_name --source 'Burke et al (2015)' --doi '10.1038/nature15725' --description 'my test archive'
+    created versioned archive <DataArchive local://my_archive_name>
+    
+
 
 Required Metadata
 ~~~~~~~~~~~~~~~~~

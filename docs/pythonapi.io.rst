@@ -86,11 +86,8 @@ Let's just double check that we indeed have our file
 
 
 
-
-
 Writing Streaming Objects
 -------------------------
-
 
 If you are working with certain packages like pandas, or xarray that need a filepath, the interaction is slightly modified from typical file objects. Let's first create the dataset we want to write to. The method we'll use for this operation is 
 :py:meth:`datafs.core.DataArchive.get_local_path` and xarray's `open_dataset <http://xarray.pydata.org/en/stable/generated/xarray.open_dataset.html>`_ method
@@ -104,7 +101,7 @@ If you are working with certain packages like pandas, or xarray that need a file
 Downloading Streaming Objects
 -----------------------------
 
-Now reading a streaming object is similar a regular file object but generate a file path that is 
+Reading a streaming object is similar to reading a regular file object but we generate a file path that is 
 then passed to the package you are using for reading and writing. In this case we are using xarray so we'll use our 
 :py:meth:`~datafs.core.data_archive.DataArchive.get_local_path` and xarray's `open_dataset <http://xarray.pydata.org/en/stable/generated/xarray.open_dataset.html>`_ method
 

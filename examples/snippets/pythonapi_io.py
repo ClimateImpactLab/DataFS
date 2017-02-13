@@ -61,8 +61,11 @@ Displayed example 1 code:
 
 .. code-block:: python
 
-	>>> api.create('sample_archive', metadata=dict(description='metadata for your archive'))
-	<DataArchive local://sample_archive>
+    >>> api.create(
+    ...     'sample_archive',
+    ...     metadata={'description': 'metadata for your archive'})
+    ...
+    <DataArchive local://sample_archive>
 
 .. EXAMPLE-BLOCK-1-END
 
@@ -88,9 +91,9 @@ Example 3
 .. EXAMPLE-BLOCK-3-START
 
 .. code-block:: python
-	
-	>>> sample_var = api.get_archive('sample_archive')
-	>>> sample_var.update('sample.txt')
+
+    >>> sample_var = api.get_archive('sample_archive')
+    >>> sample_var.update('sample.txt')
 
 .. EXAMPLE-BLOCK-3-END
 
@@ -102,11 +105,11 @@ Example 4
 .. EXAMPLE-BLOCK-4-START
 
 .. code-block:: python
-	
-	>>> with sample_var.open('r') as f:
-	... 	print(f.read())
-	...
-	this is a sample archive
+
+    >>> with sample_var.open('r') as f:
+    ...     print(f.read())
+    ...
+    this is a sample archive
 
 .. EXAMPLE-BLOCK-4-END
 
@@ -118,10 +121,10 @@ Example 5
 
 .. code-block:: python
 
-	>>> with open('sample.txt', 'w+') as f:
-	... 	f.write('this is a sample archive with some more information')
-	...
-	>>> sample_var.update('sample.txt')
+    >>> with open('sample.txt', 'w+') as f:
+    ...     f.write('this is a sample archive with some more information')
+    ...
+    >>> sample_var.update('sample.txt')
 
 
 .. EXAMPLE-BLOCK-5-END
@@ -134,10 +137,10 @@ Example 6
 
 .. code-block:: python
 
-	>>> with sample_var.open('r') as f:
-	... 	print(f.read())
-	...
-	this is a sample archive with some more information
+    >>> with sample_var.open('r') as f:
+    ...     print(f.read())
+    ...
+    this is a sample archive with some more information
 
 
 .. EXAMPLE-BLOCK-6-END
@@ -147,19 +150,19 @@ Example 7
 ---------
 
 .. code-block:: python
-	
-	>>> import os
-	>>> with open('sample.txt', 'w+') as f:
-	...		f.write(u'Local file to update to our FS')
-	...
+
+    >>> import os
+    >>> with open('sample.txt', 'w+') as f:
+    ...        f.write(u'Local file to update to our FS')
+    ...
 
 
 
 .. EXAMPLE-BLOCK-7-START
 
 .. code-block:: python
-	
-	>>> sample_var.update('sample.txt') 
+
+    >>> sample_var.update('sample.txt')
 
 .. EXAMPLE-BLOCK-7-END
 
@@ -172,8 +175,8 @@ Example 7
 
 .. code-block:: python
 
-	>>> sample_archive_local = api.get_archive('sample_archive')
-	>>> sample_archive_local.download('path_to_sample.txt', version='latest')
+    >>> sample_archive_local = api.get_archive('sample_archive')
+    >>> sample_archive_local.download('path_to_sample.txt', version='latest')
 
 .. EXAMPLE-BLOCK-8-END
 
@@ -185,10 +188,10 @@ Example 9
 
 .. code-block:: python
 
-	>>> with open('path_to_sample.txt', 'r') as f:
-	... 	print(f.read())
-	...
-	Local file to update to our FS
+    >>> with open('path_to_sample.txt', 'r') as f:
+    ...     print(f.read())
+    ...
+    Local file to update to our FS
 
 .. EXAMPLE-BLOCK-9-END
 
@@ -211,33 +214,35 @@ Teardown
 
 .. code-block:: python
 
-	>>> import numpy as np
-	>>> import pandas as pd
-	>>> import xarray as xr
-	>>>
-	>>> np.random.seed(123)
-	>>>
-	>>> times = pd.date_range('2000-01-01', '2001-12-31', name='time')
-	>>> annual_cycle = np.sin(2 * np.pi * (times.dayofyear / 365.25 - 0.28))
-	>>>
-	>>> base = 10 + 15 * annual_cycle.reshape(-1, 1)
-	>>> tmin_values = base + 3 * np.random.randn(annual_cycle.size, 3)
-	>>> tmax_values = base + 10 + 3 * np.random.randn(annual_cycle.size, 3)
-	>>>
-	>>> ds = xr.Dataset({'tmin': (('time', 'location'), tmin_values),
-	...                  'tmax': (('time', 'location'), tmax_values)},
-	...                 {'time': times, 'location': ['IA', 'IN', 'IL']})
-	>>>
-	>>>
-	>>>
-	>>> streaming_archive = api.create('streaming_archive', metadata=dict(description='metadata description for your archive'))
-	>>>
-	>>> with streaming_archive.get_local_path() as f:
-	...		ds.to_netcdf(f)
-	...
-	>>>
-	>>>
-	
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import xarray as xr
+    >>>
+    >>> np.random.seed(123)
+    >>>
+    >>> times = pd.date_range('2000-01-01', '2001-12-31', name='time')
+    >>> annual_cycle = np.sin(2 * np.pi * (times.dayofyear / 365.25 - 0.28))
+    >>>
+    >>> base = 10 + 15 * annual_cycle.reshape(-1, 1)
+    >>> tmin_values = base + 3 * np.random.randn(annual_cycle.size, 3)
+    >>> tmax_values = base + 10 + 3 * np.random.randn(annual_cycle.size, 3)
+    >>>
+    >>> ds = xr.Dataset({'tmin': (('time', 'location'), tmin_values),
+    ...                  'tmax': (('time', 'location'), tmax_values)},
+    ...                 {'time': times, 'location': ['IA', 'IN', 'IL']})
+    >>>
+    >>>
+    >>>
+    >>> streaming_archive = api.create(
+    ...     'streaming_archive',
+    ...     metadata={'description': 'metadata description for your archive'})
+    ...
+    >>> with streaming_archive.get_local_path() as f:
+    ...        ds.to_netcdf(f)
+    ...
+    >>>
+    >>>
+
 .. EXAMPLE-BLOCK-10-END
 
 
@@ -247,7 +252,7 @@ Teardown
 
     >>> with streaming_archive.get_local_path() as f:
     ...     with xr.open_dataset(f) as ds:
-    ...         print(ds)
+    ...         print(ds) # doctest: +ELLIPSIS
     ...
     <xarray.Dataset>
     Dimensions:   (location: 3, time: 731)
@@ -255,8 +260,8 @@ Teardown
       * location  (location) |S2 'IA' 'IN' 'IL'
       * time      (time) datetime64[ns] 2000-01-01 2000-01-02 2000-01-03 ...
     Data variables:
-        tmax      (time, location) float64 12.98 3.31 6.779 0.4479 6.373 4.843 ...
-        tmin      (time, location) float64 -8.037 -1.788 -3.932 -9.341 -6.558 ...
+        tmax      (time, location) float64 12.98 3.31 6.779 0.4479 6.373 ...
+        tmin      (time, location) float64 -8.037 -1.788 -3.932 -9.341 ...
 
 
 .. EXAMPLE-BLOCK-11-END

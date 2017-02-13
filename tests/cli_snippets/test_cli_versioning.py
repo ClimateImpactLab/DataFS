@@ -3,6 +3,7 @@ import pytest
 import os
 
 
+@pytest.mark.examples
 @pytest.mark.cli_snippets
 def test_cli_snippets(cli_validator):
 
@@ -25,8 +26,8 @@ Snippet 2
 
 .. code-block:: bash
 
-    $ datafs update my_archive \
-    >     --string 'barba crescit caput nescit' # doctest: NORMALIZE_WHITESPACE
+    $ datafs update my_archive --string \
+    >     'barba crescit caput nescit' # doctest: +NORMALIZE_WHITESPACE
     uploaded data to <DataArchive local://my_archive>. new version 0.0.1
     created.
 
@@ -40,12 +41,12 @@ Snippet 3
 .. code-block:: bash
 
     $ datafs update my_archive --bumpversion patch --string \
-    >     'Aliquando et insanire iucundum est' # doctest: NORMALIZE_WHITESPACE
+    >     'Aliquando et insanire iucundum est' # doctest: +NORMALIZE_WHITESPACE
     uploaded data to <DataArchive local://my_archive>. version bumped 0.0.1 -->
     0.0.2.
 
     $ datafs update my_archive --bumpversion minor --string \
-    >     'animum debes mutare non caelum' # doctest: NORMALIZE_WHITESPACE
+    >     'animum debes mutare non caelum' # doctest: +NORMALIZE_WHITESPACE
     uploaded data to <DataArchive local://my_archive>. version bumped 0.0.2 -->
     0.1.
 

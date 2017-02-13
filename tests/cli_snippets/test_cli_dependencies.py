@@ -3,6 +3,7 @@ import pytest
 import os
 
 
+@pytest.mark.examples
 @pytest.mark.cli_snippets
 def test_cli_snippet_1(cli_validator):
 
@@ -60,6 +61,7 @@ Example 2 teardown
 ''')
 
 
+@pytest.mark.examples
 @pytest.mark.cli_snippets
 def test_cli_snippet_3(cli_validator):
 
@@ -84,6 +86,7 @@ cleanup:
 ''')
 
 
+@pytest.mark.examples
 @pytest.mark.cli_snippets
 def test_cli_snippet_4(cli_validator_with_description):
 
@@ -105,6 +108,7 @@ def test_cli_snippet_4(cli_validator_with_description):
 ''')
 
 
+@pytest.mark.examples
 @pytest.mark.cli_snippets
 def test_cli_snippet_5(cli_validator_with_description, monkeypatch):
 

@@ -15,6 +15,7 @@ SetUp
 
     >>> import datafs
     >>> from fs.tempfs import TempFS
+    >>> import os
 
 We test with the following setup:
 
@@ -69,6 +70,11 @@ Example 1
 
 .. EXAMPLE-BLOCK-1-END
 
+cleanup:
+
+.. code-block:: python
+
+    >>> os.remove('sample_archive.txt')
 
 
 Example 2
@@ -101,6 +107,12 @@ Example 3
     [BumpableVersion ('0.0.1a1'), BumpableVersion ('0.1')]
 
 .. EXAMPLE-BLOCK-3-END
+
+cleanup:
+
+.. code-block:: python
+
+    >>> os.remove('sample_archive.txt')
 
 
 Example 4

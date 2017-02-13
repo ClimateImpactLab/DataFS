@@ -3,8 +3,6 @@ from datafs import get_api
 from datafs.datafs import cli
 from contextlib import contextmanager
 import pytest
-import os
-import shutil
 
 from fs.tempfs import TempFS
 
@@ -58,22 +56,7 @@ def setup_runner_resource(config_file, table_name, archive_name):
 
 
 @pytest.yield_fixture(scope='session')
-def working_dirs():
-
-    os.makedirs('tests/test1')
-    os.makedirs('tests/test2')
-    os.makedirs('tests/test3')
-
-    try:
-        yield
-    finally:
-        shutil.rmtree('tests/test1')
-        shutil.rmtree('tests/test2')
-        shutil.rmtree('tests/test3')
-
-
-@pytest.yield_fixture(scope='session')
-def cli_setup(working_dirs):
+def cli_setup(example_snippet_working_dirs):
     config_file = 'examples/snippets/resources/datafs.yml'
     table_name = 'DataFiles'
     archive_name = 'my_archive'
@@ -83,7 +66,7 @@ def cli_setup(working_dirs):
 
 
 @pytest.yield_fixture(scope='session')
-def cli_setup_dual_auth(working_dirs):
+def cli_setup_dual_auth(example_snippet_working_dirs):
     config_file = 'examples/snippets/resources/datafs_dual_auth.yml'
     table_name = 'OtherFiles'
     archive_name = 'my_archive'

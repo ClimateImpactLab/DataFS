@@ -3,6 +3,7 @@ import pytest
 import os
 
 
+@pytest.mark.examples
 @pytest.mark.cli_snippets
 def test_cli_snippets(cli_validator):
 

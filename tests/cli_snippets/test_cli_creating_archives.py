@@ -4,7 +4,7 @@ import pytest
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_snippet_1(cli_validator):
+def test_cli_creating_archives_snippet_1(cli_validator):
 
     cli_validator('''
 
@@ -29,7 +29,7 @@ Snippet 1 teardown
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_snippet_2(cli_validator_dual_auth):
+def test_cli_creating_archives_snippet_2(cli_validator_dual_auth):
 
     cli_validator_dual_auth('''
 
@@ -54,7 +54,7 @@ Snippet 2 teardown
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_snippet_3(cli_validator):
+def test_cli_creating_archives_snippet_3(cli_validator):
 
     cli_validator('''
 
@@ -79,7 +79,7 @@ Snippet 3 teardown
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_snippet_4(cli_validator_with_description):
+def test_cli_creating_archives_snippet_4(cli_validator_with_description):
 
     cli_validator_with_description(r'''
 
@@ -101,7 +101,9 @@ def test_cli_snippet_4(cli_validator_with_description):
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_snippet_5(cli_validator_with_description, monkeypatch):
+def test_cli_creating_archives_snippet_5(
+        cli_validator_with_description,
+        monkeypatch):
 
     def get_description(*args, **kwargs):
         return "my_description"

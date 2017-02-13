@@ -5,7 +5,7 @@ import os
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_snippet_1(cli_validator):
+def test_cli_dependencies_snippet_1(cli_validator):
 
     with open('arch.txt', 'w+') as f:
         f.write('contents depend on archive 2 v1.1')
@@ -63,7 +63,7 @@ Example 2 teardown
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_snippet_3(cli_validator):
+def test_cli_dependencies_snippet_3(cli_validator):
 
     cli_validator('''
 
@@ -88,7 +88,7 @@ cleanup:
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_snippet_4(cli_validator_with_description):
+def test_cli_dependencies_snippet_4(cli_validator_with_description):
 
     cli_validator_with_description(r'''
 
@@ -110,7 +110,9 @@ def test_cli_snippet_4(cli_validator_with_description):
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_snippet_5(cli_validator_with_description, monkeypatch):
+def test_cli_dependencies_snippet_5(
+        cli_validator_with_description,
+        monkeypatch):
 
     def get_description(*args, **kwargs):
         return "my_description"

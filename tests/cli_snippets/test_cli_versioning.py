@@ -5,7 +5,7 @@ import os
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_snippets(cli_validator):
+def test_cli_versioning_snippets(cli_validator):
 
     cli_validator(r'''
 

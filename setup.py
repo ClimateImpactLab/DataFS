@@ -36,7 +36,8 @@ requirements_test = [
     'sphinx_rtd_theme>=0.1',
     'moto>=0.4',
     'pymongo>=3.0',
-    'boto3>=1.2'
+    'boto3>=1.2',
+    'clatter>=0.0.4'
     ]
 
 extras = {

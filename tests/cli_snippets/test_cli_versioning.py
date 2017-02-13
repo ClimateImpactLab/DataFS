@@ -25,8 +25,10 @@ Snippet 2
 
 .. code-block:: bash
 
-    $ datafs update my_archive --string 'barba crescit caput nescit'
-    uploaded data to <DataArchive local://my_archive>. new version 0.0.1 created.
+    $ datafs update my_archive \
+    >     --string 'barba crescit caput nescit' # doctest: NORMALIZE_WHITESPACE
+    uploaded data to <DataArchive local://my_archive>. new version 0.0.1
+    created.
 
 .. EXAMPLE-BLOCK-2-END
 
@@ -37,11 +39,15 @@ Snippet 3
 
 .. code-block:: bash
 
-    $ datafs update my_archive --bumpversion patch --string 'Aliquando et insanire iucundum est'
-    uploaded data to <DataArchive local://my_archive>. version bumped 0.0.1 --> 0.0.2.
+    $ datafs update my_archive --bumpversion patch --string \
+    >     'Aliquando et insanire iucundum est' # doctest: NORMALIZE_WHITESPACE
+    uploaded data to <DataArchive local://my_archive>. version bumped 0.0.1 -->
+    0.0.2.
 
-    $ datafs update my_archive --bumpversion minor --string 'animum debes mutare non caelum'
-    uploaded data to <DataArchive local://my_archive>. version bumped 0.0.2 --> 0.1.
+    $ datafs update my_archive --bumpversion minor --string \
+    >     'animum debes mutare non caelum' # doctest: NORMALIZE_WHITESPACE
+    uploaded data to <DataArchive local://my_archive>. version bumped 0.0.2 -->
+    0.1.
 
 .. EXAMPLE-BLOCK-3-END
 
@@ -52,7 +58,7 @@ Snippet 4
 
 .. code-block:: bash
 
-    $ datafs versions my_archive 
+    $ datafs versions my_archive
     ['0.0.1', '0.0.2', '0.1']
 
 .. EXAMPLE-BLOCK-4-END
@@ -79,4 +85,3 @@ cleanup:
 ''')
 
     os.remove('my_archive_versioned.txt')
-    

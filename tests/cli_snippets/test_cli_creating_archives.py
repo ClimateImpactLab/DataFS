@@ -123,4 +123,3 @@ Snippet 5 teardown
     deleted archive <DataArchive local://my_archive>
 
 ''')
-

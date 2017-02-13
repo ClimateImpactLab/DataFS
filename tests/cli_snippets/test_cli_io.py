@@ -25,7 +25,7 @@ Snippet 2
 
 .. code-block:: bash
 
-    $ datafs create my_archive 
+    $ datafs create my_archive
     created versioned archive <DataArchive local://my_archive>
 
 .. EXAMPLE-BLOCK-2-END
@@ -49,8 +49,10 @@ Snippet 4
 
 .. code-block:: bash
 
-    $ datafs update my_archive --string 'barba crescit caput nescit'
-    uploaded data to <DataArchive local://my_archive>. new version 0.0.1 created.
+    $ datafs update my_archive \
+    >   --string 'barba crescit caput nescit' # doctest: +NORMALIZE_WHITESPACE
+    uploaded data to <DataArchive local://my_archive>. new version 0.0.1
+    created.
 
 .. EXAMPLE-BLOCK-4-END
 
@@ -72,7 +74,7 @@ Snippet 6
 .. EXAMPLE-BLOCK-6-START
 
 .. code-block:: bash
-    
+
     $ cat my_archive.txt
     barba crescit caput nescit
 
@@ -81,7 +83,7 @@ Snippet 6
 ''')
 
     with open('my_archive.txt', 'a') as f:
-        f.write('\nluctuat nec mergitur')
+        f.write('\nluctuat nec mergitur\n')
 
     cli_validator(r'''
 
@@ -93,8 +95,9 @@ Update the file
 
 .. code-block:: bash
 
-    $ datafs update my_archive my_archive.txt
-    uploaded data to <DataArchive local://my_archive>. version bumped 0.0.1 --> 0.0.2.
+    $ datafs update my_archive my_archive.txt # doctest: +NORMALIZE_WHITESPACE
+    uploaded data to <DataArchive local://my_archive>. version bumped 0.0.1 -->
+    0.0.2.
 
 .. EXAMPLE-BLOCK-7-END
 
@@ -107,8 +110,8 @@ Snippet 8
 
     $ datafs download my_archive my_archive_placeholder.txt
     downloaded v0.0.2 to my_archive_placeholder.txt
-    
-    $ cat my_archive_placeholder.txt
+
+    $ cat my_archive_placeholder.txt # doctest: +NORMALIZE_WHITESPACE
     barba crescit caput nescit
     luctuat nec mergitur
 

@@ -88,7 +88,9 @@ class _DataFSInterface(object):
 # this sets the command line environment for
 
 
-@click.group(name='datafs', short_help='An abstraction layer for data storage systems')
+@click.group(
+    name='datafs',
+    short_help='An abstraction layer for data storage systems')
 @click.option(
     '--config-file',
     envvar='DATAFS_CONFIG_FILE',

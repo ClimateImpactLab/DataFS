@@ -9,7 +9,7 @@ def test_cli_snippet_1(cli_validator):
     with open('arch.txt', 'w+') as f:
         f.write('contents depend on archive 2 v1.1')
 
-    cli_validator('''
+    cli_validator(r'''
 
 .. EXAMPLE-BLOCK-1-START
 
@@ -19,9 +19,11 @@ def test_cli_snippet_1(cli_validator):
     created versioned archive <DataArchive local://my_archive>
 
     $ echo "contents depend on archive 2 v1.1" >> arch.txt # doctest: +SKIP
-    
-    $ datafs update my_archive arch.txt  --dependency "archive2==1.1" --dependency "archive3"
-    uploaded data to <DataArchive local://my_archive>. new version 0.0.1 created.
+
+    $ datafs update my_archive arch.txt  --dependency "archive2==1.1" \
+    >     --dependency "archive3" # doctest: +NORMALIZE_WHITESPACE
+    uploaded data to <DataArchive local://my_archive>. new version 0.0.1
+    created.
 
     $ datafs get_dependencies my_archive
     archive2==1.1
@@ -58,10 +60,8 @@ Example 2 teardown
 ''')
 
 
-
 @pytest.mark.cli_snippets
 def test_cli_snippet_3(cli_validator):
-
 
     cli_validator('''
 
@@ -133,4 +133,3 @@ Snippet 5 teardown
     deleted archive <DataArchive local://my_archive>
 
 ''')
-

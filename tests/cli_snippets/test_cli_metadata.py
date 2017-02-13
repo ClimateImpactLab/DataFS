@@ -1,7 +1,5 @@
 
 import pytest
-import os
-import ast
 
 
 @pytest.mark.cli_snippets
@@ -27,7 +25,7 @@ Snippet 1 setup
 .. code-block:: bash
 
     $ datafs metadata my_archive # doctest: +SKIP
-    {u'description': u'my example archive', 
+    {u'description': u'my example archive',
      u'source': u'Burke et al. (2016)',
      u'doi': u'10.1038/nature15725',
      u'author': u'fBurke'}
@@ -55,7 +53,7 @@ Snippet 3
 .. code-block:: bash
 
     $ datafs metadata my_archive # doctest: +SKIP
-    {u'description': u'Spatial impact meta-analysis', 
+    {u'description': u'Spatial impact meta-analysis',
      u'source': u'Burke et al. (2016)',
      u'doi': u'10.1038/nature15725',
      u'author': u'Burke',

@@ -21,6 +21,7 @@ Snippet 1 teardown
 .. code-block:: bash
 
     $ datafs delete my_archive
+    deleted archive <DataArchive local://my_archive>
 
 ''')
 
@@ -28,7 +29,7 @@ Snippet 1 teardown
 @pytest.mark.cli_snippets
 def test_cli_snippet_2(cli_validator_dual_auth):
 
-    cli_validator('''
+    cli_validator_dual_auth('''
 
 .. EXAMPLE-BLOCK-2-START
 
@@ -44,14 +45,13 @@ Snippet 2 teardown
 .. code-block:: bash
 
     $ datafs delete my_archive
+    deleted archive <DataArchive my_authority://my_archive>
 
 ''')
 
 
 @pytest.mark.cli_snippets
-def test_cli_snippet_3(cli_setup):
-
-    _, api, _, _ = cli_setup
+def test_cli_snippet_3(cli_validator):
 
     cli_validator('''
 
@@ -69,6 +69,7 @@ Snippet 3 teardown
 .. code-block:: bash
 
     $ datafs delete my_archive
+    deleted archive <DataArchive local://my_archive>
 
 ''')
 
@@ -76,16 +77,14 @@ Snippet 3 teardown
 @pytest.mark.cli_snippets
 def test_cli_snippet_4(cli_validator_with_description):
 
-    _, api, _, _ = cli_setup
-
-
-    cli_validator_with_description('''
+    cli_validator_with_description(r'''
 
 .. EXAMPLE-BLOCK-4-START
 
 .. code-block:: bash
 
-    $ datafs create my_archive --doi '10.1038/nature15725' --author "burke"
+    $ datafs create my_archive --doi '10.1038/nature15725' \
+    >     --author "burke" # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     Traceback (most recent call last):
     ...
     AssertionError: Required value "description" not found. Use helper=True or
@@ -93,18 +92,11 @@ def test_cli_snippet_4(cli_validator_with_description):
 
 .. EXAMPLE-BLOCK-4-END
 
-''', error=True)
-
-    api.manager.set_required_archive_metadata({})
+''')
 
 
 @pytest.mark.cli_snippets
 def test_cli_snippet_5(cli_validator_with_description, monkeypatch):
-
-    _, api, _, _ = cli_setup
-
-    api.manager.set_required_archive_metadata({
-        'description': 'Enter a description'})
 
     def get_description(*args, **kwargs):
         return "my_description"
@@ -128,6 +120,7 @@ Snippet 5 teardown
 .. code-block:: bash
 
     $ datafs delete my_archive
+    deleted archive <DataArchive local://my_archive>
 
 ''')
 

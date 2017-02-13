@@ -88,7 +88,7 @@ class _DataFSInterface(object):
 # this sets the command line environment for
 
 
-@click.group(short_help='An abstraction layer for data storage systems')
+@click.group(name='datafs', short_help='An abstraction layer for data storage systems')
 @click.option(
     '--config-file',
     envvar='DATAFS_CONFIG_FILE',
@@ -377,7 +377,7 @@ def download(ctx, archive_name, filepath, version):
     archstr = var.archive_name +\
         '' if (not var.versioned) else ' v{}'.format(version)
 
-    click.echo('downloaded {} to {}'.format(archstr, filepath))
+    click.echo('downloaded{} to {}'.format(archstr, filepath))
 
 
 @cli.command(short_help='Echo the contents of an archive')

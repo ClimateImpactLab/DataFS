@@ -6,7 +6,7 @@ import os
 @pytest.mark.cli_snippets
 def test_cli_snippets(cli_validator):
 
-    cli_validator('''
+    cli_validator(r'''
 
 .. EXAMPLE-BLOCK-1-START
 
@@ -18,11 +18,8 @@ def test_cli_snippets(cli_validator):
 
 .. EXAMPLE-BLOCK-1-END
 
-''')
 
-    # Snippet 2
-
-    cli_validator('''
+Snippet 2
 
 .. EXAMPLE-BLOCK-2-START
 
@@ -33,12 +30,8 @@ def test_cli_snippets(cli_validator):
 
 .. EXAMPLE-BLOCK-2-END
 
-''')
 
-
-    # Snippet 3
-
-    cli_validator('''
+Snippet 3
 
 .. EXAMPLE-BLOCK-3-START
 
@@ -52,11 +45,8 @@ def test_cli_snippets(cli_validator):
 
 .. EXAMPLE-BLOCK-3-END
 
-''')
 
-    # Snippet 4
-
-    cli_validator('''
+Snippet 4
 
 .. EXAMPLE-BLOCK-4-START
 
@@ -67,19 +57,26 @@ def test_cli_snippets(cli_validator):
 
 .. EXAMPLE-BLOCK-4-END
 
-''')
 
-    # Snippet 5
-
-    cli_validator('''
+Snippet 5
 
 .. EXAMPLE-BLOCK-5-START
 
 .. code-block:: bash
 
     $ datafs download my_archive my_archive_versioned.txt --version 0.0.2
-    downloaded v.0.0.2 to my_archive_versioned.txt
+    downloaded v0.0.2 to my_archive_versioned.txt
 
 .. EXAMPLE-BLOCK-5-END
 
+cleanup:
+
+.. code-block:: bash
+
+    $ datafs delete my_archive
+    deleted archive <DataArchive local://my_archive>
+
 ''')
+
+    os.remove('my_archive_versioned.txt')
+    

@@ -9,57 +9,57 @@ def test_cli_snippets(cli_validator):
 
     # Snippet 1
 
-    cli_validator('''
+    cli_validator(r'''
 
 Snippet 1 setup
 
 .. code-block:: bash
 
-    $ datafs create my_archive
+    $ datafs create my_archive \
+    >     --description "my example archive" \
+    >     --source "Burke et al. (2016)" \
+    >     --doi '10.1038/nature15725' \
+    >     --author "Burke"
+    created versioned archive <DataArchive local://my_archive>
 
 .. EXAMPLE-BLOCK-1-START
 
 .. code-block:: bash
 
-    $ datafs my_archive metadata
-    {u'acta non verba': u'deeds not words', 
-     u'actiones secundum fidei': u'action follows belief',
-     u'ad undas': u'to the waves',
-     u'as victoriam': u'for victory'}
+    $ datafs metadata my_archive # doctest: +SKIP
+    {u'description': u'my example archive', 
+     u'source': u'Burke et al. (2016)',
+     u'doi': u'10.1038/nature15725',
+     u'author': u'fBurke'}
 
 .. EXAMPLE-BLOCK-1-END
 
-''', interpreter=ast.literal_eval)
 
-    # Snippet 2
-
-    cli_validator('''
+Snippet 2
 
 .. EXAMPLE-BLOCK-2-START
 
 .. code-block:: bash
 
-    $ datafs update_metadata my_archive 'acta non verba' 'Action is better than words' 'ad atrumque paratas' 'prepared for either alternative'
+    $ datafs update_metadata my_archive \
+    >     --description 'Spatial impact meta-analysis' \
+    >     --method 'downscaled Burke et al (2015) data'
 
 .. EXAMPLE-BLOCK-2-END
 
-''')
 
-    # Snippet 3
-
-    cli_validator('''
+Snippet 3
 
 .. EXAMPLE-BLOCK-3-START
 
 .. code-block:: bash
 
-    $ datafs metadata my_archive
-
-    {u'acta non verba': u'Action is better than words', 
-     u'actiones secundum fidei': u'action follows belief',
-     u'ad undas': u'to the waves',
-     u'as victoriam': u'for victory', 
-     u'ad atrumque paratas': u'prepared for either alternative'}
+    $ datafs metadata my_archive # doctest: +SKIP
+    {u'description': u'Spatial impact meta-analysis', 
+     u'source': u'Burke et al. (2016)',
+     u'doi': u'10.1038/nature15725',
+     u'author': u'Burke',
+     u'method': u'downscaled Burke et al (2015) data'}
 
 .. EXAMPLE-BLOCK-3-END
 
@@ -68,5 +68,6 @@ Teardown
 .. code-block:: bash
 
     $ datafs delete my_archive
+    deleted archive <DataArchive local://my_archive>
 
 ''')

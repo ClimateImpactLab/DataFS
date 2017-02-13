@@ -8,6 +8,8 @@ profiles:
                 table_name: 'OtherFiles'
         authorities:
             local:
-                service: TempFS
+                service: OSFS
+                args: [tests/test2]
             my_authority:
-                service: TempFS
+                service: OSFS
+                args: [tests/test3]

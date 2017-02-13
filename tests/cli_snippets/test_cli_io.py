@@ -8,7 +8,7 @@ def test_cli_snippets(cli_validator):
 
     # snippet 1
 
-    cli_validator('''
+    cli_validator(r'''
 
 .. EXAMPLE-BLOCK-1-START
 
@@ -62,7 +62,7 @@ Snippet 5
 .. code-block:: bash
 
     $ datafs download my_archive 'my_archive.txt'
-    downloaded  v0.0.1 to my_archive.txt
+    downloaded v0.0.1 to my_archive.txt
 
 .. EXAMPLE-BLOCK-5-END
 
@@ -80,16 +80,21 @@ Snippet 6
 
 ''')
 
-    # snippet 7
+    with open('my_archive.txt', 'a') as f:
+        f.write('\nluctuat nec mergitur')
 
-    cli_validator('''
+    cli_validator(r'''
+
+Snippet 7
+
+Update the file
 
 .. EXAMPLE-BLOCK-7-START
 
 .. code-block:: bash
 
     $ datafs update my_archive my_archive.txt
-    uploaded data to <DataArchive local://my_archive>. version bumped 0.0.1 --> 0.0.2
+    uploaded data to <DataArchive local://my_archive>. version bumped 0.0.1 --> 0.0.2.
 
 .. EXAMPLE-BLOCK-7-END
 
@@ -101,7 +106,7 @@ Snippet 8
 .. code-block:: bash
 
     $ datafs download my_archive my_archive_placeholder.txt
-    downloaded  v0.0.2 to my_archive_placeholder.txt
+    downloaded v0.0.2 to my_archive_placeholder.txt
     
     $ cat my_archive_placeholder.txt
     barba crescit caput nescit
@@ -114,5 +119,9 @@ Teardown
 .. code-block:: bash
 
     $ datafs delete my_archive
+    deleted archive <DataArchive local://my_archive>
 
 ''')
+
+    os.remove('my_archive.txt')
+    os.remove('my_archive_placeholder.txt')

@@ -3,8 +3,27 @@ from datafs import get_api
 from datafs.datafs import cli
 from contextlib import contextmanager
 import pytest
+import os
+import shutil
 
 from fs.tempfs import TempFS
+
+from clatter import Runner
+from clatter.validators import (
+    ClickValidator,
+    SubprocessValidator)
+
+
+@pytest.yield_fixture(scope='session')
+def validator():
+    
+    tester = Runner()
+    tester.call_engines['echo'] = SubprocessValidator()
+    tester.call_engines['cat'] = SubprocessValidator()
+    tester.call_engines['python'] = SubprocessValidator()
+    
+    yield tester
+
 
 @contextmanager
 def setup_runner_resource(config_file, table_name, archive_name):
@@ -38,8 +57,23 @@ def setup_runner_resource(config_file, table_name, archive_name):
     api.manager.delete_table(table_name)
 
 
-@pytest.yield_fixture(scope='function')
-def cli_setup():
+@pytest.yield_fixture(scope='session')
+def working_dirs():
+
+    os.makedirs('tests/test1')
+    os.makedirs('tests/test2')
+    os.makedirs('tests/test3')
+
+    try:
+        yield
+    finally:
+        shutil.rmtree('tests/test1')
+        shutil.rmtree('tests/test2')
+        shutil.rmtree('tests/test3')
+
+
+@pytest.yield_fixture(scope='session')
+def cli_setup(working_dirs):
     config_file = 'examples/snippets/resources/datafs.yml'
     table_name = 'DataFiles'
     archive_name = 'my_archive'
@@ -48,8 +82,8 @@ def cli_setup():
         yield setup
 
 
-@pytest.yield_fixture(scope='function')
-def cli_setup_dual_auth():
+@pytest.yield_fixture(scope='session')
+def cli_setup_dual_auth(working_dirs):
     config_file = 'examples/snippets/resources/datafs_dual_auth.yml'
     table_name = 'OtherFiles'
     archive_name = 'my_archive'
@@ -59,60 +93,54 @@ def cli_setup_dual_auth():
 
 
 @pytest.yield_fixture(scope='function')
-def cli_validator(cli_setup):
+def cli_validator(cli_setup, validator):
+
+    _, api, _, prefix = cli_setup
+
+    try:
+        api.delete_archive('my_archive')
+    except:
+        pass
     
-    runner, api, config_file, prefix = cli_setup
-
-    tester = CommandLineTester()
-    tester.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
+    validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
     
-    skipped = ['echo', 'cat']
+    yield validator.teststring
 
-    tester.call_engines.update({
-        cmd: SkipValidator() for cmd in skipped})
+    del validator.call_engines['datafs']
 
-    yield tester.validate
 
 @pytest.yield_fixture(scope='function')
-def cli_validator_with_description(cli_setup):
+def cli_validator_with_description(cli_setup, cli_validator):
     
-    runner, api, config_file, prefix = cli_setup
+    _, api, _, _ = cli_setup
 
     api.manager.set_required_archive_metadata({
         'description': 'Archive description'})
 
-    tester = CommandLineTester()
-    tester.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
-    
-    skipped = ['echo', 'cat']
-
-    tester.call_engines.update({
-        cmd: SkipValidator() for cmd in skipped})
-
     try:
-        yield tester.validate
+        yield cli_validator
 
     finally:
         api.manager.set_required_archive_metadata({})
 
 
 @pytest.yield_fixture(scope='function')
-def cli_validator_dual_auth(cli_setup):
+def cli_validator_dual_auth(cli_setup_dual_auth, validator):
     
-    runner, api, config_file, prefix = cli_setup
-
-    api.add_authority('my_authority', TempFS())
-
-    tester = CommandLineTester()
-    tester.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
-    
-    skipped = ['echo', 'cat']
-
-    tester.call_engines.update({
-        cmd: SkipValidator() for cmd in skipped})
+    _, api, _, prefix = cli_setup_dual_auth
 
     try:
-        yield tester.validate
+        api.delete_archive('my_archive')
+    except:
+        pass
+    
+    validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
+
+    api.attach_authority('my_authority', TempFS())
+
+    try:
+        yield validator.teststring
 
     finally:
-        api.authorities['my_authority'].fs.close()
+        api._authorities['my_authority'].fs.close()
+        del validator.call_engines['datafs']

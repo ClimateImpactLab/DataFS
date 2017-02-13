@@ -8,4 +8,5 @@ profiles:
                 table_name: 'DataFiles'
         authorities:
             local:
-                service: TempFS
+                service: OSFS
+                args: [tests/test1]

@@ -38,12 +38,12 @@ def setup_runner_resource(config_file, table_name, archive_name):
 
     try:
         api.delete_archive(archive_name)
-    except:
+    except KeyError:
         pass
 
     try:
         api.manager.delete_table(table_name)
-    except:
+    except KeyError:
         pass
 
     api.manager.create_archive_table(table_name)
@@ -99,7 +99,7 @@ def cli_validator(cli_setup, validator):
 
     try:
         api.delete_archive('my_archive')
-    except:
+    except KeyError:
         pass
 
     validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
@@ -131,7 +131,7 @@ def cli_validator_dual_auth(cli_setup_dual_auth, validator):
 
     try:
         api.delete_archive('my_archive')
-    except:
+    except KeyError:
         pass
 
     validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)

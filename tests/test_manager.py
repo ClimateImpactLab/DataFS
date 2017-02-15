@@ -20,7 +20,7 @@ def test_spec_table_creation(manager_with_spec):
 def test_spec_config_creation(manager_with_spec):
 
     assert len(manager_with_spec._get_spec_documents(
-        'standalone-test-table')) == 2
+        'standalone-test-table')) == 4
 
 
 def test_spec_config_update_metadata(manager_with_spec):

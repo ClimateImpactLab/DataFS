@@ -4,9 +4,6 @@ from datafs.services.service import DataService
 from datafs.core.data_archive import DataArchive
 from datafs._compat import open_filelike
 
-
-import fs.path
-
 import hashlib
 import fnmatch
 import re
@@ -284,31 +281,9 @@ class DataAPI(object):
             ...     'pictures_2016_may_vegas_wedding.png'))
             pictures/2016/may/vegas/wedding.png
 
-        *Overloading*
-
-        Overload this function to change default internal service path format
-        and to enforce certain requirements on paths:
-
-        .. code-block:: python
-
-            >>> class MyAPI(DataAPI):
-            ...     @classmethod
-            ...     def create_archive_path(cls, archive_name):
-            ...         if '_' in archive_name:
-            ...             raise ValueError('No underscores allowed!')
-            ...         return archive_name
-            ...
-            >>> api = MyAPI
-            >>> api.create_archive_path(
-            ...   'pictures_2016_may_vegas_wedding.png')   # doctest: +ELLIPSIS
-            Traceback (most recent call last):
-            ...
-            ValueError: No underscores allowed!
-
-
         '''
 
-        return fs.path.join(*tuple(archive_name.split('_')))
+        return archive_name
 
     def delete_archive(self, archive_name):
         '''

@@ -72,7 +72,7 @@ def test_manager_spec_setup(api_with_spec, auth1):
     assert api_with_spec.manager._get_authority_name(
         'my_spec_test_archive') == 'auth'
     assert api_with_spec.manager._get_archive_path(
-        'my_spec_test_archive') == 'my/spec/test/archive'
+        'my_spec_test_archive') == 'my_spec_test_archive'
 
     with pytest.raises(AssertionError):
         api_with_spec.create(

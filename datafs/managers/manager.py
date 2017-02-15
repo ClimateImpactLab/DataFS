@@ -40,6 +40,20 @@ class BaseDataManager(object):
 
         return self._required_archive_metadata
 
+    @property
+    def valid_top_level_domains(self):
+        if self._valid_top_level_domains is None:
+            self._refresh_spec()
+
+        return self._valid_top_level_domains
+
+    @property
+    def required_archive_patterns(self):
+        if self._required_archive_patterns is None:
+            self._refresh_spec()
+
+        return self._required_archive_patterns
+
     def _refresh_spec(self):
         spec_documents = self._get_spec_documents(self._table_name)
 
@@ -47,6 +61,8 @@ class BaseDataManager(object):
 
         self._required_user_config = spec['required_user_config']
         self._required_archive_metadata = spec['required_archive_metadata']
+        self._valid_top_level_domains = spec['valid_top_level_domains']
+        self._required_archive_patterns = spec['required_archive_patterns']
 
     def create_archive_table(self, table_name, raise_on_err=True):
         '''
@@ -68,7 +84,9 @@ class BaseDataManager(object):
 
         spec_documents = [
             {'_id': 'required_user_config', 'config': {}},
-            {'_id': 'required_archive_metadata', 'config': {}}]
+            {'_id': 'required_archive_metadata', 'config': {}},
+            {'_id': 'valid_top_level_domains', 'config': None},
+            {'_id': 'required_archive_patterns', 'config': []}]
 
         if raise_on_err:
             self._create_archive_table(table_name)

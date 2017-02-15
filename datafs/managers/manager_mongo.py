@@ -168,16 +168,12 @@ class MongoDBManager(BaseDataManager):
             raise KeyError('Archive "{}" already exists'.format(archive_name))
 
     @catch_timeout
-    def _create_spec_config(self, table_name):
+    def _create_spec_config(self, table_name, spec_documents):
 
         if self._spec_coll is None:
             self._spec_coll = self.db[table_name + '.spec']
 
-        itrbl = [
-            {'_id': x, 'config': {}}
-            for x in ('required_user_config', 'required_archive_metadata')]
-
-        self.spec_collection.insert_many(itrbl)
+        self.spec_collection.insert_many(spec_documents)
 
     @catch_timeout
     def _get_archive_listing(self, archive_name):

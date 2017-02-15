@@ -152,7 +152,7 @@ class DynamoDBManager(BaseDataManager):
             msg = 'Table creation failed'
             assert table_name in self._get_table_names(), msg
 
-    def _create_spec_config(self, table_name):
+    def _create_spec_config(self, table_name, spec_documents):
         '''
         Dynamo implementation of spec config creation
 
@@ -172,18 +172,8 @@ class DynamoDBManager(BaseDataManager):
 
         _spec_table = self._resource.Table(table_name + '.spec')
 
-        user_config = {
-            '_id': 'required_user_config',
-            'config': {}
-        }
-
-        archive_config = {
-            '_id': 'required_archive_metadata',
-            'config': {}
-        }
-
-        _spec_table.put_item(Item=user_config)
-        _spec_table.put_item(Item=archive_config)
+        for doc in spec_documents:
+            _spec_table.put_item(Item=doc)
 
     def _update_spec_config(self, document_name, spec):
         '''

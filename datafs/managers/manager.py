@@ -66,16 +66,20 @@ class BaseDataManager(object):
 
         '''
 
+        spec_documents = [
+            {'_id': 'required_user_config', 'config': {}},
+            {'_id': 'required_archive_metadata', 'config': {}}]
+
         if raise_on_err:
             self._create_archive_table(table_name)
             self._create_archive_table(table_name+'.spec')
-            self._create_spec_config(table_name)
+            self._create_spec_config(table_name, spec_documents)
 
         else:
             try:
                 self._create_archive_table(table_name)
                 self._create_archive_table(table_name+'.spec')
-                self._create_spec_config(table_name)
+                self._create_spec_config(table_name, spec_documents)
             except KeyError:
                 pass
 

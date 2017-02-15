@@ -196,16 +196,6 @@ def test_delete_table(base_manager):
         base_manager._delete_table('table_name')
 
 
-def test_get_required_user_config(base_manager):
-    with pytest.raises(NotImplementedError):
-        base_manager._get_required_user_config()
-
-
-def test_get_required_archive_metadata(base_manager):
-    with pytest.raises(NotImplementedError):
-        base_manager._get_required_archive_metadata()
-
-
 def test_get_version_history(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._get_version_history('archive_name')

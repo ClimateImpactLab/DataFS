@@ -133,14 +133,9 @@ class MongoDBManager(BaseDataManager):
 
     def _update_metadata(self, archive_name, archive_metadata):
 
-        required_metadata_keys = self._get_required_archive_metadata().keys()
         for key, val in archive_metadata.items():
-            if key in required_metadata_keys and val is None:
-                raise ValueError(
-                    'Value for key {} is None. '.format(key) +
-                    'None cannot be a value for required metadata')
 
-            elif val is None:
+            if val is None:
                 self.collection.update(
                     {"_id": archive_name},
                     {"$unset": {"archive_metadata.{}".format(key): ""}})
@@ -220,13 +215,3 @@ class MongoDBManager(BaseDataManager):
 
     def _get_spec_documents(self, table_name):
         return [item for item in self.spec_collection.find({})]
-
-    def _get_required_user_config(self):
-
-        return self.spec_collection.find_one(
-            {'_id': 'required_user_config'})['config']
-
-    def _get_required_archive_metadata(self):
-
-        return self.spec_collection.find_one(
-            {'_id': 'required_archive_metadata'})['config']

@@ -382,7 +382,7 @@ def api_with_diverse_archives(request):
     PARS = 5
     CONF = 3
 
-    with prep_manager(request.param) as manager:
+    with prep_manager(request.param, table_name='diverse') as manager:
 
         api = DataAPI(
             username='My Name',

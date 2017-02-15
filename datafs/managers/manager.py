@@ -29,24 +29,24 @@ class BaseDataManager(object):
     @property
     def required_user_config(self):
         if self._required_user_config is None:
-            user_config = self._get_required_user_config()
-            assert isinstance(
-                user_config, dict), 'sorry, user_config "{}" is a {}'.format(
-                user_config, type(user_config))
-
-            self._required_user_config = user_config
+            self._refresh_spec()
 
         return self._required_user_config
 
     @property
     def required_archive_metadata(self):
         if self._required_archive_metadata is None:
-            archive_metadata = self._get_required_archive_metadata()
-            assert isinstance(archive_metadata, dict)
-
-            self._required_archive_metadata = archive_metadata
+            self._refresh_spec()
 
         return self._required_archive_metadata
+
+    def _refresh_spec(self):
+        spec_documents = self._get_spec_documents(self._table_name)
+
+        spec = {d['_id']: d['config'] for d in spec_documents}
+
+        self._required_user_config = spec['required_user_config']
+        self._required_archive_metadata = spec['required_archive_metadata']
 
     def create_archive_table(self, table_name, raise_on_err=True):
         '''
@@ -183,6 +183,13 @@ class BaseDataManager(object):
         '''
         Update metadata for archive ``archive_name``
         '''
+
+        required_metadata_keys = self.required_archive_metadata.keys()
+        for key, val in archive_metadata.items():
+            if key in required_metadata_keys and val is None:
+                raise ValueError(
+                    'Cannot remove required metadata attribute "{}"'.format(
+                        key))
 
         self._update_metadata(archive_name, archive_metadata)
 
@@ -515,14 +522,6 @@ class BaseDataManager(object):
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _delete_table(self, table_name):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
-    def _get_required_user_config(self):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
-    def _get_required_archive_metadata(self):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 

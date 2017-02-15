@@ -220,14 +220,6 @@ class DynamoDBManager(BaseDataManager):
 
         """
 
-        required_metadata_keys = self._get_required_archive_metadata().keys()
-
-        for k, v in archive_metadata.items():
-            if k in required_metadata_keys and v is None:
-                raise ValueError(
-                    'Value for key {} is None. '.format(k) +
-                    'None cannot be a value for required metadata')
-
         archive_metadata_current = self._get_archive_metadata(archive_name)
         archive_metadata_current.update(archive_metadata)
         for k, v in archive_metadata_current.items():
@@ -291,16 +283,6 @@ class DynamoDBManager(BaseDataManager):
             DynamoDB specific results - do not expose to user
         '''
         return self._table.get_item(Key={'_id': archive_name})['Item']
-
-    def _get_required_user_config(self):
-
-        return self._spec_table.get_item(Key={
-            '_id': '{}'.format('required_user_config')})['Item']['config']
-
-    def _get_required_archive_metadata(self):
-
-        return self._spec_table.get_item(Key={
-            '_id': '{}'.format('required_archive_metadata')})['Item']['config']
 
     def _delete_archive_record(self, archive_name):
 

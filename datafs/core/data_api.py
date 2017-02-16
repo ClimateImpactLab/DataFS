@@ -143,7 +143,7 @@ class DataAPI(object):
             raise KeyError('Authority "{}" not found'.format(authority_name))
 
         if archive_path is None:
-            archive_path = self.create_archive_path(archive_name)
+            archive_path = self.validate_archive_path(archive_name)
 
         if metadata is None:
             metadata = {}
@@ -254,9 +254,9 @@ class DataAPI(object):
         return self.manager.search(query, begins_with=prefix)
 
     @classmethod
-    def create_archive_path(cls, archive_name):
+    def validate_archive_path(cls, archive_name):
         '''
-        Utility function for creating and checking internal service paths
+        Utility function for creating and validating internal service paths
 
         Parameters
         ----------
@@ -277,12 +277,11 @@ class DataAPI(object):
 
         .. code-block:: python
 
-            >>> print(DataAPI.create_archive_path(
+            >>> print(DataAPI.validate_archive_path(
             ...     'pictures_2016_may_vegas_wedding.png'))
             pictures/2016/may/vegas/wedding.png
 
         '''
-
         return archive_name
 
     def delete_archive(self, archive_name):

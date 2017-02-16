@@ -180,17 +180,11 @@ class DynamoDBManager(BaseDataManager):
         Dynamo implementation of project specific metadata spec
 
         '''
-
-        spec_data_current = self._spec_table.get_item(
-            Key={'_id': '{}'.format(document_name)})['Item']['config']
-
-        spec_data_current.update(spec)
-
         # add the updated archive_metadata object to Dynamo
         self._spec_table.update_item(
             Key={'_id': '{}'.format(document_name)},
             UpdateExpression="SET config = :v",
-            ExpressionAttributeValues={':v': spec_data_current},
+            ExpressionAttributeValues={':v': spec},
             ReturnValues='ALL_NEW')
 
     def _delete_table(self, table_name):

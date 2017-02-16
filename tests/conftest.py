@@ -252,13 +252,36 @@ def manager_with_spec(mgr_name):
 
 
 @pytest.yield_fixture
-def api_with_spec(manager_with_spec, auth1):
+def manager_with_pattern(mgr_name):
+
+    with prep_manager(mgr_name, table_name='standalone-test-table') as manager:
+
+        metadata_config = {
+            'description': 'some metadata'
+        }
+
+        user_config = {
+            'username': 'Your Name',
+            'contact': 'my.email@example.com'
+
+        }
+
+        archive_name_patterns = ['string1', 'string2', 'string3', 'string4']
+        manager.set_required_user_config(user_config)
+        manager.set_required_archive_metadata(metadata_config)
+        manager.set_required_archive_patterns(archive_name_patterns)
+
+        yield manager
+
+
+@pytest.yield_fixture
+def api_with_pattern(manager_with_pattern, auth1):
 
     api = DataAPI(
         username='My Name',
         contact='my.email@example.com')
 
-    api.attach_manager(manager_with_spec)
+    api.attach_manager(manager_with_pattern)
     api.attach_authority('auth', auth1)
 
     yield api

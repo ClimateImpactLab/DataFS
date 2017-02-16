@@ -21,6 +21,8 @@ class BaseDataManager(object):
 
         self._required_user_config = None
         self._required_archive_metadata = None
+        self._valid_top_level_domains = None
+        self._required_archive_patterns = None
 
     @property
     def table_names(self):
@@ -41,13 +43,6 @@ class BaseDataManager(object):
         return self._required_archive_metadata
 
     @property
-    def valid_top_level_domains(self):
-        if self._valid_top_level_domains is None:
-            self._refresh_spec()
-
-        return self._valid_top_level_domains
-
-    @property
     def required_archive_patterns(self):
         if self._required_archive_patterns is None:
             self._refresh_spec()
@@ -61,7 +56,6 @@ class BaseDataManager(object):
 
         self._required_user_config = spec['required_user_config']
         self._required_archive_metadata = spec['required_archive_metadata']
-        self._valid_top_level_domains = spec['valid_top_level_domains']
         self._required_archive_patterns = spec['required_archive_patterns']
 
     def create_archive_table(self, table_name, raise_on_err=True):
@@ -85,7 +79,6 @@ class BaseDataManager(object):
         spec_documents = [
             {'_id': 'required_user_config', 'config': {}},
             {'_id': 'required_archive_metadata', 'config': {}},
-            {'_id': 'valid_top_level_domains', 'config': None},
             {'_id': 'required_archive_patterns', 'config': []}]
 
         if raise_on_err:
@@ -163,6 +156,19 @@ class BaseDataManager(object):
 
         self.update_spec_config('required_archive_metadata', metadata_config)
         self._required_archive_metadata = None
+
+    def set_required_archive_patterns(self, required_archive_patterns):
+        '''
+        Sets archive_name regex patterns for the enforcement of naming
+        conventions on archive creation
+
+        Parameters
+        ----------
+        required_archive_patterns: strings  of args
+        '''
+        self.update_spec_config('required_archive_patterns',
+                                required_archive_patterns)
+        self._required_archive_patterns = None
 
     def delete_table(self, table_name=None, raise_on_err=True):
         if table_name is None:

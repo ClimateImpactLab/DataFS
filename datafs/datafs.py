@@ -187,12 +187,25 @@ def configure(ctx, helper, edit):
 @click.argument('archive_name')
 @click.option('--authority_name', default=None)
 @click.option('--versioned/--not-versioned', default=True)
+@click.option('-t', '--tag', multiple=True)
 @click.option('--helper', is_flag=True)
 @click.pass_context
-def create(ctx, archive_name, authority_name, versioned=True, helper=False):
+def create(
+        ctx,
+        archive_name,
+        authority_name,
+        versioned=True,
+        tag=None,
+        helper=False):
     '''
     Create an archive
     '''
+
+    if tag is None:
+        tags = []
+
+    else:
+        tags = list(tag)
 
     _generate_api(ctx)
     args, kwargs = _parse_args_and_kwargs(ctx.args)
@@ -203,6 +216,7 @@ def create(ctx, archive_name, authority_name, versioned=True, helper=False):
         authority_name=authority_name,
         versioned=versioned,
         metadata=kwargs,
+        tags=tags,
         helper=helper)
 
     verstring = 'versioned archive' if versioned else 'archive'
@@ -358,6 +372,54 @@ def get_dependencies(ctx, archive_name, version):
     click.echo('\n'.join(deps))
 
 
+@cli.command(short_help='Add tags to an archive')
+@click.argument('archive_name')
+@click.argument('tags', nargs=-1)
+@click.pass_context
+def add_tags(ctx, archive_name, tags):
+    '''
+    Add tags to an archive
+    '''
+
+    _generate_api(ctx)
+
+    var = ctx.obj.api.get_archive(archive_name)
+
+    var.add_tags(*tags)
+
+
+@cli.command(short_help='Remove tags from an archive')
+@click.argument('archive_name')
+@click.argument('tags', nargs=-1)
+@click.pass_context
+def delete_tags(ctx, archive_name, tags):
+    '''
+    Remove tags from an archive
+    '''
+
+    _generate_api(ctx)
+
+    var = ctx.obj.api.get_archive(archive_name)
+
+    var.delete_tags(*tags)
+
+
+@cli.command(short_help='Print tags assigned to an archive')
+@click.argument('archive_name')
+@click.pass_context
+def get_tags(ctx, archive_name):
+    '''
+    Print tags assigned to an archive
+    '''
+
+    _generate_api(ctx)
+
+    var = ctx.obj.api.get_archive(archive_name)
+
+    click.echo(' '.join(var.get_tags()), nl=False)
+    print('')
+
+
 @cli.command(short_help='Download an archive')
 @click.argument('archive_name')
 @click.argument('filepath')
@@ -473,22 +535,20 @@ cli.add_command(filter_archives, name='filter')
 
 
 @cli.command(short_help='List all archives matching tag search criteria')
-@click.argument('query_tags', nargs=-1)
+@click.argument('tags', nargs=-1)
 @click.option(
     '--prefix',
     default=None,
     help='filter archives based on initial character pattern')
 @click.pass_context
-def search(ctx, query_tags, prefix=None):
+def search(ctx, tags, prefix=None):
     '''
     List all archives matching tag search criteria
     '''
 
     _generate_api(ctx)
 
-    assert isinstance(query_tags, tuple)
-
-    for i, match in enumerate(ctx.obj.api.search(*query_tags, prefix=prefix)):
+    for i, match in enumerate(ctx.obj.api.search(*tags, prefix=prefix)):
 
         click.echo(match, nl=False)
         print('')

@@ -273,6 +273,7 @@ def manager_with_pattern(mgr_name):
 
         yield manager
 
+
 @pytest.yield_fixture
 def api_with_spec(manager_with_spec, auth1):
 
@@ -284,6 +285,7 @@ def api_with_spec(manager_with_spec, auth1):
     api.attach_authority('auth', auth1)
 
     yield api
+
 
 @pytest.yield_fixture
 def api_with_pattern(manager_with_pattern, auth1):

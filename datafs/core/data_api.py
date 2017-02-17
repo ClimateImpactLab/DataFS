@@ -100,7 +100,6 @@ class DataAPI(object):
             self,
             archive_name,
             authority_name=None,
-            archive_path=None,
             versioned=True,
             raise_on_err=True,
             metadata=None,
@@ -117,9 +116,6 @@ class DataAPI(object):
 
         authority_name : str
             Name of the data service to use as the archive's data authority
-
-        archive_path : str
-            Path to use on the data services (optional)
 
         versioned : bool
             If true, store all versions with explicit version numbers (defualt)
@@ -142,8 +138,7 @@ class DataAPI(object):
         if authority_name not in self._authorities:
             raise KeyError('Authority "{}" not found'.format(authority_name))
 
-        if archive_path is None:
-            archive_path = self.validate_archive_path(archive_name)
+        self._validate_archive_name(archive_name)
 
         if metadata is None:
             metadata = {}
@@ -151,7 +146,7 @@ class DataAPI(object):
         res = self.manager.create_archive(
             archive_name,
             authority_name,
-            archive_path=archive_path,
+            archive_path=archive_name,
             versioned=versioned,
             raise_on_err=raise_on_err,
             metadata=metadata,
@@ -253,9 +248,9 @@ class DataAPI(object):
 
         return self.manager.search(query, begins_with=prefix)
 
-    def validate_archive_path(self, archive_name):
+    def _validate_archive_name(self, archive_name):
         '''
-        Utility function for creating and validating internal service paths
+        Utility function for creating and validating archive names
 
         Parameters
         ----------
@@ -270,11 +265,11 @@ class DataAPI(object):
             Internal path used by services to reference archive data
         '''
         patterns = self.manager.required_archive_patterns
-        
-        for pattern in patterns:
-            assert re.search(pattern, archive_name), AssertionError("archive name does not match pattern '{}'".format(pattern))
 
-        return archive_name
+        for pattern in patterns:
+            if not re.search(pattern, archive_name):
+                raise ValueError(
+                    "archive name does not match pattern '{}'".format(pattern))
 
     def delete_archive(self, archive_name):
         '''

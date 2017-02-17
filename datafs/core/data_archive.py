@@ -605,7 +605,7 @@ class DataArchive(object):
                 time.strptime(record['updated'], '%Y%m%d-%H%M%S'))
 
             checksum = (
-                ' ({checksum})\nDate:      {timestamp}'.format(
+                ' ({algorithm} {checksum})\nDate:      {timestamp}'.format(
                     **record))
 
             if self.versioned:

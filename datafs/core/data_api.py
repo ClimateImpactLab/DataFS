@@ -253,8 +253,7 @@ class DataAPI(object):
 
         return self.manager.search(query, begins_with=prefix)
 
-    @classmethod
-    def validate_archive_path(cls, archive_name):
+    def validate_archive_path(self, archive_name):
         '''
         Utility function for creating and validating internal service paths
 
@@ -269,19 +268,12 @@ class DataAPI(object):
 
         archive_path : str
             Internal path used by services to reference archive data
-
-        Default: split archive name on underscores
-
-        Example
-        -------
-
-        .. code-block:: python
-
-            >>> print(DataAPI.validate_archive_path(
-            ...     'pictures_2016_may_vegas_wedding.png'))
-            pictures/2016/may/vegas/wedding.png
-
         '''
+        patterns = self.manager.required_archive_patterns
+        
+        for pattern in patterns:
+            assert re.search(pattern, archive_name), AssertionError("archive name does not match pattern '{}'".format(pattern))
+
         return archive_name
 
     def delete_archive(self, archive_name):

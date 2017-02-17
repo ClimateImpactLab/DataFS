@@ -266,13 +266,24 @@ def manager_with_pattern(mgr_name):
 
         }
 
-        archive_name_patterns = ['string1', 'string2', 'string3', 'string4']
+        GCP_PATTERNS = [r'^(TLD1/(sub1|sub2|sub3)|TLD2/(sub1|sub2|sub3))']
         manager.set_required_user_config(user_config)
         manager.set_required_archive_metadata(metadata_config)
-        manager.set_required_archive_patterns(archive_name_patterns)
+        manager.set_required_archive_patterns(GCP_PATTERNS)
 
         yield manager
 
+@pytest.yield_fixture
+def api_with_spec(manager_with_spec, auth1):
+
+    api = DataAPI(
+        username='My Name',
+        contact='my.email@example.com')
+
+    api.attach_manager(manager_with_spec)
+    api.attach_authority('auth', auth1)
+
+    yield api
 
 @pytest.yield_fixture
 def api_with_pattern(manager_with_pattern, auth1):

@@ -604,19 +604,21 @@ class DataArchive(object):
                 '%a, %d %b %Y %H:%M:%S +0000',
                 time.strptime(record['updated'], '%Y%m%d-%H%M%S'))
 
+            checksum = (
+                ' ({checksum})\nDate:      {timestamp}'.format(
+                    **record))
+
             if self.versioned:
                 output = output + '\n' + (
                     click.style(
-                        'version {}'.format(record['version']), fg='green'))
+                        'version {}'.format(record['version']) + checksum,
+                        fg='green'))
 
             else:
                 output = output + '\n' + (
                     click.style(
-                        'update {}'.format(i+1), fg='green'))
-
-            output = output + (
-                ' ({checksum})\nDate:      {timestamp}'.format(
-                    **record))
+                        'update {}'.format(i+1) + checksum,
+                        fg='green'))
 
             for attr, val in sorted(record['user_config'].items()):
                 output = output + '\n' + (

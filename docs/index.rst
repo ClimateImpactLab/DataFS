@@ -39,3 +39,6 @@ History
 =======
 
 DataFS was developed for use by the `Climate Impact Lab <http://impactlab.org>`_. Check us out on `github <https://github.com/ClimateImpactLab>`_.
+
+.. meta::
+   :description: DataFS Data Management System Documentation

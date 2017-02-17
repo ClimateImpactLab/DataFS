@@ -21,6 +21,8 @@ class BaseDataManager(object):
 
         self._required_user_config = None
         self._required_archive_metadata = None
+        self._valid_top_level_domains = None
+        self._required_archive_patterns = None
 
     @property
     def table_names(self):
@@ -29,24 +31,32 @@ class BaseDataManager(object):
     @property
     def required_user_config(self):
         if self._required_user_config is None:
-            user_config = self._get_required_user_config()
-            assert isinstance(
-                user_config, dict), 'sorry, user_config "{}" is a {}'.format(
-                user_config, type(user_config))
-
-            self._required_user_config = user_config
+            self._refresh_spec()
 
         return self._required_user_config
 
     @property
     def required_archive_metadata(self):
         if self._required_archive_metadata is None:
-            archive_metadata = self._get_required_archive_metadata()
-            assert isinstance(archive_metadata, dict)
-
-            self._required_archive_metadata = archive_metadata
+            self._refresh_spec()
 
         return self._required_archive_metadata
+
+    @property
+    def required_archive_patterns(self):
+        if self._required_archive_patterns is None:
+            self._refresh_spec()
+
+        return self._required_archive_patterns
+
+    def _refresh_spec(self):
+        spec_documents = self._get_spec_documents(self._table_name)
+
+        spec = {d['_id']: d['config'] for d in spec_documents}
+
+        self._required_user_config = spec['required_user_config']
+        self._required_archive_metadata = spec['required_archive_metadata']
+        self._required_archive_patterns = spec['required_archive_patterns']
 
     def create_archive_table(self, table_name, raise_on_err=True):
         '''
@@ -66,16 +76,21 @@ class BaseDataManager(object):
 
         '''
 
+        spec_documents = [
+            {'_id': 'required_user_config', 'config': {}},
+            {'_id': 'required_archive_metadata', 'config': {}},
+            {'_id': 'required_archive_patterns', 'config': []}]
+
         if raise_on_err:
             self._create_archive_table(table_name)
             self._create_archive_table(table_name+'.spec')
-            self._create_spec_config(table_name)
+            self._create_spec_config(table_name, spec_documents)
 
         else:
             try:
                 self._create_archive_table(table_name)
                 self._create_archive_table(table_name+'.spec')
-                self._create_spec_config(table_name)
+                self._create_spec_config(table_name, spec_documents)
             except KeyError:
                 pass
 
@@ -142,6 +157,19 @@ class BaseDataManager(object):
         self.update_spec_config('required_archive_metadata', metadata_config)
         self._required_archive_metadata = None
 
+    def set_required_archive_patterns(self, required_archive_patterns):
+        '''
+        Sets archive_name regex patterns for the enforcement of naming
+        conventions on archive creation
+
+        Parameters
+        ----------
+        required_archive_patterns: strings  of args
+        '''
+        self.update_spec_config('required_archive_patterns',
+                                required_archive_patterns)
+        self._required_archive_patterns = None
+
     def delete_table(self, table_name=None, raise_on_err=True):
         if table_name is None:
             table_name = self._table_name
@@ -179,6 +207,13 @@ class BaseDataManager(object):
         '''
         Update metadata for archive ``archive_name``
         '''
+
+        required_metadata_keys = self.required_archive_metadata.keys()
+        for key, val in archive_metadata.items():
+            if key in required_metadata_keys and val is None:
+                raise ValueError(
+                    'Cannot remove required metadata attribute "{}"'.format(
+                        key))
 
         self._update_metadata(archive_name, archive_metadata)
 
@@ -502,7 +537,7 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _create_spec_config(self, table_name):
+    def _create_spec_config(self, table_name, spec_documents):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
@@ -511,14 +546,6 @@ class BaseDataManager(object):
             'BaseDataManager cannot be used directly. Use a subclass.')
 
     def _delete_table(self, table_name):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
-    def _get_required_user_config(self):
-        raise NotImplementedError(
-            'BaseDataManager cannot be used directly. Use a subclass.')
-
-    def _get_required_archive_metadata(self):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 

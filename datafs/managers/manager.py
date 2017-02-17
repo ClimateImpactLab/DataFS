@@ -537,7 +537,7 @@ class BaseDataManager(object):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 
-    def _create_spec_config(self, table_name):
+    def _create_spec_config(self, table_name, spec_documents):
         raise NotImplementedError(
             'BaseDataManager cannot be used directly. Use a subclass.')
 

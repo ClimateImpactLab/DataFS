@@ -162,11 +162,15 @@ class DynamoDBManager(BaseDataManager):
 
         Parameters
         ----------
-        table_name
 
-        Returns
-        -------
-        None
+        table_name :
+
+            base table name (not including .spec suffix)
+
+        spec_documents : list
+
+            list of dictionary documents defining the manager spec
+
 
         '''
 
@@ -204,13 +208,13 @@ class DynamoDBManager(BaseDataManager):
         Parameters
         ----------
         archive_name: str
-            Unique GCP_ID archive name
+
+            ID of archive to update
 
         updated_metadata: dict
-            Dictionary of update metadata values
-            Right now just lets you append anything to the list
 
-        .. todo::
+            dictionary of metadata keys and values to update. If the value
+            for a particular key is `None`, the key is removed.
 
         """
 
@@ -244,13 +248,6 @@ class DynamoDBManager(BaseDataManager):
         -------
         Dictionary with confirmation of upload
 
-        Note
-        ----
-        versioning is handled by s3
-
-        Todo
-        -----
-        Coerce underscores to dashes
         '''
 
         archive_exists = False

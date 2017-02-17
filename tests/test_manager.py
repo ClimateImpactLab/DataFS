@@ -118,72 +118,72 @@ def test_manager_spec_setup_api_metadata(api_with_spec, auth1):
         api_with_spec.create('my_api_test_archive', metadata={})
 
 
-def test_update(base_manager):
+def test_base_manager_update(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._update('archive_name', {})
 
 
-def test_create_archive(base_manager):
+def test_base_manager_create_archive(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._create_archive('archive_name', {})
 
 
-def test_create_if_not_exists(base_manager):
+def test_base_manager_create_if_not_exists(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._create_if_not_exists('archive_name', {})
 
 
-def test_get_archives(base_manager):
+def test_base_manager_get_archives(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._get_archives()
 
 
-def test_get_archive_listing(base_manager):
+def test_base_manager_get_archive_listing(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._get_archive_listing('archive_name')
 
 
-def test_get_archive_metadata(base_manager):
+def test_base_manager_get_archive_metadata(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._get_archive_metadata('archive_name')
 
 
-def test_get_latest_hash(base_manager):
+def test_base_manager_get_latest_base_manager_hash(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._get_latest_hash('archive_name')
 
 
-def test_get_authority_name(base_manager):
+def test_base_manager_get_authority_name(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._get_authority_name('archive_name')
 
 
-def test_get_archive_path(base_manager):
+def test_base_manager_get_archive_path(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._get_archive_path('archive_name')
 
 
-def test_delete_archive_record(base_manager):
+def test_base_manager_delete_archive_record(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._delete_archive_record('archive_name')
 
 
-def test_get_table_names(base_manager):
+def test_base_manager_get_table_names(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._get_table_names()
 
 
-def test_create_archive_table(base_manager):
+def test_base_manager_create_archive_table(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._create_archive_table('table_name')
 
 
-def test_create_spec_config(base_manager):
+def test_base_manager_create_spec_config(base_manager):
     with pytest.raises(NotImplementedError):
-        base_manager._create_spec_config('table_name')
+        base_manager._create_spec_config('table_name', [{}, {}, {}])
 
 
-def test_update_spec_config(base_manager):
+def test_base_manager_update_spec_config(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._update_spec_config('required_user_config', {})
 
@@ -191,11 +191,21 @@ def test_update_spec_config(base_manager):
         base_manager._update_spec_config('required_archive_metadata', {})
 
 
-def test_delete_table(base_manager):
+def test_base_manager_delete_table(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._delete_table('table_name')
 
 
-def test_get_version_history(base_manager):
+def test_base_manager_get_version_history(base_manager):
     with pytest.raises(NotImplementedError):
         base_manager._get_version_history('archive_name')
+
+
+def test_base_manager_search(base_manager):
+    with pytest.raises(NotImplementedError):
+        base_manager._search('archive_name', ['term1', 'term2'])
+
+
+def test_base_manager_set_tags(base_manager):
+    with pytest.raises(NotImplementedError):
+        base_manager._set_tags('archive_name', ['term1', 'term2'])

@@ -4,10 +4,13 @@ from datafs.core import data_file
 from datafs.core.versions import BumpableVersion
 from datafs._compat import string_types
 from contextlib import contextmanager
+from fs.osfs import OSFS
 import fs.utils
 import fs.path
-from fs.osfs import OSFS
+import click
 import os
+import textwrap
+import time
 
 
 def _process_version(self, version):
@@ -196,7 +199,8 @@ class DataArchive(object):
             bumpversion=None,
             prerelease=None,
             dependencies=None,
-            metadata=None):
+            metadata=None,
+            message=None):
         '''
         Enter a new version to a DataArchive
 
@@ -281,7 +285,8 @@ class DataArchive(object):
                 checksum=checksum,
                 algorithm=algorithm,
                 version=next_version,
-                dependencies=dependencies))
+                dependencies=dependencies,
+                message=message))
 
     def _get_default_dependencies(self):
         '''
@@ -345,6 +350,7 @@ class DataArchive(object):
             prerelease=None,
             dependencies=None,
             metadata=None,
+            message=None,
             *args,
             **kwargs):
         '''
@@ -426,7 +432,8 @@ class DataArchive(object):
                     version=next_version,
                     dependencies=dependencies,
                     checksum=checksum,
-                    algorithm=algorithm))
+                    algorithm=algorithm,
+                    message=message))
 
         opener = data_file.open_file(
             self.authority,
@@ -450,7 +457,8 @@ class DataArchive(object):
             bumpversion=None,
             prerelease=None,
             dependencies=None,
-            metadata=None):
+            metadata=None,
+            message=None):
         '''
         Returns a local path for read/write
 
@@ -524,7 +532,9 @@ class DataArchive(object):
                     version=next_version,
                     dependencies=dependencies,
                     checksum=checksum,
-                    algorithm=algorithm))
+                    algorithm=algorithm,
+                    message=message))
+
         path = data_file.get_local_path(
             self.authority,
             self.api.cache,
@@ -580,6 +590,49 @@ class DataArchive(object):
                 read_path,
                 local,
                 filename)
+
+    def log(self):
+
+        history = self.get_history()
+
+        outputs = []
+
+        for i, record in enumerate(history):
+            output = ''
+
+            record['timestamp'] = time.strftime(
+                '%a, %d %b %Y %H:%M:%S +0000',
+                time.strptime(record['updated'], '%Y%m%d-%H%M%S'))
+
+            if self.versioned:
+                output = output + '\n' + (
+                    click.style(
+                        'version {}'.format(record['version']), fg='green'))
+
+            else:
+                output = output + '\n' + (
+                    click.style(
+                        'update {}'.format(i+1), fg='green'))
+
+            output = output + (
+                ' ({checksum})\nDate:      {timestamp}'.format(
+                    **record))
+
+            for attr, val in sorted(record['user_config'].items()):
+                output = output + '\n' + (
+                    '{:<10} {}'.format(attr+':', val))
+
+            if 'message' in record:
+                wrapper = textwrap.TextWrapper(
+                    initial_indent='    ',
+                    width=66)
+
+                output = output + '\n\n'
+                output = output + '\n'.join(wrapper.wrap(record['message']))
+
+            outputs.append(output)
+
+        click.echo_via_pager('\n\n'.join(reversed(outputs)))
 
     def delete(self):
         '''

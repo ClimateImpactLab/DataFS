@@ -14,13 +14,13 @@ def base_manager():
 
 def test_spec_table_creation(manager_with_spec):
 
-    assert 'standalone-test-table.spec' in manager_with_spec.table_names
+    assert 'spec-test.spec' in manager_with_spec.table_names
 
 
 def test_spec_config_creation(manager_with_spec):
 
     assert len(manager_with_spec._get_spec_documents(
-        'standalone-test-table')) == 3
+        'spec-test')) == 3
 
 
 def test_spec_config_update_metadata(manager_with_spec):
@@ -46,7 +46,7 @@ def test_manager_spec_setup(api_with_spec, auth1):
 
     api_with_spec.user_config.update(user_config)
     assert api_with_spec.manager.config[
-        'table_name'] == 'standalone-test-table'
+        'table_name'] == 'spec-test'
 
     api_with_spec.create('my_spec_test_archive', metadata=metadata_config)
 

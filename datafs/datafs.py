@@ -201,11 +201,7 @@ def create(
     Create an archive
     '''
 
-    if tag is None:
-        tags = []
-
-    else:
-        tags = list(tag)
+    tags = list(tag)
 
     _generate_api(ctx)
     args, kwargs = _parse_args_and_kwargs(ctx.args)

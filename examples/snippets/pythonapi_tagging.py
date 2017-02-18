@@ -104,9 +104,9 @@ Actual Example Block 2 Test
 
 .. code-block:: python
 
-    >>> assert list(api.search('bar')) == ['archive1']
-    >>> assert list(api.search('baz')) == ['archive2']
-    >>> assert list(api.search('foo')) == ['archive1', 'archive2']
+    >>> assert set(api.search('bar')) == {'archive1'}
+    >>> assert set(api.search('baz')) == {'archive2'}
+    >>> assert set(api.search('foo')) == {'archive1', 'archive2'}
 
 
 Example 3
@@ -134,8 +134,8 @@ Actual example block 3 search test:
 
 .. code-block:: python
 
-    >>> assert list(api.search('bar', 'foo')) == ['archive1', 'archive3']
-    >>> assert list(api.search('bar', 'foo', 'baz')) == ['archive3']
+    >>> assert set(api.search('bar', 'foo')) == {'archive1', 'archive3'}
+    >>> assert set(api.search('bar', 'foo', 'baz')) == {'archive3'}
 
 Example 4
 ---------
@@ -155,7 +155,7 @@ Actual example block 4 test
 
 .. code-block:: python
 
-    >>> assert list(api.search('qux')) == []
+    >>> assert set(api.search('qux')) == set([])
 
 Example 5
 ---------
@@ -174,7 +174,7 @@ Actual example block 5 test
 
 .. code-block:: python
 
-    >>> assert archive1.get_tags() == ['foo', 'bar']
+    >>> assert set(archive1.get_tags()) == {'foo', 'bar'}
 
 
 Example 6
@@ -197,7 +197,7 @@ Actual example block 6 search test
 
 .. code-block:: python
 
-    >>> assert list(api.search('foo', 'qux')) == ['archive1']
+    >>> assert set(api.search('foo', 'qux')) == {'archive1'}
 
 Example 7
 ---------
@@ -218,7 +218,7 @@ Actual example block 7 search test
 
 .. code-block:: python
 
-    >>> assert list(api.search('foo', 'bar')) == ['archive3']
+    >>> assert set(api.search('foo', 'bar')) == {'archive3'}
 
 Teardown
 --------

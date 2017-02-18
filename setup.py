@@ -49,13 +49,9 @@ entry_points = '[console_scripts]\ndatafs=datafs.datafs:cli'
 
 setup(
     name='datafs',
-<<<<<<< HEAD
-    version='0.7.0',
-    description="DataFS is an abstraction layer for data storage systems. It manages file versions and metadata using a json-like storage system like AWS's DynamoDB and relies on PyFilesystem to abstract file storage, allowing you to store files locally and on the cloud in a seamless interface.",
-=======
-    version='0.6.8',
+    version='0.6.9',
     description=description,
->>>>>>> 80f8e416ecaeb003920cdac6cfe45e57aa58d595
+
     long_description=readme + '\n\n' + history,
     author="Climate Impact Lab",
     url='https://github.com/ClimateImpactLab/datafs',

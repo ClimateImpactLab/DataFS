@@ -9,6 +9,7 @@ from examples.preconfigured import preconfigured
 from examples.subclassing import client
 from examples.snippets import (
     pythonapi_creating_archives,
+    pythonapi_tagging,
     pythonapi_dependencies,
     pythonapi_io,
     pythonapi_metadata,
@@ -96,6 +97,13 @@ def test_preconfigured():
 @pytest.mark.python_snippets
 def test_docs_pythonapi_creating_archives(example_snippet_working_dirs):
     failures, _ = doctest.testmod(pythonapi_creating_archives, report=True)
+    assert failures == 0
+
+
+@pytest.mark.examples
+@pytest.mark.python_snippets
+def test_docs_pythonapi_tagging(example_snippet_working_dirs):
+    failures, _ = doctest.testmod(pythonapi_tagging, report=True)
     assert failures == 0
 
 

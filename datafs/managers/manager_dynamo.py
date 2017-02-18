@@ -152,7 +152,7 @@ class DynamoDBManager(BaseDataManager):
             msg = 'Table creation failed'
             assert table_name in self._get_table_names(), msg
 
-    def _create_spec_config(self, table_name):
+    def _create_spec_config(self, table_name, spec_documents):
         '''
         Dynamo implementation of spec config creation
 
@@ -162,45 +162,33 @@ class DynamoDBManager(BaseDataManager):
 
         Parameters
         ----------
-        table_name
 
-        Returns
-        -------
-        None
+        table_name :
+
+            base table name (not including .spec suffix)
+
+        spec_documents : list
+
+            list of dictionary documents defining the manager spec
+
 
         '''
 
         _spec_table = self._resource.Table(table_name + '.spec')
 
-        user_config = {
-            '_id': 'required_user_config',
-            'config': {}
-        }
-
-        archive_config = {
-            '_id': 'required_archive_metadata',
-            'config': {}
-        }
-
-        _spec_table.put_item(Item=user_config)
-        _spec_table.put_item(Item=archive_config)
+        for doc in spec_documents:
+            _spec_table.put_item(Item=doc)
 
     def _update_spec_config(self, document_name, spec):
         '''
         Dynamo implementation of project specific metadata spec
 
         '''
-
-        spec_data_current = self._spec_table.get_item(
-            Key={'_id': '{}'.format(document_name)})['Item']['config']
-
-        spec_data_current.update(spec)
-
         # add the updated archive_metadata object to Dynamo
         self._spec_table.update_item(
             Key={'_id': '{}'.format(document_name)},
             UpdateExpression="SET config = :v",
-            ExpressionAttributeValues={':v': spec_data_current},
+            ExpressionAttributeValues={':v': spec},
             ReturnValues='ALL_NEW')
 
     def _delete_table(self, table_name):
@@ -220,23 +208,15 @@ class DynamoDBManager(BaseDataManager):
         Parameters
         ----------
         archive_name: str
-            Unique GCP_ID archive name
+
+            ID of archive to update
 
         updated_metadata: dict
-            Dictionary of update metadata values
-            Right now just lets you append anything to the list
 
-        .. todo::
+            dictionary of metadata keys and values to update. If the value
+            for a particular key is `None`, the key is removed.
 
         """
-
-        required_metadata_keys = self._get_required_archive_metadata().keys()
-
-        for k, v in archive_metadata.items():
-            if k in required_metadata_keys and v is None:
-                raise ValueError(
-                    'Value for key {} is None. '.format(k) +
-                    'None cannot be a value for required metadata')
 
         archive_metadata_current = self._get_archive_metadata(archive_name)
         archive_metadata_current.update(archive_metadata)
@@ -268,13 +248,6 @@ class DynamoDBManager(BaseDataManager):
         -------
         Dictionary with confirmation of upload
 
-        Note
-        ----
-        versioning is handled by s3
-
-        Todo
-        -----
-        Coerce underscores to dashes
         '''
 
         archive_exists = False
@@ -301,16 +274,6 @@ class DynamoDBManager(BaseDataManager):
             DynamoDB specific results - do not expose to user
         '''
         return self._table.get_item(Key={'_id': archive_name})['Item']
-
-    def _get_required_user_config(self):
-
-        return self._spec_table.get_item(Key={
-            '_id': '{}'.format('required_user_config')})['Item']['config']
-
-    def _get_required_archive_metadata(self):
-
-        return self._spec_table.get_item(Key={
-            '_id': '{}'.format('required_archive_metadata')})['Item']['config']
 
     def _delete_archive_record(self, archive_name):
 

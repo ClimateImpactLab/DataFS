@@ -15,8 +15,26 @@ from datafs import DataAPI
 from datafs._compat import string_types
 from datafs.core import data_file
 from tests.resources import prep_manager, _close
+import shutil
 
 from contextlib import contextmanager
+
+
+@pytest.yield_fixture(scope='session')
+def example_snippet_working_dirs():
+
+    test_dirs = ['tests/test1', 'tests/test2', 'tests/test3']
+
+    for td in test_dirs:
+        if not os.path.isdir(td):
+            os.makedirs(td)
+
+    try:
+        yield
+    finally:
+        for td in test_dirs:
+            if os.path.isdir(td):
+                shutil.rmtree(td)
 
 
 def pytest_generate_tests(metafunc):
@@ -38,26 +56,39 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize('open_func', ['open_file', 'get_local_path'])
 
 
-@pytest.yield_fixture
-def tempdir():
+@contextmanager
+def make_temp_dir():
     tmpdir = tempfile.mkdtemp()
 
     try:
-        yield tmpdir
+        yield tmpdir.replace(os.sep, '/')
 
     finally:
         _close(tmpdir)
 
 
+@pytest.yield_fixture(scope='function')
+def tempdir():
+    with make_temp_dir() as tmp:
+        yield tmp
+
+
+@pytest.yield_fixture(scope='module')
+def temp_dir_mod():
+    with make_temp_dir() as tmp:
+        yield tmp
+
+
 @pytest.yield_fixture(scope='module')
 def temp_file():
-    tmp = tempfile.NamedTemporaryFile()
-    
+    tmp = tempfile.NamedTemporaryFile(delete=False)
+
     try:
-        yield tmp.name
+        yield tmp.name.replace(os.sep, '/')
 
     finally:
-        os.remove(tmp.name)
+        tmp.close()
+        _close(tmp.name)
 
 
 @contextmanager
@@ -65,17 +96,12 @@ def prep_filesystem(fs_name):
 
     if fs_name == 'OSFS':
 
-        tmpdir = tempfile.mkdtemp()
-
-        try:
-            local = OSFS(tmpdir)
+        with make_temp_dir() as tmp:
+            local = OSFS(tmp)
 
             yield local
 
             local.close()
-
-        finally:
-            _close(tmpdir)
 
     elif fs_name == 'S3FS':
 
@@ -207,7 +233,7 @@ def cache2():
 @pytest.yield_fixture
 def manager_with_spec(mgr_name):
 
-    with prep_manager(mgr_name, table_name='standalone-test-table') as manager:
+    with prep_manager(mgr_name, table_name='spec-test') as manager:
 
         metadata_config = {
             'description': 'some metadata'
@@ -226,6 +252,17 @@ def manager_with_spec(mgr_name):
 
 
 @pytest.yield_fixture
+def manager_with_pattern(mgr_name):
+
+    with prep_manager(mgr_name, table_name='pattern-test') as manager:
+
+        GCP_PATTERNS = [r'^(TLD1/(sub1|sub2|sub3)|TLD2/(sub1|sub2|sub3))']
+        manager.set_required_archive_patterns(GCP_PATTERNS)
+
+        yield manager
+
+
+@pytest.yield_fixture
 def api_with_spec(manager_with_spec, auth1):
 
     api = DataAPI(
@@ -233,6 +270,17 @@ def api_with_spec(manager_with_spec, auth1):
         contact='my.email@example.com')
 
     api.attach_manager(manager_with_spec)
+    api.attach_authority('auth', auth1)
+
+    yield api
+
+
+@pytest.yield_fixture
+def api_with_pattern(manager_with_pattern, auth1):
+
+    api = DataAPI()
+
+    api.attach_manager(manager_with_pattern)
     api.attach_authority('auth', auth1)
 
     yield api
@@ -348,10 +396,15 @@ def datafile_opener(open_func):
         raise NameError('open_func "{}" not recognized'.format(open_func))
 
 
-@pytest.yield_fixture
-def api_with_diverse_archives(mgr_name, fs_name):
+@pytest.yield_fixture(scope='session', params=['mongo', 'dynamo'])
+def api_with_diverse_archives(request):
 
-    with prep_manager(mgr_name) as manager:
+    ITERATIONS = 7
+    VARS = 5
+    PARS = 5
+    CONF = 3
+
+    with prep_manager(request.param, table_name='diverse') as manager:
 
         api = DataAPI(
             username='My Name',
@@ -359,33 +412,77 @@ def api_with_diverse_archives(mgr_name, fs_name):
 
         api.attach_manager(manager)
 
-        with prep_filesystem(fs_name) as auth1:
+        def direct_create_archive_spec(archive_name):
+            return api.manager._create_archive_metadata(
+                archive_name=archive_name,
+                authority_name='auth',
+                archive_path='/'.join(archive_name.split('_')),
+                versioned=True,
+                raise_on_err=True,
+                metadata={},
+                user_config={},
+                helper=False,
+                tags=os.path.splitext(archive_name)[0].split('_'))
+
+        with prep_filesystem('OSFS') as auth1:
 
             api.attach_authority('auth', auth1)
 
-            for indices in itertools.product(*(range(1, 4) for _ in range(5))):
-                api.create(
+            archive_names = []
+
+            for indices in itertools.product(*(
+                    range(1, ITERATIONS+1) for _ in range(VARS))):
+
+                archive_name = (
                     'team{}_project{}_task{}_variable{}_scenario{}.nc'.format(
                         *indices))
 
-            for indices in itertools.product(*(range(1, 4) for _ in range(5))):
+                archive_names.append(archive_name)
+
+            for indices in itertools.product(*(
+                    range(1, ITERATIONS+1) for _ in range(PARS))):
+
                 archive_name = (
                     'team{}_project{}_task{}_' +
                     'parameter{}_scenario{}.csv').format(*indices)
 
-                api.create(archive_name)
+                archive_names.append(archive_name)
 
-            for indices in itertools.product(*(range(1, 4) for _ in range(3))):
-                api.create(
+            for indices in itertools.product(*(
+                    range(1, ITERATIONS+1) for _ in range(CONF))):
+
+                archive_name = (
                     'team{}_project{}_task{}_config.txt'.format(
                         *indices))
 
+                archive_names.append(archive_name)
+
+            batch_size = 500
+
+            for st_ind in range(0, len(archive_names), batch_size):
+                current_batch = archive_names[st_ind:st_ind+batch_size]
+
+                new_archives = list(map(
+                    direct_create_archive_spec, current_batch))
+
+                if request.param == 'mongo':
+                    api.manager.collection.insert_many(new_archives)
+
+                elif request.param == 'dynamo':
+                    with api.manager._table.batch_writer() as batch:
+                        for item in new_archives:
+                            batch.put_item(Item=item)
+
+                else:
+                    raise ValueError('Manager "{}" not recognized'.format(
+                        request.param))
+
             api.TEST_ATTRS = {
-                'archives.variable': 243,
-                'archives.parameter': 243,
-                'archives.config': 27,
-                'count.variable': 3,
-                'count.parameter': 3,
+                'archives.variable': ITERATIONS**VARS,
+                'archives.parameter': ITERATIONS**PARS,
+                'archives.config': ITERATIONS**CONF,
+                'count.variable': ITERATIONS,
+                'count.parameter': ITERATIONS,
                 'count.config': 1
             }
 

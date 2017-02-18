@@ -1,15 +1,24 @@
 
 from __future__ import absolute_import
 
+import pytest
 import doctest
 import moto
 from examples import (local, ondisk, s3, caching)
 from examples.preconfigured import preconfigured
 from examples.subclassing import client
+from examples.snippets import (
+    pythonapi_creating_archives,
+    pythonapi_tagging,
+    pythonapi_dependencies,
+    pythonapi_io,
+    pythonapi_metadata,
+    pythonapi_versioning)
 from datafs.managers.manager_dynamo import DynamoDBManager
-from distutils.version import StrictVersion
+from tests.resources import has_special_dependencies
 
 
+@pytest.mark.examples
 def mock_s3(func):
     def inner(*args, **kwargs):
 
@@ -25,53 +34,37 @@ def mock_s3(func):
     return inner
 
 
+@pytest.mark.examples
 def test_local():
-    failures, tests = doctest.testmod(local, report=True)
+    failures, _ = doctest.testmod(local, report=True)
     assert failures == 0
 
 
+@pytest.mark.examples
 @mock_s3
 def test_ondisk():
-
-    has_special_dependencies = False
-
-    try:
-        import netCDF4
-        assert StrictVersion(netCDF4.__version__) >= '1.1'
-
-        import numpy as np
-        assert StrictVersion(np.__version__) >= '1.7'
-
-        import pandas as pd
-        assert StrictVersion(pd.__version__) >= '0.15'
-
-        import xarray as xr
-        assert StrictVersion(xr.__version__) >= '0.8'
-
-        has_special_dependencies = True
-
-    except (ImportError, AssertionError):
-        pass
-
     if has_special_dependencies:
-        failures, tests = doctest.testmod(ondisk, report=True)
+        failures, _ = doctest.testmod(ondisk, report=True)
         assert failures == 0
 
 
+@pytest.mark.examples
 @mock_s3
 def test_s3():
 
-    failures, tests = doctest.testmod(s3, report=True)
+    failures, _ = doctest.testmod(s3, report=True)
     assert failures == 0
 
 
+@pytest.mark.examples
 @mock_s3
 def test_caching():
 
-    failures, tests = doctest.testmod(caching, report=True)
+    failures, _ = doctest.testmod(caching, report=True)
     assert failures == 0
 
 
+@pytest.mark.examples
 def test_subclassing():
 
     table_name = 'project_data'
@@ -88,12 +81,56 @@ def test_subclassing():
 
     manager.create_archive_table(table_name, raise_on_err=False)
 
-    failures, tests = doctest.testmod(client, report=True)
+    failures, _ = doctest.testmod(client, report=True)
     assert failures == 0
 
     manager.delete_table(table_name)
 
 
+@pytest.mark.examples
 def test_preconfigured():
-    failures, tests = doctest.testmod(preconfigured, report=True)
+    failures, _ = doctest.testmod(preconfigured, report=True)
+    assert failures == 0
+
+
+@pytest.mark.examples
+@pytest.mark.python_snippets
+def test_docs_pythonapi_creating_archives(example_snippet_working_dirs):
+    failures, _ = doctest.testmod(pythonapi_creating_archives, report=True)
+    assert failures == 0
+
+
+@pytest.mark.examples
+@pytest.mark.python_snippets
+def test_docs_pythonapi_tagging(example_snippet_working_dirs):
+    failures, _ = doctest.testmod(pythonapi_tagging, report=True)
+    assert failures == 0
+
+
+@pytest.mark.examples
+@pytest.mark.python_snippets
+def test_docs_pythonapi_dependencies(example_snippet_working_dirs):
+    failures, _ = doctest.testmod(pythonapi_dependencies, report=True)
+    assert failures == 0
+
+
+@pytest.mark.examples
+@pytest.mark.python_snippets
+def test_docs_pythonapi_io(example_snippet_working_dirs):
+    if has_special_dependencies:
+        failures, _ = doctest.testmod(pythonapi_io, report=True)
+        assert failures == 0
+
+
+@pytest.mark.examples
+@pytest.mark.python_snippets
+def test_docs_pythonapi_metadata(example_snippet_working_dirs):
+    failures, _ = doctest.testmod(pythonapi_metadata, report=True)
+    assert failures == 0
+
+
+@pytest.mark.examples
+@pytest.mark.python_snippets
+def test_docs_pythonapi_versioning(example_snippet_working_dirs):
+    failures, _ = doctest.testmod(pythonapi_versioning, report=True)
     assert failures == 0

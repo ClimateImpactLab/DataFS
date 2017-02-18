@@ -1,7 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+'''
+DataFS is an abstraction layer for data storage systems.
+
+DataFS is a package manager for data. It manages file versions, dependencies,
+and metadata for individual use or large organizations.
+'''
+
 
 from setuptools import setup, find_packages
+
+description = __doc__
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -12,8 +21,7 @@ with open('HISTORY.rst') as history_file:
 requirements_install = [
     'click>=6.0',
     'PyYAML>=3.0',
-    'fs>=0.5.5a1',
-    'whoosh>=2.6'
+    'fs==0.5.5a1'
     ]
 
 requirements_test = [
@@ -28,7 +36,8 @@ requirements_test = [
     'sphinx_rtd_theme>=0.1',
     'moto>=0.4',
     'pymongo>=3.0',
-    'boto3>=1.2'
+    'boto3>=1.2',
+    'clatter>=0.0.4'
     ]
 
 extras = {
@@ -40,8 +49,13 @@ entry_points = '[console_scripts]\ndatafs=datafs.datafs:cli'
 
 setup(
     name='datafs',
+<<<<<<< HEAD
     version='0.7.0',
     description="DataFS is an abstraction layer for data storage systems. It manages file versions and metadata using a json-like storage system like AWS's DynamoDB and relies on PyFilesystem to abstract file storage, allowing you to store files locally and on the cloud in a seamless interface.",
+=======
+    version='0.6.8',
+    description=description,
+>>>>>>> 80f8e416ecaeb003920cdac6cfe45e57aa58d595
     long_description=readme + '\n\n' + history,
     author="Climate Impact Lab",
     url='https://github.com/ClimateImpactLab/datafs',
@@ -69,5 +83,6 @@ setup(
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.7'],
     test_suite='tests',
+    setup_requires=['pytest-runner'],
     tests_require=requirements_test,
     extras_require=extras)

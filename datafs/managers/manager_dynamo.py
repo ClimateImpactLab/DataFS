@@ -1,4 +1,3 @@
-
 import boto3
 
 from datafs.managers.manager import BaseDataManager
@@ -32,14 +31,8 @@ class DynamoDBManager(BaseDataManager):
 
         super(DynamoDBManager, self).__init__(table_name)
 
-        if session_args is None:
-            session_args = {}
-
-        if resource_args is None:
-            resource_args = {}
-
-        self._session_args = session_args
-        self._resource_args = resource_args
+        self._session_args = {} if session_args is None else session_args
+        self._resource_args = {} if resource_args is None else resource_args
 
         self._session = boto3.Session(**session_args)
         self._resource = self._session.resource('dynamodb', **resource_args)
@@ -61,16 +54,17 @@ class DynamoDBManager(BaseDataManager):
     def _search(self, search_terms, begins_with=None):
         """
         Returns a list of Archive id's in the table on Dynamo
+
         """
 
         kwargs = dict(
             ProjectionExpression='#id',
-            ExpressionAttributeNames={
-                "#id": "_id"})
+            ExpressionAttributeNames={"#id": "_id"})
 
         if len(search_terms) > 0:
-            kwargs['FilterExpression'] = reduce(lambda x, y: x & y, [Attr(
-             'archive_metadata._TAGS').contains(arg) for arg in search_terms])
+            kwargs['FilterExpression'] = reduce(
+                lambda x, y: x & y,
+                [Attr('tags').contains(arg) for arg in search_terms])
 
         if begins_with:
             if 'FilterExpression' in kwargs:
@@ -158,50 +152,7 @@ class DynamoDBManager(BaseDataManager):
             msg = 'Table creation failed'
             assert table_name in self._get_table_names(), msg
 
-    def _create_spec_table(self, table_name):
-        '''
-        Dynamo implementation of User and Metadata Spec configuration
-
-        Called by `create_archive_table()` in
-        :py:class:`manager.BaseDataManager`. This table will additional table
-        will be aliased by 'table_name.spec'
-
-        A waiter is implemented on Dynamo to ensure table exists before
-        executing any subsequent operations
-
-        Paramters
-        ---------
-        table_name: str
-
-        Returns
-        -------
-        None
-        '''
-
-        spec_table = table_name + '.spec'
-
-        if spec_table in self._get_table_names():
-            raise KeyError('Table "{}" already exists'.format(spec_table))
-
-        try:
-            table = self._resource.create_table(
-                TableName=spec_table,
-                KeySchema=[
-                    {'AttributeName': '_id', 'KeyType': 'HASH'}],
-                AttributeDefinitions=[
-                    {'AttributeName': '_id', 'AttributeType': 'S'}],
-                ProvisionedThroughput={
-                    'ReadCapacityUnits': 123, 'WriteCapacityUnits': 123})
-
-            table.meta.client.get_waiter(
-                'table_exists').wait(TableName=spec_table)
-
-        except ValueError:
-            # Error handling for windows incompatability issue
-            msg = 'Table creation failed'
-            assert spec_table in self._get_table_names(), msg
-
-    def _create_spec_config(self, table_name):
+    def _create_spec_config(self, table_name, spec_documents):
         '''
         Dynamo implementation of spec config creation
 
@@ -211,53 +162,36 @@ class DynamoDBManager(BaseDataManager):
 
         Parameters
         ----------
-        table_name
 
-        Returns
-        -------
-        None
+        table_name :
+
+            base table name (not including .spec suffix)
+
+        spec_documents : list
+
+            list of dictionary documents defining the manager spec
+
 
         '''
 
         _spec_table = self._resource.Table(table_name + '.spec')
 
-        user_config = {
-            '_id': 'required_user_config',
-            'config': {}
-        }
+        for doc in spec_documents:
+            _spec_table.put_item(Item=doc)
 
-        archive_config = {
-            '_id': 'required_archive_metadata',
-            'config': {}
-        }
-
-        _spec_table.put_item(Item=user_config)
-        _spec_table.put_item(Item=archive_config)
-
-    def _update_spec_config(self, document_name, spec=None):
+    def _update_spec_config(self, document_name, spec):
         '''
         Dynamo implementation of project specific metadata spec
 
         '''
-
-        if spec is None:
-            spec = {}
-
-        spec_data_current = self._spec_table.get_item(
-            Key={'_id': '{}'.format(document_name)})['Item']['config']
-
-        spec_data_current.update(spec)
-
         # add the updated archive_metadata object to Dynamo
         self._spec_table.update_item(
             Key={'_id': '{}'.format(document_name)},
             UpdateExpression="SET config = :v",
-            ExpressionAttributeValues={':v': spec_data_current},
+            ExpressionAttributeValues={':v': spec},
             ReturnValues='ALL_NEW')
 
     def _delete_table(self, table_name):
-        if table_name not in self._get_table_names():
-            raise KeyError('Table "{}" not found'.format(table_name))
 
         try:
             self._resource.Table(table_name).delete()
@@ -274,23 +208,15 @@ class DynamoDBManager(BaseDataManager):
         Parameters
         ----------
         archive_name: str
-            Unique GCP_ID archive name
+
+            ID of archive to update
 
         updated_metadata: dict
-            Dictionary of update metadata values
-            Right now just lets you append anything to the list
 
-        .. todo::
+            dictionary of metadata keys and values to update. If the value
+            for a particular key is `None`, the key is removed.
 
         """
-
-        required_metadata_keys = self._get_required_archive_metadata().keys()
-
-        for k, v in archive_metadata.items():
-            if k in required_metadata_keys and v is None:
-                raise ValueError(
-                    'Value for key {} is None. '.format(k) +
-                    'None cannot be a value for required metadata')
 
         archive_metadata_current = self._get_archive_metadata(archive_name)
         archive_metadata_current.update(archive_metadata)
@@ -322,13 +248,6 @@ class DynamoDBManager(BaseDataManager):
         -------
         Dictionary with confirmation of upload
 
-        Note
-        ----
-        versioning is handled by s3
-
-        Todo
-        -----
-        Coerce underscores to dashes
         '''
 
         archive_exists = False
@@ -346,17 +265,6 @@ class DynamoDBManager(BaseDataManager):
 
         self._table.put_item(Item=metadata)
 
-    def _create_if_not_exists(
-            self,
-            archive_name,
-            metadata):
-        try:
-            self._create_archive(
-                archive_name,
-                metadata)
-        except KeyError:
-            pass
-
     def _get_archive_listing(self, archive_name):
         '''
         Return full document for ``{_id:'archive_name'}``
@@ -367,63 +275,17 @@ class DynamoDBManager(BaseDataManager):
         '''
         return self._table.get_item(Key={'_id': archive_name})['Item']
 
-    def _get_archive_metadata(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['archive_metadata']
-
-    def _get_archive_spec(self, archive_name):
-        res = self._get_archive_listing(archive_name)
-
-        if res is None:
-            raise KeyError
-
-        spec = ['authority_name', 'archive_path', 'versioned']
-
-        return {k: v for k, v in res.items() if k in spec}
-
-    def _get_authority_name(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['authority_name']
-
-    def _get_archive_path(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['archive_path']
-
-    def _get_version_history(self, archive_name):
-
-        res = self._get_archive_listing(archive_name)
-
-        return res['version_history']
-
-    def _get_latest_hash(self, archive_name):
-
-        version_history = self._get_version_history(archive_name)
-
-        if len(version_history) == 0:
-            return None
-
-        else:
-            return version_history[-1]['checksum']
-
-    def _get_required_user_config(self):
-
-        return self._spec_table.get_item(Key={
-            '_id': '{}'.format('required_user_config')})['Item']['config']
-
-    def _get_required_archive_metadata(self):
-
-        return self._spec_table.get_item(Key={
-            '_id': '{}'.format('required_archive_metadata')})['Item']['config']
-
     def _delete_archive_record(self, archive_name):
 
         return self._table.delete_item(Key={'_id': archive_name})
 
     def _get_spec_documents(self, table_name):
         return self._resource.Table(table_name + '.spec').scan()['Items']
+
+    def _set_tags(self, archive_name, updated_tag_list):
+
+        self._table.update_item(
+                Key={'_id': archive_name},
+                UpdateExpression="SET tags = :t",
+                ExpressionAttributeValues={':t': updated_tag_list},
+                ReturnValues='ALL_NEW')

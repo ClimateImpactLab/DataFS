@@ -233,7 +233,7 @@ def cache2():
 @pytest.yield_fixture
 def manager_with_spec(mgr_name):
 
-    with prep_manager(mgr_name, table_name='standalone-test-table') as manager:
+    with prep_manager(mgr_name, table_name='spec-test') as manager:
 
         metadata_config = {
             'description': 'some metadata'
@@ -252,6 +252,17 @@ def manager_with_spec(mgr_name):
 
 
 @pytest.yield_fixture
+def manager_with_pattern(mgr_name):
+
+    with prep_manager(mgr_name, table_name='pattern-test') as manager:
+
+        GCP_PATTERNS = [r'^(TLD1/(sub1|sub2|sub3)|TLD2/(sub1|sub2|sub3))']
+        manager.set_required_archive_patterns(GCP_PATTERNS)
+
+        yield manager
+
+
+@pytest.yield_fixture
 def api_with_spec(manager_with_spec, auth1):
 
     api = DataAPI(
@@ -259,6 +270,17 @@ def api_with_spec(manager_with_spec, auth1):
         contact='my.email@example.com')
 
     api.attach_manager(manager_with_spec)
+    api.attach_authority('auth', auth1)
+
+    yield api
+
+
+@pytest.yield_fixture
+def api_with_pattern(manager_with_pattern, auth1):
+
+    api = DataAPI()
+
+    api.attach_manager(manager_with_pattern)
     api.attach_authority('auth', auth1)
 
     yield api
@@ -382,7 +404,7 @@ def api_with_diverse_archives(request):
     PARS = 5
     CONF = 3
 
-    with prep_manager(request.param) as manager:
+    with prep_manager(request.param, table_name='diverse') as manager:
 
         api = DataAPI(
             username='My Name',

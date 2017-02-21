@@ -4,30 +4,7 @@ from __future__ import absolute_import
 from datafs.managers.manager import BaseDataManager
 
 from pymongo import MongoClient
-from pymongo.errors import ServerSelectionTimeoutError, DuplicateKeyError
-
-
-class ConnectionError(IOError):
-    pass
-
-
-def catch_timeout(func):
-    '''
-    Decorator for wrapping MongoDB connections
-    '''
-
-    def inner(*args, **kwargs):
-        msg = 'Connection to MongoDB server could not be established. '\
-            'Make sure you are running a MongoDB server and that the MongoDB '\
-            'Manager has been configured to connect over the correct port. '\
-            'For more information see '\
-            'https://docs.mongodb.com/manual/tutorial/.'
-        try:
-            return func(*args, **kwargs)
-        except ServerSelectionTimeoutError:
-            raise ConnectionError(msg)
-
-    return inner
+from pymongo.errors import DuplicateKeyError
 
 
 class MongoDBManager(BaseDataManager):
@@ -81,7 +58,6 @@ class MongoDBManager(BaseDataManager):
     def table_name(self):
         return self._table_name
 
-    @catch_timeout
     def _get_table_names(self):
         return self.db.collection_names(include_system_collections=False)
 
@@ -125,7 +101,6 @@ class MongoDBManager(BaseDataManager):
 
     # Private methods (to be implemented!)
 
-    @catch_timeout
     def _update(self, archive_name, version_metadata):
         self.collection.update(
             {"_id": archive_name},
@@ -133,14 +108,9 @@ class MongoDBManager(BaseDataManager):
 
     def _update_metadata(self, archive_name, archive_metadata):
 
-        required_metadata_keys = self._get_required_archive_metadata().keys()
         for key, val in archive_metadata.items():
-            if key in required_metadata_keys and val is None:
-                raise ValueError(
-                    'Value for key {} is None. '.format(key) +
-                    'None cannot be a value for required metadata')
 
-            elif val is None:
+            if val is None:
                 self.collection.update(
                     {"_id": archive_name},
                     {"$unset": {"archive_metadata.{}".format(key): ""}})
@@ -156,7 +126,6 @@ class MongoDBManager(BaseDataManager):
             {"_id": document_name},
             {"$set": {'config': spec}}, upsert=True)
 
-    @catch_timeout
     def _create_archive(
             self,
             archive_name,
@@ -167,19 +136,13 @@ class MongoDBManager(BaseDataManager):
         except DuplicateKeyError:
             raise KeyError('Archive "{}" already exists'.format(archive_name))
 
-    @catch_timeout
-    def _create_spec_config(self, table_name):
+    def _create_spec_config(self, table_name, spec_documents):
 
         if self._spec_coll is None:
             self._spec_coll = self.db[table_name + '.spec']
 
-        itrbl = [
-            {'_id': x, 'config': {}}
-            for x in ('required_user_config', 'required_archive_metadata')]
+        self.spec_collection.insert_many(spec_documents)
 
-        self.spec_collection.insert_many(itrbl)
-
-    @catch_timeout
     def _get_archive_listing(self, archive_name):
         '''
         Return full document for ``{_id:'archive_name'}``
@@ -224,13 +187,3 @@ class MongoDBManager(BaseDataManager):
 
     def _get_spec_documents(self, table_name):
         return [item for item in self.spec_collection.find({})]
-
-    def _get_required_user_config(self):
-
-        return self.spec_collection.find_one(
-            {'_id': 'required_user_config'})['config']
-
-    def _get_required_archive_metadata(self):
-
-        return self.spec_collection.find_one(
-            {'_id': 'required_archive_metadata'})['config']

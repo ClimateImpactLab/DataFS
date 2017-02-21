@@ -617,7 +617,7 @@ class DataArchive(object):
             else:
                 output = output + '\n' + (
                     click.style(
-                        'update {}'.format(i+1) + checksum,
+                        'update {}'.format(len(history) - i) + checksum,
                         fg='green'))
 
             for attr, val in sorted(record['user_config'].items()):

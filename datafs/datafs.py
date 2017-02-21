@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import
 
+from datafs import __version__
 from datafs.config.config_file import ConfigFile
 from datafs.config.helpers import (
     get_api,
@@ -108,6 +109,7 @@ class _DataFSInterface(object):
     type=str,
     default=None,
     help='Specify a config profile')
+@click.version_option(version=__version__, prog_name='datafs')
 @click.pass_context
 def cli(
         ctx,

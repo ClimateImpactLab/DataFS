@@ -627,6 +627,7 @@ class DataArchive(object):
             if 'message' in record:
                 wrapper = textwrap.TextWrapper(
                     initial_indent='    ',
+                    subsequent_indent='    ',
                     width=66)
 
                 output = output + '\n\n'
@@ -634,7 +635,7 @@ class DataArchive(object):
 
             outputs.append(output)
 
-        click.echo_via_pager('\n\n'.join(reversed(outputs)))
+        click.echo_via_pager('\n\n'.join(reversed(outputs)) + '\n')
 
     def delete(self):
         '''

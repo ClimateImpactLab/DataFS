@@ -169,6 +169,59 @@ class DataAPI(object):
             default_version=default_version,
             **res)
 
+    def listdir(self, location, authority_name=None):
+        '''
+        List archive path components at a given location
+
+        Parameters
+        ----------
+
+        location : str
+
+            Path of the "directory" to search
+
+            `location` can be a path relative to the authority root (e.g
+            `/MyFiles/Data`) or can include authority as a protocol (e.g.
+            `my_auth://MyFiles/Data`). If the authority is specified as a
+            protocol, the `authority_name` argument is ignored.
+
+        authority_name : str
+
+            Name of the authority to search (optional)
+
+            If no authority is specified, the default authority is used (if
+            only one authority is attached or if
+            :py:attr:`DefaultAuthorityName` is assigned).
+
+
+        Returns
+        -------
+
+        list
+
+            Archive path components that exist at the given "directory"
+            location on the specified authority
+
+        Raises
+        ------
+
+        ValueError
+
+            A ValueError is raised if the authority is ambiguous or invalid
+
+
+        '''
+
+        loc_parser = re.match(r'((?P<auth>\w+)://|/|)(?P<path>.*)$', location)
+
+        authority_name = loc_parser.group('auth')
+        location = loc_parser.group('path')
+
+        if authority_name is None:
+            authority_name = self.default_authority_name
+
+        return self._authorities[authority_name].fs.listdir(location)
+
     def filter(self, pattern=None, engine='path', prefix=None):
         '''
 

@@ -173,6 +173,14 @@ class DataAPI(object):
         '''
         List archive path components at a given location
 
+        .. Note ::
+
+            When using listdir on versioned archives, listdir will provide the
+            version numbers when a full archive path is supplied as the
+            location argument. This is because DataFS stores the archive path
+            as a directory and the versions as the actual files when versioning
+            is on.
+
         Parameters
         ----------
 

@@ -2,6 +2,10 @@
 DataFS Data Management System
 =========================================
 
+.. image:: https://badges.gitter.im/DataFS/Lobby.svg
+   :alt: Join the chat at https://gitter.im/DataFS/Lobby
+   :target: https://gitter.im/DataFS/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 .. image:: https://img.shields.io/pypi/v/datafs.svg
         :target: https://pypi.python.org/pypi/datafs
 

@@ -2,10 +2,6 @@
 DataFS Data Management System
 =========================================
 
-.. image:: https://badges.gitter.im/DataFS/Lobby.svg
-   :alt: Join the chat at https://gitter.im/DataFS/Lobby
-   :target: https://gitter.im/DataFS/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-
 .. image:: https://img.shields.io/pypi/v/datafs.svg
         :target: https://pypi.python.org/pypi/datafs
 
@@ -26,6 +22,10 @@ DataFS Data Management System
 .. image:: https://api.codacy.com/project/badge/Grade/5e095453424840e092e71c42b8ad8b52
         :alt: Codacy Badge
         :target: https://www.codacy.com/app/delgadom/DataFS?utm_source=github.com&utm_medium=referral&utm_content=ClimateImpactLab/DataFS&utm_campaign=badger
+
+.. image:: https://badges.gitter.im/DataFS/Lobby.svg
+   :alt: Join the chat at https://gitter.im/DataFS/Lobby
+   :target: https://gitter.im/DataFS/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 
 DataFS is a package manager for data. It manages file versions, dependencies, and metadata for individual use or large organizations.

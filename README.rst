@@ -15,8 +15,8 @@ DataFS Data Management System
         :target: https://datafs.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://pyup.io/repos/github/climateimpactlab/datafs/shield.svg
-        :target: https://pyup.io/repos/github/climateimpactlab/datafs/
+.. image:: https://pyup.io/repos/github/ClimateImpactLab/DataFS/shield.svg
+        :target: https://pyup.io/repos/github/ClimateImpactLab/DataFS/
         :alt: Updates
 
 .. image:: https://api.codacy.com/project/badge/Grade/5e095453424840e092e71c42b8ad8b52

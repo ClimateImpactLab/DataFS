@@ -23,6 +23,10 @@ DataFS Data Management System
         :alt: Codacy Badge
         :target: https://www.codacy.com/app/delgadom/DataFS?utm_source=github.com&utm_medium=referral&utm_content=ClimateImpactLab/DataFS&utm_campaign=badger
 
+.. image:: https://badges.gitter.im/DataFS/Lobby.svg
+   :alt: Join the chat at https://gitter.im/DataFS/Lobby
+   :target: https://gitter.im/DataFS/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 
 DataFS is a package manager for data. It manages file versions, dependencies, and metadata for individual use or large organizations.
 

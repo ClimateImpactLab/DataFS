@@ -5,6 +5,7 @@ import os
 from click.testing import CliRunner
 import pytest
 import ast
+import re
 
 
 @pytest.yield_fixture(scope='module')
@@ -33,7 +34,7 @@ def manager_table():
 
 
 @pytest.yield_fixture(scope='module')
-def test_config(manager_table, temp_dir_mod, temp_file):
+def cli_config(manager_table, temp_dir_mod, temp_file):
     my_test_yaml = r'''
 default-profile: myapi
 profiles:
@@ -66,7 +67,7 @@ profiles:
 
 
 @pytest.yield_fixture(scope='module')
-def preloaded_config(test_config):
+def preloaded_config(cli_config):
     '''
     Prepare a manager/auth config with 3 archives, each having 3 versions
 
@@ -77,7 +78,7 @@ def preloaded_config(test_config):
 
     '''
 
-    profile, temp_file = test_config
+    profile, temp_file = cli_config
 
     api = get_api(profile=profile, config_file=temp_file)
 
@@ -87,13 +88,13 @@ def preloaded_config(test_config):
     arch2 = api.create('req_2')
     arch3 = api.create('req_3')
 
-    with arch1.open('w+', bumpversion='minor') as f:
+    with arch1.open('w+', bumpversion='minor', message='bumping to 0.1') as f:
         f.write(u'this is archive req_1 version 0.1')
 
-    with arch1.open('w+', bumpversion='major') as f:
+    with arch1.open('w+', bumpversion='major', message='bumping to 1.0') as f:
         f.write(u'this is archive req_1 version 1.0')
 
-    with arch1.open('w+', bumpversion='minor') as f:
+    with arch1.open('w+', bumpversion='minor', message='bumping to 1.1') as f:
         f.write(u'this is archive req_1 version 1.1')
 
     arch1_versions = arch1.get_versions()
@@ -129,6 +130,22 @@ def preloaded_config(test_config):
     assert '1.1a1' in arch3_versions
     assert '1.1' in arch3_versions
 
+    # Set up an unversioned archive with multiple versions
+
+    arch_uver = api.create('uver1', versioned=False)
+
+    with arch_uver.open('w+', message='bumping to 0.1') as f:
+        f.write(u'this is archive uver1 version 0.1')
+
+    with arch_uver.open('w+', message='bumping to 1.0') as f:
+        f.write(u'this is archive uver1 version 1.0')
+
+    with arch_uver.open('w+', message='bumping to 1.1') as f:
+        f.write(u'this is archive uver1 version 1.1')
+
+    arch_uver_versions = arch_uver.get_history()
+    assert len(arch_uver_versions) == 3
+
     try:
 
         yield profile, temp_file
@@ -138,11 +155,13 @@ def preloaded_config(test_config):
         arch1.delete()
         arch2.delete()
         arch3.delete()
+        arch_uver.delete()
 
 
-def test_cli_local(test_config):
+@pytest.mark.cli
+def test_cli_local(cli_config):
 
-    profile, temp_file = test_config
+    profile, temp_file = cli_config
 
     prefix = ['--config-file', temp_file, '--profile', 'myapi']
 
@@ -165,9 +184,8 @@ def test_cli_local(test_config):
     assert result.exit_code == 0
     assert 'my_first_archive' in result.output.strip().split('\n')
 
-    assert len(result.output.strip().split('\n')) == 1
-    # test the actual creation of the object from the api side
-    assert len(list(api2.filter())) == 1
+    assert len(result.output.strip().split('\n')) == len(list(api2.filter()))
+
     archive = api2.get_archive('my_first_archive')
     assert archive.archive_name == 'my_first_archive'
 
@@ -297,9 +315,10 @@ def test_cli_local(test_config):
     assert len(list(api2.filter())) == 0
 
 
-def test_cli_unversioned(test_config):
+@pytest.mark.cli
+def test_cli_unversioned(cli_config):
 
-    profile, temp_file = test_config
+    profile, temp_file = cli_config
 
     prefix = ['--config-file', temp_file, '--profile', 'myapi']
 
@@ -400,6 +419,7 @@ def test_cli_unversioned(test_config):
     assert len(list(api2.filter())) == 0
 
 
+@pytest.mark.cli
 def test_specified_requirements(preloaded_config):
     '''
     Test download commands with a mix of requirements file, explicit, and
@@ -460,6 +480,7 @@ def test_specified_requirements(preloaded_config):
             assert f.read() == 'this is archive req_3 version 1.1'
 
 
+@pytest.mark.cli
 def test_versions(preloaded_config):
     '''
     Test "versions" CLI command with preloaded archive/config file
@@ -488,6 +509,7 @@ def test_versions(preloaded_config):
         assert ['1.0', '1.1a1', '1.1'] == versions
 
 
+@pytest.mark.cli
 def test_history(preloaded_config):
     '''
     Test "history" CLI command with preloaded archive/config file
@@ -515,6 +537,7 @@ def test_history(preloaded_config):
         assert len(history) == 3
 
 
+@pytest.mark.cli
 def test_alternate_versions(preloaded_config):
     '''
     Assert requirements file can be superceeded by explicit version
@@ -574,6 +597,7 @@ def test_alternate_versions(preloaded_config):
             assert f.read() == 'this is archive req_3 version 1.1a1'
 
 
+@pytest.mark.cli
 def test_kwarg_handling(preloaded_config):
     '''
     Assert errors raised when attempting to pull invalid versions
@@ -616,6 +640,7 @@ def test_kwarg_handling(preloaded_config):
     assert result.exception
 
 
+@pytest.mark.cli
 def test_multiple_search(preloaded_config):
     '''
     Assert errors raised when attempting to pull invalid versions
@@ -637,7 +662,7 @@ def test_multiple_search(preloaded_config):
         cli,
         prefix + ['search'])
 
-    assert len(result.output.strip().split('\n')) == 3
+    assert len(result.output.strip().split('\n')) == 4
 
     # Assert error raised on mid-kwarg arg
 
@@ -645,7 +670,7 @@ def test_multiple_search(preloaded_config):
         cli,
         prefix + ['filter'])
 
-    assert len(result.output.strip().split('\n')) == 3
+    assert len(result.output.strip().split('\n')) == 4
 
     # Assert error raised on flag
 
@@ -656,6 +681,7 @@ def test_multiple_search(preloaded_config):
     assert len(result.output.strip().split('\n')) == 2
 
 
+@pytest.mark.cli
 def test_incorrect_versions(preloaded_config):
     '''
     Assert errors raised when attempting to pull invalid versions
@@ -706,12 +732,13 @@ def test_incorrect_versions(preloaded_config):
         assert result.exception
 
 
-def test_dependency_parsing(test_config):
+@pytest.mark.cli
+def test_dependency_parsing(cli_config):
     '''
     Update archive dependencies across versions from the CLI
     '''
 
-    profile, temp_file = test_config
+    profile, temp_file = cli_config
 
     api = get_api(profile=profile, config_file=temp_file)
 
@@ -825,12 +852,13 @@ def test_dependency_parsing(test_config):
     api.delete_archive('dep_archive')
 
 
-def test_update_metadata(test_config, monkeypatch):
+@pytest.mark.cli
+def test_update_metadata(cli_config, monkeypatch):
     '''
     Update archive metadata with a description from the CLI
     '''
 
-    profile, temp_file = test_config
+    profile, temp_file = cli_config
 
     api = get_api(profile=profile, config_file=temp_file)
 
@@ -886,6 +914,7 @@ def test_update_metadata(test_config, monkeypatch):
     arch1.delete()
 
 
+@pytest.mark.cli
 def test_sufficient_configuration(manager_with_spec, tempdir):
     '''
     Test writing an api with required user config to a config file and then
@@ -913,6 +942,7 @@ def test_sufficient_configuration(manager_with_spec, tempdir):
     assert result.exit_code == 0
 
 
+@pytest.mark.cli
 def test_insufficient_configuration(manager_with_spec, tempdir):
     '''
     Test writing an api with required user config to a config file and then
@@ -938,6 +968,7 @@ def test_insufficient_configuration(manager_with_spec, tempdir):
     assert result.exception
 
 
+@pytest.mark.cli
 def test_manual_configuration(manager_with_spec, tempdir):
     '''
     Test writing an api with required user config to a config file and then
@@ -967,6 +998,7 @@ def test_manual_configuration(manager_with_spec, tempdir):
     assert result.exit_code == 0
 
 
+@pytest.mark.cli
 def test_helper_configuration(manager_with_spec, tempdir, monkeypatch):
     '''
     Test writing an api with required user config to a config file and then
@@ -1005,3 +1037,115 @@ def test_helper_configuration(manager_with_spec, tempdir, monkeypatch):
 
     api2 = get_api(config_file=config_file, profile='conftest')
     assert api2.user_config['contact'] == "my_email@domain.com"
+
+
+@pytest.mark.logging
+@pytest.mark.cli
+def test_versioned_logging(preloaded_config):
+    '''
+    Test logging cli features
+    '''
+
+    profile, temp_file = preloaded_config
+
+    # Create a requirements file and
+
+    runner = CliRunner()
+
+    prefix = [
+        '--config-file', '{}'.format(temp_file),
+        '--profile', 'myapi']
+
+    with runner.isolated_filesystem():
+
+        # Download req_1 with version from requirements file
+
+        result = runner.invoke(
+            cli,
+            prefix + ['log', 'req_1'])
+
+    assert result.exit_code == 0
+
+    log = result.output.strip()
+
+    verstr_matcher = r'(version [0-9]+(\.[0-9]+){1,2} \(md5 \w+\))'
+
+    versions = re.finditer(
+        (r'(?P<ver>' +
+            verstr_matcher +
+            r'\n([^\n]*(\n(?!' +
+            verstr_matcher + r'))?)+)'),
+        log)
+
+    api = get_api(config_file=temp_file, profile='myapi')
+
+    arch = api.get_archive('req_1')
+
+    hist = arch.get_history()
+
+    for i, vermatch in enumerate(reversed(list(versions))):
+        verstr = vermatch.group('ver')
+        verhist = hist[i]
+
+        assert verhist['checksum'] in verstr
+        assert verhist['message'] in verstr
+
+        for attr, val in verhist['user_config'].items():
+            assert attr in verstr
+            assert val in verstr
+
+
+@pytest.mark.logging
+@pytest.mark.cli
+def test_unversioned_logging(preloaded_config):
+    '''
+    Test logging cli features
+    '''
+
+    profile, temp_file = preloaded_config
+
+    # Create a requirements file and
+
+    runner = CliRunner()
+
+    prefix = [
+        '--config-file', '{}'.format(temp_file),
+        '--profile', 'myapi']
+
+    with runner.isolated_filesystem():
+
+        # Download uver1 with version from requirements file
+
+        result = runner.invoke(
+            cli,
+            prefix + ['log', 'uver1'])
+
+    assert result.exit_code == 0
+
+    log = result.output.strip()
+
+    verstr_matcher = r'(update [0-9]+ \(md5 \w+\))'
+
+    versions = re.finditer(
+        (r'(?P<ver>' +
+            verstr_matcher +
+            r'\n([^\n]*(\n(?!' +
+            verstr_matcher + r'))?)+)'),
+        log)
+
+    api = get_api(config_file=temp_file, profile='myapi')
+
+    arch = api.get_archive('uver1')
+
+    hist = arch.get_history()
+
+    for i, vermatch in enumerate(reversed(list(versions))):
+        verstr = vermatch.group('ver')
+        verhist = hist[i]
+
+        assert verhist['checksum'] in verstr
+        assert verhist['message'] in verstr
+
+        for attr, val in verhist['user_config'].items():
+            assert attr in verstr
+            assert val in verstr

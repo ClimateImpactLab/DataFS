@@ -159,11 +159,12 @@ class MongoDBManager(BaseDataManager):
 
         return res
 
-    def _batch_get_archive_listing(self, archive_name):
+    def _batch_get_archive_listing(self, archive_names):
         '''
         '''
 
-        res = self.collection.find({'_id': archive_name})
+        res = self.collection.find(
+            {'$or': [{'_id': a} for a in list(archive_names)]})
 
         if res is None:
             raise KeyError

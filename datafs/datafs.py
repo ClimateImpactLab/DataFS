@@ -230,6 +230,7 @@ def create(
 @click.option('--bumpversion', default='patch')
 @click.option('--prerelease', default=None)
 @click.option('--dependency', multiple=True)
+@click.option('-m', '--message', default=None)
 @click.option('--string', is_flag=True)
 @click.argument('file', default=None, required=False)
 @click.pass_context
@@ -239,6 +240,7 @@ def update(
         bumpversion='patch',
         prerelease=None,
         dependency=None,
+        message=None,
         string=False,
         file=None):
     '''
@@ -258,11 +260,12 @@ def update(
     if string:
 
         with var.open(
-            'w+',
-            bumpversion=bumpversion,
-            prerelease=prerelease,
-            dependencies=dependencies_dict,
-                metadata=kwargs) as f:
+                'w+',
+                bumpversion=bumpversion,
+                prerelease=prerelease,
+                dependencies=dependencies_dict,
+                metadata=kwargs,
+                message=message) as f:
 
             if file is None:
                 for line in sys.stdin:
@@ -279,7 +282,8 @@ def update(
             bumpversion=bumpversion,
             prerelease=prerelease,
             dependencies=dependencies_dict,
-            metadata=kwargs)
+            metadata=kwargs,
+            message=message)
 
     new_version = var.get_latest_version()
 
@@ -457,6 +461,18 @@ def cat(ctx, archive_name, version):
     with var.open('r', version=version) as f:
         for chunk in iter(lambda: f.read(1024 * 1024), ''):
             click.echo(chunk)
+
+
+@cli.command(short_help='Get the version log for an archive')
+@click.argument('archive_name')
+@click.pass_context
+def log(ctx, archive_name):
+    '''
+    Get the version log for an archive
+    '''
+
+    _generate_api(ctx)
+    ctx.obj.api.get_archive(archive_name).log()
 
 
 @cli.command(short_help='Get an archive\'s metadata')

@@ -15,9 +15,6 @@ description = __doc__
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
-
 requirements_install = [
     'click>=6.0',
     'PyYAML>=3.0',
@@ -51,8 +48,7 @@ setup(
     name='datafs',
     version='0.6.9',
     description=description,
-
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     author="Climate Impact Lab",
     url='https://github.com/ClimateImpactLab/datafs',
     packages=find_packages(

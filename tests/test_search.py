@@ -27,6 +27,7 @@ def test_config(api1_module, local_auth_module, temp_dir_mod):
 
 
 @pytest.mark.search
+@pytest.mark.cli
 def test_cli_search(test_config, monkeypatch):
 
     profile, config_file = test_config
@@ -60,6 +61,7 @@ def test_cli_search(test_config, monkeypatch):
 
 
 @pytest.mark.search
+@pytest.mark.cli
 def test_cli_tagging(test_config):
 
     profile, config_file = test_config

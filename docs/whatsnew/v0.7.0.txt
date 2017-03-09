@@ -1,0 +1,78 @@
+.. _whatsnew_0_7_0:
+
+
+v0.7.0 (latest)
+--------------------------
+
+New features
+~~~~~~~~~~~~
+
+  - :py:meth:`~datafs.core.data_api.DataAPI.listdir` method allowing
+    listing archive path components given a prefix
+  - new batch get archive method 
+    :py:meth:`~datafs.core.data_api.DataAPI.batch_get_archive`
+
+
+Using the listdir search method
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+List archive path components given the path of the "directory" to search
+
+.. Note ::
+
+    When using listdir on versioned archives, listdir will provide the
+    version numbers when a full archive path is supplied as the
+    location argument. This is because DataFS stores the archive path
+    as a directory and the versions as the actual files when versioning
+    is on.
+
+Usage
+.....
+
+.. code-block:: python
+
+    >>> api.listdir('s3://ACP/climate/')
+    ['gcm-modelweights.csv', 'hddcdd', 'smme']
+
+.. code-block:: bash
+
+    $ datafs listdir s3://ACP/climate/
+    gcm-modelweights.csv
+    hddcdd
+    smme
+
+
+Bulk archive retrieval with `batch_get_archive`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Batch version of :py:meth:`~datafs.core.data_api.DataAPI.get_archive`. Accepts
+an iterable of archive names to retrieve and optional default versions.
+
+Returns a dict of :py:class:`~datafs.core.data_archive.DataArchive` objects,
+indexed by archive name. If an archive is not found, it is omitted 
+(`batch_get_archive` does not raise a ``KeyError`` on invalid archive names).
+
+Example
+.......
+
+.. code-block:: python
+
+    >>> api.batch_get_archive(api.search())
+    {arch1: <DataArchive s3://arch1>, arch2: <DataArchive s3://arch2>, ...}
+
+``batch_get_archive`` has no equivalent on the Command Line Interface.
+
+
+Backwards incompatible API changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Performance Improvements
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Bug Fixes
+~~~~~~~~~
+
+
+See the issue tracker on GitHub for a complete list.

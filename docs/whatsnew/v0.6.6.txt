@@ -1,0 +1,23 @@
+.. _whatsnew_0_6_6:
+
+
+v0.6.6 (January 20, 2017)
+--------------------------
+
+New features
+~~~~~~~~~~~~
+
+  - Introduces search features in command line:
+
+    .. code-block:: bash
+
+        datafs search
+
+    and the API:
+
+    .. code-block:: python
+
+        api.search(query)
+
+
+See the issue tracker on GitHub for a complete list.

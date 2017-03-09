@@ -490,7 +490,8 @@ class BaseDataManager(object):
 
         return self._format_archive_listing_as_constructor_spec(res)
 
-    def _format_archive_listing_as_constructor_spec(self, res):
+    @staticmethod
+    def _format_archive_listing_as_constructor_spec(res):
 
         res['archive_name'] = res.pop('_id')
 

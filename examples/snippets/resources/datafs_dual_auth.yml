@@ -5,8 +5,11 @@ profiles:
             class: MongoDBManager
             kwargs:
                 database_name: 'MyDatabase'
-                table_name: 'DataFiles'
+                table_name: 'OtherFiles'
         authorities:
             local:
                 service: OSFS
-                args: [tests/test1]
+                args: [tests/test2]
+            my_authority:
+                service: OSFS
+                args: [tests/test3]

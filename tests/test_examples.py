@@ -93,31 +93,36 @@ def test_preconfigured():
 
 
 @pytest.mark.examples
-def test_docs_pythonapi_creating_archives():
+@pytest.mark.python_snippets
+def test_docs_pythonapi_creating_archives(example_snippet_working_dirs):
     failures, _ = doctest.testmod(pythonapi_creating_archives, report=True)
     assert failures == 0
 
 
 @pytest.mark.examples
-def test_docs_pythonapi_dependencies():
+@pytest.mark.python_snippets
+def test_docs_pythonapi_dependencies(example_snippet_working_dirs):
     failures, _ = doctest.testmod(pythonapi_dependencies, report=True)
     assert failures == 0
 
 
 @pytest.mark.examples
-def test_docs_pythonapi_io():
-    if has_special_dependencies: 
+@pytest.mark.python_snippets
+def test_docs_pythonapi_io(example_snippet_working_dirs):
+    if has_special_dependencies:
         failures, _ = doctest.testmod(pythonapi_io, report=True)
         assert failures == 0
 
 
 @pytest.mark.examples
-def test_docs_pythonapi_metadata():
+@pytest.mark.python_snippets
+def test_docs_pythonapi_metadata(example_snippet_working_dirs):
     failures, _ = doctest.testmod(pythonapi_metadata, report=True)
     assert failures == 0
 
 
 @pytest.mark.examples
-def test_docs_pythonapi_versioning():
+@pytest.mark.python_snippets
+def test_docs_pythonapi_versioning(example_snippet_working_dirs):
     failures, _ = doctest.testmod(pythonapi_versioning, report=True)
     assert failures == 0

@@ -1,3 +1,6 @@
+click==6.7
+PyYAML==3.12
+fs==0.5.5a1
 pip==9.0.1
 wheel==0.29.0
 flake8==3.3.0
@@ -13,3 +16,4 @@ boto3==1.4.4
 bumpversion==0.5.3
 watchdog==0.8.3
 cryptography==1.7.2
+clatter==0.0.4

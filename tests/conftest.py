@@ -15,8 +15,26 @@ from datafs import DataAPI
 from datafs._compat import string_types
 from datafs.core import data_file
 from tests.resources import prep_manager, _close
+import shutil
 
 from contextlib import contextmanager
+
+
+@pytest.yield_fixture(scope='session')
+def example_snippet_working_dirs():
+
+    test_dirs = ['tests/test1', 'tests/test2', 'tests/test3']
+
+    for td in test_dirs:
+        if not os.path.isdir(td):
+            os.makedirs(td)
+
+    try:
+        yield
+    finally:
+        for td in test_dirs:
+            if os.path.isdir(td):
+                shutil.rmtree(td)
 
 
 def pytest_generate_tests(metafunc):

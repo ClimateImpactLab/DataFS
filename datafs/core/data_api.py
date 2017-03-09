@@ -216,7 +216,7 @@ class DataAPI(object):
 
         Returns
         -------
-        
+
         archives : list
 
             List of :py:class:`~datafs.core.data_archive.DataArchive` objects.

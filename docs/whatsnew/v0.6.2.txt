@@ -1,0 +1,23 @@
+.. _whatsnew_0_6_2:
+
+
+v0.6.2 ()
+--------------------------
+
+New features
+~~~~~~~~~~~~
+
+
+Backwards incompatible API changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Performance Improvements
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Bug Fixes
+~~~~~~~~~
+
+
+See the issue tracker on GitHub for a complete list.

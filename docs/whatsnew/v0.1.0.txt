@@ -1,0 +1,23 @@
+.. _whatsnew_0_1_0:
+
+
+v0.1.0 ()
+--------------------------
+
+New features
+~~~~~~~~~~~~
+
+
+Backwards incompatible API changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Performance Improvements
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Bug Fixes
+~~~~~~~~~
+
+
+See the issue tracker on GitHub for a complete list.

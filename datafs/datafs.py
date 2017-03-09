@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import
 
+from datafs import __version__
 from datafs.config.config_file import ConfigFile
 from datafs.config.helpers import (
     get_api,
@@ -108,6 +109,7 @@ class _DataFSInterface(object):
     type=str,
     default=None,
     help='Specify a config profile')
+@click.version_option(version=__version__, prog_name='datafs')
 @click.pass_context
 def cli(
         ctx,
@@ -187,12 +189,21 @@ def configure(ctx, helper, edit):
 @click.argument('archive_name')
 @click.option('--authority_name', default=None)
 @click.option('--versioned/--not-versioned', default=True)
+@click.option('-t', '--tag', multiple=True)
 @click.option('--helper', is_flag=True)
 @click.pass_context
-def create(ctx, archive_name, authority_name, versioned=True, helper=False):
+def create(
+        ctx,
+        archive_name,
+        authority_name,
+        versioned=True,
+        tag=None,
+        helper=False):
     '''
     Create an archive
     '''
+
+    tags = list(tag)
 
     _generate_api(ctx)
     args, kwargs = _parse_args_and_kwargs(ctx.args)
@@ -203,6 +214,7 @@ def create(ctx, archive_name, authority_name, versioned=True, helper=False):
         authority_name=authority_name,
         versioned=versioned,
         metadata=kwargs,
+        tags=tags,
         helper=helper)
 
     verstring = 'versioned archive' if versioned else 'archive'
@@ -218,6 +230,7 @@ def create(ctx, archive_name, authority_name, versioned=True, helper=False):
 @click.option('--bumpversion', default='patch')
 @click.option('--prerelease', default=None)
 @click.option('--dependency', multiple=True)
+@click.option('-m', '--message', default=None)
 @click.option('--string', is_flag=True)
 @click.argument('file', default=None, required=False)
 @click.pass_context
@@ -227,6 +240,7 @@ def update(
         bumpversion='patch',
         prerelease=None,
         dependency=None,
+        message=None,
         string=False,
         file=None):
     '''
@@ -246,11 +260,12 @@ def update(
     if string:
 
         with var.open(
-            'w+',
-            bumpversion=bumpversion,
-            prerelease=prerelease,
-            dependencies=dependencies_dict,
-                metadata=kwargs) as f:
+                'w+',
+                bumpversion=bumpversion,
+                prerelease=prerelease,
+                dependencies=dependencies_dict,
+                metadata=kwargs,
+                message=message) as f:
 
             if file is None:
                 for line in sys.stdin:
@@ -267,7 +282,8 @@ def update(
             bumpversion=bumpversion,
             prerelease=prerelease,
             dependencies=dependencies_dict,
-            metadata=kwargs)
+            metadata=kwargs,
+            message=message)
 
     new_version = var.get_latest_version()
 
@@ -358,6 +374,54 @@ def get_dependencies(ctx, archive_name, version):
     click.echo('\n'.join(deps))
 
 
+@cli.command(short_help='Add tags to an archive')
+@click.argument('archive_name')
+@click.argument('tags', nargs=-1)
+@click.pass_context
+def add_tags(ctx, archive_name, tags):
+    '''
+    Add tags to an archive
+    '''
+
+    _generate_api(ctx)
+
+    var = ctx.obj.api.get_archive(archive_name)
+
+    var.add_tags(*tags)
+
+
+@cli.command(short_help='Remove tags from an archive')
+@click.argument('archive_name')
+@click.argument('tags', nargs=-1)
+@click.pass_context
+def delete_tags(ctx, archive_name, tags):
+    '''
+    Remove tags from an archive
+    '''
+
+    _generate_api(ctx)
+
+    var = ctx.obj.api.get_archive(archive_name)
+
+    var.delete_tags(*tags)
+
+
+@cli.command(short_help='Print tags assigned to an archive')
+@click.argument('archive_name')
+@click.pass_context
+def get_tags(ctx, archive_name):
+    '''
+    Print tags assigned to an archive
+    '''
+
+    _generate_api(ctx)
+
+    var = ctx.obj.api.get_archive(archive_name)
+
+    click.echo(' '.join(var.get_tags()), nl=False)
+    print('')
+
+
 @cli.command(short_help='Download an archive')
 @click.argument('archive_name')
 @click.argument('filepath')
@@ -397,6 +461,18 @@ def cat(ctx, archive_name, version):
     with var.open('r', version=version) as f:
         for chunk in iter(lambda: f.read(1024 * 1024), ''):
             click.echo(chunk)
+
+
+@cli.command(short_help='Get the version log for an archive')
+@click.argument('archive_name')
+@click.pass_context
+def log(ctx, archive_name):
+    '''
+    Get the version log for an archive
+    '''
+
+    _generate_api(ctx)
+    ctx.obj.api.get_archive(archive_name).log()
 
 
 @cli.command(short_help='Get an archive\'s metadata')
@@ -473,24 +549,88 @@ cli.add_command(filter_archives, name='filter')
 
 
 @cli.command(short_help='List all archives matching tag search criteria')
-@click.argument('query_tags', nargs=-1)
+@click.argument('tags', nargs=-1)
 @click.option(
     '--prefix',
     default=None,
     help='filter archives based on initial character pattern')
 @click.pass_context
-def search(ctx, query_tags, prefix=None):
+def search(ctx, tags, prefix=None):
     '''
     List all archives matching tag search criteria
     '''
 
     _generate_api(ctx)
 
-    assert isinstance(query_tags, tuple)
-
-    for i, match in enumerate(ctx.obj.api.search(*query_tags, prefix=prefix)):
+    for i, match in enumerate(ctx.obj.api.search(*tags, prefix=prefix)):
 
         click.echo(match, nl=False)
+        print('')
+
+
+@cli.command(short_help='List archive path components at a given location')
+@click.argument('location')
+@click.option(
+    '-a',
+    '--authority_name',
+    default=None,
+    help='Name of the authority to search')
+@click.pass_context
+def listdir(ctx, location, authority_name=None):
+    '''
+    List archive path components at a given location
+
+    Note:
+
+    When using listdir on versioned archives, listdir will provide the
+    version numbers when a full archive path is supplied as the location
+    argument. This is because DataFS stores the archive path as a directory
+    and the versions as the actual files when versioning is on.
+
+    Parameters
+    ----------
+
+    location : str
+
+        Path of the "directory" to search
+
+        `location` can be a path relative to the authority root (e.g
+        `/MyFiles/Data`) or can include authority as a protocol (e.g.
+        `my_auth://MyFiles/Data`). If the authority is specified as a
+        protocol, the `authority_name` argument is ignored.
+
+    authority_name : str
+
+        Name of the authority to search (optional)
+
+        If no authority is specified, the default authority is used (if
+        only one authority is attached or if
+        :py:attr:`DefaultAuthorityName` is assigned).
+
+
+    Returns
+    -------
+
+    list
+
+        Archive path components that exist at the given "directory"
+        location on the specified authority
+
+    Raises
+    ------
+
+    ValueError
+
+        A ValueError is raised if the authority is ambiguous or invalid
+    '''
+
+    _generate_api(ctx)
+
+    for path_component in ctx.obj.api.listdir(
+            location,
+            authority_name=authority_name):
+
+        click.echo(path_component, nl=False)
         print('')
 
 

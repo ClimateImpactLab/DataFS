@@ -12,7 +12,7 @@ env:
     - DATAFS_TEST_ENV=xarray
 
 matrix:
-  allow_failures:
+  exclude:
     - python: pypy
       env: DATAFS_TEST_ENV=xarray
 

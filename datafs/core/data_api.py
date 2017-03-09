@@ -4,9 +4,6 @@ from datafs.services.service import DataService
 from datafs.core.data_archive import DataArchive
 from datafs._compat import open_filelike
 
-
-import fs.path
-
 import hashlib
 import fnmatch
 import re
@@ -103,7 +100,6 @@ class DataAPI(object):
             self,
             archive_name,
             authority_name=None,
-            archive_path=None,
             versioned=True,
             raise_on_err=True,
             metadata=None,
@@ -120,9 +116,6 @@ class DataAPI(object):
 
         authority_name : str
             Name of the data service to use as the archive's data authority
-
-        archive_path : str
-            Path to use on the data services (optional)
 
         versioned : bool
             If true, store all versions with explicit version numbers (defualt)
@@ -145,8 +138,7 @@ class DataAPI(object):
         if authority_name not in self._authorities:
             raise KeyError('Authority "{}" not found'.format(authority_name))
 
-        if archive_path is None:
-            archive_path = self.create_archive_path(archive_name)
+        self._validate_archive_name(archive_name)
 
         if metadata is None:
             metadata = {}
@@ -154,7 +146,7 @@ class DataAPI(object):
         res = self.manager.create_archive(
             archive_name,
             authority_name,
-            archive_path=archive_path,
+            archive_path=archive_name,
             versioned=versioned,
             raise_on_err=raise_on_err,
             metadata=metadata,
@@ -167,6 +159,35 @@ class DataAPI(object):
             **res)
 
     def get_archive(self, archive_name, default_version=None):
+        '''
+        Retrieve a data archive
+
+        Parameters
+        ----------
+
+        archive_name : str
+
+            Name of the archive to retrieve
+
+        default_version : version
+
+            str or :py:class:`~distutils.StrictVersion` giving the default
+            version number to be used on read operations
+
+        Returns
+        -------
+        archive : object
+
+            New :py:class:`~datafs.core.data_archive.DataArchive` object
+
+        Raises
+        ------
+
+        KeyError :
+
+            A KeyError is raised when the ``archive_name`` is not found
+
+        '''
 
         res = self.manager.get_archive(archive_name)
 
@@ -176,6 +197,110 @@ class DataAPI(object):
             api=self,
             default_version=default_version,
             **res)
+
+    def batch_get_archive(self, archive_names, default_versions=None):
+        '''
+        Batch version of :py:meth:`~DataAPI.get_archive`
+
+        Parameters
+        ----------
+
+        archive_names : list
+
+            Iterable of archive names to retrieve
+
+        default_versions : version or dict
+
+            Default versions to assign to each returned archive. If
+            ``default_versions`` is a dict, each ``archive_name``
+
+        Returns
+        -------
+
+        archives : list
+
+            List of :py:class:`~datafs.core.data_archive.DataArchive` objects.
+            If an archive is not found, it is omitted (`batch_get_archive` does
+            not raise a ``KeyError`` on invalid archive names).
+
+        '''
+
+        responses = self.manager.batch_get_archive(archive_names)
+
+        archives = {}
+
+        for res in responses:
+            archive_name = res['archive_name']
+            default_version = self._default_versions.get(archive_name, None)
+
+            archive = self._ArchiveConstructor(
+                api=self,
+                default_version=default_version,
+                **res)
+
+            archives[archive_name] = archive
+
+        return archives
+
+    def listdir(self, location, authority_name=None):
+        '''
+        List archive path components at a given location
+
+        .. Note ::
+
+            When using listdir on versioned archives, listdir will provide the
+            version numbers when a full archive path is supplied as the
+            location argument. This is because DataFS stores the archive path
+            as a directory and the versions as the actual files when versioning
+            is on.
+
+        Parameters
+        ----------
+
+        location : str
+
+            Path of the "directory" to search
+
+            `location` can be a path relative to the authority root (e.g
+            `/MyFiles/Data`) or can include authority as a protocol (e.g.
+            `my_auth://MyFiles/Data`). If the authority is specified as a
+            protocol, the `authority_name` argument is ignored.
+
+        authority_name : str
+
+            Name of the authority to search (optional)
+
+            If no authority is specified, the default authority is used (if
+            only one authority is attached or if
+            :py:attr:`DefaultAuthorityName` is assigned).
+
+        Returns
+        -------
+
+        list
+
+            Archive path components that exist at the given "directory"
+            location on the specified authority
+
+        Raises
+        ------
+
+        ValueError
+
+            A ValueError is raised if the authority is ambiguous or invalid
+
+
+        '''
+
+        loc_parser = re.match(r'((?P<auth>\w+)://|/|)(?P<path>.*)$', location)
+
+        authority_name = loc_parser.group('auth')
+        location = loc_parser.group('path')
+
+        if authority_name is None:
+            authority_name = self.default_authority_name
+
+        return self._authorities[authority_name].fs.listdir(location)
 
     def filter(self, pattern=None, engine='path', prefix=None):
         '''
@@ -256,10 +381,9 @@ class DataAPI(object):
 
         return self.manager.search(query, begins_with=prefix)
 
-    @classmethod
-    def create_archive_path(cls, archive_name):
+    def _validate_archive_name(self, archive_name):
         '''
-        Utility function for creating and checking internal service paths
+        Utility function for creating and validating archive names
 
         Parameters
         ----------
@@ -272,43 +396,13 @@ class DataAPI(object):
 
         archive_path : str
             Internal path used by services to reference archive data
-
-        Default: split archive name on underscores
-
-        Example
-        -------
-
-        .. code-block:: python
-
-            >>> print(DataAPI.create_archive_path(
-            ...     'pictures_2016_may_vegas_wedding.png'))
-            pictures/2016/may/vegas/wedding.png
-
-        *Overloading*
-
-        Overload this function to change default internal service path format
-        and to enforce certain requirements on paths:
-
-        .. code-block:: python
-
-            >>> class MyAPI(DataAPI):
-            ...     @classmethod
-            ...     def create_archive_path(cls, archive_name):
-            ...         if '_' in archive_name:
-            ...             raise ValueError('No underscores allowed!')
-            ...         return archive_name
-            ...
-            >>> api = MyAPI
-            >>> api.create_archive_path(
-            ...   'pictures_2016_may_vegas_wedding.png')   # doctest: +ELLIPSIS
-            Traceback (most recent call last):
-            ...
-            ValueError: No underscores allowed!
-
-
         '''
+        patterns = self.manager.required_archive_patterns
 
-        return fs.path.join(*tuple(archive_name.split('_')))
+        for pattern in patterns:
+            if not re.search(pattern, archive_name):
+                raise ValueError(
+                    "archive name does not match pattern '{}'".format(pattern))
 
     def delete_archive(self, archive_name):
         '''

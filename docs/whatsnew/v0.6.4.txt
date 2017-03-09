@@ -1,23 +1,12 @@
 .. _whatsnew_0_6_4:
 
 
-v0.6.4 ()
+v0.6.4 (January 12, 2017)
 --------------------------
 
-New features
-~~~~~~~~~~~~
+Under the hood
+~~~~~~~~~~~~~~
 
-
-Backwards incompatible API changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Performance Improvements
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Bug Fixes
-~~~~~~~~~
-
+  - Test/fix handling of multiple read/write of large netCDF datasets
 
 See the issue tracker on GitHub for a complete list.

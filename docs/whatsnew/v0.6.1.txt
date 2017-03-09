@@ -1,23 +1,8 @@
 .. _whatsnew_0_6_1:
 
 
-v0.6.1 ()
+v0.6.1 (January 6, 2017)
 --------------------------
-
-New features
-~~~~~~~~~~~~
-
-
-Backwards incompatible API changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Performance Improvements
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Bug Fixes
-~~~~~~~~~
 
 
 See the issue tracker on GitHub for a complete list.

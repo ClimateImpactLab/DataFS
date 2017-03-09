@@ -1,23 +1,105 @@
 .. _whatsnew_0_6_0:
 
 
-v0.6.0 ()
+v0.6.0 (January 4, 2017)
 --------------------------
 
 New features
 ~~~~~~~~~~~~
 
-
-Backwards incompatible API changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Performance Improvements
-~~~~~~~~~~~~~~~~~~~~~~~~
+  - Explicit versioning & version pinning (GH #62)
+  - Explicit dependency tracking (GH #63)
+  - Update metadata from the command line
+  - Support for version tracking & management with requirements files (GH #70)
+  - Configure archive specification on manager table
 
 
-Bug Fixes
-~~~~~~~~~
+Set dependencies from Python API on write
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+DataArchive.update
+..................
+
+.. code-block:: python
+
+    def update(
+        self,
+        filepath, 
+        cache=False, 
+        remove=False, 
+        bumpversion='patch', 
+        prerelease=None, 
+        dependencies=None, 
+        **kwargs):
+        
+        ...
+
+        self._update_manager(
+            checksum,
+            kwargs,
+            version=next_version,
+            dependencies=dependencies)
+
+
+DataArchive.open
+................
+
+.. code-block:: python
+
+    def open(
+        self, 
+        mode='r', 
+        version=None, 
+        bumpversion='patch', 
+        prerelease=None, 
+        dependencies=None, 
+        *args, 
+        **kwargs):
+        ...
+       
+        updater = lambda *args, **kwargs: self._update_manager(
+                *args,
+                version=next_version,
+                dependencies=dependencies,
+                **kwargs)
+        ...
+
+DataArchive.get_local_path
+..........................
+
+similar to `DataArchive.open`
+
+DataArchive._update_manager
+...........................
+
+.. code-block:: python
+
+    def _update_manager(
+            self,
+            checksum,
+            metadata={},
+            version=None,
+            dependencies=None):
+
+        # by default, dependencies is the last version of dependencies
+        if dependencies is None:
+            history = self.history
+            if len(history) == 0:
+                dependencies = []
+            else:
+                dependencies = history[-1]['dependencies']
+
+        ....
+
+
+Under the hood
+~~~~~~~~~~~~~~
+
+  - Table schemas have been moved from the dynamo and mongo modules to the
+    BaseDataManager.
+  - versions attr is now version_history in table schema and DataArchive method
+    ``get_versions`` is now
+    :py:meth:`~datafs.core.data_archive.DataArchive.get_version_history`
 
 
 See the issue tracker on GitHub for a complete list.

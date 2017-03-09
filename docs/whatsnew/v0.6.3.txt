@@ -1,23 +1,31 @@
 .. _whatsnew_0_6_3:
 
 
-v0.6.3 ()
+v0.6.3 (January 11, 2017)
 --------------------------
 
 New features
 ~~~~~~~~~~~~
 
+  - dependency handling
 
 Backwards incompatible API changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+  - raise error when passing non-None versions to unversioned archive methods
+  - change API method name: ``create_archive`` --> 
+    :py:meth:`~datafs.DataAPI.create`
+  - change CLI subcommand name: ``upload`` --> ``update``
 
-Performance Improvements
-~~~~~~~~~~~~~~~~~~~~~~~~
+Under the hood
+~~~~~~~~~~~~~~
 
+  - improve test coverage
 
 Bug Fixes
 ~~~~~~~~~
+
+  - prevent users from deleting required metadata elements
 
 
 See the issue tracker on GitHub for a complete list.

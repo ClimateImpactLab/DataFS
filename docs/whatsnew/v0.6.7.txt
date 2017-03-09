@@ -1,23 +1,25 @@
 .. _whatsnew_0_6_7:
 
 
-v0.6.7 ()
+v0.6.7 (February 1, 2017)
 --------------------------
 
 New features
 ~~~~~~~~~~~~
 
-
-Backwards incompatible API changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  - Allow tag specification on create
 
 
 Performance Improvements
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
+  - Restructure conftest.py: api_with_diverse_archives to be session-scoped
 
-Bug Fixes
-~~~~~~~~~
+Under the hood
+~~~~~~~~~~~~~~
 
+  - Consolidate manager._create_archive_table and _create_spec_table into one function
+  - Move archive document creation to separate method in manager (allows batch write in tests)
+  - Add tests for search and filter queries on very large manager tables
 
 See the issue tracker on GitHub for a complete list.

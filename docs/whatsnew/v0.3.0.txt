@@ -1,23 +1,13 @@
 .. _whatsnew_0_3_0:
 
 
-v0.3.0 ()
+v0.3.0 (December 14, 2016)
 --------------------------
 
 New features
 ~~~~~~~~~~~~
 
-
-Backwards incompatible API changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Performance Improvements
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Bug Fixes
-~~~~~~~~~
+  - cached read/write
 
 
 See the issue tracker on GitHub for a complete list.

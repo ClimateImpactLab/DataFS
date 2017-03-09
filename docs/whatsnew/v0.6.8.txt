@@ -1,7 +1,7 @@
 .. _whatsnew_0_6_8:
 
 
-v0.6.8 (February 2, 2017)
+v0.6.8 (February 7, 2017)
 --------------------------
 
 This is a patch release primarily improving the documentation and testing of
@@ -17,7 +17,7 @@ New features
 Bug Fixes
 ~~~~~~~~~
 
-  - More robust ``*args``, ``**kwargs\\ handling in CLI, with better error
+  - More robust ``*args``, ``**kwargs`` handling in CLI, with better error
     messages
   - Fix click round-trip compatibility issue - print results on CLI using ``\n``
     instead of ``\r\n`` on windows

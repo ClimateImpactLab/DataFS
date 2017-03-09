@@ -1,23 +1,23 @@
 .. _whatsnew_0_6_6:
 
 
-v0.6.6 ()
+v0.6.6 (January 20, 2017)
 --------------------------
 
 New features
 ~~~~~~~~~~~~
 
+  - Introduces search features in command line:
 
-Backwards incompatible API changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    .. code-block:: bash
 
+        datafs search
 
-Performance Improvements
-~~~~~~~~~~~~~~~~~~~~~~~~
+    and the API:
 
+    .. code-block:: python
 
-Bug Fixes
-~~~~~~~~~
+        api.search(query)
 
 
 See the issue tracker on GitHub for a complete list.

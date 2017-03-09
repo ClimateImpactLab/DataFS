@@ -1,23 +1,13 @@
 .. _whatsnew_0_4_0:
 
 
-v0.4.0 ()
+v0.4.0 (December 15, 2016)
 --------------------------
 
 New features
 ~~~~~~~~~~~~
 
-
-Backwards incompatible API changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Performance Improvements
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Bug Fixes
-~~~~~~~~~
+  - create API object from config file
 
 
 See the issue tracker on GitHub for a complete list.

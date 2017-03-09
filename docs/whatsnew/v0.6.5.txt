@@ -1,23 +1,18 @@
 .. _whatsnew_0_6_5:
 
 
-v0.6.5 ()
+v0.6.5 (January 13, 2017)
 --------------------------
 
 New features
 ~~~~~~~~~~~~
 
+  - regex and unix-style filter searches
 
 Backwards incompatible API changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-Performance Improvements
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-Bug Fixes
-~~~~~~~~~
+  - Prevent update/write of empty files
 
 
 See the issue tracker on GitHub for a complete list.

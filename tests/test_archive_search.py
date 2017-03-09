@@ -13,6 +13,20 @@ def test_get_all_archives(api_with_diverse_archives):
     assert len(variables) == total
 
 
+def test_batch_get_all_archives(api_with_diverse_archives):
+
+    # Test the total number of archives
+    archives = api_with_diverse_archives.batch_get_archive(
+        api_with_diverse_archives.filter())
+
+    total = (
+        api_with_diverse_archives.TEST_ATTRS['archives.variable']
+        + api_with_diverse_archives.TEST_ATTRS['archives.parameter']
+        + api_with_diverse_archives.TEST_ATTRS['archives.config'])
+
+    assert len(archives) == total
+
+
 def test_substr_search(api_with_diverse_archives):
 
     # Test the total number of "variable" archives

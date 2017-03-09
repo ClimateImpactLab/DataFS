@@ -159,6 +159,17 @@ class MongoDBManager(BaseDataManager):
 
         return res
 
+    def _batch_get_archive_listing(self, archive_name):
+        '''
+        '''
+
+        res = self.collection.find({'_id': archive_name})
+
+        if res is None:
+            raise KeyError
+
+        return res
+
     def _delete_archive_record(self, archive_name):
 
         return self.collection.remove({'_id': archive_name})

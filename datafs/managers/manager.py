@@ -321,11 +321,42 @@ class BaseDataManager(object):
 
         try:
             spec = self._get_archive_spec(archive_name)
-            spec['archive_name'] = archive_name
             return spec
 
         except KeyError:
             raise KeyError('Archive "{}" not found'.format(archive_name))
+
+    def batch_get_archive(self, archive_names):
+        '''
+        Batched version of :py:meth:`~DynamoDBManager._get_archive_listing`
+
+        Returns a list of full archive listings from an iterable of archive
+        names
+
+        .. note ::
+
+            Invalid archive names will simply not be returned, so the response
+            may not be the same length as the supplied `archive_names`.
+
+        Parameters
+        ----------
+
+        archive_names : list
+
+            List of archive names
+
+        Returns
+        -------
+
+        archive_listings : list
+
+            List of archive listings
+
+        '''
+
+        return map(
+            self._format_archive_listing_as_constructor_spec,
+            self._batch_get_archive_listing(archive_names))
 
     def get_metadata(self, archive_name):
         '''
@@ -457,7 +488,14 @@ class BaseDataManager(object):
         if res is None:
             raise KeyError
 
-        spec = ['authority_name', 'archive_path', 'versioned']
+        return self._format_archive_listing_as_constructor_spec(res)
+
+    @staticmethod
+    def _format_archive_listing_as_constructor_spec(res):
+
+        res['archive_name'] = res.pop('_id')
+
+        spec = ['archive_name', 'authority_name', 'archive_path', 'versioned']
 
         return {k: v for k, v in res.items() if k in spec}
 

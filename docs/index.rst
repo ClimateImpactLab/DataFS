@@ -19,7 +19,7 @@ Contents:
    cli
    admin
    contributing
-   history
+   whatsnew
    datafs
    examples
    samples

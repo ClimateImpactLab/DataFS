@@ -1,0 +1,13 @@
+.. _whatsnew_0_5_0:
+
+
+v0.5.0 (December 21, 2016)
+--------------------------
+
+New features
+~~~~~~~~~~~~
+
+  - command line ``download`` feature
+
+
+See the issue tracker on GitHub for a complete list.

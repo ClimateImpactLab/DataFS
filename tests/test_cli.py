@@ -34,7 +34,7 @@ def manager_table():
 
 
 @pytest.yield_fixture(scope='module')
-def cli_config(manager_table, temp_dir_mod, temp_file):
+def sample_config(manager_table, temp_dir_mod, temp_file):
     my_test_yaml = r'''
 default-profile: myapi
 profiles:
@@ -67,7 +67,7 @@ profiles:
 
 
 @pytest.yield_fixture(scope='module')
-def preloaded_config(cli_config):
+def preloaded_config(sample_config):
     '''
     Prepare a manager/auth config with 3 archives, each having 3 versions
 
@@ -78,24 +78,24 @@ def preloaded_config(cli_config):
 
     '''
 
-    profile, temp_file = cli_config
+    profile, temp_file = sample_config
 
     api = get_api(profile=profile, config_file=temp_file)
 
     # Set up a couple archives with multiple versions
 
-    arch1 = api.create('req_1')
-    arch2 = api.create('req_2')
-    arch3 = api.create('req_3')
+    arch1 = api.create('/req/arch1')
+    arch2 = api.create('/req/arch2')
+    arch3 = api.create('/req/arch3')
 
     with arch1.open('w+', bumpversion='minor', message='bumping to 0.1') as f:
-        f.write(u'this is archive req_1 version 0.1')
+        f.write(u'this is archive /req/arch1 version 0.1')
 
     with arch1.open('w+', bumpversion='major', message='bumping to 1.0') as f:
-        f.write(u'this is archive req_1 version 1.0')
+        f.write(u'this is archive /req/arch1 version 1.0')
 
     with arch1.open('w+', bumpversion='minor', message='bumping to 1.1') as f:
-        f.write(u'this is archive req_1 version 1.1')
+        f.write(u'this is archive /req/arch1 version 1.1')
 
     arch1_versions = arch1.get_versions()
     assert '0.1' in arch1_versions
@@ -103,13 +103,13 @@ def preloaded_config(cli_config):
     assert '1.1' in arch1_versions
 
     with arch2.open('w+', prerelease='alpha') as f:
-        f.write(u'this is archive req_2 version 0.0.1a1')
+        f.write(u'this is archive /req/arch2 version 0.0.1a1')
 
     with arch2.open('w+', prerelease='alpha') as f:
-        f.write(u'this is archive req_2 version 0.0.1a2')
+        f.write(u'this is archive /req/arch2 version 0.0.1a2')
 
     with arch2.open('w+', bumpversion='patch') as f:
-        f.write(u'this is archive req_2 version 0.0.1')
+        f.write(u'this is archive /req/arch2 version 0.0.1')
 
     arch2_versions = arch2.get_versions()
     assert '0.0.1a1' in arch2_versions
@@ -117,13 +117,13 @@ def preloaded_config(cli_config):
     assert '0.0.1' in arch2_versions
 
     with arch3.open('w+', bumpversion='major') as f:
-        f.write(u'this is archive req_3 version 1.0')
+        f.write(u'this is archive /req/arch3 version 1.0')
 
     with arch3.open('w+', bumpversion='minor', prerelease='alpha') as f:
-        f.write(u'this is archive req_3 version 1.1a1')
+        f.write(u'this is archive /req/arch3 version 1.1a1')
 
     with arch3.open('w+', bumpversion='minor') as f:
-        f.write(u'this is archive req_3 version 1.1')
+        f.write(u'this is archive /req/arch3 version 1.1')
 
     arch3_versions = arch3.get_versions()
     assert '1.0' in arch3_versions
@@ -159,9 +159,9 @@ def preloaded_config(cli_config):
 
 
 @pytest.mark.cli
-def test_cli_local(cli_config):
+def test_cli_local(sample_config):
 
-    profile, temp_file = cli_config
+    profile, temp_file = sample_config
 
     prefix = ['--config-file', temp_file, '--profile', 'myapi']
 
@@ -316,9 +316,9 @@ def test_cli_local(cli_config):
 
 
 @pytest.mark.cli
-def test_cli_unversioned(cli_config):
+def test_cli_unversioned(sample_config):
 
-    profile, temp_file = cli_config
+    profile, temp_file = sample_config
 
     prefix = ['--config-file', temp_file, '--profile', 'myapi']
 
@@ -442,42 +442,42 @@ def test_specified_requirements(preloaded_config):
         # Create requirements file
 
         with open('requirements_data_test1.txt', 'w+') as reqs:
-            reqs.write('req_1==1.0\n')
-            reqs.write('req_2==0.0.1a2\n')
+            reqs.write('/req/arch1==1.0\n')
+            reqs.write('/req/arch2==0.0.1a2\n')
 
-        # Download req_1 with version from requirements file
+        # Download /req/arch1 with version from requirements file
 
         result = runner.invoke(
             cli,
-            prefix + ['download', 'req_1', 'local_req_1.txt'])
+            prefix + ['download', '/req/arch1', 'local_req_1.txt'])
 
         assert result.exit_code == 0
 
         with open('local_req_1.txt', 'r') as f:
-            assert f.read() == 'this is archive req_1 version 1.0'
+            assert f.read() == 'this is archive /req/arch1 version 1.0'
 
-        # Download req_2 with version from requirements file
+        # Download /req/arch2 with version from requirements file
 
         result = runner.invoke(
             cli,
-            prefix + ['download', 'req_2', 'local_req_2.txt'])
+            prefix + ['download', '/req/arch2', 'local_req_2.txt'])
 
         assert result.exit_code == 0
 
         with open('local_req_2.txt', 'r') as f:
-            assert f.read() == 'this is archive req_2 version 0.0.1a2'
+            assert f.read() == 'this is archive /req/arch2 version 0.0.1a2'
 
-        # Download req_3 with version latest version (req_3 not in requirements
-        # file)
+        # Download /req/arch3 with version latest version (/req/arch3 not in
+        # requirements file)
 
         result = runner.invoke(
             cli,
-            prefix + ['download', 'req_3', 'local_req_3.txt'])
+            prefix + ['download', '/req/arch3', 'local_req_3.txt'])
 
         assert result.exit_code == 0
 
         with open('local_req_3.txt', 'r') as f:
-            assert f.read() == 'this is archive req_3 version 1.1'
+            assert f.read() == 'this is archive /req/arch3 version 1.1'
 
 
 @pytest.mark.cli
@@ -501,7 +501,7 @@ def test_versions(preloaded_config):
 
         result = runner.invoke(
             cli,
-            prefix + ['versions', 'req_3'])
+            prefix + ['versions', '/req/arch3'])
 
         assert result.exit_code == 0
         versions = ast.literal_eval(result.output)
@@ -530,7 +530,7 @@ def test_history(preloaded_config):
 
         result = runner.invoke(
             cli,
-            prefix + ['history', 'req_3'])
+            prefix + ['history', '/req/arch3'])
 
         assert result.exit_code == 0
         history = ast.literal_eval(result.output)
@@ -560,41 +560,53 @@ def test_alternate_versions(preloaded_config):
         # Create requirements file
 
         with open('requirements_data_test1.txt', 'w+') as reqs:
-            reqs.write('req_1==1.0\n')
-            reqs.write('req_2==0.0.1a2\n')
+            reqs.write('/req/arch1==1.0\n')
+            reqs.write('/req/arch2==0.0.1a2\n')
 
-        # Download req_1 with version from requirements file
+        # Download /req/arch1 with version from requirements file
 
         result = runner.invoke(
             cli, prefix + [
-                'download', 'req_1', 'local_req_1.txt', '--version', '0.1'])
+                'download',
+                '/req/arch1',
+                'local_req_1.txt',
+                '--version',
+                '0.1'])
 
         assert result.exit_code == 0
 
         with open('local_req_1.txt', 'r') as f:
-            assert f.read() == 'this is archive req_1 version 0.1'
+            assert f.read() == 'this is archive /req/arch1 version 0.1'
 
-        # Download req_2 with version from requirements file
+        # Download /req/arch2 with version from requirements file
 
         result = runner.invoke(
             cli, prefix + [
-                'download', 'req_2', 'local_req_2.txt', '--version', '0.0.1'])
+                'download',
+                '/req/arch2',
+                'local_req_2.txt',
+                '--version',
+                '0.0.1'])
 
         assert result.exit_code == 0
 
         with open('local_req_2.txt', 'r') as f:
-            assert f.read() == 'this is archive req_2 version 0.0.1'
+            assert f.read() == 'this is archive /req/arch2 version 0.0.1'
 
-        # Download req_3 with version from requirements file
+        # Download /req/arch3 with version from requirements file
 
         result = runner.invoke(
             cli, prefix + [
-                'download', 'req_3', 'local_req_3.txt', '--version', '1.1a1'])
+                'download',
+                '/req/arch3',
+                'local_req_3.txt',
+                '--version',
+                '1.1a1'])
 
         assert result.exit_code == 0
 
         with open('local_req_3.txt', 'r') as f:
-            assert f.read() == 'this is archive req_3 version 1.1a1'
+            assert f.read() == 'this is archive /req/arch3 version 1.1a1'
 
 
 @pytest.mark.cli
@@ -618,7 +630,11 @@ def test_kwarg_handling(preloaded_config):
     result = runner.invoke(
         cli,
         prefix + [
-            'update_metadata', 'req_1', 'something', '--description', 'other'])
+            'update_metadata',
+            '/req/arch1',
+            'something',
+            '--description',
+            'other'])
 
     assert result.exception
 
@@ -627,7 +643,11 @@ def test_kwarg_handling(preloaded_config):
     result = runner.invoke(
         cli,
         prefix + [
-            'update_metadata', 'req_1', '--description', 'something', 'other'])
+            'update_metadata',
+            '/req/arch1',
+            '--description',
+            'something',
+            'other'])
 
     assert result.exception
 
@@ -635,7 +655,7 @@ def test_kwarg_handling(preloaded_config):
 
     result = runner.invoke(
         cli,
-        prefix + ['update_metadata', 'req_1', '--flag'])
+        prefix + ['update_metadata', '/req/arch1', '--flag'])
 
     assert result.exception
 
@@ -676,7 +696,7 @@ def test_multiple_search(preloaded_config):
 
     result = runner.invoke(
         cli,
-        prefix + ['filter', '--pattern', 'req_[12]', '--engine', 'regex'])
+        prefix + ['filter', '--pattern', '/req/arch[12]', '--engine', 'regex'])
 
     assert len(result.output.strip().split('\n')) == 2
 
@@ -702,43 +722,51 @@ def test_incorrect_versions(preloaded_config):
         # Create requirements file
 
         with open('requirements_data_test3.txt', 'w+') as reqs:
-            reqs.write('req_1==5.0\n')
-            reqs.write('req_2==0.3.1a2\n')
+            reqs.write('/req/arch1==5.0\n')
+            reqs.write('/req/arch2==0.3.1a2\n')
 
-        # Download req_1 with version from requirements file
+        # Download /req/arch1 with version from requirements file
 
         result = runner.invoke(cli, prefix +
-                               ['download', 'req_1', 'local_req_1.txt'])
+                               ['download', '/req/arch1', 'local_req_1.txt'])
 
         assert result.exception
 
-        # Download req_2 with version from requirements file
+        # Download /req/arch2 with version from requirements file
 
         result = runner.invoke(
             cli, prefix + [
-                'download', 'req_2', 'local_req_2.txt', '--version', 'latest'])
+                'download',
+                '/req/arch2',
+                'local_req_2.txt',
+                '--version',
+                'latest'])
 
         assert result.exit_code == 0
 
         with open('local_req_2.txt', 'r') as f:
-            assert f.read() == 'this is archive req_2 version 0.0.1'
+            assert f.read() == 'this is archive /req/arch2 version 0.0.1'
 
-        # Download req_3 with version from requirements file
+        # Download /req/arch3 with version from requirements file
 
         result = runner.invoke(
             cli, prefix + [
-                'download', 'req_3', 'local_req_3.txt', '--version', '4.2'])
+                'download',
+                '/req/arch3',
+                'local_req_3.txt',
+                '--version',
+                '4.2'])
 
         assert result.exception
 
 
 @pytest.mark.cli
-def test_dependency_parsing(cli_config):
+def test_dependency_parsing(sample_config):
     '''
     Update archive dependencies across versions from the CLI
     '''
 
-    profile, temp_file = cli_config
+    profile, temp_file = sample_config
 
     api = get_api(profile=profile, config_file=temp_file)
 
@@ -853,12 +881,12 @@ def test_dependency_parsing(cli_config):
 
 
 @pytest.mark.cli
-def test_update_metadata(cli_config, monkeypatch):
+def test_update_metadata(sample_config, monkeypatch):
     '''
     Update archive metadata with a description from the CLI
     '''
 
-    profile, temp_file = cli_config
+    profile, temp_file = sample_config
 
     api = get_api(profile=profile, config_file=temp_file)
 
@@ -1039,6 +1067,34 @@ def test_helper_configuration(manager_with_spec, tempdir, monkeypatch):
     assert api2.user_config['contact'] == "my_email@domain.com"
 
 
+@pytest.mark.cli
+def test_listdir(preloaded_config):
+
+    profile, temp_file = preloaded_config
+
+    # Create a requirements file and
+
+    runner = CliRunner()
+
+    prefix = [
+        '--config-file', '{}'.format(temp_file),
+        '--profile', 'myapi',
+        '--requirements', 'requirements_data_test3.txt']
+
+    with runner.isolated_filesystem():
+
+        result = runner.invoke(cli, prefix + ['listdir', 'local://req/'])
+
+        assert result.exit_code == 0
+
+        contents = map(lambda s: s.strip(), result.output.strip().split('\n'))
+
+        assert len(contents) == 3
+
+        for req in ['arch1', 'arch2', 'arch3']:
+            assert req in contents
+
+
 @pytest.mark.logging
 @pytest.mark.cli
 def test_versioned_logging(preloaded_config):
@@ -1062,7 +1118,7 @@ def test_versioned_logging(preloaded_config):
 
         result = runner.invoke(
             cli,
-            prefix + ['log', 'req_1'])
+            prefix + ['log', '/req/arch1'])
 
     assert result.exit_code == 0
 
@@ -1079,7 +1135,7 @@ def test_versioned_logging(preloaded_config):
 
     api = get_api(config_file=temp_file, profile='myapi')
 
-    arch = api.get_archive('req_1')
+    arch = api.get_archive('/req/arch1')
 
     hist = arch.get_history()
 
@@ -1101,6 +1157,64 @@ def test_unversioned_logging(preloaded_config):
     '''
     Test logging cli features
     '''
+
+    profile, temp_file = preloaded_config
+
+    # Create a requirements file and
+
+    runner = CliRunner()
+
+    prefix = [
+        '--config-file', '{}'.format(temp_file),
+        '--profile', 'myapi',
+        '--requirements', 'requirements_data_test3.txt']
+
+    with runner.isolated_filesystem():
+
+        result = runner.invoke(
+            cli,
+            prefix + ['listdir', '/req/', '--authority_name', 'local'])
+
+        assert result.exit_code == 0
+
+        contents = map(lambda s: s.strip(), result.output.strip().split('\n'))
+
+        assert len(contents) == 3
+
+        for req in ['arch1', 'arch2', 'arch3']:
+            assert req in contents
+
+
+@pytest.mark.cli
+def test_listdir_noauth(preloaded_config):
+
+    profile, temp_file = preloaded_config
+
+    # Create a requirements file and
+
+    runner = CliRunner()
+
+    prefix = [
+        '--config-file', '{}'.format(temp_file),
+        '--profile', 'myapi',
+        '--requirements', 'requirements_data_test3.txt']
+
+    with runner.isolated_filesystem():
+
+        result = runner.invoke(cli, prefix + ['listdir', '/req/'])
+
+        assert result.exit_code == 0
+
+        contents = map(lambda s: s.strip(), result.output.strip().split('\n'))
+
+        assert len(contents) == 3
+
+        for req in ['arch1', 'arch2', 'arch3']:
+            assert req in contents
+
+
+@pytest.mark.cli
+def test_listdir_auth(preloaded_config):
 
     profile, temp_file = preloaded_config
 

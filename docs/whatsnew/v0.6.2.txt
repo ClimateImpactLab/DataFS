@@ -1,0 +1,33 @@
+.. _whatsnew_0_6_2:
+
+
+v0.6.2 (January 9, 2017)
+--------------------------
+
+New features
+~~~~~~~~~~~~
+
+  - New template in docs for AWS configuration (GH #73)
+
+Backwards incompatible API changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - Drop DataArchive properties that access manager (GH #72)
+  - Manager archive listing attribute ``versions`` changed to
+    ``version_history``
+
+Manager-calling properties converted to methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  - ``latest_version`` --> 
+    :py:meth:`~datafs.core.data_archive.DataArchive.get_latest_version`
+  - ``versions`` --> 
+    :py:meth:`~datafs.core.data_archive.DataArchive.get_versions`
+  - ``latest_hash`` --> 
+    :py:meth:`~datafs.core.data_archive.DataArchive.get_latest_hash`
+  - ``history`` --> 
+    :py:meth:`~datafs.core.data_archive.DataArchive.get_history`
+  - ``metadata`` --> 
+    :py:meth:`~datafs.core.data_archive.DataArchive.get_metadata`
+
+See the issue tracker on GitHub for a complete list.

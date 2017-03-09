@@ -1,0 +1,62 @@
+.. _whatsnew_0_6_9:
+
+
+v0.6.9 (February 21, 2017)
+--------------------------
+
+New features
+~~~~~~~~~~~~
+
+  - archive pattern constraints (GH #168)
+  - set tags from command line
+  - add tagging and searching documentation
+
+Archive pattern constraints
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+List of regex patterns that must match archive_name before archive creation is allowed
+
+Create an archive pattern using manager.set_required_archive_patterns. e.g. require only \w, ., or / characters:
+
+.. code-block:: python
+
+    >>> api = get_api()
+    >>> api.manager.set_required_archive_patterns([r'^[\w\/\.]+$'])
+
+Now, archives that do not match this will not be supported:
+
+.. code-block::python
+
+    >>> api.create('!!!.txt')
+    Traceback (most recent call last):
+    ...
+    ValueError: archive name does not match pattern '^[\w\/\.]+$'
+
+Tagging from CLI
+^^^^^^^^^^^^^^^^
+
+Added three new commands which reflect their DataArchive counterparts:
+
+.. code-block:: bash
+
+    datafs add_tags
+    datafs get_tags
+    datafs delete_tags
+
+Additionally, a ``--tag`` option was added to datafs create so that tags could
+be supplied on archive creation:
+
+.. code-block:: bash
+
+    datafs create my_archive --description "my description" --tag tag1 \
+        --tag tag2 --source "where it's from" --tag tag3
+
+
+Backwards incompatible API changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - stop coercing underscores to slashes in archive_path
+  - drop archive_path argument from DataAPI.create
+
+
+See the issue tracker on GitHub for a complete list.

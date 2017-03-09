@@ -159,6 +159,35 @@ class DataAPI(object):
             **res)
 
     def get_archive(self, archive_name, default_version=None):
+        '''
+        Retrieve a data archive
+
+        Parameters
+        ----------
+
+        archive_name : str
+
+            Name of the archive to retrieve
+
+        default_version : version
+
+            str or :py:class:`~distutils.StrictVersion` giving the default
+            version number to be used on read operations
+
+        Returns
+        -------
+        archive : object
+
+            New :py:class:`~datafs.core.data_archive.DataArchive` object
+
+        Raises
+        ------
+
+        KeyError :
+
+            A KeyError is raised when the ``archive_name`` is not found
+
+        '''
 
         res = self.manager.get_archive(archive_name)
 
@@ -168,6 +197,50 @@ class DataAPI(object):
             api=self,
             default_version=default_version,
             **res)
+
+    def batch_get_archive(self, archive_names, default_versions=None):
+        '''
+        Batch version of :py:meth:`~DataAPI.get_archive`
+
+        Parameters
+        ----------
+
+        archive_names : list
+
+            Iterable of archive names to retrieve
+
+        default_versions : version or dict
+
+            Default versions to assign to each returned archive. If
+            ``default_versions`` is a dict, each ``archive_name``
+
+        Returns
+        -------
+
+        archives : list
+
+            List of :py:class:`~datafs.core.data_archive.DataArchive` objects.
+            If an archive is not found, it is omitted (`batch_get_archive` does
+            not raise a ``KeyError`` on invalid archive names).
+
+        '''
+
+        responses = self.manager.batch_get_archive(archive_names)
+
+        archives = {}
+
+        for res in responses:
+            archive_name = res['archive_name']
+            default_version = self._default_versions.get(archive_name, None)
+
+            archive = self._ArchiveConstructor(
+                api=self,
+                default_version=default_version,
+                **res)
+
+            archives[archive_name] = archive
+
+        return archives
 
     def filter(self, pattern=None, engine='path', prefix=None):
         '''

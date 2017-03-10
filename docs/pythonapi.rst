@@ -13,3 +13,4 @@ Using the Python API
     pythonapi.metadata
     pythonapi.versioning
     pythonapi.dependencies
+    pythonapi.finding_archives

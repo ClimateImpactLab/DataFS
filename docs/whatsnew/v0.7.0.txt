@@ -1,7 +1,7 @@
 .. _whatsnew_0_7_0:
 
 
-v0.7.0 (latest)
+v0.7.0 (March 9, 2017)
 --------------------------
 
 New features

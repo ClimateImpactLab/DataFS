@@ -18,6 +18,6 @@ Under the hood
 ~~~~~~~~~~~~~~
 
   - use ``:issue:`` and ``:pull:`` directives to reference a github issue or 
-    pull request
+    pull request (:issue:`209`)
 
 See the issue tracker on GitHub for a complete list.

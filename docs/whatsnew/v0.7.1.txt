@@ -17,6 +17,7 @@ Backwards incompatible API changes
 Under the hood
 ~~~~~~~~~~~~~~
 
-  - 
+  - use ``:issue:`` and ``:pull:`` directives to reference a github issue or 
+    pull request
 
 See the issue tracker on GitHub for a complete list.

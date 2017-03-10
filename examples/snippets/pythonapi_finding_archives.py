@@ -96,7 +96,7 @@ Displayed example 2 code
 .. code-block:: python
 	
 	>>> api.listdir('impactlab')
-	[u'climate', u'conflict', u'labor', u'mortality']
+	[u'labor', u'climate', u'conflict', u'mortality']
 	
 .. EXAMPLE-BLOCK-2-END
 

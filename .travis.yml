@@ -52,6 +52,8 @@ script:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then python -m pytest ./datafs ./tests ./docs;
     else python -m pytest ./datafs ./tests ./docs --cov=datafs --cov=examples --cov=docs --doctest-modules --cov-report term-missing;
     fi
+  - echo Testing docs build
+  - sphinx-build -nW -b html -d docs/_build/doctrees docs/. docs/_build/html
 
 deploy:
   provider: pypi

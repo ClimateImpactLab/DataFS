@@ -209,10 +209,14 @@ class DataAPI(object):
 
             Iterable of archive names to retrieve
 
-        default_versions : version or dict
+        default_versions : str, object, or dict
 
             Default versions to assign to each returned archive. If
-            ``default_versions`` is a dict, each ``archive_name``
+            ``default_versions`` is a dict, each ``archive_name`` must be a
+            key in ``default_versions`` and the value must be a valid version.
+            Versions must be a strict version number, a
+            :py:class:`~distutils.version.StrictVersion`, or a
+            :py:class:`~datafs.core.versions.BumpableVersion` object.
 
         Returns
         -------

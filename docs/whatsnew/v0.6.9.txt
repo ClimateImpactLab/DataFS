@@ -7,7 +7,7 @@ v0.6.9 (February 21, 2017)
 New features
 ~~~~~~~~~~~~
 
-  - archive pattern constraints (GH #168)
+  - archive pattern constraints (:issue:`168`)
   - set tags from command line
   - add tagging and searching documentation
 

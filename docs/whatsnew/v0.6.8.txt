@@ -10,8 +10,8 @@ DataFS. There are no backward incompatible changes in v0.6.8
 New features
 ~~~~~~~~~~~~
 
-  - Add command line docstrings (GH #115)
-  - Add tests for Python API documentation snippets (GH #108)
+  - Add command line docstrings (:issue:`115`)
+  - Add tests for Python API documentation snippets (:issue:`108`)
   - Integrate clatter - checks to make sure CLI documentation is accurate
 
 Bug Fixes
@@ -21,7 +21,7 @@ Bug Fixes
     messages
   - Fix click round-trip compatibility issue - print results on CLI using ``\n``
     instead of ``\r\n`` on windows
-  - Raises error when loading a non-existant profile from config (GH #135)
+  - Raises error when loading a non-existant profile from config (:issue:`135`)
 
 
 See the issue tracker on GitHub for a complete list.

@@ -1,0 +1,28 @@
+.. _whatsnew_0_7_0:
+
+
+v0.7.0 (latest)
+--------------------------
+
+New features
+~~~~~~~~~~~~
+
+Backwards incompatible API changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Performance Improvements
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Bug Fixes
+~~~~~~~~~
+
+Under the Hood
+~~~~~~~~~~~~~~
+
+- The sphinx build is now tested on travis. Run the tests locally with the 
+  command 
+  ``sphinx-build -W -b html -d docs/_build/doctrees docs/. docs/_build/html``
+  (:issue:`211`)
+
+
+See the issue tracker on GitHub for a complete list.

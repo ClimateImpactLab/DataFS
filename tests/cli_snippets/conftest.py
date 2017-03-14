@@ -3,6 +3,7 @@ from datafs import get_api
 from datafs.datafs import cli
 from contextlib import contextmanager
 import pytest
+import os
 
 from fs.tempfs import TempFS
 
@@ -67,6 +68,20 @@ def cli_setup_dual_auth(example_snippet_working_dirs):
     with setup_runner_resource(config_file, table_name) as setup:
         yield setup
 
+@pytest.fixture(scope='session', params = ['mongo', 'dynamo'])
+def cli_setup_dual_manager(example_snippet_working_dirs, request):
+
+
+    if request.param == 'mongo':
+        config_file = 'examples/snippets/resources/datafs.yml'
+        table_name = 'DataFiles'
+
+    if request.param == 'dynamo':
+        config_file = 'examples/snippets/resources/datafs_dynamo_test.yml'
+        table_name = 'DataFiles'
+
+    with setup_runner_resource(config_file, table_name) as setup:
+        yield setup
 
 @pytest.yield_fixture(scope='function')
 def cli_validator(cli_setup, validator):
@@ -77,6 +92,66 @@ def cli_validator(cli_setup, validator):
         api.delete_archive('my_archive')
     except KeyError:
         pass
+
+    validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
+
+    yield validator.teststring
+
+    del validator.call_engines['datafs']
+
+
+@pytest.yield_fixture(scope='function')
+def cli_validator_dual_manager_listdir(cli_setup_dual_manager, validator):
+
+    _, api, _, prefix = cli_setup_dual_manager
+
+    with open('test.txt', 'w') as f:
+        f.write('test test')
+
+    tas_archive = api.create('impactlab/climate/tas/tas_daily_us.csv')
+    tas_archive.update('test.txt')
+    precip_archive = api.create('impactlab/climate/pr/pr_daily_us.csv')
+    precip_archive.update('test.txt')
+    socio = api.create('impactlab/mortality/global/mortality_global_daily.csv')
+    socio.update('test.txt')
+    socio1 = api.create('impactlab/conflict/global/conflict_global_daily.csv')
+    socio1.update('test.txt')
+    socio2 = api.create('impactlab/labor/global/labor_global_daily.csv')
+    socio2.update('test.txt')
+
+    validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
+
+    yield validator.teststring
+
+    del validator.call_engines['datafs']
+
+    try:
+         tas_archive.delete()
+         precip_archive.delete()
+         socio.delete()
+         socio1.delete()
+         socio2.delete()
+         os.remove('test.txt')
+    except KeyError:
+         pass
+
+
+
+
+
+def cli_validator_dual_manager_search(cli_setup_dual_manager, validator):
+
+    _, api, _, prefix = cli_setup_dual_manager
+
+    archive_names = []
+    for indices in itertools.product(*(range(1, 6) for _ in range(3))):
+         archive_name = (
+         'project{}_variable{}_scenario{}.nc'.format(*indices))
+         archive_names.append(archive_name)
+    
+    for name in archive_names:
+         _ = api.create(name)
+
 
     validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
 
@@ -120,3 +195,4 @@ def cli_validator_dual_auth(cli_setup_dual_auth, validator):
     finally:
         api._authorities['my_authority'].fs.close()
         del validator.call_engines['datafs']
+

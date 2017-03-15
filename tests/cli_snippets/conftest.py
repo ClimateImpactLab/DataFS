@@ -152,18 +152,30 @@ def cli_validator_dual_manager_various(cli_setup_dual_manager, validator):
     
     for i, name in enumerate(archive_names):
 
-        if i % 3  == 0: 
-            _ = api.create(name, tags=['team1'])
+        if i % 3  == 0:
+            try:
+                api.create(name, tags=['team1'])
+            except KeyError:
+                pass 
+
         elif i % 2 == 0: 
-            _ = api.create(name, tags=['team2'])
-        else: 
-            _ = api.create(name, tags=['team3'])
+            try:
+                api.create(name, tags=['team2'])
+            except KeyError:
+                pass
+        else:
+            try:
+                api.create(name, tags=['team3'])
+            except KeyError:
+                pass
 
     validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
 
     yield validator.teststring
 
     del validator.call_engines['datafs']
+
+
 
 
 @pytest.yield_fixture(scope='function')

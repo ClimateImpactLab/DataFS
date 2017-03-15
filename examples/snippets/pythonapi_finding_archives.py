@@ -1,4 +1,4 @@
-'''
+r'''
 
 .. _snippets-pythonapi-finding-archives: 
 
@@ -160,22 +160,42 @@ Teardown
     ... except KeyError:
     ...     pass
     ...
+    >>> try:
+    ...     api.manager.delete_table('DataFiles')
+    ... except KeyError:
+    ...     pass
 
 
+Setup
+
+.. code-block:: python
+
+>>> api.manager.create_archive_table('DataFiles')
 
 Filter example setup
 
 .. code-block:: python
 
-    >>> archive_names = []
+    >>> archive_names = [] # doctest: +ELLIPSIS
     >>> for indices in itertools.product(*(range(1, 6) for _ in range(3))):
     ...     archive_name = (
     ...     'project{}_variable{}_scenario{}.nc'.format(*indices))
     ...     archive_names.append(archive_name)
+    >>>
+    >>> for i, name in enumerate(archive_names): 
+    ...     if i % 3  == 0: 
+    ...         api.create(name, tags=['team1'])
+    ...     elif i % 2 == 0: 
+    ...         api.create(name, tags=['team2'])
+    ...     else: 
+    ...         api.create(name, tags=['team3']) # doctest: +ELLIPSIS
+    <DataArchive local://project1_variable1_scenario1.nc>
+    <DataArchive local://project1_variable1_scenario2.nc>
+    <DataArchive local://project1_variable1_scenario3.nc>
     ...
-    >>> for name in archive_names:
-    ...     _ = api.create(name)
-    
+    <DataArchive local://project5_variable5_scenario3.nc>
+    <DataArchive local://project5_variable5_scenario4.nc>
+    <DataArchive local://project5_variable5_scenario5.nc>
 
 Example 6
 ---------
@@ -258,21 +278,6 @@ Displayed example 9 code
 .. EXAMPLE-BLOCK-9-END
 
 
-Add tags for search
--------------------
-
-.. code-block:: python
-
->>> for i, arch in enumerate(api.search()):
-...     non_tagged = api.get_archive(arch)
-...     if i % 3 == 0: 
-...         non_tagged.add_tags('team1')
-...     elif i % 2 == 0: 
-...         non_tagged.add_tags('team2')
-...     else: 
-...         non_tagged.add_tags('team3') 
-
-
 Example 10
 ----------
 
@@ -320,10 +325,10 @@ Displayed example 12 code
 
 .. code-block:: python
 
-    >>> tagged_search_team1 = list(api.search('team1'))
-    >>> len(tagged_search_team1)
+    >>> tagged_search_team1 = list(api.search('team1')) 
+    >>> len(tagged_search_team1) 
     42
-    >>> tagged_search_team1[:4] #doctest: +NORMALIZE_WHITESPACE
+    >>> tagged_search_team1[:4] #doctest: +NORMALIZE_WHITESPACE 
     [u'project1_variable1_scenario1.nc', u'project1_variable1_scenario4.nc', 
     u'project1_variable2_scenario2.nc', u'project1_variable2_scenario5.nc']
 
@@ -340,7 +345,7 @@ Displayed example 13 code
 
 .. code-block:: python
 
-    >>> tags = []
+    >>> tags = [] 
     >>> for arch in tagged_search_team1[:4]:
     ...     tags.append(api.manager.get_tags(arch)[0])
     >>> tags

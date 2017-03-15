@@ -4,6 +4,7 @@ from datafs.datafs import cli
 from contextlib import contextmanager
 import pytest
 import os
+import itertools
 
 from fs.tempfs import TempFS
 
@@ -68,17 +69,17 @@ def cli_setup_dual_auth(example_snippet_working_dirs):
     with setup_runner_resource(config_file, table_name) as setup:
         yield setup
 
-@pytest.fixture(scope='session', params = ['mongo', 'dynamo'])
+@pytest.yield_fixture(scope='session', params = ['mongo', 'dynamo'])
 def cli_setup_dual_manager(example_snippet_working_dirs, request):
 
 
     if request.param == 'mongo':
-        config_file = 'examples/snippets/resources/datafs.yml'
-        table_name = 'DataFiles'
+        config_file = 'examples/snippets/resources/datafs_mongo_dual.yml'
+        table_name = 'MongoFilesDual'
 
     if request.param == 'dynamo':
-        config_file = 'examples/snippets/resources/datafs_dynamo_test.yml'
-        table_name = 'DataFiles'
+        config_file = 'examples/snippets/resources/datafs_dynamo_dual.yml'
+        table_name = 'DynamoFilesDual'
 
     with setup_runner_resource(config_file, table_name) as setup:
         yield setup
@@ -138,8 +139,8 @@ def cli_validator_dual_manager_listdir(cli_setup_dual_manager, validator):
 
 
 
-
-def cli_validator_dual_manager_search(cli_setup_dual_manager, validator):
+@pytest.yield_fixture(scope='function')
+def cli_validator_dual_manager_various(cli_setup_dual_manager, validator):
 
     _, api, _, prefix = cli_setup_dual_manager
 
@@ -149,9 +150,14 @@ def cli_validator_dual_manager_search(cli_setup_dual_manager, validator):
          'project{}_variable{}_scenario{}.nc'.format(*indices))
          archive_names.append(archive_name)
     
-    for name in archive_names:
-         _ = api.create(name)
+    for i, name in enumerate(archive_names):
 
+        if i % 3  == 0: 
+            _ = api.create(name, tags=['team1'])
+        elif i % 2 == 0: 
+            _ = api.create(name, tags=['team2'])
+        else: 
+            _ = api.create(name, tags=['team3'])
 
     validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
 

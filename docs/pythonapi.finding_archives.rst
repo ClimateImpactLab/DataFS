@@ -101,6 +101,10 @@ And lets look at the some of these archives to see what their tags are. We'll us
 :py:meth:`~datafs.core.data_archive.DataArchive.get_tags`
 
 .. include:: ../examples/snippets/pythonapi_finding_archives.py
+    :start-after: .. EXAMPLE-BLOCK-11-START
+    :end-before: .. EXAMPLE-BLOCK-11-END
+
+.. include:: ../examples/snippets/pythonapi_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-12-START
     :end-before: .. EXAMPLE-BLOCK-12-END
 

@@ -37,6 +37,8 @@ class DataAPI(object):
         self._authorities_locked = False
         self._manager_locked = False
 
+        self.cache_by_default = False
+
     def attach_authority(self, service_name, service):
 
         if self._authorities_locked:

@@ -1,0 +1,21 @@
+default-profile: my-data
+profiles:
+    my-data:
+        api:
+            user_config:
+                contact: 'my.email@example.com'
+                name: 'My Name'
+        authorities:
+            osfs:
+                args: [tests/test1]
+                kwargs: {}
+                service: OSFS
+        cache:
+            args: [tests/test2]
+            kwargs: {}
+            service: OSFS
+        manager:
+            class: MongoDBManager
+            kwargs:
+                database_name: 'MyDatabase'
+                table_name: 'DataFiles'

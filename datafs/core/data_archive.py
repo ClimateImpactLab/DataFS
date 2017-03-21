@@ -351,6 +351,7 @@ class DataArchive(object):
             dependencies=None,
             metadata=None,
             message=None,
+            cache=None,
             *args,
             **kwargs):
         '''
@@ -384,6 +385,9 @@ class DataArchive(object):
             Updates to archive metadata. Pass {key: None} to remove a key from
             the archive's metadata.
 
+        cache : bool, optional
+            Cache written version on write (default set by
+            :py:attr:`datafs.DataAPI.cache_by_default`)
 
         args, kwargs sent to file system opener
 
@@ -391,6 +395,9 @@ class DataArchive(object):
 
         if metadata is None:
             metadata = {}
+
+        if cache is None:
+            cache = self.api.cache_by_default
 
         latest_version = self.get_latest_version()
         version = _process_version(self, version)
@@ -444,6 +451,7 @@ class DataArchive(object):
             read_path,
             write_path,
             mode=mode,
+            cache_on_write=cache,
             *args,
             **kwargs)
 
@@ -458,7 +466,8 @@ class DataArchive(object):
             prerelease=None,
             dependencies=None,
             metadata=None,
-            message=None):
+            message=None,
+            cache=None):
         '''
         Returns a local path for read/write
 
@@ -487,10 +496,17 @@ class DataArchive(object):
             Updates to archive metadata. Pass {key: None} to remove a key from
             the archive's metadata.
 
+        cache : bool, optional
+            Cache written version on write (default set by
+            :py:attr:`datafs.DataAPI.cache_by_default`)
+
         '''
 
         if metadata is None:
             metadata = {}
+
+        if cache is None:
+            cache = self.api.cache_by_default
 
         latest_version = self.get_latest_version()
         version = _process_version(self, version)
@@ -542,7 +558,8 @@ class DataArchive(object):
             version_check,
             self.api.hash_file,
             read_path,
-            write_path)
+            write_path,
+            cache_on_write=cache)
 
         with path as fp:
             yield fp

@@ -491,6 +491,18 @@ def api_with_diverse_archives(request):
 
 @pytest.yield_fixture(scope='session', params=['mongo', 'dynamo'])
 def api_with_cache(example_snippet_working_dirs, request):
+    config_file = 'tests/config_files/with_cache_{}.yml'.format(
+        request.param)
+
+    table_name = 'DataFiles'
+
+    with setup_runner_resource(config_file, table_name) as setup:
+        _, api, _, _ = setup
+        yield api
+
+
+@pytest.yield_fixture(scope='session', params=['mongo', 'dynamo'])
+def api_cached_by_default(example_snippet_working_dirs, request):
     config_file = 'tests/config_files/cache_by_default_{}.yml'.format(
         request.param)
 

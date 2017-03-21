@@ -33,7 +33,7 @@ def _process_version(archive, version):
         return BumpableVersion(version)
 
 
-def _process_cache(archive, version, cache):
+def _process_cache_argument(archive, version, cache):
     '''
     Handle cache arguments
 
@@ -435,7 +435,8 @@ class DataArchive(object):
 
         latest_version = self.get_latest_version()
         version = _process_version(self, version)
-        cache = _process_cache(self, version, cache)
+        cache = _process_cache_argument(self, version, cache)
+        cache_on_write = cache
 
         version_hash = self.get_version_hash(version)
 
@@ -461,6 +462,8 @@ class DataArchive(object):
             read_path = self.archive_path
             write_path = self.archive_path
             next_version = None
+            if self.is_cached():
+                cache_on_write = True
 
         # version_check returns true if fp's hash is current as of read
         def version_check(chk):
@@ -486,7 +489,7 @@ class DataArchive(object):
             read_path,
             write_path,
             mode=mode,
-            cache_on_write=cache,
+            cache_on_write=cache_on_write,
             *args,
             **kwargs)
 
@@ -542,7 +545,8 @@ class DataArchive(object):
 
         latest_version = self.get_latest_version()
         version = _process_version(self, version)
-        cache = _process_cache(self, version, cache)
+        cache = _process_cache_argument(self, version, cache)
+        cache_on_write = cache
 
         version_hash = self.get_version_hash(version)
 
@@ -568,6 +572,8 @@ class DataArchive(object):
             read_path = self.archive_path
             write_path = self.archive_path
             next_version = None
+            if self.is_cached():
+                cache_on_write = True
 
         # version_check returns true if fp's hash is current as of read
         def version_check(chk):
@@ -592,7 +598,7 @@ class DataArchive(object):
             self.api.hash_file,
             read_path,
             write_path,
-            cache_on_write=cache)
+            cache_on_write=cache_on_write)
 
         with path as fp:
             yield fp
@@ -600,6 +606,9 @@ class DataArchive(object):
     def download(self, filepath, version=None, cache=None):
         '''
         Downloads a file to a local path
+
+        Parameters
+        ----------
 
         filepath : str
             Local download location on destination machine
@@ -613,7 +622,7 @@ class DataArchive(object):
         '''
 
         version = _process_version(self, version)
-        cache = _process_cache(self, version, cache)
+        cache = _process_cache_argument(self, version, cache)
 
         dirname, filename = os.path.split(
             os.path.abspath(os.path.expanduser(filepath)))
@@ -649,6 +658,9 @@ class DataArchive(object):
                 filename)
 
     def log(self):
+        '''
+        Prints a log of the archive's version history
+        '''
 
         history = self.get_history()
 
@@ -797,6 +809,14 @@ class DataArchive(object):
             raise OSError("Cache creation failed")
 
     def remove_from_cache(self, version=None):
+        '''
+        Parameters
+        ----------
+        version: str or version object
+            version to remove from the cache
+
+        '''
+
         version = _process_version(self, version)
 
         if self.api.cache.fs.isfile(self.get_version_path(version)):
@@ -821,6 +841,17 @@ class DataArchive(object):
         raise ValueError('Version {} not found'.format(version))
 
     def set_dependencies(self, dependencies=None):
+        '''
+        Set the dependencies for the latest version
+
+        See :ref:`Managing Data Dependencies <pythonapi-dependencies>` for more
+        information and examples.
+
+        Parameters
+        ----------
+        dependencies : dict
+            Dependencies dictionary with ``{archive: version}`` pairs.
+        '''
 
         if dependencies is None:
             dependencies = {}

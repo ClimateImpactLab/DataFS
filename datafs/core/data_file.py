@@ -226,12 +226,12 @@ def open_file(
                             write_fs, read_path, cache.fs, write_path)
 
                         _makedirs(authority.fs, fs.path.dirname(write_path))
-                        fs.utils.copyfile(
+                        fs.utils.movefile(
                             cache.fs, write_path, authority.fs, write_path)
 
                     else:
                         _makedirs(authority.fs, fs.path.dirname(write_path))
-                        fs.utils.copyfile(
+                        fs.utils.movefile(
                             write_fs, read_path, authority.fs, write_path)
 
                     update(**checksum)

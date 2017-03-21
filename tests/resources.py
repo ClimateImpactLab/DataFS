@@ -130,4 +130,7 @@ def setup_runner_resource(config_file, table_name):
 
     # teardown
 
-    api.manager.delete_table(table_name)
+    try:
+        api.manager.delete_table(table_name)
+    except KeyError:
+        pass

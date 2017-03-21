@@ -13,24 +13,61 @@ import textwrap
 import time
 
 
-def _process_version(self, version):
-    if not self.versioned and version is None:
+def _process_version(archive, version):
+    if not archive.versioned and version is None:
         return None
 
-    elif not self.versioned and version is not None:
+    elif not archive.versioned and version is not None:
         raise ValueError('Cannot specify version on an unversioned archive.')
 
     elif version is None:
-        return self.get_default_version()
+        return archive.get_default_version()
 
     elif isinstance(version, BumpableVersion):
         return version
 
     elif isinstance(version, string_types) and version == 'latest':
-        return self.get_latest_version()
+        return archive.get_latest_version()
 
     elif isinstance(version, string_types):
         return BumpableVersion(version)
+
+
+def _process_cache(archive, version, cache):
+    '''
+    Handle cache arguments
+
+    If argument "cache" is not None, use this value to define behavior
+
+    If not provided:
+      1. check if the current file is cached. If so, use the cache.
+      2. check if api.cache_by_default is True. If so, use the cache.
+      3. if none of the above, don't use the cache.
+
+    Parameters
+    ----------
+    archive: object
+        DataArchive object
+    version: str or version object
+        version number being read/opened/downloaded
+    cache: bool or None
+        indicates whether archive contents should be cached on read/write or
+        if the default behavior should be used (if None)
+
+    '''
+
+    if cache is None:
+        if archive.is_cached(version=version):
+            cache = True
+        else:
+            cache = archive.api.cache_by_default
+
+    if cache:
+        archive.cache(version=version)
+    else:
+        archive.remove_from_cache(version=version)
+
+    return cache
 
 
 class DataArchive(object):
@@ -386,8 +423,8 @@ class DataArchive(object):
             the archive's metadata.
 
         cache : bool, optional
-            Cache written version on write (default set by
-            :py:attr:`datafs.DataAPI.cache_by_default`)
+            Download to cache on read and save to cache on write (default set
+            by :py:attr:`datafs.DataAPI.cache_by_default`)
 
         args, kwargs sent to file system opener
 
@@ -396,11 +433,9 @@ class DataArchive(object):
         if metadata is None:
             metadata = {}
 
-        if cache is None:
-            cache = self.api.cache_by_default
-
         latest_version = self.get_latest_version()
         version = _process_version(self, version)
+        cache = _process_cache(self, version, cache)
 
         version_hash = self.get_version_hash(version)
 
@@ -497,19 +532,17 @@ class DataArchive(object):
             the archive's metadata.
 
         cache : bool, optional
-            Cache written version on write (default set by
-            :py:attr:`datafs.DataAPI.cache_by_default`)
+            Download to cache on read and save to cache on write (default set
+            by :py:attr:`datafs.DataAPI.cache_by_default`)
 
         '''
 
         if metadata is None:
             metadata = {}
 
-        if cache is None:
-            cache = self.api.cache_by_default
-
         latest_version = self.get_latest_version()
         version = _process_version(self, version)
+        cache = _process_cache(self, version, cache)
 
         version_hash = self.get_version_hash(version)
 
@@ -564,16 +597,23 @@ class DataArchive(object):
         with path as fp:
             yield fp
 
-    def download(self, filepath, version=None):
+    def download(self, filepath, version=None, cache=None):
         '''
-        Downloads a file from authority to local path
+        Downloads a file to a local path
 
-        1. First checks in cache to check if file is there and if it is, is it
-           up to date
-        2. If it is not up to date, it will download the file to cache
+        filepath : str
+            Local download location on destination machine
+
+        version : str
+            Version number of the file to retrieve (default latest)
+
+        cache : bool, optional
+            Download to cache on read and save to cache on write (default set
+            by :py:attr:`datafs.DataAPI.cache_by_default`)
         '''
 
         version = _process_version(self, version)
+        cache = _process_cache(self, version, cache)
 
         dirname, filename = os.path.split(
             os.path.abspath(os.path.expanduser(filepath)))
@@ -752,8 +792,9 @@ class DataArchive(object):
         if not self.api.cache.fs.isfile(self.get_version_path(version)):
             data_file._touch(self.api.cache.fs, self.get_version_path(version))
 
-        assert self.api.cache.fs.isfile(
-            self.get_version_path(version)), "Cache creation failed"
+        if not self.api.cache.fs.isfile(
+                self.get_version_path(version)):
+            raise OSError("Cache creation failed")
 
     def remove_from_cache(self, version=None):
         version = _process_version(self, version)

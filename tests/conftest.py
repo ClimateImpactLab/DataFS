@@ -510,4 +510,5 @@ def api_cached_by_default(example_snippet_working_dirs, request):
 
     with setup_runner_resource(config_file, table_name) as setup:
         _, api, _, _ = setup
+        api.cache_by_default = True
         yield api

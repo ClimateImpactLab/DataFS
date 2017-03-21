@@ -11,7 +11,7 @@ profiles:
                 kwargs: {}
                 service: OSFS
         cache:
-            args: [tests/test2]
+            args: [tests/test3]
             kwargs: {}
             service: OSFS
         manager:

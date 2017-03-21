@@ -14,7 +14,7 @@ from fs.s3fs import S3FS
 from datafs import DataAPI
 from datafs._compat import string_types
 from datafs.core import data_file
-from tests.resources import prep_manager, _close
+from tests.resources import prep_manager, _close, setup_runner_resource
 import shutil
 
 from contextlib import contextmanager
@@ -487,3 +487,15 @@ def api_with_diverse_archives(request):
             }
 
             yield api
+
+
+@pytest.yield_fixture(scope='session', params=['mongo', 'dynamo'])
+def api_with_cache(example_snippet_working_dirs, request):
+    config_file = 'tests/config_files/cache_by_default_{}.yml'.format(
+        request.param)
+
+    table_name = 'DataFiles'
+
+    with setup_runner_resource(config_file, table_name) as setup:
+        _, api, _, _ = setup
+        yield api

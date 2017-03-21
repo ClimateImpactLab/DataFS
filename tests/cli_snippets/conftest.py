@@ -1,7 +1,5 @@
-from click.testing import CliRunner
-from datafs import get_api
 from datafs.datafs import cli
-from contextlib import contextmanager
+from tests.resources import setup_runner_resource
 import pytest
 
 from fs.tempfs import TempFS
@@ -21,33 +19,6 @@ def validator():
     tester.call_engines['python'] = SubprocessValidator()
 
     yield tester
-
-
-@contextmanager
-def setup_runner_resource(config_file, table_name):
-
-    # setup
-
-    runner = CliRunner()
-
-    api = get_api(config_file=config_file)
-
-    prefix = ['--config-file', config_file]
-
-    try:
-        api.manager.delete_table(table_name)
-    except KeyError:
-        pass
-
-    api.manager.create_archive_table(table_name)
-
-    # yield fixture
-
-    yield runner, api, config_file, prefix
-
-    # teardown
-
-    api.manager.delete_table(table_name)
 
 
 @pytest.yield_fixture(scope='session')

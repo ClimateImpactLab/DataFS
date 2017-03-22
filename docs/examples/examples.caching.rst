@@ -4,6 +4,6 @@
 Caching Remote Results Locally
 ==============================
 
-.. include:: ../examples/caching.py
+.. include:: ../../examples/caching.py
     :start-after: '''
     :end-before: '''

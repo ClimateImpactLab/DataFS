@@ -4,6 +4,6 @@
 Using DataFS Locally
 ====================
 
-.. include:: ../examples/local.py
+.. include:: ../../examples/local.py
     :start-after: '''
     :end-before: '''

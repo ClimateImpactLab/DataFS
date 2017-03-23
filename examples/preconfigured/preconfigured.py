@@ -12,9 +12,9 @@ To use AWS resources, you'll need credentials. These are most easily specified
 in a credentials file.
 
 We've provided a sample file
-:download:`here <../examples/preconfigured/credentials>`:
+:download:`here <../../examples/preconfigured/credentials>`:
 
-.. literalinclude:: ../examples/preconfigured/credentials
+.. literalinclude:: ../../examples/preconfigured/credentials
     :linenos:
 
 This file is located ``~/.aws/credentials`` by default, but we'll tell AWS how
@@ -41,9 +41,9 @@ work. DataFS borrows the idea of profiles, allowing you to have multiple
 pre-configured file managers at once.
 
 We'll set up a test profile called "example"
-:download:`here <../examples/preconfigured/.datafs.yml>`:
+:download:`here <../../examples/preconfigured/.datafs.yml>`:
 
-.. literalinclude:: ../examples/preconfigured/.datafs.yml
+.. literalinclude:: ../../examples/preconfigured/.datafs.yml
     :language: yaml
     :linenos:
 
@@ -144,10 +144,10 @@ Users can be managed using policies on AWS's admin console. An example policy
 allowing users to create, update, and find archives without allowing
 them to delete archives or to modify the required metadata specification is
 provided
-:download:`here <../examples/preconfigured/DynamoDB_user_policy.json>`:
+:download:`here <../../examples/preconfigured/DynamoDB_user_policy.json>`:
 
 
-.. literalinclude:: ../examples/preconfigured/DynamoDB_user_policy.json
+.. literalinclude:: ../../examples/preconfigured/DynamoDB_user_policy.json
     :language: json
     :linenos:
 

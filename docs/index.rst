@@ -20,7 +20,7 @@ Contents:
    admin/admin
    contributing
    whatsnew
-   contents/datafs
+   datafs/datafs
    examples/examples
    samples/samples
 

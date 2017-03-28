@@ -14,15 +14,15 @@ Contents:
    readme
    quickstart
    installation
-   configure
-   pythonapi
-   cli
-   admin
+   configure/configure
+   api/python/pythonapi
+   api/cli/cli
+   admin/admin
    contributing
    whatsnew
-   datafs
-   examples
-   samples
+   contents/datafs
+   examples/examples
+   samples/samples
 
 Indices and tables
 ==================

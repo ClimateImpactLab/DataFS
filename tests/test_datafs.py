@@ -225,26 +225,26 @@ def test_log_with_various_messages(api):
     arch.log()
 
     with arch.open('w+') as f:
-        f.write(u'hello 1')
+        f.write(u('hello 1'))
 
     arch.log()
 
     with arch.open('w+', message='hello') as f:
-        f.write(u'hello 2')
+        f.write(u('hello 2'))
 
     arch.log()
 
     with arch.open('w+', message=4) as f:
-        f.write(u'hello 3')
+        f.write(u('hello 3'))
 
     arch.log()
 
     with arch.open('w+', message=lambda x: x**2) as f:
-        f.write(u'hello 4')
+        f.write(u('hello 4'))
 
     arch.log()
 
     with arch.open('w+', message=None) as f:
-        f.write(u'hello 5')
+        f.write(u('hello 5'))
 
     arch.log()

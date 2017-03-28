@@ -200,6 +200,8 @@ class BaseDataManager(object):
         version_metadata['updated'] = self.create_timestamp()
         version_metadata['version'] = str(
             version_metadata.get('version', None))
+        version_metadata['message'] = str(
+            version_metadata.get('message', None))
 
         self._update(archive_name, version_metadata)
 

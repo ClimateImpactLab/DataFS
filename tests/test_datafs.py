@@ -211,3 +211,40 @@ def test_api_locks(api, local_auth):
 
     with pytest.raises((PermissionError, NameError)):
         api.attach_authority('auth', local_auth)
+
+
+def test_log_with_various_messages(api):
+    '''
+    Test :py:meth:`~datafs.core.data_archive.DataArchive.log` stability
+
+    Addresses :issue:`232` - log fails on versions with no message
+    '''
+
+    arch = api.create('test/archive1.txt')
+
+    arch.log()
+
+    with arch.open('w+') as f:
+        f.write(u'hello 1')
+
+    arch.log()
+
+    with arch.open('w+', message='hello') as f:
+        f.write(u'hello 2')
+
+    arch.log()
+
+    with arch.open('w+', message=4) as f:
+        f.write(u'hello 3')
+
+    arch.log()
+
+    with arch.open('w+', message=lambda x: x**2) as f:
+        f.write(u'hello 4')
+
+    arch.log()
+
+    with arch.open('w+', message=None) as f:
+        f.write(u'hello 5')
+
+    arch.log()

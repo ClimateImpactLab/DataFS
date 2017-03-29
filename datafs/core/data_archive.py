@@ -57,6 +57,14 @@ class DataArchive(object):
         return "<{} {}://{}>".format(self.__class__.__name__,
                                      self.authority_name, self.archive_name)
 
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__) and
+            (self.archive_name == other.archive_name) and
+            (self.authority_name == other.authority_name) and
+            (self.archive_path == other.archive_path) and
+            (self.versioned == other.versioned))
+
     @property
     def versioned(self):
         return self._versioned

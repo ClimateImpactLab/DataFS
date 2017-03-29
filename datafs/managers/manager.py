@@ -201,6 +201,9 @@ class BaseDataManager(object):
         version_metadata['version'] = str(
             version_metadata.get('version', None))
 
+        if version_metadata.get('message') is not None:
+            version_metadata['message'] = str(version_metadata['message'])
+
         self._update(archive_name, version_metadata)
 
     def update_metadata(self, archive_name, archive_metadata):

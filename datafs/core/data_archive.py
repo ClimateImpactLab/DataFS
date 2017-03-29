@@ -307,7 +307,7 @@ class DataArchive(object):
         # Get default dependencies from requirements file
         default_dependencies = {
             k: v for k,
-            v in self.api._default_versions.items() if k != self.archive_name}
+            v in self.api.default_versions.items() if k != self.archive_name}
 
         # If no requirements file or is empty:
         if len(default_dependencies) == 0:

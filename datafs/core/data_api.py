@@ -16,7 +16,7 @@ except NameError:
     class PermissionError(NameError):
         pass
 
-_VALID_AUTHORITY_PATTERNS = r'\w+'
+_VALID_AUTHORITY_PATTERNS = r'[\w\-]+'
 
 
 class DataAPI(object):
@@ -30,17 +30,13 @@ class DataAPI(object):
         if default_versions is None:
             default_versions = {}
 
-        default_versions = {
-            self._normalize_archive_name(arch)[1]: v
-            for arch, v in default_versions.items()}
-
         self.user_config = kwargs
 
         self._manager = None
         self._cache = None
         self._authorities = {}
 
-        self._default_versions = default_versions
+        self.default_versions = default_versions
 
         self._authorities_locked = False
         self._manager_locked = False
@@ -97,7 +93,30 @@ class DataAPI(object):
     @property
     def default_authority(self):
         return self._authorities[self.default_authority_name]
-    # attach a metadata index
+
+    @property
+    def default_versions(self):
+        return self._default_versions
+
+    @default_versions.setter
+    def default_versions(self, default_versions):
+        '''
+        Set archive default read versions
+
+        Parameters
+        ----------
+        default_versions: dict
+            Dictionary of archive_name, version pairs. On read/download,
+            archives in this dictionary will download the specified version
+            by default. Before assignment, archive_names are checked and
+            normalized.
+        '''
+
+        default_versions = {
+            self._normalize_archive_name(arch)[1]: v
+            for arch, v in default_versions.items()}
+
+        self._default_versions = default_versions
 
     def attach_manager(self, manager):
 
@@ -121,22 +140,22 @@ class DataAPI(object):
         Parameters
         ----------
 
-        archive_name : str
+        archive_name: str
             Name of the archive
 
-        authority_name : str
+        authority_name: str
             Name of the data service to use as the archive's data authority
 
-        versioned : bool
+        versioned: bool
             If true, store all versions with explicit version numbers (defualt)
 
-        raise_on_err : bool
+        raise_on_err: bool
             Raise an error if the archive already exists (default True)
 
-        metadata : dict
+        metadata: dict
             Dictionary of additional archive metadata
 
-        helper : bool
+        helper: bool
             If true, interactively prompt for required metadata (default False)
 
 
@@ -144,6 +163,9 @@ class DataAPI(object):
 
         authority_name, archive_name = self._normalize_archive_name(
             archive_name, authority_name=authority_name)
+
+        if authority_name is None:
+            authority_name = self.default_authority_name
 
         self._validate_archive_name(archive_name)
 
@@ -172,26 +194,22 @@ class DataAPI(object):
         Parameters
         ----------
 
-        archive_name : str
-
+        archive_name: str
             Name of the archive to retrieve
 
-        default_version : version
-
+        default_version: version
             str or :py:class:`~distutils.StrictVersion` giving the default
             version number to be used on read operations
 
         Returns
         -------
-        archive : object
-
+        archive: object
             New :py:class:`~datafs.core.data_archive.DataArchive` object
 
         Raises
         ------
 
-        KeyError :
-
+        KeyError:
             A KeyError is raised when the ``archive_name`` is not found
 
         '''
@@ -206,7 +224,7 @@ class DataAPI(object):
                 ' Did you mean "{}://{}"?'.format(
                     res['authority_name'], archive_name))
 
-        default_version = self._default_versions.get(archive_name, None)
+        default_version = self.default_versions.get(archive_name, None)
 
         return self._ArchiveConstructor(
             api=self,
@@ -220,11 +238,11 @@ class DataAPI(object):
         Parameters
         ----------
 
-        archive_names : list
+        archive_names: list
 
             Iterable of archive names to retrieve
 
-        default_versions : str, object, or dict
+        default_versions: str, object, or dict
 
             Default versions to assign to each returned archive. If
             ``default_versions`` is a dict, each ``archive_name`` must be a
@@ -236,7 +254,7 @@ class DataAPI(object):
         Returns
         -------
 
-        archives : list
+        archives: list
 
             List of :py:class:`~datafs.core.data_archive.DataArchive` objects.
             If an archive is not found, it is omitted (`batch_get_archive` does
@@ -258,7 +276,7 @@ class DataAPI(object):
                 res['archive_name'])
 
             archive_name = res['archive_name']
-            default_version = self._default_versions.get(archive_name, None)
+            default_version = self.default_versions.get(archive_name, None)
 
             archive = self._ArchiveConstructor(
                 api=self,
@@ -284,7 +302,7 @@ class DataAPI(object):
         Parameters
         ----------
 
-        location : str
+        location: str
 
             Path of the "directory" to search
 
@@ -293,7 +311,7 @@ class DataAPI(object):
             `my_auth://MyFiles/Data`). If the authority is specified as a
             protocol, the `authority_name` argument is ignored.
 
-        authority_name : str
+        authority_name: str
 
             Name of the authority to search (optional)
 
@@ -356,6 +374,13 @@ class DataAPI(object):
         generator
 
         '''
+
+        if pattern is not None:
+            pattern = fs.path.relpath(pattern)
+
+        if prefix is not None:
+            prefix = fs.path.relpath(prefix)
+
         archives = self.manager.search(tuple([]), begins_with=prefix)
 
         if not pattern:
@@ -396,13 +421,16 @@ class DataAPI(object):
             tags to search on. If multiple terms, provided in comma delimited
             string format
 
-        prefix : str
+        prefix: str
             start of archive name. Providing a start string improves search
             speed.
 
         '''
 
         prefix = kwargs.get('prefix')
+
+        if prefix is not None:
+            prefix = fs.path.relpath(prefix)
 
         return self.manager.search(query, begins_with=prefix)
 
@@ -413,13 +441,13 @@ class DataAPI(object):
         Parameters
         ----------
 
-        archive_name : str
+        archive_name: str
             Name of the archive from which to create a service path
 
         Returns
         -------
 
-        archive_path : str
+        archive_path: str
             Internal path used by services to reference archive data
         '''
         archive_name = fs.path.normpath(archive_name)
@@ -437,7 +465,7 @@ class DataAPI(object):
         Parameters
         ----------
 
-        archive_name : str
+        archive_name: str
             Name of the archive to delete
 
         '''
@@ -456,13 +484,13 @@ class DataAPI(object):
         Parameters
         ----------
 
-        f : file-like
+        f: file-like
             File-like object or file path from which to compute checksum value
 
 
         Returns
         -------
-        checksum : dict
+        checksum: dict
             dictionary with {'algorithm': 'md5', 'checksum': hexdigest}
 
         '''

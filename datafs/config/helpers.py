@@ -146,7 +146,7 @@ def get_api(
                     default_versions[archive] = version
 
     api = APIConstructor.generate_api_from_config(profile_config)
-    api._default_versions.update(default_versions)
+    api.default_versions = default_versions
 
     APIConstructor.attach_manager_from_config(api, profile_config)
     APIConstructor.attach_services_from_config(api, profile_config)

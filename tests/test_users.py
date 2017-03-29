@@ -14,6 +14,9 @@ from datafs._compat import u
 
 
 def test_archive_creation_naming_conventions(api):
+    '''
+    Addresses :issue:`220`
+    '''
 
     arch = api.create('my/new/archive.txt')
 
@@ -39,6 +42,9 @@ def test_archive_creation_naming_conventions(api):
 
 
 def test_archive_creation_with_authority(api):
+    '''
+    Addresses :issue:`220`
+    '''
 
     arch = api.create('filesys://my/new/archive.txt')
 
@@ -68,6 +74,9 @@ def test_archive_creation_with_authority(api):
 
 
 def test_archive_creation_with_multiple_authorities(api_dual_auth):
+    '''
+    Addresses :issue:`220`
+    '''
 
     arch = api_dual_auth.create('auth1://my/new/archive.txt')
 
@@ -101,6 +110,10 @@ def test_archive_creation_with_multiple_authorities(api_dual_auth):
 
 
 def test_bad_archive_names(api):
+    '''
+    Addresses :issue:`235`
+    '''
+
     with pytest.raises(ValueError):
         arch = api.create('auth1://my\\~$archive...txt')
         arch.delete()

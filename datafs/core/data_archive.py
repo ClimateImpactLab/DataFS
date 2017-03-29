@@ -632,14 +632,15 @@ class DataArchive(object):
                 output = output + '\n' + (
                     '{:<10} {}'.format(attr+':', val))
 
-            if 'message' in record:
+            if record.get('message', None) is not None:
                 wrapper = textwrap.TextWrapper(
                     initial_indent='    ',
                     subsequent_indent='    ',
                     width=66)
 
                 output = output + '\n\n'
-                output = output + '\n'.join(wrapper.wrap(record['message']))
+                output = output + '\n'.join(
+                    wrapper.wrap(str(record['message'])))
 
             outputs.append(output)
 

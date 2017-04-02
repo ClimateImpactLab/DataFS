@@ -14,11 +14,13 @@ Using :py:meth:`~datafs.DataAPI.listdir`
 
 :py:meth:`~datafs.DataAPI.listdir` works just like typlical unix style ``ls`` in the sense that it returns all objects subordinate to the specified directory. If your team has used ``/`` to organize archive naming then you can explore the archive namespace just as you would explore a directory in a filesystem.
 
-For example if we provide ``impactlab/conflict/global`` as an argument to ``listdir`` we get the following. 
+For example if we provide ``impactlab/conflict/global`` as an argument to ``listdir`` we get the following:  
 
 .. include:: ../examples/snippets/pythonapi_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-1-START
     :end-before: .. EXAMPLE-BLOCK-1-END
+
+It looks like we only have one file ``conflict_global_daily.csv`` in our directory.
 
 Let's see what kind of archives we have in our system. 
 
@@ -26,7 +28,9 @@ Let's see what kind of archives we have in our system.
     :start-after: .. EXAMPLE-BLOCK-2-START
     :end-before: .. EXAMPLE-BLOCK-2-END
 
-Then if we use ``impactlab`` as an argument we see that we have several groupings below this. 
+It looks like our top level directory is ``impactlab``. 
+
+Then if we use ``impactlab`` as an argument we see that we have several directory-like groupings below this. 
 
 .. include:: ../examples/snippets/pythonapi_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-3-START
@@ -77,7 +81,7 @@ Using :py:meth:`~datafs.DataAPI.search`
 ---------------------------------------
 
 
-DataFS :py:meth:`~datafs.DataAPI.search` capabilites are enabled via tagging of archives. The arguments of the :py:meth:`~datafs.DataAPI.search` method are tags associated with a given archive. If archives are not tagged, they cannot be searched with the :py:meth:`~datafs.DataAPI.search` method. 
+DataFS :py:meth:`~datafs.DataAPI.search` capabilites are enabled via tagging of archives. The arguments of the :py:meth:`~datafs.DataAPI.search` method are tags associated with a given archive. If archives are not tagged, they cannot be searched with the :py:meth:`~datafs.DataAPI.search` method. See :ref:`pythonapi-tagging` for info on how to tag archives.
 
 If we use :py:meth:`~datafs.DataAPI.search` without arguments, it is the same implementation as :py:meth:`~datafs.DataAPI.filter` without arguments. 
 
@@ -88,14 +92,11 @@ Let's see this in action.
     :start-after: .. EXAMPLE-BLOCK-9-START
     :end-before: .. EXAMPLE-BLOCK-9-END
 
-Our archives have been tagged with ``team1``, ``team2``, or ``team3`` Let's search for some archives with tag ``team3``.  
+Our archives have been tagged with ``team1``, ``team2``, or ``team3`` Let's search for some archives with tag ``team3``. It brings back 41 archives. So we'll just look at a few. 
 
 .. include:: ../examples/snippets/pythonapi_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-10-START
     :end-before: .. EXAMPLE-BLOCK-10-END
-
-It brings back 41 archives. So we'll just look at a few
-
 
 And lets look at the some of these archives to see what their tags are. We'll use
 :py:meth:`~datafs.core.data_archive.DataArchive.get_tags`
@@ -123,7 +124,7 @@ And let's use :py:meth:`~datafs.core.data_archive.DataArchive.get_tags` to confi
 
 
 
-If you have improvements or suggestions for the documentation please consider making contributions. 
+We want your feedback. If you have improvements or suggestions for the documentation please consider making contributions. 
 
 
 

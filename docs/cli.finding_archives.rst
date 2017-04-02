@@ -15,14 +15,14 @@ You can find archives from the command line interface or from :ref:`python <pyth
 Using ``listdir``
 ~~~~~~~~~~~~~~~~~
 
-In our database we have many archives. We know that ``impactlab`` is a top-level namespace in our database. Let's have a look. 
+In our database we have many archives. We know that ``impactlab`` is a top-level directory-like namespace in our database. Let's have a look. 
 
 .. include:: ../tests/cli_snippets/test_cli_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-1-START
     :end-before: .. EXAMPLE-BLOCK-1-END
 
 
-Ok. We see that ``labor``, ``climate``, ``mortality`` and ``conflict`` are all namespaces below ``impactlab``. Lets have a look at ``conflict``. 
+Ok. We see that ``labor``, ``climate``, ``mortality`` and ``conflict`` are all directory-like namespaces groupings below ``impactlab``. Lets have a look at ``conflict``. 
 
 .. include:: ../tests/cli_snippets/test_cli_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-2-START
@@ -66,7 +66,7 @@ We can also filter archives with archive names containing a specific string by s
 Using ``search``
 ~~~~~~~~~~~~~~~~
 
-DataFS ``search`` capabilites are enabled via tagging of archives. The arguments of the ``search`` command are tags associated with a given archive. If archives are not tagged, they cannot be searched. 
+DataFS ``search`` capabilites are enabled via tagging of archives. The arguments of the ``search`` command are tags associated with a given archive. If archives are not tagged, they cannot be searched. Please see :ref:`this <cli-tagging>` for a reference on how to tag archives.
 
 Our archives have been tagged with ``team1``, ``team2``, or ``team3`` Let's search for some archives with tag ``team3``.
 
@@ -101,6 +101,6 @@ We can see clearly that our archive has been tagged with ``team1``.
 
 
 
-If you find bugs or have suggestions to improve this documentation, please file an issue and make a pull request.  
+We want your feedback. If you find bugs or have suggestions to improve this documentation, please consider contributing. 
 
 

@@ -14,9 +14,9 @@ Snippet 1
 .. code-block:: bash
 
     $ datafs listdir impactlab
+    labor
     climate
     conflict
-    labor
     mortality
 
 .. EXAMPLE-BLOCK-1-END

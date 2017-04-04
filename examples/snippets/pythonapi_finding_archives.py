@@ -150,7 +150,7 @@ Teardown
 
 .. code-block:: python
 
-    >>> try:
+    >>> try: 
     ...     tas_archive.delete()
     ...     precip_archive.delete()
     ...     socio.delete()
@@ -159,7 +159,6 @@ Teardown
     ...     os.remove('test.txt')
     ... except KeyError:
     ...     pass
-    ...
     >>> try:
     ...     api.manager.delete_table('DataFiles')
     ... except KeyError:

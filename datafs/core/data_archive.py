@@ -660,13 +660,14 @@ class DataArchive(object):
 
         '''
 
+        versions = self.get_versions()
+        
         try: 
             self.api.manager.delete_archive_record(self.archive_name)
         except (KeyError, OSError):
             pass
 
-        versions = self.get_versions()
-        
+
         for version in versions:
             if self.authority.fs.exists(self.get_version_path(version)):
                 self.authority.fs.remove(self.get_version_path(version))

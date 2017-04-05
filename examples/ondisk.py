@@ -14,6 +14,7 @@ Set up the workspace
     >>> from datafs import DataAPI
     >>> from datafs.managers.manager_mongo import MongoDBManager
     >>> from fs.s3fs import S3FS
+    >>> from fs.s3fs import RemoveRootError, ResourceNotFoundError
 
 Initialize the API
 
@@ -177,6 +178,5 @@ Cleaning up
 .. code-block:: python
 
     >>> var.delete()
-    >>> api.manager.delete_table('DataFiles')
 
 '''

@@ -11,6 +11,7 @@ import click
 import os
 import textwrap
 import time
+from fs.errors import ResourceNotFoundError
 
 
 def _process_version(self, version):
@@ -660,19 +661,22 @@ class DataArchive(object):
         '''
 
         versions = self.get_versions()
-        self.api.manager.delete_archive_record(self.archive_name)
+        try: 
+            self.api.manager.delete_archive_record(self.archive_name)
+        except (KeyError, OSError):
+            pass
 
         for version in versions:
             if self.authority.fs.exists(self.get_version_path(version)):
                 self.authority.fs.remove(self.get_version_path(version))
         
-        self.api.removedir(self.archive_name, self.authority.fs)
+        self.authority.fs.removedir(self.archive_name, force=True)
 
         if self.api.cache:
             for version in versions:
                 if self.api.cache.fs.exists(self.get_version_path(version)):
                     self.api.cache.fs.remove(self.get_version_path(version))
-            self.api.removedir(self.archive_name, self.api.cache.fs)
+            self.api.cache.fs.removedir(self.archive_name)
 
 
     def isfile(self, version=None, *args, **kwargs):

@@ -9,7 +9,8 @@ import fnmatch
 import re
 import fs.path
 from fs.osfs import OSFS
-from fs.errors import ResourceNotFoundError
+from fs.s3fs import S3FS
+from fs.errors import ResourceNotFoundError, RemoveRootError
 
 
 try:
@@ -570,14 +571,4 @@ class DataAPI(object):
 
         return str_authority_name, relpath
 
-    def removedir(self, archive_name, authority_fs):
-        '''
-        Removes the archive_name level directory in the file system
-
-        '''
-        if authority_fs.__class__.__name__ == 'osfs':
-            try: 
-                authority_fs.removedir(archive_name, recursive=True, force=True)
-            except ResourceNotFoundError:
-                print(ResourceNotFoundError)
 

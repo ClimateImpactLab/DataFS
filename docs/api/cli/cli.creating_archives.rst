@@ -10,8 +10,7 @@ You can create archives from the command line interface or from :ref:`python <py
 
 Create an archive using the ``create`` command:
 
-
-.. include:: ../tests/cli_snippets/test_cli_creating_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_creating_archives.py
     :start-after: .. EXAMPLE-BLOCK-1-START
     :end-before: .. EXAMPLE-BLOCK-1-END
 
@@ -28,7 +27,7 @@ Specifying an Authority
 
 If you have more than one authority, you will need to specify an authority on archive creation:
 
-.. include:: ../tests/cli_snippets/test_cli_creating_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_creating_archives.py
     :start-after: .. EXAMPLE-BLOCK-2-START
     :end-before: .. EXAMPLE-BLOCK-2-END
 
@@ -37,7 +36,7 @@ Adding Metadata
 
 Arbitrary metadata can be added as keyword arguments:
 
-.. include:: ../tests/cli_snippets/test_cli_creating_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_creating_archives.py
     :start-after: .. EXAMPLE-BLOCK-3-START
     :end-before: .. EXAMPLE-BLOCK-3-END
 
@@ -48,7 +47,7 @@ Administrators can set up metadata requirements using the manager's :ref:`admin`
 
 For example, when connected to a manager requiring the `'description'` field:
 
-.. include:: ../tests/cli_snippets/test_cli_creating_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_creating_archives.py
     :start-after: .. EXAMPLE-BLOCK-4-START
     :end-before: .. EXAMPLE-BLOCK-4-END
 
@@ -60,7 +59,7 @@ Using the Helper
 
 Instead of providing all fields in the ``create`` call, you can optionally use the ``helper`` flag. Using the flag ``--helper`` will start an interactive prompt, requesting each required item of metadata:
 
-.. include:: ../tests/cli_snippets/test_cli_creating_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_creating_archives.py
     :start-after: .. EXAMPLE-BLOCK-5-START
     :end-before: .. EXAMPLE-BLOCK-5-END
 

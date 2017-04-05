@@ -38,9 +38,13 @@ and "help wanted" is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-DataFS Distributed Data Management System could always use more documentation, whether as part of the
-official DataFS Distributed Data Management System docs, in docstrings, or even on the web in blog posts,
+DataFS could always use more documentation, whether as part of the
+official docs, in docstrings, or even on the web in blog posts,
 articles, and such.
+
+To test the documentation you write, run the command::
+
+  $ sphinx-build -W -b html -d docs/_build/doctrees docs/. docs/_build/html
 
 Submit Feedback
 ~~~~~~~~~~~~~~~
@@ -57,18 +61,36 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `datafs` for local development.
+Ready to contribute? Great! There are a couple steps to follow when contributing
+code.
 
-1. Fork the `datafs` repo on GitHub.
-2. Clone your fork locally::
+Setting up your development environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    $ git clone git@github.com:your_name_here/datafs.git
-
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+Install your local copy into a virtualenv. Assuming you have virtualenvwrapper
+installed, this is how you set up your fork for local development::
 
     $ mkvirtualenv datafs
     $ cd datafs/
     $ python setup.py develop
+
+Developing your feature
+~~~~~~~~~~~~~~~~~~~~~~~
+
+When making any changes to the DataFS codebase, follow the following steps:
+
+1.  Check for issues on our
+    `issues <https://github.com/ClimateImpactLab/datafs/issues>`_ page. If no
+    issue exists for the feature you would like to add, add one! Make sure
+    the scope of the issue is limited and precise, so anyone can understand the
+    behaviour/feature you would like to see.
+
+
+2. Fork the `datafs` repo on GitHub.
+
+3. Clone your fork locally::
+
+    $ git clone git@github.com:your_name_here/datafs.git
 
 4. Create a branch for local development::
 
@@ -76,13 +98,35 @@ Ready to contribute? Here's how to set up `datafs` for local development.
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox::
+5.  Write tests for your feature first. Think through all the use cases and
+    make sure your tests cover all the ways your code might be used. Include
+    the issue number you are addressing in the docstring of your tests:
 
-    $ flake8 datafs tests
-    $ python setup.py test or py.test
-    $ tox
+    .. code-block:: python
 
-   To get flake8 and tox, just pip install them into your virtualenv.
+        def test_my_new_feature():
+            ''' Test my_new_feature. Addresses :issue:`1234` '''
+
+            # test code
+
+6.  Implement your feature, writing as little code as is required to satisfy the
+    tests you just wrote. Run tests frequently to make sure you are maintaining
+    compatibility with the rest of the package::
+
+        $ python setup.py test
+        $ flake8 datafs tests examples docs
+
+    You can run only the tests you wrote using pytest'sexpression matching
+    syntax, e.g.::
+
+        $ pytest -k test_my_new_feature
+
+7.  When you are passing all of your tests, run the full test suite.
+
+8.  Make changes to the docs describing your new feature if necessary.
+
+9.  Add an entry to the latest whatsnew document describing your changes. Make
+    sure to reference the issue number in your entry.
 
 6. Commit your changes and push your branch to GitHub::
 
@@ -92,23 +136,4 @@ Ready to contribute? Here's how to set up `datafs` for local development.
 
 7. Submit a pull request through the GitHub website.
 
-Pull Request Guidelines
------------------------
-
-Before you submit a pull request, check that it meets these guidelines:
-
-1. The pull request should include tests.
-2. If the pull request adds functionality, the docs should be updated. Put
-   your new functionality into a function with a docstring, and add the
-   feature to the list in README.rst.
-3. The pull request should work for Python 2.6, 2.7, 3.3, 3.4 and 3.5, and for PyPy. Check
-   https://travis-ci.org/ClimateImpactLab/datafs/pull_requests
-   and make sure that the tests pass for all supported Python versions.
-
-Tips
-----
-
-To run a subset of tests::
-
-$ py.test tests.test_datafs
-
+Happy hunting!

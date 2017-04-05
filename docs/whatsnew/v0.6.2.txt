@@ -7,12 +7,12 @@ v0.6.2 (January 9, 2017)
 New features
 ~~~~~~~~~~~~
 
-  - New template in docs for AWS configuration (GH #73)
+  - New template in docs for AWS configuration (:issue:`73`)
 
 Backwards incompatible API changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  - Drop DataArchive properties that access manager (GH #72)
+  - Drop DataArchive properties that access manager (:issue:`72`)
   - Manager archive listing attribute ``versions`` changed to
     ``version_history``
 

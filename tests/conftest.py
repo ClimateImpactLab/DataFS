@@ -487,3 +487,12 @@ def api_with_diverse_archives(request):
             }
 
             yield api
+
+
+@pytest.yield_fixture(scope='function')
+def api_dual_auth(api1, auth1, auth2):
+
+    api1.attach_authority('auth1', auth1)
+    api1.attach_authority('auth2', auth2)
+
+    yield api1

@@ -1,0 +1,93 @@
+.. _whatsnew_0_7_1:
+
+v0.7.1 (Latest Build)
+---------------------
+
+New features
+~~~~~~~~~~~~
+
+  - Archive names are normalized in DataAPI methods. See :ref:`normalizing archive names <normalizing_archive_names>` (:issue:`220` & :issue:`235`).
+
+.. _normalizing_archive_name
+Normalizing archive names
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~datafs.DataAPI` methods :py:meth:`~datafs.DataAPI.create`,
+:py:meth:`~datafs.DataAPI.get_archive`, :py:meth:`~datafs.DataAPI.batch_get_archive` and
+:py:meth:`~datafs.DataAPI.listdir`, and the :py:meth:`~datafs.DataAPI.default_versions` property,
+are normalized using ``DataAPI._normalize_archive_name()``. This allows users to create and get
+archives using leading slashes and authority names interchangably. For example, the following are
+all equivalent:
+
+.. code-block:: python
+
+    >>> api.create('my/sample/archive.txt')
+    >>> api.create('/my/sample/archive.txt')
+    >>> api.create('authority://my/sample/archive.txt')
+
+Furthermore, they can all be found using similarly flexible searches. The following will all return
+the archive_name or archive created in the above examples:
+
+.. code-block:: python
+
+    >>> api.get_archive('my/sample/archive.txt')
+    >>> api.get_archive('/my/sample/archive.txt')
+    >>> api.get_archive('authority://my/sample/archive.txt')
+    >>> api.batch_get_archive(['authority://my/sample/archive.txt'])
+    >>> api.search(prefix='my/samp')
+    >>> api.search(prefix='/my/samp')
+    >>> api.search(pattern='my/samp*')
+    >>> api.search(pattern='*my/samp*')
+    >>> api.search(pattern='/my/samp*')
+
+Search patterns do not accept authority names:
+
+    >>> api.search(prefix='authority://my') # no results
+
+
+Archive name checking
+.....................
+
+The normalization process catches illegal archive names:
+
+    >>> api.create('!!!\\\\~')
+    Traceback (most recent call last):
+    ...
+    fs.errors.InvalidCharsInPathError: Path contains invalid characters: !!!\\~
+
+This error checking is done by ``fs``, using the implementations of
+:py:meth:`~fs.base.BaseFS.validatepath` on the relevant authority. Currently, both
+:py:meth:`fs.osfs.OSFS.validatepath` and the method on whatever filesystem is used by the authority
+are both checked. This dual restriction is used because checking against OSFS restrictions is useful
+to prevent errors when using a cache.
+
+Backwards incompatible API changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - Authority names are now limited to names that match ``r'[\w\-]+'``. This regex value is set by
+    the module parameter ``_VALID_AUTHORITY_PATTERNS`` in ``datafs/core/data_api.py``
+    (:issue:`186`).
+
+  - Introduces a new property :py:meth:`datafs.DataAPI.default_versions`, which does archive name
+    coersion/alignment. :py:meth:`datafs.DataAPI._default_versions` should no longer be accessed
+    under any circumstances (:issue:`220` and :issue:`235`).
+
+
+Performance Improvements
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Bug Fixes
+~~~~~~~~~
+
+	- Messages are now coerced to strings, and :py:meth:`~datafs.core.data_archive.log` and the CLI ``log`` command no longer fail when used on archives with non-string messages (:issue:`232`)
+
+
+Under the hood
+~~~~~~~~~~~~~~
+
+	- Use ``:issue:`` and ``:pull:`` directives to reference a github issue or pull request (:issue:`209`)
+	- The sphinx build is now tested on travis. Run the tests locally with the command ``sphinx-build -W -b html -d docs/_build/doctrees docs/. docs/_build/html`` (:issue:`211`)
+	- The docs structure has been reorganized
+
+See the issue tracker on GitHub for a complete list.

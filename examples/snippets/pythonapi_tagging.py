@@ -6,7 +6,8 @@ Python API: Tagging
 
 This is the tested source code for the snippets used in
 :ref:`pythonapi-tagging`. The config file we're using in this example
-can be downloaded :download:`here <../examples/snippets/resources/datafs.yml>`.
+can be downloaded
+:download:`here <../../examples/snippets/resources/datafs.yml>`.
 
 Setup
 -----
@@ -26,7 +27,7 @@ We test with the following setup:
 
 This assumes that you have a config file at the above location. The config file
 we're using in this example can be downloaded
-:download:`here <../examples/snippets/resources/datafs.yml>`.
+:download:`here <../../examples/snippets/resources/datafs.yml>`.
 
 clean up any previous test failures
 

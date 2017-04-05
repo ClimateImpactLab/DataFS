@@ -1,0 +1,5 @@
+ - [ ] closes #xxxx
+ - [ ] tests added / passed
+ - [ ] docs reflect changes
+ - [ ] passes ``flake8 datafs examples tests docs``
+ - [ ] whatsnew entry

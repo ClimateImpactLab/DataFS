@@ -1,18 +1,16 @@
 '''
-
-.. _snippets-pythonapi-finding-archives: 
+.. _snippets-pythonapi-finding-archives:
 
 Python API: Searching and Finding Archives
 ==========================================
 
 This is the tested source code for the snippets used in
 :ref:`pythonapi-finding-archives`. The config file we're using in this example
-can be downloaded :download:`here <../../examples/snippets/resources/datafs.yml>`.
-
+can be downloaded 
+:download:`here <../../examples/snippets/resources/datafs.yml>`.
 
 Setup
 -----
-
 .. code-block:: python
 
     >>> import datafs
@@ -62,15 +60,15 @@ Set up some archives to search
     >>> with open('test.txt', 'w') as f:
     ...     f.write('test test')
     ...
-    >>> tas_archive = api.create('impactlab/climate/tas/tas_daily_us.csv')
+    >>> tas_archive = api.create('impactlab/climate/tas/tas_day_us.csv')
     >>> tas_archive.update('test.txt')
-    >>> precip_archive = api.create('impactlab/climate/pr/pr_daily_us.csv')
+    >>> precip_archive = api.create('impactlab/climate/pr/pr_day_us.csv')
     >>> precip_archive.update('test.txt')
-    >>> socio = api.create('impactlab/mortality/global/mortality_global_daily.csv')
+    >>> socio = api.create('impactlab/mortality/global/mortality_glob_day.csv')
     >>> socio.update('test.txt')
-    >>> socio1 = api.create('impactlab/conflict/global/conflict_global_daily.csv')
+    >>> socio1 = api.create('impactlab/conflict/global/conflict_glob_day.csv')
     >>> socio1.update('test.txt')
-    >>> socio2 = api.create('impactlab/labor/global/labor_global_daily.csv')
+    >>> socio2 = api.create('impactlab/labor/global/labor_glob_day.csv')
     >>> socio2.update('test.txt')
 
 Example 1
@@ -81,9 +79,9 @@ Displayed example 1 code
 .. EXAMPLE-BLOCK-1-START
 
 .. code-block:: python
-    
+
     >>> api.listdir('impactlab/conflict/global')
-    [u'conflict_global_daily.csv']
+    [u'conflict_glob_day.csv']
 
 .. EXAMPLE-BLOCK-1-END
 
@@ -109,7 +107,7 @@ Displayed example 3 code
 .. EXAMPLE-BLOCK-3-START
 
 .. code-block:: python
-    
+
     >>> api.listdir('impactlab')
     [u'labor', u'climate', u'conflict', u'mortality']
     
@@ -139,8 +137,8 @@ Displayed example 5 code
 .. code-block:: python
     
     >>> api.listdir('impactlab/conflict/global')
-    [u'conflict_global_daily.csv']
-    >>> api.listdir('impactlab/conflict/global/conflict_global_daily.csv')
+    [u'conflict_glob_day.csv']
+    >>> api.listdir('impactlab/conflict/global/conflict_glob_day.csv')
     [u'0.0.1']
 
 .. EXAMPLE-BLOCK-5-END
@@ -150,7 +148,7 @@ Teardown
 
 .. code-block:: python
 
-    >>> try: 
+    >>> try:
     ...     tas_archive.delete()
     ...     precip_archive.delete()
     ...     socio.delete()
@@ -163,7 +161,6 @@ Teardown
     ...     api.manager.delete_table('DataFiles')
     ... except KeyError:
     ...     pass
-
 
 Setup
 
@@ -213,9 +210,7 @@ Displayed example 6 code
     u'project1_variable1_scenario3.nc', u'project1_variable1_scenario4.nc', 
     u'project1_variable1_scenario5.nc']
     
-    
 .. EXAMPLE-BLOCK-6-END
-
 
 Example 7
 ---------
@@ -226,15 +221,14 @@ Displayed example 7 code
 
 .. code-block:: python
 
-    >>> filtered_list2 = api.filter(pattern='*_variable4_scenario4.nc', engine='path')
+    >>> filtered_list2 = api.filter(pattern='*_variable4_scenario4.nc', 
+    ...     engine='path')
     >>> list(filtered_list2) # doctest: +NORMALIZE_WHITESPACE
     [u'project1_variable4_scenario4.nc', u'project2_variable4_scenario4.nc',
     u'project3_variable4_scenario4.nc', u'project4_variable4_scenario4.nc',
     u'project5_variable4_scenario4.nc']
 
-
 .. EXAMPLE-BLOCK-7-END
-
 
 Example 8
 ---------
@@ -252,10 +246,7 @@ Displayed example 8 code
     [u'project1_variable2_scenario1.nc', u'project1_variable2_scenario2.nc', 
     u'project1_variable2_scenario3.nc', u'project1_variable2_scenario4.nc']
 
-
 .. EXAMPLE-BLOCK-8-END
-
-
 
 Example 9
 ---------
@@ -273,13 +264,10 @@ Displayed example 9 code
     >>> len(archives_filter)
     125
 
-
 .. EXAMPLE-BLOCK-9-END
-
 
 Example 10
 ----------
-
 
 Displayed example 10 code
 
@@ -299,7 +287,6 @@ Displayed example 10 code
 Example 11
 ----------
 
-
 Displayed example 11 code
 
 .. EXAMPLE-BLOCK-11-START
@@ -317,7 +304,6 @@ Displayed example 11 code
 Example 12
 ----------
 
-
 Displayed example 12 code
 
 .. EXAMPLE-BLOCK-12-START
@@ -333,10 +319,8 @@ Displayed example 12 code
 
 .. EXAMPLE-BLOCK-12-END
 
-
 Example 13
 ----------
-
 
 Displayed example 13 code
 
@@ -360,4 +344,3 @@ Teardown
     >>> api.manager.delete_table('DataFiles')
 
 '''
-

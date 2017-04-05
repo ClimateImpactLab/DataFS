@@ -22,7 +22,7 @@ Snippet 1 teardown
 .. code-block:: bash
 
     $ datafs delete my_archive
-    deleted archive <DataArchive local://my_archive> 
+    deleted archive <DataArchive local://my_archive>
 
 ''')
 
@@ -130,6 +130,3 @@ Snippet 5 teardown
     deleted archive <DataArchive local://my_archive>
 
 ''')
-
-
-

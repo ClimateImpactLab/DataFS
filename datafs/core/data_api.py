@@ -9,9 +9,6 @@ import fnmatch
 import re
 import fs.path
 from fs.osfs import OSFS
-from fs.s3fs import S3FS
-from fs.errors import ResourceNotFoundError, RemoveRootError
-
 
 try:
     PermissionError
@@ -570,5 +567,3 @@ class DataAPI(object):
         OSFS('').isvalidpath(relpath)
 
         return str_authority_name, relpath
-
-

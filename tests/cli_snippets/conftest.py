@@ -13,7 +13,6 @@ from clatter.validators import (
     ClickValidator,
     SubprocessValidator)
 
-
 @pytest.yield_fixture(scope='session')
 def validator():
 
@@ -69,7 +68,7 @@ def cli_setup_dual_auth(example_snippet_working_dirs):
     with setup_runner_resource(config_file, table_name) as setup:
         yield setup
 
-@pytest.yield_fixture(scope='session', params = ['mongo', 'dynamo'])
+@pytest.yield_fixture(scope='session', params=['mongo', 'dynamo'])
 def cli_setup_dual_manager(example_snippet_working_dirs, request):
 
 
@@ -83,6 +82,7 @@ def cli_setup_dual_manager(example_snippet_working_dirs, request):
 
     with setup_runner_resource(config_file, table_name) as setup:
         yield setup
+
 
 @pytest.yield_fixture(scope='function')
 def cli_validator(cli_setup, validator):
@@ -137,8 +137,6 @@ def cli_validator_dual_manager_listdir(cli_setup_dual_manager, validator):
          pass
 
 
-
-
 @pytest.yield_fixture(scope='function')
 def cli_validator_dual_manager_various(cli_setup_dual_manager, validator):
 
@@ -176,8 +174,6 @@ def cli_validator_dual_manager_various(cli_setup_dual_manager, validator):
     del validator.call_engines['datafs']
 
 
-
-
 @pytest.yield_fixture(scope='function')
 def cli_validator_with_description(cli_setup, cli_validator):
 
@@ -213,4 +209,3 @@ def cli_validator_dual_auth(cli_setup_dual_auth, validator):
     finally:
         api._authorities['my_authority'].fs.close()
         del validator.call_engines['datafs']
-

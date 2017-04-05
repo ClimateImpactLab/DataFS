@@ -1,5 +1,4 @@
 import pytest
-import datafs 
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
@@ -46,15 +45,12 @@ Snippet 3
     
 .. EXAMPLE-BLOCK-3-END
 
-
-
 ''')
+
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
 def test_cli_filter(cli_validator_dual_manager_various):
-
-
 
        cli_validator_dual_manager_various(r'''
 
@@ -107,15 +103,12 @@ Snippet 6
 
 .. EXAMPLE-BLOCK-6-END
 
-
 ''')
 
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
 def test_cli_search(cli_validator_dual_manager_various):
-
-
 
        cli_validator_dual_manager_various(r'''
 
@@ -150,7 +143,6 @@ Snippet 8
     $ datafs get_tags project2_variable2_scenario2.nc 
     team3
 .. EXAMPLE-BLOCK-8-END
-
 
 
 Snippet 9
@@ -190,10 +182,3 @@ Snippet 10
 
 
 ''')
-
-
-
-
-
-
-

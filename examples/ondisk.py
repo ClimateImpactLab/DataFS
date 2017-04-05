@@ -171,12 +171,12 @@ Now let's open the file and see if our change was saved:
         version: version 2
 
 
-
-Cleaning up
-~~~~~~~~~~~
+Clean-Up
 
 .. code-block:: python
 
-    >>> var.delete()
+    >>> api.delete_archive('streaming_archive')
+
+
 
 '''

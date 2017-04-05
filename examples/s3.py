@@ -227,7 +227,7 @@ Cleaning up
 
 .. code-block:: python
 
-    >>> var.delete()
+    >>> api.delete_archive('my_remote_archive')
 
 
 Next steps

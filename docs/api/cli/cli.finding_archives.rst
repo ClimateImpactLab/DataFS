@@ -17,20 +17,20 @@ Using ``listdir``
 
 In our database we have many archives. We know that ``impactlab`` is a top-level directory-like namespace in our database. Let's have a look. 
 
-.. include:: ../tests/cli_snippets/test_cli_finding_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-1-START
     :end-before: .. EXAMPLE-BLOCK-1-END
 
 
 Ok. We see that ``labor``, ``climate``, ``mortality`` and ``conflict`` are all directory-like namespaces groupings below ``impactlab``. Lets have a look at ``conflict``. 
 
-.. include:: ../tests/cli_snippets/test_cli_finding_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-2-START
     :end-before: .. EXAMPLE-BLOCK-2-END
 
 Let's see what is in ``impactlab/conflict/global``. 
 
-.. include:: ../tests/cli_snippets/test_cli_finding_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-3-START
     :end-before: .. EXAMPLE-BLOCK-3-END
 
@@ -44,19 +44,19 @@ DataFS lets you filter so you can limit the search space on archive names. At th
 Let's look at using the ``prefix`` ``project1_variable1_`` which corresponds to the ``prefix`` option, the beginning string of a set of archive names. 
 
 
-.. include:: ../tests/cli_snippets/test_cli_finding_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-4-START
     :end-before: .. EXAMPLE-BLOCK-4-END
 
 We can also filter on ``path``. In this case we want to filter all NetCDF files that match a specific pattern. We need to set our ``engine`` value to ``path`` and put in our search pattern.
 
-.. include:: ../tests/cli_snippets/test_cli_finding_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-5-START
     :end-before: .. EXAMPLE-BLOCK-5-END
 
 We can also filter archives with archive names containing a specific string by setting ``engine`` to ``str``. In this example we want all archives with the string ``variable2``. 
 
-.. include:: ../tests/cli_snippets/test_cli_finding_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-6-START
     :end-before: .. EXAMPLE-BLOCK-6-END
 
@@ -70,14 +70,14 @@ DataFS ``search`` capabilites are enabled via tagging of archives. The arguments
 
 Our archives have been tagged with ``team1``, ``team2``, or ``team3`` Let's search for some archives with tag ``team3``.
 
-.. include:: ../tests/cli_snippets/test_cli_finding_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-7-START
     :end-before: .. EXAMPLE-BLOCK-7-END
 
 
 Let's use ``get_tags`` to have a look at one of our archives' tags.
 
-.. include:: ../tests/cli_snippets/test_cli_finding_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-8-START
     :end-before: .. EXAMPLE-BLOCK-8-END
 
@@ -86,14 +86,14 @@ We can see that indeed it has been tagged with ``team3``.
 
 For completeness, let's have a look at archives with tag of ``team1``.   
 
-.. include:: ../tests/cli_snippets/test_cli_finding_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-9-START
     :end-before: .. EXAMPLE-BLOCK-9-END
 
 And now let's have a look at one of them to see what tags are associated with it.
 
 
-.. include:: ../tests/cli_snippets/test_cli_finding_archives.py
+.. include:: ../../../tests/cli_snippets/test_cli_finding_archives.py
     :start-after: .. EXAMPLE-BLOCK-10-START
     :end-before: .. EXAMPLE-BLOCK-10-END
 

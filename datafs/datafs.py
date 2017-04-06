@@ -303,6 +303,17 @@ def update(
     click.echo('uploaded data to {}.{}'.format(var, bumpmsg))
 
 
+# @cli.command()
+# @cli.argument('remove_dir')
+# @cli.argument('path')
+# @cli.option
+# @cli.option
+# @cli.option
+# @cli.option
+# @cli.option
+# @click.pass_context
+
+
 @cli.command(
     context_settings=dict(
         ignore_unknown_options=True,

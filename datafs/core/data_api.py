@@ -8,6 +8,7 @@ import hashlib
 import fnmatch
 import re
 import fs.path
+import fs.base 
 from fs.osfs import OSFS
 
 try:
@@ -473,6 +474,51 @@ class DataAPI(object):
         archive = self.get_archive(archive_name)
 
         archive.delete()
+
+    def remove_dir(self, path, authority_name=None,recursive=False, 
+                                    force=False, cache=False):
+
+        '''
+        removes the file system objects associated with an archive_name
+
+
+            Deleting archive_name name space will erase all data associated
+            with file system object
+            For help setting user permissions, see
+            :ref:`Administrative Tools <admin>`
+
+        Parameters
+        ----------
+        path: str
+            name-space to be removed from file system
+
+        authority_name: str
+            file system authority for the archive
+
+        recursive: bool
+            If True, will remove empty file system objects subordinate to the 
+            the name space provided
+
+        force: bool
+            If True, will remove file system objects wether or not they are 
+            empty
+
+        cache: bool
+            If True, will remove name space from cache file system
+
+        '''
+        authority_name, path = self._normalize_archive_name(
+            path,
+            authority_name=authority_name)
+
+        if authority_name is None:
+            authority_name = self.default_authority_name
+
+        self._authorities[authority_name].fs.removedir(path, 
+                recursive=recursive, force=force)
+
+        if cache:
+            self._cache.fs.removedir(path, recursive=recursive, force=force)
 
     @staticmethod
     def hash_file(f):

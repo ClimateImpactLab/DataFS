@@ -659,33 +659,34 @@ class DataArchive(object):
 
         '''
 
-        # we need version paths before we delete from manager
-        versions = self.get_versions()
 
-        # delete from manager. Error handling is for situations
-        # where archive has been removed from manager but still 
-        # exists in filesystem.
-        try:
-            self.api.manager.delete_archive_record(self.archive_name)
-        except (KeyError):
-            print('Archive not found in manager')
-
-        # delete versions from fs
-        for version in versions:
-            if self.authority.fs.exists(self.get_version_path(version)):
-                self.authority.fs.remove(self.get_version_path(version))
-        
-        # delete archive_name name space in fs
-        if self.authority.fs.exists(self.archive_name):
-            self.authority.fs.removedir(self.archive_name)
-
-        # if we have a cache, remove versions from cache and remove
-        # archive_name name space
-        if self.api.cache:
+        if self._versioned:
+            versions = self.get_versions()
             for version in versions:
-                if self.api.cache.fs.exists(self.get_version_path(version)):
-                    self.api.cache.fs.remove(self.get_version_path(version))
-            self.api.cache.fs.removedir(self.archive_name)
+                if self.authority.fs.exists(self.get_version_path(version)):
+                    self.authority.fs.remove(self.get_version_path(version))
+            
+                if self.api.cache:
+                    if self.api.cache.fs.exists(self.get_version_path(version)):
+                        self.api.cache.fs.remove(self.get_version_path(version))
+                    self.api.remove_dir(self.archive_name, recursive=False, 
+                                    force=False, cache=True)
+
+            if self.authority.fs.exists(self.archive_name):
+                self.api.remove_dir(self.archive_name, recursive=False, force=False, 
+                        cache=False)
+
+        else:
+            if self.authority.fs.isfile(self.archive_name):
+                self.authority.fs.remove(self.archive_name)
+                if self.api.cache:
+                    if selg.api.cache.fs.isfile(self.archive_name):
+                        self.api.cache.fs.remove(self.archive_name)
+
+
+        self.api.manager.delete_archive_record(self.archive_name)
+
+
 
     def isfile(self, version=None, *args, **kwargs):
         '''

@@ -659,29 +659,33 @@ class DataArchive(object):
 
         '''
 
-
         if self._versioned:
             versions = self.get_versions()
             for version in versions:
-                if self.authority.fs.exists(self.get_version_path(version)):
-                    self.authority.fs.remove(self.get_version_path(version))
+
+                self.api.remove(self.get_version_path(version), 
+                                authority_name=self.authority_name)
             
-                if self.api.cache:
-                    if self.api.cache.fs.exists(self.get_version_path(version)):
-                        self.api.cache.fs.remove(self.get_version_path(version))
-                    self.api.remove_dir(self.archive_name, recursive=False, 
-                                    force=False, cache=True)
+                if self.is_cached(version=version):
+                    self.remove_from_cache(version=version)
+                    self.api.remove_dir(self.archive_name,
+                            authority_name=self.authority_name, 
+                            recursive=False, 
+                            force=False, 
+                            cache=True)
 
             if self.authority.fs.exists(self.archive_name):
-                self.api.remove_dir(self.archive_name, recursive=False, force=False, 
-                        cache=False)
+                self.api.remove_dir(self.archive_name, 
+                                    authority_name=self.authority_name,
+                                    recursive=False, 
+                                    force=False, cache=False)
 
         else:
-            if self.authority.fs.isfile(self.archive_name):
-                self.authority.fs.remove(self.archive_name)
-                if self.api.cache:
-                    if selg.api.cache.fs.isfile(self.archive_name):
-                        self.api.cache.fs.remove(self.archive_name)
+            self.api.remove(self.archive_name, 
+                            authority_name=self.authority_name)
+
+            if self.api.cache:
+                 self.remove_from_cache()
 
 
         self.api.manager.delete_archive_record(self.archive_name)

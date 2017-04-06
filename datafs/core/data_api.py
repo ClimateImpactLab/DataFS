@@ -479,7 +479,8 @@ class DataAPI(object):
                                     force=False, cache=False):
 
         '''
-        removes the file system objects associated with an archive_name
+        removes the directory level file system objects a
+        ssociated with an archive_name. 
 
 
             Deleting archive_name name space will erase all data associated
@@ -506,6 +507,10 @@ class DataAPI(object):
         cache: bool
             If True, will remove name space from cache file system
 
+        Returns
+        -------
+        None
+
         '''
         authority_name, path = self._normalize_archive_name(
             path,
@@ -519,6 +524,26 @@ class DataAPI(object):
 
         if cache:
             self._cache.fs.removedir(path, recursive=recursive, force=force)
+
+    def remove(self, archive_name, authority_name=None):
+        '''
+        Removes file system objects from a file system
+
+        Parameters
+        ----------
+        archive_name: str
+
+        '''
+
+        authority_name, archive_name = self._normalize_archive_name(
+            archive_name,
+            authority_name=authority_name)
+
+        if authority_name is None:
+            authority_name = self.default_authority_name
+
+        if self._authorities[authority_name].fs.exists(archive_name):
+                    self._authorities[authority_name].fs.remove(archive_name)
 
     @staticmethod
     def hash_file(f):

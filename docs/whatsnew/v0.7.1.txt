@@ -6,11 +6,14 @@ v0.7.1 (Latest Build)
 New features
 ~~~~~~~~~~~~
 
-- Archive names are normalized in DataAPI methods. See :ref:`normalizing archive names <normalizing_archive_names>` (:issue:`220` & :issue:`235`).
+- Archive names are normalized in DataAPI methods. See `Normalizing archive names`_ (:issue:`220` & :issue:`235`).
 
-- Tags are now normalized to lowercase strings. See :ref:`normalize_tags <normalize_tags>`
+- Tags are now normalized to lowercase strings. See `Normalize tags`_ (:issue:`243`).
 
-.. _normalizing_archive_name
+
+
+.. _Normalizing archive names:  
+
 Normalizing archive names
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -47,15 +50,15 @@ Search patterns do not accept authority names:
     >>> api.search(prefix='authority://my') # no results
 
 
-.. _normalize_tags
-Normalizing tags
-~~~~~~~~~~~~~~~~
+.. _Normalize tags:
+
+Normalize Tags
+^^^^^^^^^^^^^^
 
 On :py:class:`~datafs.DataAPI` method :py:meth:`~datafs.DataAPI.create`, and
 :py:class:`~datafs.DataArchive` method :py:meth:`~datafs.DataArchive.add_tags` and 
-py:meth:`~datafs.DataArchive.get_tags`.
+:py:meth:`~datafs.DataArchive.get_tags`.
 
-... code-block:: python
 
     >>> arch1 = api.create('my_archive', tags=['TAG1', 'tag2', 42])
     >>> arch1.get_tags()
@@ -63,10 +66,11 @@ py:meth:`~datafs.DataArchive.get_tags`.
     >>>
     >>> arch1.add_tags('tAg4', 21)
     >>> arch1.get_tags()
+    ['tag1', 'tag2', '42', 'tag4', '21']
 
 
 Archive name checking
-.....................
+^^^^^^^^^^^^^^^^^^^^^
 
 The normalization process catches illegal archive names:
 
@@ -91,7 +95,6 @@ Backwards incompatible API changes
   - Introduces a new property :py:meth:`datafs.DataAPI.default_versions`, which does archive name
     coersion/alignment. :py:meth:`datafs.DataAPI._default_versions` should no longer be accessed
     under any circumstances (:issue:`220` and :issue:`235`).
-
 
 
 

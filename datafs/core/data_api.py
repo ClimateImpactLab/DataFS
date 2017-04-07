@@ -8,7 +8,6 @@ import hashlib
 import fnmatch
 import re
 import fs.path
-import fs.base 
 from fs.osfs import OSFS
 
 try:
@@ -475,12 +474,11 @@ class DataAPI(object):
 
         archive.delete()
 
-    def remove_dir(self, path, authority_name=None,recursive=False, 
-                                    force=False, cache=False):
-
+    def remove_dir(self, path, authority_name=None, recursive=False,
+                    force=False, cache=False):
         '''
         removes the directory level file system objects a
-        ssociated with an archive_name. 
+        ssociated with an archive_name.
 
 
             Deleting archive_name name space will erase all data associated
@@ -497,11 +495,11 @@ class DataAPI(object):
             file system authority for the archive
 
         recursive: bool
-            If True, will remove empty file system objects subordinate to the 
+            If True, will remove empty file system objects subordinate to the
             the name space provided
 
         force: bool
-            If True, will remove file system objects wether or not they are 
+            If True, will remove file system objects wether or not they are
             empty
 
         cache: bool
@@ -519,8 +517,8 @@ class DataAPI(object):
         if authority_name is None:
             authority_name = self.default_authority_name
 
-        self._authorities[authority_name].fs.removedir(path, 
-                recursive=recursive, force=force)
+        self._authorities[authority_name].fs.removedir(path,
+                    recursive=recursive, force=force)
 
         if cache:
             self._cache.fs.removedir(path, recursive=recursive, force=force)

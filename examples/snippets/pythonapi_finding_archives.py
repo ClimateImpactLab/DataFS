@@ -6,7 +6,7 @@ Python API: Searching and Finding Archives
 
 This is the tested source code for the snippets used in
 :ref:`pythonapi-finding-archives`. The config file we're using in this example
-can be downloaded 
+can be downloaded
 :download:`here <../../examples/snippets/resources/datafs.yml>`.
 
 Setup
@@ -93,7 +93,7 @@ Displayed example 2 code
 .. EXAMPLE-BLOCK-2-START
 
 .. code-block:: python
-    
+
     >>> api.listdir('')
     [u'impactlab']
 
@@ -110,7 +110,7 @@ Displayed example 3 code
 
     >>> api.listdir('impactlab')
     [u'labor', u'climate', u'conflict', u'mortality']
-    
+
 .. EXAMPLE-BLOCK-3-END
 
 Example 4
@@ -121,7 +121,7 @@ Displayed example 4 code
 .. EXAMPLE-BLOCK-4-START
 
 .. code-block:: python
-    
+
     >>> api.listdir('impactlab/conflict')
     [u'global']
 
@@ -135,7 +135,7 @@ Displayed example 5 code
 .. EXAMPLE-BLOCK-5-START
 
 .. code-block:: python
-    
+
     >>> api.listdir('impactlab/conflict/global')
     [u'conflict_glob_day.csv']
     >>> api.listdir('impactlab/conflict/global/conflict_glob_day.csv')
@@ -183,7 +183,7 @@ Filter example setup
     ...         api.create(name, tags=['team1'])
     ...     elif i % 2 == 0: 
     ...         api.create(name, tags=['team2'])
-    ...     else: 
+    ...     else:
     ...         api.create(name, tags=['team3']) # doctest: +ELLIPSIS
     <DataArchive local://project1_variable1_scenario1.nc>
     <DataArchive local://project1_variable1_scenario2.nc>
@@ -313,8 +313,8 @@ Displayed example 12 code
     >>> tagged_search_team1 = list(api.search('team1')) 
     >>> len(tagged_search_team1) 
     42
-    >>> tagged_search_team1[:4] #doctest: +NORMALIZE_WHITESPACE 
-    [u'project1_variable1_scenario1.nc', u'project1_variable1_scenario4.nc', 
+    >>> tagged_search_team1[:4] #doctest: +NORMALIZE_WHITESPACE
+    [u'project1_variable1_scenario1.nc', u'project1_variable1_scenario4.nc',
     u'project1_variable2_scenario2.nc', u'project1_variable2_scenario5.nc']
 
 .. EXAMPLE-BLOCK-12-END
@@ -328,7 +328,7 @@ Displayed example 13 code
 
 .. code-block:: python
 
-    >>> tags = [] 
+    >>> tags = []
     >>> for arch in tagged_search_team1[:4]:
     ...     tags.append(api.manager.get_tags(arch)[0])
     >>> tags

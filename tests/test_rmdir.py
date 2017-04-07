@@ -4,14 +4,13 @@ from __future__ import absolute_import
 import os
 
 from datafs._compat import u
-from fs.tempfs import TempFS 
+from fs.tempfs import TempFS
 from fs.errors import ResourceNotFoundError
 import pytest
 
-
-
-#test delete/noversion/delete after remove from local file system
+# test delete/noversion/delete after remove from local file system
 def test_delete_handling(api, auth1):
+
 
     cache = TempFS()
     api.attach_authority('auth1', auth1)
@@ -31,11 +30,11 @@ def test_delete_handling(api, auth1):
 
     var.delete()
     with pytest.raises(KeyError):
-        arch = api.get_archive('archive1')
-
+        api.get_archive('archive1')
 
 
 def test_versioned_no_cache(api, auth1):
+
 
     api.attach_authority('auth1', auth1)
 
@@ -47,19 +46,17 @@ def test_versioned_no_cache(api, auth1):
     var2 = api.create('archive2', authority_name='auth1', versioned=True)
     var2.update('test_file1.txt')
 
-
     assert var2.get_version_path() == 'archive2/0.0.1'
 
     assert os.path.isfile('test_file1.txt')
 
-
-    #print var2.authority_name
     var2.delete()
     with pytest.raises(KeyError):
-        arch = api.get_archive('archive2')
+        api.get_archive('archive2')
 
 
 def test_remove_dir_multi_versions_remove_then_delete(api, auth1):
+
 
     api.attach_authority('auth1', auth1)
 
@@ -78,13 +75,13 @@ def test_remove_dir_multi_versions_remove_then_delete(api, auth1):
     var.delete()
 
     with pytest.raises(KeyError):
-        arch = api.get_archive('archive1')
+        api.get_archive('archive1')
+
 
 def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
     '''
     Test upload/download/cache operations with two users
     '''
-
     # Create two separate users. Each user connects to the
     # same authority and the same manager table (apis are
     # initialized with the same manager table but different
@@ -116,11 +113,9 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
     assert auth1.isfile('myArchive')
     assert cache1.isfile('myArchive')
 
-
     archive2 = api2.get_archive('myArchive')
 
     # Turn on caching in archive 2 and assert creation
-
     archive2.cache()
     assert archive2.is_cached() is True
     assert archive2.api.cache.fs is cache2
@@ -128,7 +123,6 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
 
     with archive2.open('r') as f:
         assert u(f.read()) == u'Be happy and Stoked'
-
 
     archive2.delete()
 
@@ -140,13 +134,3 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
 
     with pytest.raises(ResourceNotFoundError):
         api1.remove_dir('myArchive', 'auth1')
-
-
-
-
-
-
-
-
-
-

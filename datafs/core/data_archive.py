@@ -11,7 +11,6 @@ import click
 import os
 import textwrap
 import time
-from fs.errors import ResourceNotFoundError
 
 
 def _process_version(self, version):
@@ -649,48 +648,44 @@ class DataArchive(object):
 
     def delete(self):
         '''
-        Deletes the archive from the manager and the filesystem. 
+        Deletes the archive from the manager and the filesystem.
 
         .. warning::
 
             Deleting an archive will erase all data and metadata permanently.
             For help setting user permissions, see
             :ref:`Administrative Tools <admin>`
-
         '''
 
         if self._versioned:
             versions = self.get_versions()
             for version in versions:
 
-                self.api.remove(self.get_version_path(version), 
+                self.api.remove(self.get_version_path(version),
                                 authority_name=self.authority_name)
-            
+
                 if self.is_cached(version=version):
                     self.remove_from_cache(version=version)
                     self.api.remove_dir(self.archive_name,
-                            authority_name=self.authority_name, 
-                            recursive=False, 
-                            force=False, 
-                            cache=True)
+                                        authority_name=self.authority_name,
+                                        recursive=False,
+                                        force=False,
+                                        cache=True)
 
             if self.authority.fs.exists(self.archive_name):
-                self.api.remove_dir(self.archive_name, 
+                self.api.remove_dir(self.archive_name,
                                     authority_name=self.authority_name,
-                                    recursive=False, 
+                                    recursive=False,
                                     force=False, cache=False)
 
         else:
-            self.api.remove(self.archive_name, 
+            self.api.remove(self.archive_name,
                             authority_name=self.authority_name)
 
             if self.api.cache:
                  self.remove_from_cache()
 
-
         self.api.manager.delete_archive_record(self.archive_name)
-
-
 
     def isfile(self, version=None, *args, **kwargs):
         '''

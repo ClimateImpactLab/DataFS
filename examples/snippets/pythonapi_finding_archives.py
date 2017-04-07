@@ -1,4 +1,4 @@
-r'''
+'''
 
 .. _snippets-pythonapi-finding-archives: 
 

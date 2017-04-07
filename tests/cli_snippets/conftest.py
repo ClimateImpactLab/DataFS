@@ -57,7 +57,6 @@ def cli_setup(request, example_snippet_working_dirs):
 
     table_name = 'DataFiles'
 
-    
     with setup_runner_resource(config_file, table_name) as setup:
         yield setup
 
@@ -65,7 +64,7 @@ def cli_setup(request, example_snippet_working_dirs):
 @pytest.yield_fixture(scope='session', params=['mongo', 'dynamo'])
 def cli_setup_dual_auth(request, example_snippet_working_dirs):
     config_file = 'examples/snippets/resources/datafs_dual_auth_{}.yml'.format(
-                        request.param)  
+                        request.param)
     table_name = 'OtherFiles'
 
     with setup_runner_resource(config_file, table_name) as setup:
@@ -87,7 +86,6 @@ def cli_validator(cli_setup, validator):
     yield validator.teststring
 
     del validator.call_engines['datafs']
-
 
 
 @pytest.yield_fixture(scope='function')
@@ -125,4 +123,3 @@ def cli_validator_dual_auth(cli_setup_dual_auth, validator):
     finally:
         api._authorities['my_authority'].fs.close()
         del validator.call_engines['datafs']
-

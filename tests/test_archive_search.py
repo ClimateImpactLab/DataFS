@@ -168,27 +168,30 @@ def test_fn_search(api_with_diverse_archives):
 
 
 def test_tagging_update_and_get(api_with_spec):
+    '''
+    Tests updated to reflect :issue:`243`
+    '''
 
     api_with_spec.create(
-        'tagged_archive', metadata=dict(description='archive description'))
+        'tagged_archive', metadata=dict(description='archive description'), 
+                          tags=['Tag1', 'TAG2'])
 
     arch = api_with_spec.get_archive('tagged_archive')
-    arch.add_tags('tag1', 'tag2')
 
     res = api_with_spec.search('tag1', 'tag2')
 
     assert 'tagged_archive' in list(res)
 
-    arch.add_tags('tag3', 'tag1')
+    arch.add_tags('tag3', 'tag1', 42)
 
     result = arch.get_tags()
     assert 'tag1' and 'tag2' and 'tag3' in result
-    assert len(result) == 3
+    assert len(result) == 4
 
     arch.delete_tags('tag1')
     result_delete = arch.get_tags()
     assert 'tag1' not in result_delete
-    assert len(result_delete) == 2
+    assert len(result_delete) == 3
 
 
 def test_begins_with_filter(api_with_diverse_archives):

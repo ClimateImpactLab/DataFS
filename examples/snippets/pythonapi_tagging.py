@@ -84,8 +84,8 @@ Displayed example 1 code:
     ...
     >>> archive2.get_tags()
     [u'foo', u'baz']
-    >>> 
-    >>> archive2.add_tags(42) 
+    >>>
+    >>> archive2.add_tags(42)
     >>> archive2.get_tags()
     [u'foo', u'baz', u'42']
 

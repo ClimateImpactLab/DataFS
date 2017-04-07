@@ -284,7 +284,7 @@ class BaseDataManager(object):
         if tags is None:
             tags = []
 
-        else: 
+        else:
             tags = self._normalize_tags(archive_name, tags)
 
         check_requirements(

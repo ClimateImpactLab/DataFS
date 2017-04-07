@@ -173,8 +173,8 @@ def test_tagging_update_and_get(api_with_spec):
     '''
 
     api_with_spec.create(
-        'tagged_archive', metadata=dict(description='archive description'), 
-                          tags=['Tag1', 'TAG2'])
+        'tagged_archive', metadata=dict(description='archive description'),
+        tags=['Tag1', 'TAG2'])
 
     arch = api_with_spec.get_archive('tagged_archive')
 

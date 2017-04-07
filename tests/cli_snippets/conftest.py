@@ -147,16 +147,16 @@ def cli_validator_dual_manager_various(cli_setup_dual_manager, validator):
          archive_name = (
          'project{}_variable{}_scenario{}.nc'.format(*indices))
          archive_names.append(archive_name)
-    
+
     for i, name in enumerate(archive_names):
 
         if i % 3  == 0:
             try:
                 api.create(name, tags=['team1'])
             except KeyError:
-                pass 
+                pass
 
-        elif i % 2 == 0: 
+        elif i % 2 == 0:
             try:
                 api.create(name, tags=['team2'])
             except KeyError:

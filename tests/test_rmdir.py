@@ -96,7 +96,7 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
 
     with open('text_file.txt', 'w') as f:
         f.write(u'Stay Stoked')
- 
+
     archive1 = api1.create('myArchive', versioned=False)
     archive1.update('text_file.txt')
 

@@ -178,10 +178,10 @@ Filter example setup
     ...     'project{}_variable{}_scenario{}.nc'.format(*indices))
     ...     archive_names.append(archive_name)
     >>>
-    >>> for i, name in enumerate(archive_names): 
-    ...     if i % 3  == 0: 
+    >>> for i, name in enumerate(archive_names):
+    ...     if i % 3  == 0:
     ...         api.create(name, tags=['team1'])
-    ...     elif i % 2 == 0: 
+    ...     elif i % 2 == 0:
     ...         api.create(name, tags=['team2'])
     ...     else:
     ...         api.create(name, tags=['team3']) # doctest: +ELLIPSIS
@@ -206,10 +206,10 @@ Displayed example 6 code
     125
     >>> filtered_list1 = api.filter(prefix='project1_variable1_')
     >>> list(filtered_list1) # doctest: +NORMALIZE_WHITESPACE
-    [u'project1_variable1_scenario1.nc', u'project1_variable1_scenario2.nc', 
-    u'project1_variable1_scenario3.nc', u'project1_variable1_scenario4.nc', 
+    [u'project1_variable1_scenario1.nc', u'project1_variable1_scenario2.nc',
+    u'project1_variable1_scenario3.nc', u'project1_variable1_scenario4.nc',
     u'project1_variable1_scenario5.nc']
-    
+
 .. EXAMPLE-BLOCK-6-END
 
 Example 7
@@ -221,7 +221,7 @@ Displayed example 7 code
 
 .. code-block:: python
 
-    >>> filtered_list2 = api.filter(pattern='*_variable4_scenario4.nc', 
+    >>> filtered_list2 = api.filter(pattern='*_variable4_scenario4.nc',
     ...     engine='path')
     >>> list(filtered_list2) # doctest: +NORMALIZE_WHITESPACE
     [u'project1_variable4_scenario4.nc', u'project2_variable4_scenario4.nc',
@@ -279,7 +279,7 @@ Displayed example 10 code
     >>> len(tagged_search)
     41
     >>> tagged_search[:4] #doctest: +NORMALIZE_WHITESPACE
-    [u'project1_variable1_scenario2.nc', u'project1_variable2_scenario1.nc', 
+    [u'project1_variable1_scenario2.nc', u'project1_variable2_scenario1.nc',
     u'project1_variable2_scenario3.nc', u'project1_variable3_scenario2.nc']
 
 .. EXAMPLE-BLOCK-10-END
@@ -310,8 +310,8 @@ Displayed example 12 code
 
 .. code-block:: python
 
-    >>> tagged_search_team1 = list(api.search('team1')) 
-    >>> len(tagged_search_team1) 
+    >>> tagged_search_team1 = list(api.search('team1'))
+    >>> len(tagged_search_team1)
     42
     >>> tagged_search_team1[:4] #doctest: +NORMALIZE_WHITESPACE
     [u'project1_variable1_scenario1.nc', u'project1_variable1_scenario4.nc',

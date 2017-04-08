@@ -1,5 +1,5 @@
 import pytest
-import datafs 
+
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
@@ -28,10 +28,9 @@ Snippet 2
 .. code-block:: bash
 
     $ datafs listdir impactlab/conflict
-    global 
+    global
 
 .. EXAMPLE-BLOCK-2-END
-
 
 Snippet 3
 
@@ -42,18 +41,18 @@ Snippet 3
     $ datafs listdir impactlab/conflict/global
     conflict_global_daily.csv
     $ datafs listdir impactlab/conflict/global/conflict_global_daily.csv
-    0.0.1    
-    
+    0.0.1
+
 .. EXAMPLE-BLOCK-3-END
 
-
-
 ''')
+
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
 def test_cli_filter(cli_validator_manager_various):
        cli_validator_manager_various(r'''
+
 
 Snippet 4
 
@@ -70,7 +69,6 @@ Snippet 4
 
 .. EXAMPLE-BLOCK-4-END
 
-
 Snippet 5
 
 .. EXAMPLE-BLOCK-5-START
@@ -83,7 +81,6 @@ Snippet 5
     project3_variable4_scenario4.nc
     project5_variable4_scenario4.nc
     project4_variable4_scenario4.nc
-
 
 .. EXAMPLE-BLOCK-5-END
 
@@ -103,7 +100,6 @@ Snippet 6
     project5_variable2_scenario5.nc
 
 .. EXAMPLE-BLOCK-6-END
-
 
 ''')
 
@@ -142,10 +138,9 @@ Snippet 8
 
 .. code-block:: bash
 
-    $ datafs get_tags project2_variable2_scenario2.nc 
+    $ datafs get_tags project2_variable2_scenario2.nc
     team3
 .. EXAMPLE-BLOCK-8-END
-
 
 
 Snippet 9
@@ -171,24 +166,14 @@ Snippet 9
 
 .. EXAMPLE-BLOCK-9-END
 
-
 Snippet 10
 
 .. EXAMPLE-BLOCK-10-START
 
 .. code-block:: bash
 
-    $ datafs get_tags project2_variable5_scenario1.nc 
+    $ datafs get_tags project2_variable5_scenario1.nc
     team1
 
 .. EXAMPLE-BLOCK-10-END
-
-
 ''')
-
-
-
-
-
-
-

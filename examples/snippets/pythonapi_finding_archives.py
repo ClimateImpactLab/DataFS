@@ -1,6 +1,6 @@
 '''
-
 .. _snippets-pythonapi-finding-archives: 
+
 
 Python API: Searching and Finding Archives
 ==========================================
@@ -13,7 +13,6 @@ can be downloaded
 
 Setup
 -----
-
 .. code-block:: python
 
     >>> import datafs
@@ -32,6 +31,7 @@ We test with the following setup:
 This assumes that you have a config file at the above location. The config file
 we're using in this example can be downloaded
 :download:`here <../../examples/snippets/resources/datafs_mongo.yml>`.
+
 
 clean up any previous test failures
 
@@ -63,15 +63,15 @@ Set up some archives to search
     >>> with open('test.txt', 'w') as f:
     ...     f.write('test test')
     ...
-    >>> tas_archive = api.create('impactlab/climate/tas/tas_daily_us.csv')
+    >>> tas_archive = api.create('impactlab/climate/tas/tas_day_us.csv')
     >>> tas_archive.update('test.txt')
-    >>> precip_archive = api.create('impactlab/climate/pr/pr_daily_us.csv')
+    >>> precip_archive = api.create('impactlab/climate/pr/pr_day_us.csv')
     >>> precip_archive.update('test.txt')
-    >>> socio = api.create('impactlab/mortality/global/mortality_global_daily.csv')
+    >>> socio = api.create('impactlab/mortality/global/mortality_glob_day.csv')
     >>> socio.update('test.txt')
-    >>> socio1 = api.create('impactlab/conflict/global/conflict_global_daily.csv')
+    >>> socio1 = api.create('impactlab/conflict/global/conflict_glob_day.csv')
     >>> socio1.update('test.txt')
-    >>> socio2 = api.create('impactlab/labor/global/labor_global_daily.csv')
+    >>> socio2 = api.create('impactlab/labor/global/labor_glob_day.csv')
     >>> socio2.update('test.txt')
 
 Example 1
@@ -82,9 +82,9 @@ Displayed example 1 code
 .. EXAMPLE-BLOCK-1-START
 
 .. code-block:: python
-    
+
     >>> api.listdir('impactlab/conflict/global')
-    [u'conflict_global_daily.csv']
+    [u'conflict_glob_day.csv']
 
 .. EXAMPLE-BLOCK-1-END
 
@@ -96,7 +96,7 @@ Displayed example 2 code
 .. EXAMPLE-BLOCK-2-START
 
 .. code-block:: python
-    
+
     >>> api.listdir('')
     [u'impactlab']
 
@@ -110,10 +110,10 @@ Displayed example 3 code
 .. EXAMPLE-BLOCK-3-START
 
 .. code-block:: python
-    
+
     >>> api.listdir('impactlab')
     [u'labor', u'climate', u'conflict', u'mortality']
-    
+
 .. EXAMPLE-BLOCK-3-END
 
 Example 4
@@ -124,7 +124,7 @@ Displayed example 4 code
 .. EXAMPLE-BLOCK-4-START
 
 .. code-block:: python
-    
+
     >>> api.listdir('impactlab/conflict')
     [u'global']
 
@@ -138,10 +138,10 @@ Displayed example 5 code
 .. EXAMPLE-BLOCK-5-START
 
 .. code-block:: python
-    
+
     >>> api.listdir('impactlab/conflict/global')
-    [u'conflict_global_daily.csv']
-    >>> api.listdir('impactlab/conflict/global/conflict_global_daily.csv')
+    [u'conflict_glob_day.csv']
+    >>> api.listdir('impactlab/conflict/global/conflict_glob_day.csv')
     [u'0.0.1']
 
 .. EXAMPLE-BLOCK-5-END
@@ -160,12 +160,10 @@ Teardown
     ...     os.remove('test.txt')
     ... except KeyError:
     ...     pass
-    ...
     >>> try:
     ...     api.manager.delete_table('DataFiles')
     ... except KeyError:
     ...     pass
-
 
 Setup
 
@@ -183,12 +181,12 @@ Filter example setup
     ...     'project{}_variable{}_scenario{}.nc'.format(*indices))
     ...     archive_names.append(archive_name)
     >>>
-    >>> for i, name in enumerate(archive_names): 
-    ...     if i % 3  == 0: 
+    >>> for i, name in enumerate(archive_names):
+    ...     if i % 3  == 0:
     ...         api.create(name, tags=['team1'])
-    ...     elif i % 2 == 0: 
+    ...     elif i % 2 == 0:
     ...         api.create(name, tags=['team2'])
-    ...     else: 
+    ...     else:
     ...         api.create(name, tags=['team3']) # doctest: +ELLIPSIS
     <DataArchive local://project1_variable1_scenario1.nc>
     <DataArchive local://project1_variable1_scenario2.nc>
@@ -211,13 +209,11 @@ Displayed example 6 code
     125
     >>> filtered_list1 = api.filter(prefix='project1_variable1_')
     >>> list(filtered_list1) # doctest: +NORMALIZE_WHITESPACE
-    [u'project1_variable1_scenario1.nc', u'project1_variable1_scenario2.nc', 
-    u'project1_variable1_scenario3.nc', u'project1_variable1_scenario4.nc', 
+    [u'project1_variable1_scenario1.nc', u'project1_variable1_scenario2.nc',
+    u'project1_variable1_scenario3.nc', u'project1_variable1_scenario4.nc',
     u'project1_variable1_scenario5.nc']
-    
-    
-.. EXAMPLE-BLOCK-6-END
 
+.. EXAMPLE-BLOCK-6-END
 
 Example 7
 ---------
@@ -228,15 +224,14 @@ Displayed example 7 code
 
 .. code-block:: python
 
-    >>> filtered_list2 = api.filter(pattern='*_variable4_scenario4.nc', engine='path')
+    >>> filtered_list2 = api.filter(pattern='*_variable4_scenario4.nc',
+    ...     engine='path')
     >>> list(filtered_list2) # doctest: +NORMALIZE_WHITESPACE
     [u'project1_variable4_scenario4.nc', u'project2_variable4_scenario4.nc',
     u'project3_variable4_scenario4.nc', u'project4_variable4_scenario4.nc',
     u'project5_variable4_scenario4.nc']
 
-
 .. EXAMPLE-BLOCK-7-END
-
 
 Example 8
 ---------
@@ -254,10 +249,7 @@ Displayed example 8 code
     [u'project1_variable2_scenario1.nc', u'project1_variable2_scenario2.nc', 
     u'project1_variable2_scenario3.nc', u'project1_variable2_scenario4.nc']
 
-
 .. EXAMPLE-BLOCK-8-END
-
-
 
 Example 9
 ---------
@@ -275,13 +267,10 @@ Displayed example 9 code
     >>> len(archives_filter)
     125
 
-
 .. EXAMPLE-BLOCK-9-END
-
 
 Example 10
 ----------
-
 
 Displayed example 10 code
 
@@ -293,14 +282,13 @@ Displayed example 10 code
     >>> len(tagged_search)
     41
     >>> tagged_search[:4] #doctest: +NORMALIZE_WHITESPACE
-    [u'project1_variable1_scenario2.nc', u'project1_variable2_scenario1.nc', 
+    [u'project1_variable1_scenario2.nc', u'project1_variable2_scenario1.nc',
     u'project1_variable2_scenario3.nc', u'project1_variable3_scenario2.nc']
 
 .. EXAMPLE-BLOCK-10-END
 
 Example 11
 ----------
-
 
 Displayed example 11 code
 
@@ -319,26 +307,23 @@ Displayed example 11 code
 Example 12
 ----------
 
-
 Displayed example 12 code
 
 .. EXAMPLE-BLOCK-12-START
 
 .. code-block:: python
 
-    >>> tagged_search_team1 = list(api.search('team1')) 
-    >>> len(tagged_search_team1) 
+    >>> tagged_search_team1 = list(api.search('team1'))
+    >>> len(tagged_search_team1)
     42
-    >>> tagged_search_team1[:4] #doctest: +NORMALIZE_WHITESPACE 
-    [u'project1_variable1_scenario1.nc', u'project1_variable1_scenario4.nc', 
+    >>> tagged_search_team1[:4] #doctest: +NORMALIZE_WHITESPACE
+    [u'project1_variable1_scenario1.nc', u'project1_variable1_scenario4.nc',
     u'project1_variable2_scenario2.nc', u'project1_variable2_scenario5.nc']
 
 .. EXAMPLE-BLOCK-12-END
 
-
 Example 13
 ----------
-
 
 Displayed example 13 code
 
@@ -346,7 +331,7 @@ Displayed example 13 code
 
 .. code-block:: python
 
-    >>> tags = [] 
+    >>> tags = []
     >>> for arch in tagged_search_team1[:4]:
     ...     tags.append(api.manager.get_tags(arch)[0])
     >>> tags
@@ -362,4 +347,3 @@ Teardown
     >>> api.manager.delete_table('DataFiles')
 
 '''
-

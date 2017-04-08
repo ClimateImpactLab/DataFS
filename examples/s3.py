@@ -28,6 +28,7 @@ We need a few things for this example:
     >>> from datafs.managers.manager_mongo import MongoDBManager
     >>> from datafs import DataAPI
     >>> from fs.tempfs import TempFS
+    >>> from fs.errors import RemoveRootError
     >>> import os
     >>> import tempfile
     >>> import shutil
@@ -226,8 +227,7 @@ Cleaning up
 
 .. code-block:: python
 
-    >>> var.delete()
-    >>> api.manager.delete_table('DataFiles')
+    >>> api.delete_archive('my_remote_archive')
 
 
 Next steps

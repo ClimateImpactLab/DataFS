@@ -648,26 +648,44 @@ class DataArchive(object):
 
     def delete(self):
         '''
-        Delete the archive
+        Deletes the archive from the manager and the filesystem.
 
         .. warning::
 
             Deleting an archive will erase all data and metadata permanently.
             For help setting user permissions, see
             :ref:`Administrative Tools <admin>`
-
         '''
 
-        versions = self.get_versions()
-        self.api.manager.delete_archive_record(self.archive_name)
+        if self._versioned:
+            versions = self.get_versions()
+            for version in versions:
 
-        for version in versions:
-            if self.authority.fs.exists(self.get_version_path(version)):
-                self.authority.fs.remove(self.get_version_path(version))
+                self.api.remove(self.get_version_path(version),
+                                authority_name=self.authority_name)
+
+                if self.is_cached(version=version):
+                    self.remove_from_cache(version=version)
+                    self.api.remove_dir(self.archive_name,
+                                        authority_name=self.authority_name,
+                                        recursive=False,
+                                        force=False,
+                                        cache=True)
+
+            if self.authority.fs.exists(self.archive_name):
+                self.api.remove_dir(self.archive_name,
+                                    authority_name=self.authority_name,
+                                    recursive=False,
+                                    force=False, cache=False)
+
+        else:
+            self.api.remove(self.archive_name,
+                            authority_name=self.authority_name)
 
             if self.api.cache:
-                if self.api.cache.fs.exists(self.get_version_path(version)):
-                    self.api.cache.fs.remove(self.get_version_path(version))
+                 self.remove_from_cache()
+
+        self.api.manager.delete_archive_record(self.archive_name)
 
     def isfile(self, version=None, *args, **kwargs):
         '''

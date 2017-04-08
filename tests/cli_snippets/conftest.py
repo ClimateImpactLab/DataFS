@@ -13,7 +13,6 @@ from clatter.validators import (
     ClickValidator,
     SubprocessValidator)
 
-
 @pytest.yield_fixture(scope='session')
 def validator():
 
@@ -71,6 +70,21 @@ def cli_setup_dual_auth(request, example_snippet_working_dirs):
 
     with setup_runner_resource(config_file, table_name) as setup:
         yield setup
+
+# @pytest.yield_fixture(scope='session', params=['mongo', 'dynamo'])
+# def cli_setup_dual_manager(example_snippet_working_dirs, request):
+
+
+#     if request.param == 'mongo':
+#         config_file = 'examples/snippets/resources/datafs_mongo_dual.yml'
+#         table_name = 'MongoFilesDual'
+
+#     if request.param == 'dynamo':
+#         config_file = 'examples/snippets/resources/datafs_dynamo_dual.yml'
+#         table_name = 'DynamoFilesDual'
+
+#     with setup_runner_resource(config_file, table_name) as setup:
+#         yield setup
 
 
 @pytest.yield_fixture(scope='function')
@@ -174,16 +188,16 @@ def cli_validator_manager_various(cli_setup,
          archive_name = (
          'project{}_variable{}_scenario{}.nc'.format(*indices))
          archive_names.append(archive_name)
-    
+
     for i, name in enumerate(archive_names):
 
         if i % 3  == 0:
             try:
                 api.create(name, tags=['team1'])
             except KeyError:
-                pass 
+                pass
 
-        elif i % 2 == 0: 
+        elif i % 2 == 0:
             try:
                 api.create(name, tags=['team2'])
             except KeyError:
@@ -200,5 +214,8 @@ def cli_validator_manager_various(cli_setup,
 
     del validator.call_engines['datafs']
 
+    # Teardown
+
+    teardown = [arch.delete() for arch in map(api.get_archive, archive_names)]
 
 

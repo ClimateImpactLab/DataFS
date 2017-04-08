@@ -267,4 +267,12 @@ Teardown
 
 .. EXAMPLE-BLOCK-11-END
 
+
+Teardown
+--------
+
+.. code-block:: python
+
+    >>> streaming_archive.delete()
+
 '''

@@ -83,6 +83,7 @@ Bug Fixes
 
 	- Messages are now coerced to strings, and :py:meth:`~datafs.core.data_archive.log` and the CLI ``log`` command no longer fail when used on archives with non-string messages (:issue:`232`)
 
+    - `delete` and `api.delete_archive` now implement `removedir` which removes the archive level name space from the filesystem. Previous implementations of these methods removed the archive from the manager and only removed versions from the file system leaving top level name spaces as file system objects. (:issue:`212`)
 
 Under the hood
 ~~~~~~~~~~~~~~

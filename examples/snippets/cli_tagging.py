@@ -42,8 +42,9 @@ Example 2
     archive2
 
     $ datafs search foo
-    archive1
     archive2
+    archive1
+    
 
 .. EXAMPLE-BLOCK-2-END
 

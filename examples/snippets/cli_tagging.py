@@ -6,7 +6,7 @@ Command Line Interface: Tagging
 
 This is the tested source code for the snippets used in :ref:`cli-tagging`. The
 config file we're using in this example can be downloaded
-:download:`here <../../examples/snippets/resources/datafs.yml>`.
+:download:`here <../../examples/snippets/resources/datafs_mongo.yml>`.
 
 Example 1
 ---------

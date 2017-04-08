@@ -3,8 +3,8 @@ import datafs
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_listdir(cli_validator_dual_manager_listdir):
-       cli_validator_dual_manager_listdir(r'''
+def test_cli_listdir(cli_validator_listdir):
+       cli_validator_listdir(r'''
 
 
 Snippet 1
@@ -52,11 +52,8 @@ Snippet 3
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_filter(cli_validator_dual_manager_various):
-
-
-
-       cli_validator_dual_manager_various(r'''
+def test_cli_filter(cli_validator_manager_various):
+       cli_validator_manager_various(r'''
 
 Snippet 4
 
@@ -113,11 +110,9 @@ Snippet 6
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_search(cli_validator_dual_manager_various):
+def test_cli_search(cli_validator_manager_various):
 
-
-
-       cli_validator_dual_manager_various(r'''
+       cli_validator_manager_various(r'''
 
 
 Snippet 7

@@ -42,8 +42,9 @@ Example 2
     archive2
 
     $ datafs search foo
-    archive2
     archive1
+    archive2
+
     
 
 .. EXAMPLE-BLOCK-2-END
@@ -61,8 +62,9 @@ Example 3
     created versioned archive <DataArchive local://archive3>
 
     $ datafs search bar foo
-    archive1
     archive3
+    archive1
+    
 
     $ datafs search bar foo baz
     archive3

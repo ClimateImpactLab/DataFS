@@ -285,7 +285,7 @@ class BaseDataManager(object):
             tags = []
 
         else:
-            tags = self._normalize_tags(archive_name, tags)
+            tags = self._normalize_tags(tags)
 
         check_requirements(
             to_populate=user_config,
@@ -488,14 +488,12 @@ class BaseDataManager(object):
 
         self._set_tags(archive_name, updated_tag_list)
 
-    def _normalize_tags(self, archive_name, tags):
+    def _normalize_tags(self, tags):
         '''
         Coerces tags to lowercase strings
 
         Parameters
         ----------
-        archive_name: str
-            Name of archive
         tags: list or tuple of strings
 
         '''

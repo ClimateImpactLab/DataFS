@@ -118,7 +118,7 @@ Instead, we can get a local path to open:
 
     >>> with var.get_local_path() as f:
     ...     with xr.open_dataset(f) as ds:
-    ...         print(ds) # doctest: +SKIP
+    ...         print(ds) # doctest: +ELLIPSIS
     ...
     <xarray.Dataset>
     Dimensions:   (location: 3, time: 731)
@@ -156,7 +156,7 @@ Now let's open the file and see if our change was saved:
     >>> # Acquire the file from the archive and print the version
     ... with var.get_local_path() as f:
     ...     with xr.open_dataset(f) as ds:
-    ...         print(ds) # doctest: +SKIP
+    ...         print(ds) # doctest: +ELLIPSIS
     ...
     <xarray.Dataset>
     Dimensions:   (location: 3, time: 731)
@@ -164,8 +164,8 @@ Now let's open the file and see if our change was saved:
       * location  (location) |S2 'IA' 'IN' 'IL'
       * time      (time) datetime64[ns] 2000-01-01 2000-01-02 2000-01-03 ...
     Data variables:
-        tmax      (time, location) float64 12.98 3.31 6.779 0.4479 6.373 ...
-        tmin      (time, location) float64 -8.037 -1.788 -3.932 -9.341 ...
+        tmax      (time, location) float64 12.98 3.31 6.779 0.4479 6.373 4.843 ...
+        tmin      (time, location) float64 -8.037 -1.788 -3.932 -9.341 -6.558 ...
     Attributes:
         version: version 2
 

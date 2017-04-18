@@ -1,4 +1,4 @@
-xfrom __future__ import absolute_import
+from __future__ import absolute_import
 
 from datafs.core import data_file
 from datafs.core.versions import BumpableVersion

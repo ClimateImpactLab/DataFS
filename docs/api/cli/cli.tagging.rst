@@ -11,7 +11,7 @@ View the source for the code samples on this page in :ref:`snippets-cli-tagging`
 Tagging on archive creation
 ---------------------------
 
-When creating archives, you can specify tags using the ``--tag`` argument. You can specify as many as you would like:
+When creating archives, you can specify tags using the ``--tag`` argument. Tags must be strings and will be coerced to lowercase as a standard. You can specify as many as you would like:
 
 .. include:: ../../../examples/snippets/cli_tagging.py
     :start-after: .. EXAMPLE-BLOCK-1-START

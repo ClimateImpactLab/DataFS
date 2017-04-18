@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+xfrom __future__ import absolute_import
 
 from datafs.core import data_file
 from datafs.core.versions import BumpableVersion
@@ -798,7 +798,7 @@ class DataArchive(object):
         '''
         Set tags for a given archive
         '''
-        normed_tags = self.api.manager._normalize_tags(self.archive_name, tags)
+        normed_tags = self.api.manager._normalize_tags(tags)
         self.api.manager.add_tags(self.archive_name, normed_tags)
 
     def delete_tags(self, *tags):
@@ -807,6 +807,6 @@ class DataArchive(object):
         Deletes tags for a given archive
 
         '''
-        normed_tags = self.api.manager._normalize_tags(self.archive_name, tags)
+        normed_tags = self.api.manager._normalize_tags(tags)
 
         self.api.manager.delete_tags(self.archive_name, normed_tags)

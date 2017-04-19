@@ -81,6 +81,7 @@ Bug Fixes
 ~~~~~~~~~
 
 	- Messages are now coerced to strings, and :py:meth:`~datafs.core.data_archive.log` and the CLI ``log`` command no longer fail when used on archives with non-string messages (:issue:`232`)
+    - ``examples/ondisk.py`` updated to reflect [xarray 0.9.5](https://pypi.python.org/pypi/xarray/0.9.5) display function changes (:issue:`249`)
 
 
 Under the hood

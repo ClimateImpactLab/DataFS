@@ -86,7 +86,7 @@ Upload the dataset to the archive
 .. code-block:: python
 
     >>> with var.get_local_path() as f:
-    ...     ds.to_netcdf(f)
+    ...     ds.to_netcdf(f) # doctest: +SKIP
     ...
 
 Read and write to disk
@@ -146,7 +146,7 @@ We can update file in the same way:
     ...     # Update the version and save the file
     ...
     ...     dsmem.attrs['version'] = 'version 2'
-    ...     dsmem.to_netcdf(f)
+    ...     dsmem.to_netcdf(f) # doctest: +SKIP
     ...
 
 Now let's open the file and see if our change was saved:

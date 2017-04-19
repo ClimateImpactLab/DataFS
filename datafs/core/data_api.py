@@ -213,7 +213,7 @@ class DataAPI(object):
         default_versions : str, object, or dict
 
             Default versions to assign to each returned archive. May be a dict
-            with ``archive_name``s as keys and versions as values, or may be a
+            with archive names as keys and versions as values, or may be a
             version, in which case the same version is used for all archives.
             Versions must be a strict version number string, a
             :py:class:`~distutils.version.StrictVersion`, or a
@@ -225,8 +225,8 @@ class DataAPI(object):
         archives : list
 
             List of :py:class:`~datafs.core.data_archive.DataArchive` objects.
-            If an archive is not found, it is omitted (`batch_get_archive` does
-            not raise a ``KeyError`` on invalid archive names).
+            If an archive is not found, it is omitted (``batch_get_archive``
+            does not raise a ``KeyError`` on invalid archive names).
 
         '''
 

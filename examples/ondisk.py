@@ -129,7 +129,7 @@ Instead, we can get a local path to open:
         tmax      (time, location) float64 12.98 3.31 6.779 0.4479 ...
         tmin      (time, location) float64 -8.037 -1.788 -3.932 ...
     Attributes:
-        version: version 1
+        version:  version 1
 
 We can update file in the same way:
 
@@ -167,7 +167,7 @@ Now let's open the file and see if our change was saved:
         tmax      (time, location) float64 12.98 3.31 6.779 0.4479 ...
         tmin      (time, location) float64 -8.037 -1.788 -3.932 ...
     Attributes:
-        version: version 2
+        version:  version 2
 
 
 

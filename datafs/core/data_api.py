@@ -191,7 +191,8 @@ class DataAPI(object):
 
         res = self.manager.get_archive(archive_name)
 
-        default_version = self._default_versions.get(archive_name, None)
+        if default_version is None:
+            default_version = self._default_versions.get(archive_name, None)
 
         return self._ArchiveConstructor(
             api=self,
@@ -211,10 +212,10 @@ class DataAPI(object):
 
         default_versions : str, object, or dict
 
-            Default versions to assign to each returned archive. If
-            ``default_versions`` is a dict, each ``archive_name`` must be a
-            key in ``default_versions`` and the value must be a valid version.
-            Versions must be a strict version number, a
+            Default versions to assign to each returned archive. May be a dict
+            with ``archive_name``s as keys and versions as values, or may be a
+            version, in which case the same version is used for all archives.
+            Versions must be a strict version number string, a
             :py:class:`~distutils.version.StrictVersion`, or a
             :py:class:`~datafs.core.versions.BumpableVersion` object.
 
@@ -233,9 +234,22 @@ class DataAPI(object):
 
         archives = {}
 
+        if default_versions is None:
+            default_versions = {}
+
         for res in responses:
             archive_name = res['archive_name']
-            default_version = self._default_versions.get(archive_name, None)
+
+            if hasattr(default_versions, 'get'):
+
+                # Get version number from default_versions or
+                # self._default_versions if key not present.
+                default_version = default_versions.get(
+                    archive_name,
+                    self._default_versions.get(archive_name, None))
+
+            else:
+                default_version = default_versions
 
             archive = self._ArchiveConstructor(
                 api=self,

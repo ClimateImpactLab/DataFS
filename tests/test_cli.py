@@ -1,5 +1,7 @@
+
 from datafs.managers.manager_dynamo import DynamoDBManager
 from datafs.datafs import cli
+from datafs._compat import u
 from datafs import DataAPI, get_api, to_config_file
 import os
 from click.testing import CliRunner
@@ -1263,3 +1265,81 @@ def test_listdir_auth(preloaded_config):
         for attr, val in verhist['user_config'].items():
             assert attr in verstr
             assert val in verstr
+
+
+@pytest.mark.cli
+def test_cli_log_with_various_messages(sample_config):
+    '''
+    Test CLI command ``log`` stability
+
+    Addresses :issue:`232` - log fails on versions with no message
+    '''
+
+    profile, temp_file = sample_config
+
+    api = get_api(profile=profile, config_file=temp_file)
+
+    runner = CliRunner()
+
+    prefix = [
+        '--config-file', '{}'.format(temp_file),
+        '--profile', 'myapi']
+
+    arch = api.create('test/archive1.txt')
+
+    def run_test():
+        # Test log on an empty archive
+        result = runner.invoke(
+            cli,
+            prefix + ['log', 'test/archive1.txt'])
+
+        assert result.exit_code == 0
+        return result.output.strip()
+
+    try:
+        # Test log on an empty archive
+        log = run_test()
+        assert log == ''
+
+        # Test log with no message -- should still have info
+
+        with arch.open('w+') as f:
+            f.write(u('hello 1'))
+
+        log = run_test()
+        assert len(log.split('\n')) > 0
+
+        # Test log with message -- should appear in log
+
+        with arch.open('w+', message='a message') as f:
+            f.write(u('hello 2'))
+
+        log = run_test()
+        assert 'a message' in log
+
+        # Test log with numeric message -- should appear in log
+
+        with arch.open('w+', message=4.3) as f:
+            f.write(u('hello 3'))
+
+        log = run_test()
+        assert '4.3' in log
+
+        with arch.open('w+', message=lambda x: x**2) as f:
+            f.write(u('hello 4'))
+
+        log = run_test()
+        assert 'lambda' in log
+
+        # Test log with explicit None as message -- should not appear in log,
+        # but the version should be present
+
+        with arch.open('w+', message=None) as f:
+            f.write(u('hello 5'))
+
+        log = run_test()
+        assert str(arch.get_latest_version()) in log
+        assert 'None' not in log
+
+    finally:
+        arch.delete()

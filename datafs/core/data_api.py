@@ -7,12 +7,16 @@ from datafs._compat import open_filelike
 import hashlib
 import fnmatch
 import re
+import fs.path
+from fs.osfs import OSFS
 
 try:
     PermissionError
 except NameError:
     class PermissionError(NameError):
         pass
+
+_VALID_AUTHORITY_PATTERNS = r'[\w\-]+'
 
 
 class DataAPI(object):
@@ -32,7 +36,7 @@ class DataAPI(object):
         self._cache = None
         self._authorities = {}
 
-        self._default_versions = default_versions
+        self.default_versions = default_versions
 
         self._authorities_locked = False
         self._manager_locked = False
@@ -41,6 +45,8 @@ class DataAPI(object):
 
         if self._authorities_locked:
             raise PermissionError('Authorities locked')
+
+        self._validate_authority_name(service_name)
 
         self._authorities[service_name] = DataService(service)
 
@@ -87,7 +93,30 @@ class DataAPI(object):
     @property
     def default_authority(self):
         return self._authorities[self.default_authority_name]
-    # attach a metadata index
+
+    @property
+    def default_versions(self):
+        return self._default_versions
+
+    @default_versions.setter
+    def default_versions(self, default_versions):
+        '''
+        Set archive default read versions
+
+        Parameters
+        ----------
+        default_versions: dict
+            Dictionary of archive_name, version pairs. On read/download,
+            archives in this dictionary will download the specified version
+            by default. Before assignment, archive_names are checked and
+            normalized.
+        '''
+
+        default_versions = {
+            self._normalize_archive_name(arch)[1]: v
+            for arch, v in default_versions.items()}
+
+        self._default_versions = default_versions
 
     def attach_manager(self, manager):
 
@@ -111,32 +140,32 @@ class DataAPI(object):
         Parameters
         ----------
 
-        archive_name : str
+        archive_name: str
             Name of the archive
 
-        authority_name : str
+        authority_name: str
             Name of the data service to use as the archive's data authority
 
-        versioned : bool
+        versioned: bool
             If true, store all versions with explicit version numbers (defualt)
 
-        raise_on_err : bool
+        raise_on_err: bool
             Raise an error if the archive already exists (default True)
 
-        metadata : dict
+        metadata: dict
             Dictionary of additional archive metadata
 
-        helper : bool
+        helper: bool
             If true, interactively prompt for required metadata (default False)
 
 
         '''
 
+        authority_name, archive_name = self._normalize_archive_name(
+            archive_name, authority_name=authority_name)
+
         if authority_name is None:
             authority_name = self.default_authority_name
-
-        if authority_name not in self._authorities:
-            raise KeyError('Authority "{}" not found'.format(authority_name))
 
         self._validate_archive_name(archive_name)
 
@@ -165,34 +194,38 @@ class DataAPI(object):
         Parameters
         ----------
 
-        archive_name : str
-
+        archive_name: str
             Name of the archive to retrieve
 
-        default_version : version
-
+        default_version: version
             str or :py:class:`~distutils.StrictVersion` giving the default
             version number to be used on read operations
 
         Returns
         -------
-        archive : object
-
+        archive: object
             New :py:class:`~datafs.core.data_archive.DataArchive` object
 
         Raises
         ------
 
-        KeyError :
-
+        KeyError:
             A KeyError is raised when the ``archive_name`` is not found
 
         '''
+
+        auth, archive_name = self._normalize_archive_name(archive_name)
 
         res = self.manager.get_archive(archive_name)
 
         if default_version is None:
             default_version = self._default_versions.get(archive_name, None)
+
+        if (auth is not None) and (auth != res['authority_name']):
+            raise ValueError(
+                'Archive "{}" not found on {}.'.format(archive_name, auth) +
+                ' Did you mean "{}://{}"?'.format(
+                    res['authority_name'], archive_name))
 
         return self._ArchiveConstructor(
             api=self,
@@ -206,11 +239,11 @@ class DataAPI(object):
         Parameters
         ----------
 
-        archive_names : list
+        archive_names: list
 
             Iterable of archive names to retrieve
 
-        default_versions : str, object, or dict
+        default_versions: str, object, or dict
 
             Default versions to assign to each returned archive. May be a dict
             with archive names as keys and versions as values, or may be a
@@ -222,13 +255,18 @@ class DataAPI(object):
         Returns
         -------
 
-        archives : list
+        archives: list
 
             List of :py:class:`~datafs.core.data_archive.DataArchive` objects.
             If an archive is not found, it is omitted (``batch_get_archive``
             does not raise a ``KeyError`` on invalid archive names).
 
         '''
+
+        # toss prefixes and normalize names
+        archive_names = map(
+            lambda arch: self._normalize_archive_name(arch)[1],
+            archive_names)
 
         responses = self.manager.batch_get_archive(archive_names)
 
@@ -238,6 +276,9 @@ class DataAPI(object):
             default_versions = {}
 
         for res in responses:
+            res['archive_name'] = self._normalize_archive_name(
+                res['archive_name'])
+
             archive_name = res['archive_name']
 
             if hasattr(default_versions, 'get'):
@@ -275,7 +316,7 @@ class DataAPI(object):
         Parameters
         ----------
 
-        location : str
+        location: str
 
             Path of the "directory" to search
 
@@ -284,7 +325,7 @@ class DataAPI(object):
             `my_auth://MyFiles/Data`). If the authority is specified as a
             protocol, the `authority_name` argument is ignored.
 
-        authority_name : str
+        authority_name: str
 
             Name of the authority to search (optional)
 
@@ -310,10 +351,9 @@ class DataAPI(object):
 
         '''
 
-        loc_parser = re.match(r'((?P<auth>\w+)://|/|)(?P<path>.*)$', location)
-
-        authority_name = loc_parser.group('auth')
-        location = loc_parser.group('path')
+        authority_name, location = self._normalize_archive_name(
+            location,
+            authority_name=authority_name)
 
         if authority_name is None:
             authority_name = self.default_authority_name
@@ -330,11 +370,13 @@ class DataAPI(object):
         ----------
         prefix: str
             string matching beginning characters of the archive or set of
-            archives you are filtering
+            archives you are filtering. Note that authority prefixes, e.g.
+            ``local://my/archive.txt`` are not supported in prefix searches.
 
         pattern: str
             string matching the characters within the archive or set of
-            archives you are filtering on
+            archives you are filtering on. Note that authority prefixes, e.g.
+            ``local://my/archive.txt`` are not supported in pattern searches.
 
         engine: str
             string of value 'str', 'path', or 'regex'. That indicates the
@@ -345,9 +387,13 @@ class DataAPI(object):
         -------
         generator
 
-
-
         '''
+
+        if pattern is not None:
+            pattern = fs.path.relpath(pattern)
+
+        if prefix is not None:
+            prefix = fs.path.relpath(prefix)
 
         archives = self.manager.search(tuple([]), begins_with=prefix)
 
@@ -389,13 +435,16 @@ class DataAPI(object):
             tags to search on. If multiple terms, provided in comma delimited
             string format
 
-        prefix : str
+        prefix: str
             start of archive name. Providing a start string improves search
             speed.
 
         '''
 
         prefix = kwargs.get('prefix')
+
+        if prefix is not None:
+            prefix = fs.path.relpath(prefix)
 
         return self.manager.search(query, begins_with=prefix)
 
@@ -406,15 +455,16 @@ class DataAPI(object):
         Parameters
         ----------
 
-        archive_name : str
+        archive_name: str
             Name of the archive from which to create a service path
 
         Returns
         -------
 
-        archive_path : str
+        archive_path: str
             Internal path used by services to reference archive data
         '''
+        archive_name = fs.path.normpath(archive_name)
         patterns = self.manager.required_archive_patterns
 
         for pattern in patterns:
@@ -429,7 +479,7 @@ class DataAPI(object):
         Parameters
         ----------
 
-        archive_name : str
+        archive_name: str
             Name of the archive to delete
 
         '''
@@ -448,13 +498,13 @@ class DataAPI(object):
         Parameters
         ----------
 
-        f : file-like
+        f: file-like
             File-like object or file path from which to compute checksum value
 
 
         Returns
         -------
-        checksum : dict
+        checksum: dict
             dictionary with {'algorithm': 'md5', 'checksum': hexdigest}
 
         '''
@@ -473,3 +523,61 @@ class DataAPI(object):
 
         if self.cache:
             self.cache.fs.close()
+
+    @staticmethod
+    def _validate_authority_name(authority_name):
+        matched = re.match(
+            r'^{}$'.format(_VALID_AUTHORITY_PATTERNS),
+            authority_name)
+
+        if matched:
+            return
+
+        raise ValueError('"{}" not a valid authority name'.format(
+            authority_name))
+
+    @staticmethod
+    def _split_authority(archive_name):
+        matched = re.match(
+            r'^((?P<auth>{})\:\/\/)?(?P<archive>.*)$'.format(
+                _VALID_AUTHORITY_PATTERNS),
+            archive_name)
+
+        return matched.group('auth'), matched.group('archive')
+
+    def _normalize_archive_name(self, archive_name, authority_name=None):
+
+        full_archive_arg = archive_name
+
+        str_authority_name, archive_name = self._split_authority(archive_name)
+
+        if ((str_authority_name is not None)
+                and (authority_name is not None)
+                and (str_authority_name != authority_name)):
+
+            raise ValueError(
+                'authority name "{}" not found in archive: "{}"'.format(
+                    authority_name, full_archive_arg))
+
+        relpath = fs.path.relpath(fs.path.normpath(archive_name))
+
+        if str_authority_name is None:
+            str_authority_name = authority_name
+
+        if str_authority_name is None:
+            try:
+                str_authority_name = self.default_authority_name
+            except ValueError:
+                pass
+
+        if str_authority_name is not None:
+            if str_authority_name not in self._authorities:
+                raise ValueError('Authority "{}" not found'.format(
+                    str_authority_name))
+
+            self._authorities[str_authority_name].fs.validatepath(relpath)
+
+        # additional check - not all fs.validatepath functions do anything:
+        OSFS('').isvalidpath(relpath)
+
+        return str_authority_name, relpath

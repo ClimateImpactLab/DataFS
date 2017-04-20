@@ -34,7 +34,6 @@ install:
       conda create -q -n datafs python=$TRAVIS_PYTHON_VERSION;
       source activate datafs;
       conda install --yes --file requirements_conda.txt;
-      source activate datafs;
     fi
   - python setup.py install
   - python -m pip install .

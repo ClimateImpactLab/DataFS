@@ -1,5 +1,5 @@
 h5py
-netCDF4
+netCDF4==1.2.7
 xarray==0.9.5
 dask
 numpy

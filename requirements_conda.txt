@@ -4,7 +4,7 @@ xarray==0.9.5
 dask
 numpy
 scipy
-pandas
+pandas==0.19.2
 numba
 blaze
 bottleneck

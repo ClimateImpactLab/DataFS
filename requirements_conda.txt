@@ -7,4 +7,4 @@ scipy
 pandas
 numba
 blaze
-bottleneck
+bottleneck==1.2.0

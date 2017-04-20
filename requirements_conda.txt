@@ -1,7 +1,7 @@
 h5py
 netCDF4
 xarray==0.9.5
-dask
+dask==0.14.1
 numpy
 scipy
 pandas

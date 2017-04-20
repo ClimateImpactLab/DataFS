@@ -1,4 +1,4 @@
-h5py
+h5py==2.7.0
 netCDF4
 xarray==0.9.5
 dask

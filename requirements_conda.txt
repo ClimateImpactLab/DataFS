@@ -1,0 +1,10 @@
+h5py
+netCDF4
+xarray==0.9.5
+dask
+numpy
+scipy
+pandas
+numba
+blaze
+bottleneck

@@ -28,9 +28,12 @@ install:
       hash -r;
       conda config --set always_yes yes --set changeps1 no;
       conda update -q conda;
+      conda config --add channels conda-forge;
       conda info -a;
 
-      conda create -q -n datafs python=$TRAVIS_PYTHON_VERSION h5py netCDF4 xarray dask numpy scipy pandas h5py hdf5 numba blaze scipy bottleneck dask;
+      conda create -q -n datafs python=$TRAVIS_PYTHON_VERSION;
+      source activate datafs;
+      conda install --yes --file requirements_conda.txt;
       source activate datafs;
     fi
   - python setup.py install

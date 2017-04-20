@@ -2,7 +2,7 @@ h5py
 netCDF4
 xarray==0.9.5
 dask
-numpy
+numpy==1.12.1
 scipy
 pandas
 numba

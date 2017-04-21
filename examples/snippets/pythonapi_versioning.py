@@ -156,7 +156,7 @@ Example 6
     >>> with sample_archive1.open('r') as f:
     ...    print(f.read())
     ...
-    Sample archive with more text so we can bumpversion
+    this is a sample archive
 
 .. EXAMPLE-BLOCK-6-END
 

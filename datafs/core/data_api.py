@@ -218,13 +218,14 @@ class DataAPI(object):
 
         res = self.manager.get_archive(archive_name)
 
+        if default_version is None:
+            default_version = self._default_versions.get(archive_name, None)
+
         if (auth is not None) and (auth != res['authority_name']):
             raise ValueError(
                 'Archive "{}" not found on {}.'.format(archive_name, auth) +
                 ' Did you mean "{}://{}"?'.format(
                     res['authority_name'], archive_name))
-
-        default_version = self.default_versions.get(archive_name, None)
 
         return self._ArchiveConstructor(
             api=self,
@@ -244,10 +245,10 @@ class DataAPI(object):
 
         default_versions: str, object, or dict
 
-            Default versions to assign to each returned archive. If
-            ``default_versions`` is a dict, each ``archive_name`` must be a
-            key in ``default_versions`` and the value must be a valid version.
-            Versions must be a strict version number, a
+            Default versions to assign to each returned archive. May be a dict
+            with archive names as keys and versions as values, or may be a
+            version, in which case the same version is used for all archives.
+            Versions must be a strict version number string, a
             :py:class:`~distutils.version.StrictVersion`, or a
             :py:class:`~datafs.core.versions.BumpableVersion` object.
 
@@ -257,8 +258,8 @@ class DataAPI(object):
         archives: list
 
             List of :py:class:`~datafs.core.data_archive.DataArchive` objects.
-            If an archive is not found, it is omitted (`batch_get_archive` does
-            not raise a ``KeyError`` on invalid archive names).
+            If an archive is not found, it is omitted (``batch_get_archive``
+            does not raise a ``KeyError`` on invalid archive names).
 
         '''
 
@@ -271,12 +272,25 @@ class DataAPI(object):
 
         archives = {}
 
+        if default_versions is None:
+            default_versions = {}
+
         for res in responses:
             res['archive_name'] = self._normalize_archive_name(
                 res['archive_name'])
 
             archive_name = res['archive_name']
-            default_version = self.default_versions.get(archive_name, None)
+
+            if hasattr(default_versions, 'get'):
+
+                # Get version number from default_versions or
+                # self._default_versions if key not present.
+                default_version = default_versions.get(
+                    archive_name,
+                    self._default_versions.get(archive_name, None))
+
+            else:
+                default_version = default_versions
 
             archive = self._ArchiveConstructor(
                 api=self,

@@ -6,7 +6,7 @@ Command Line Interface: Tagging
 
 This is the tested source code for the snippets used in :ref:`cli-tagging`. The
 config file we're using in this example can be downloaded
-:download:`here <../../examples/snippets/resources/datafs.yml>`.
+:download:`here <../../examples/snippets/resources/datafs_mongo.yml>`.
 
 Example 1
 ---------
@@ -41,9 +41,14 @@ Example 2
     $ datafs search baz
     archive2
 
-    $ datafs search foo
-    archive1
+    $ datafs search foo # doctest: +SKIP
     archive2
+    archive1
+
+
+
+    
+    
 
 .. EXAMPLE-BLOCK-2-END
 
@@ -59,9 +64,12 @@ Example 3
     >     --description 'tag test 3 has all the tags!'
     created versioned archive <DataArchive local://archive3>
 
-    $ datafs search bar foo
-    archive1
+    $ datafs search bar foo # doctest: +SKIP
     archive3
+    archive1
+
+
+
 
     $ datafs search bar foo baz
     archive3

@@ -13,3 +13,4 @@ Documentation Code Source
     samples.pythonapi.metadata
     samples.pythonapi.versioning
     samples.pythonapi.dependencies
+    samples.pythonapi.finding.archives

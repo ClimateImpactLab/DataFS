@@ -12,3 +12,4 @@ Using the Command-Line Interface
     cli.metadata
     cli.versioning
     cli.dependencies
+    cli.finding_archives

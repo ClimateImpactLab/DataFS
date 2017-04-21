@@ -19,7 +19,6 @@ import shutil
 
 from contextlib import contextmanager
 
-
 @pytest.yield_fixture(scope='session')
 def example_snippet_working_dirs():
 
@@ -71,7 +70,6 @@ def make_temp_dir():
 def tempdir():
     with make_temp_dir() as tmp:
         yield tmp
-
 
 @pytest.yield_fixture(scope='module')
 def temp_dir_mod():
@@ -127,9 +125,7 @@ def api(mgr_name, fs_name):
 
     with prep_manager(mgr_name) as manager:
 
-        api = DataAPI(
-            username='My Name',
-            contact='my.email@example.com')
+        api = DataAPI(username='My Name', contact='my.email@example.com')
 
         api.attach_manager(manager)
 
@@ -144,9 +140,7 @@ def api1_module():
 
     with prep_manager('mongo') as manager:
 
-        api = DataAPI(
-            username='My Name',
-            contact='my.email@example.com')
+        api = DataAPI(username='My Name', contact='my.email@example.com')
 
         api.attach_manager(manager)
 
@@ -158,9 +152,7 @@ def api1(mgr_name):
 
     with prep_manager(mgr_name) as manager:
 
-        api = DataAPI(
-            username='My Name',
-            contact='my.email@example.com')
+        api = DataAPI(username='My Name', contact='my.email@example.com')
 
         api.attach_manager(manager)
 
@@ -172,9 +164,7 @@ def api2(mgr_name):
 
     with prep_manager(mgr_name) as manager:
 
-        api = DataAPI(
-            username='My Name',
-            contact='my.email@example.com')
+        api = DataAPI(username='My Name', contact='my.email@example.com')
 
         api.attach_manager(manager)
 

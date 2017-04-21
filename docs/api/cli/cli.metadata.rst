@@ -13,7 +13,7 @@ Viewing Metadata
 ----------------
 
 
-We'll keep working with our ``sample_archive`` that we created earlier. Right now we'll take a look at our metadata. 
+We'll keep working with ``my_archive`` that we created earlier. Right now we'll take a look at our metadata. 
 
 .. include:: ../../../tests/cli_snippets/test_cli_metadata.py
     :start-after: .. EXAMPLE-BLOCK-1-START

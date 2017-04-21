@@ -31,7 +31,6 @@ If you have more than one authority, you will need to specify an authority on ar
     :start-after: .. EXAMPLE-BLOCK-2-START
     :end-before: .. EXAMPLE-BLOCK-2-END
 
-
 Adding Metadata
 ---------------
 

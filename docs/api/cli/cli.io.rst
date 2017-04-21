@@ -62,7 +62,7 @@ Now let's read this to make sure we got what we want
 Writing to Archives with Filepaths
 ----------------------------------
 
-Let's say we made some major edits to our sample_archive locally and we want to update them in the manager and at our authority. We can update the same as before but this time we'll add the filepath that points to our file.
+Let's say we made some major edits to `my_archive` locally and we want to update them in the manager and at our authority. We can update the same as before but this time we'll add the filepath that points to our file.
 
 .. include:: ../../../tests/cli_snippets/test_cli_io.py
     :start-after: .. EXAMPLE-BLOCK-7-START

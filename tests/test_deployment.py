@@ -21,6 +21,7 @@ see the datafs :ref:`contributing guidelines <contributing>`.
 '''
 
 import pytest
+import traceback
 import os
 from datafs.datafs import cli
 from click.testing import CliRunner
@@ -66,7 +67,9 @@ def test_config_file_creation(app_config_dir):
         cli,
         ['configure', '--username', 'my_name', '--contact', 'me@email.com'])
 
-    assert result.exit_code == 0
+    if result.exit_code != 0:
+        traceback.print_exception(*result.exc_info)
+        raise OSError('Errors encountered during execution')
 
     # Check to make sure the config file does not exist
     if not os.path.exists(

@@ -6,6 +6,7 @@ from datafs import DataAPI, get_api, to_config_file
 import os
 from click.testing import CliRunner
 import pytest
+import traceback
 import ast
 import re
 
@@ -178,12 +179,19 @@ def test_cli_local(sample_config):
                                      '--description',
                                      'My test data archive'])
 
-    assert result.exit_code == 0
+    if result.exit_code != 0:
+        traceback.print_exception(*result.exc_info)
+        raise OSError('Errors encountered during execution')
+
     res = 'created versioned archive <DataArchive local://my_first_archive>'
     assert result.output.strip() == res
 
     result = runner.invoke(cli, prefix + ['filter'])
-    assert result.exit_code == 0
+
+    if result.exit_code != 0:
+        traceback.print_exception(*result.exc_info)
+        raise OSError('Errors encountered during execution')
+
     assert 'my_first_archive' in result.output.strip().split('\n')
 
     assert len(result.output.strip().split('\n')) == len(list(api2.filter()))
@@ -193,7 +201,11 @@ def test_cli_local(sample_config):
 
     # testing the `metadata` option
     result = runner.invoke(cli, prefix + ['metadata', 'my_first_archive'])
-    assert result.exit_code == 0
+
+    if result.exit_code != 0:
+        traceback.print_exception(*result.exc_info)
+        raise OSError('Errors encountered during execution')
+
     metadata = ast.literal_eval(result.output)
     assert metadata['description'] == 'My test data archive'
 
@@ -214,7 +226,9 @@ def test_cli_local(sample_config):
                 '--source',
                 'Surfers Journal'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         # assert that we get update feedback
         expected = 'uploaded data to <DataArchive local://my_first_archive>'
@@ -235,7 +249,10 @@ def test_cli_local(sample_config):
                 '--source',
                 'Surfers Journal'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
+
         # assert that we get update feedback
         intended_output = ('uploaded data to <DataArchive '
                            'local://my_first_archive>. version remains 0.0.1.')
@@ -263,10 +280,14 @@ def test_cli_local(sample_config):
                                          'minor',
                                          '--string',
                                          'new version data'])
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         result = runner.invoke(cli, prefix + ['cat', 'my_first_archive'])
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         'new version data' in result.output
 
@@ -276,7 +297,9 @@ def test_cli_local(sample_config):
                                          'here.txt',
                                          '--version',
                                          '0.0.1'])
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         'Hoo Yah! Stay Stoked!' in result.output
 
@@ -287,7 +310,9 @@ def test_cli_local(sample_config):
                                          'here.txt',
                                          '--version',
                                          '0.0.1'])
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         with open('here.txt', 'r') as downloaded:
             assert downloaded.read() == 'Hoo Yah! Stay Stoked!'
@@ -311,7 +336,11 @@ def test_cli_local(sample_config):
     result = runner.invoke(cli, prefix + ['delete', 'my_first_archive'])
 
     result = runner.invoke(cli, prefix + ['filter'])
-    assert result.exit_code == 0
+
+    if result.exit_code != 0:
+        traceback.print_exception(*result.exc_info)
+        raise OSError('Errors encountered during execution')
+
     assert result.output.strip() == ''
 
     assert len(list(api2.filter())) == 0
@@ -334,12 +363,19 @@ def test_cli_unversioned(sample_config):
         prefix + [
             'create', 'unversioned', '--not-versioned'])
 
-    assert result.exit_code == 0
+    if result.exit_code != 0:
+        traceback.print_exception(*result.exc_info)
+        raise OSError('Errors encountered during execution')
+
     res = 'created archive <DataArchive local://unversioned>'
     assert result.output.strip() == res
 
     result = runner.invoke(cli, prefix + ['filter'])
-    assert result.exit_code == 0
+
+    if result.exit_code != 0:
+        traceback.print_exception(*result.exc_info)
+        raise OSError('Errors encountered during execution')
+
     assert ['unversioned'] == [result.output.strip()]
 
     # test the actual creation of the object from the api side
@@ -363,7 +399,9 @@ def test_cli_unversioned(sample_config):
                 '--dependency',
                 'arch2'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         # assert that we get update feedback
         expected = 'uploaded data to <DataArchive local://unversioned>.'
@@ -378,7 +416,9 @@ def test_cli_unversioned(sample_config):
                 '--string',
                 'new content'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         # assert that we get update feedback
         intended_output = 'uploaded data to <DataArchive local://unversioned>.'
@@ -390,7 +430,9 @@ def test_cli_unversioned(sample_config):
         # test download
         result = runner.invoke(cli, prefix +
                                ['download', 'unversioned', 'here.txt'])
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         with open('here.txt', 'r') as downloaded:
             assert downloaded.read() == 'new content'
@@ -415,7 +457,11 @@ def test_cli_unversioned(sample_config):
     result = runner.invoke(cli, prefix + ['delete', 'unversioned'])
 
     result = runner.invoke(cli, prefix + ['filter'])
-    assert result.exit_code == 0
+
+    if result.exit_code != 0:
+        traceback.print_exception(*result.exc_info)
+        raise OSError('Errors encountered during execution')
+
     assert result.output.strip() == ''
 
     assert len(list(api2.filter())) == 0
@@ -453,7 +499,9 @@ def test_specified_requirements(preloaded_config):
             cli,
             prefix + ['download', '/req/arch1', 'local_req_1.txt'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         with open('local_req_1.txt', 'r') as f:
             assert f.read() == 'this is archive /req/arch1 version 1.0'
@@ -464,7 +512,9 @@ def test_specified_requirements(preloaded_config):
             cli,
             prefix + ['download', '/req/arch2', 'local_req_2.txt'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         with open('local_req_2.txt', 'r') as f:
             assert f.read() == 'this is archive /req/arch2 version 0.0.1a2'
@@ -476,7 +526,9 @@ def test_specified_requirements(preloaded_config):
             cli,
             prefix + ['download', '/req/arch3', 'local_req_3.txt'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         with open('local_req_3.txt', 'r') as f:
             assert f.read() == 'this is archive /req/arch3 version 1.1'
@@ -505,7 +557,10 @@ def test_versions(preloaded_config):
             cli,
             prefix + ['versions', '/req/arch3'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
+
         versions = ast.literal_eval(result.output)
 
         assert ['1.0', '1.1a1', '1.1'] == versions
@@ -534,7 +589,10 @@ def test_history(preloaded_config):
             cli,
             prefix + ['history', '/req/arch3'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
+
         history = ast.literal_eval(result.output)
         assert len(history) == 3
 
@@ -575,7 +633,9 @@ def test_alternate_versions(preloaded_config):
                 '--version',
                 '0.1'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         with open('local_req_1.txt', 'r') as f:
             assert f.read() == 'this is archive /req/arch1 version 0.1'
@@ -590,7 +650,9 @@ def test_alternate_versions(preloaded_config):
                 '--version',
                 '0.0.1'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         with open('local_req_2.txt', 'r') as f:
             assert f.read() == 'this is archive /req/arch2 version 0.0.1'
@@ -605,7 +667,9 @@ def test_alternate_versions(preloaded_config):
                 '--version',
                 '1.1a1'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         with open('local_req_3.txt', 'r') as f:
             assert f.read() == 'this is archive /req/arch3 version 1.1a1'
@@ -744,7 +808,9 @@ def test_incorrect_versions(preloaded_config):
                 '--version',
                 'latest'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         with open('local_req_2.txt', 'r') as f:
             assert f.read() == 'this is archive /req/arch2 version 0.0.1'
@@ -796,7 +862,9 @@ def test_dependency_parsing(sample_config):
                                          'arch1==0.1.0',
                                          '--dependency',
                                          'arch2'])
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         assert arch1.get_latest_version() == '0.1.0'
         with arch1.open('r') as f:
@@ -813,7 +881,10 @@ def test_dependency_parsing(sample_config):
                                          '--dependency',
                                          'arch2==0.0.1'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
+
         assert arch1.get_dependencies(
             version='0.1.0') == {
             'arch1': '0.2.0',
@@ -833,7 +904,9 @@ def test_dependency_parsing(sample_config):
                                          '--dependency',
                                          'arch2==0.0.1'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         assert arch1.get_dependencies(
             version='0.1.0') == {
@@ -843,7 +916,9 @@ def test_dependency_parsing(sample_config):
         result = runner.invoke(cli, prefix +
                                ['get_dependencies', 'dep_archive'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         assert 'arch1==0.2.0' in result.output
         assert 'arch2==0.0.1' in result.output
@@ -852,7 +927,9 @@ def test_dependency_parsing(sample_config):
             cli, prefix + [
                 'get_dependencies', 'dep_archive', '--version', '0.1'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         assert 'arch1==0.2.0' in result.output
         assert 'arch2==0.0.1' in result.output
@@ -865,13 +942,17 @@ def test_dependency_parsing(sample_config):
                                          '--dependency',
                                          'arch2'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         result = runner.invoke(
             cli, prefix + [
                 'get_dependencies', 'dep_archive'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         assert 'arch1==0.2.0' in result.output
         assert 'arch2' in result.output
@@ -915,14 +996,20 @@ def test_update_metadata(sample_config, monkeypatch):
             cli, prefix + [
                 'update', 'my_next_archive'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         result = runner.invoke(cli,
                                prefix + ['update_metadata',
                                          'my_next_archive',
                                          '--description',
                                          'some_description'])
-        assert result.exit_code == 0
+
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
+
         assert arch1.get_metadata() == {'description': 'some_description'}
 
         os.remove('my_new_test_file.txt')
@@ -932,11 +1019,15 @@ def test_update_metadata(sample_config, monkeypatch):
             prefix + ['update', 'my_next_archive', '--string'],
             input='my new contents\ncan be piped in')
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         result = runner.invoke(cli, prefix + ['cat', 'my_next_archive'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         assert 'my new contents' in result.output.strip().split('\n')
         assert 'can be piped in' in result.output.strip().split('\n')
@@ -969,7 +1060,10 @@ def test_sufficient_configuration(manager_with_spec, tempdir):
 
     # Test the configuration
     result = runner.invoke(cli, prefix + ['configure'])
-    assert result.exit_code == 0
+
+    if result.exit_code != 0:
+        traceback.print_exception(*result.exc_info)
+        raise OSError('Errors encountered during execution')
 
 
 @pytest.mark.cli
@@ -1025,7 +1119,9 @@ def test_manual_configuration(manager_with_spec, tempdir):
         '--contact',
         '"my_email@domain.com'])
 
-    assert result.exit_code == 0
+    if result.exit_code != 0:
+        traceback.print_exception(*result.exc_info)
+        raise OSError('Errors encountered during execution')
 
 
 @pytest.mark.cli
@@ -1063,7 +1159,9 @@ def test_helper_configuration(manager_with_spec, tempdir, monkeypatch):
         prefix + ['configure', '--helper']
     )
 
-    assert result.exit_code == 0
+    if result.exit_code != 0:
+        traceback.print_exception(*result.exc_info)
+        raise OSError('Errors encountered during execution')
 
     api2 = get_api(config_file=config_file, profile='conftest')
     assert api2.user_config['contact'] == "my_email@domain.com"
@@ -1087,7 +1185,9 @@ def test_listdir(preloaded_config):
 
         result = runner.invoke(cli, prefix + ['listdir', 'local://req/'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         contents = map(lambda s: s.strip(), result.output.strip().split('\n'))
 
@@ -1122,7 +1222,9 @@ def test_versioned_logging(preloaded_config):
             cli,
             prefix + ['log', '/req/arch1'])
 
-    assert result.exit_code == 0
+    if result.exit_code != 0:
+        traceback.print_exception(*result.exc_info)
+        raise OSError('Errors encountered during execution')
 
     log = result.output.strip()
 
@@ -1177,7 +1279,9 @@ def test_unversioned_logging(preloaded_config):
             cli,
             prefix + ['listdir', '/req/', '--authority_name', 'local'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         contents = map(lambda s: s.strip(), result.output.strip().split('\n'))
 
@@ -1205,7 +1309,9 @@ def test_listdir_noauth(preloaded_config):
 
         result = runner.invoke(cli, prefix + ['listdir', '/req/'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
 
         contents = map(lambda s: s.strip(), result.output.strip().split('\n'))
 
@@ -1236,7 +1342,9 @@ def test_listdir_auth(preloaded_config):
             cli,
             prefix + ['log', 'uver1'])
 
-    assert result.exit_code == 0
+    if result.exit_code != 0:
+        traceback.print_exception(*result.exc_info)
+        raise OSError('Errors encountered during execution')
 
     log = result.output.strip()
 
@@ -1293,7 +1401,10 @@ def test_cli_log_with_various_messages(sample_config):
             cli,
             prefix + ['log', 'test/archive1.txt'])
 
-        assert result.exit_code == 0
+        if result.exit_code != 0:
+            traceback.print_exception(*result.exc_info)
+            raise OSError('Errors encountered during execution')
+
         return result.output.strip()
 
     try:

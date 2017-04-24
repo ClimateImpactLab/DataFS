@@ -149,7 +149,7 @@ def configure(ctx, helper, edit):
             'api': {'user_config': {}}, 'manager': {}, 'authorities': {}}
 
     profile_config = ctx.obj.config.config['profiles'][ctx.obj.profile]
-    profile_config['user_config'].update(kwargs)
+    profile_config['api']['user_config'].update(kwargs)
 
     _generate_api(ctx)
 

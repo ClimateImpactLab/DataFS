@@ -8,10 +8,11 @@ from datafs.config.config_file import ConfigFile
 from datafs.config.helpers import (
     get_api,
     _parse_requirement,
-    _interactive_config)
+    check_requirements)
 from datafs._compat import u
 import click
 import sys
+import os
 import pprint
 
 
@@ -45,20 +46,6 @@ def _parse_args_and_kwargs(passed_args):
     return args, kwargs
 
 
-def _interactive_configuration(api, config, profile=None):
-
-    profile = config.default_profile if profile is None else profile
-
-    profile_config = config.get_profile_config(profile)
-
-    # read from the required config settings in DataAPI
-    _interactive_config(
-        to_populate=profile_config['api']['user_config'],
-        prompts=api.manager.required_user_config)
-
-    config.config['profiles'][profile] = profile_config
-
-
 def _parse_dependencies(dependency_args):
 
     if len(dependency_args) == 0:
@@ -69,11 +56,6 @@ def _parse_dependencies(dependency_args):
 
 
 def _generate_api(ctx):
-
-    ctx.obj.config.read_config()
-
-    if ctx.obj.profile is None:
-        ctx.obj.profile = ctx.obj.config.config['default-profile']
 
     ctx.obj.api = get_api(
         profile=ctx.obj.profile,
@@ -128,8 +110,6 @@ def cli(
     ctx.obj = _DataFSInterface()
 
     ctx.obj.config_file = config_file
-    ctx.obj.config = ConfigFile(ctx.obj.config_file)
-
     ctx.obj.requirements = requirements
     ctx.obj.profile = profile
 
@@ -152,31 +132,32 @@ def configure(ctx, helper, edit):
     Update configuration
     '''
 
+    ctx.obj.config = ConfigFile(ctx.obj.config_file)
+
     if edit:
         ctx.obj.config.edit_config_file()
         return
 
-    _generate_api(ctx)
+    if os.path.isfile(ctx.obj.config.config_file):
+        ctx.obj.config.read_config()
 
-    kwargs = {ctx.args[i][2:]: ctx.args[i + 1]
-              for i in xrange(0, len(ctx.args), 2)}
-    ctx.obj.config.config['profiles'][ctx.obj.profile][
-        'api']['user_config'].update(kwargs)
+    args, kwargs = _parse_args_and_kwargs(ctx.args)
+    assert len(args) == 0, 'Unrecognized arguments: "{}"'.format(args)
 
-    ctx.obj.api.user_config.update(kwargs)
+    if ctx.obj.profile not in ctx.obj.config.config['profiles']:
+        ctx.obj.config.config['profiles'][ctx.obj.profile] = {
+            'api': {'user_config': {}}, 'manager': {}, 'authorities': {}}
 
-    if helper:
-        _interactive_configuration(
-            ctx.obj.api,
-            ctx.obj.config,
-            profile=ctx.obj.profile)
+    profile_config = ctx.obj.config.config['profiles'][ctx.obj.profile]
+    profile_config['user_config'].update(kwargs)
 
-    else:
-        for kw in ctx.obj.api.manager.required_user_config:
-            if kw not in ctx.obj.api.user_config:
-                raise KeyError(
-                    'Required configuration option "{}" not supplied. '
-                    'Use --helper to configure interactively'.format(kw))
+    api = _generate_api(ctx)
+
+    if api.manager is not None:
+        check_requirements(
+            to_populate=profile_config['api']['user_config'],
+            prompts=api.manager.required_user_config,
+            helper=helper)
 
     ctx.obj.config.write_config(ctx.obj.config_file)
 

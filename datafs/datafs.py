@@ -141,6 +141,9 @@ def configure(ctx, helper, edit):
     if os.path.isfile(ctx.obj.config.config_file):
         ctx.obj.config.read_config()
 
+    if ctx.obj.profile is None:
+        ctx.obj.profile = ctx.obj.config.default_profile
+
     args, kwargs = _parse_args_and_kwargs(ctx.args)
     assert len(args) == 0, 'Unrecognized arguments: "{}"'.format(args)
 
@@ -150,6 +153,8 @@ def configure(ctx, helper, edit):
 
     profile_config = ctx.obj.config.config['profiles'][ctx.obj.profile]
     profile_config['api']['user_config'].update(kwargs)
+
+    ctx.obj.config.write_config(ctx.obj.config_file)
 
     _generate_api(ctx)
 

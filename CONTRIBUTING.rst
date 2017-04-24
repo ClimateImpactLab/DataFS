@@ -1,6 +1,7 @@
+.. _Contributing:
+
 .. highlight:: shell
 
-.. _contributing:
 ============
 Contributing
 ============

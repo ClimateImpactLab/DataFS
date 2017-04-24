@@ -151,12 +151,12 @@ def configure(ctx, helper, edit):
     profile_config = ctx.obj.config.config['profiles'][ctx.obj.profile]
     profile_config['user_config'].update(kwargs)
 
-    api = _generate_api(ctx)
+    _generate_api(ctx)
 
-    if api.manager is not None:
+    if ctx.obj.api.manager is not None:
         check_requirements(
             to_populate=profile_config['api']['user_config'],
-            prompts=api.manager.required_user_config,
+            prompts=ctx.obj.api.manager.required_user_config,
             helper=helper)
 
     ctx.obj.config.write_config(ctx.obj.config_file)

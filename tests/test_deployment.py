@@ -41,12 +41,7 @@ def app_config_dir(tmpdir, monkeypatch):
     config_path = tmpdir.mkdir('appdir')
 
     def tmp_app_dir(app_name):
-        app_dir_path = os.path.join(str(config_path), app_name)
-
-        if not os.path.isdir(app_dir_path):
-            config_path.mkdir(app_name)
-
-        return app_dir_path
+        return os.path.join(str(config_path), app_name)
 
     monkeypatch.setattr('click.get_app_dir', tmp_app_dir)
 

@@ -81,8 +81,10 @@ Performance Improvements
 Bug Fixes
 ~~~~~~~~~
 
-  - Implement missing ``default_version`` handling in :py:meth:`~datafs.DataAPI.get_archive` and :py:meth:`~datafs.DataAPI.batch_get_archive` (:issue:`240`)
-	- Messages are now coerced to strings, and :py:meth:`~datafs.core.data_archive.log` and the CLI ``log`` command no longer fail when used on archives with non-string messages (:issue:`232`)
+    - Implement missing ``default_version`` handling in :py:meth:`~datafs.DataAPI.get_archive` and :py:meth:`~datafs.DataAPI.batch_get_archive` (:issue:`240`)
+    
+    - Messages are now coerced to strings, and :py:meth:`~datafs.core.data_archive.log` and the CLI ``log`` command no longer fail when used on archives with non-string messages (:issue:`232`)
+
     - ``examples/ondisk.py`` updated to reflect [xarray 0.9.5](https://pypi.python.org/pypi/xarray/0.9.5) display function changes (:issue:`249`)
 
     - `delete` and `api.delete_archive` now implement `removedir` which removes the archive level name space from the filesystem. Previous implementations of these methods removed the archive from the manager and only removed versions from the file system leaving top level name spaces as file system objects. (:issue:`212`)

@@ -1,4 +1,4 @@
-* DataFS Distributed Data Management System version:
+* DataFS version:
 * Python version:
 * Operating System:
 

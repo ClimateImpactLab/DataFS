@@ -491,7 +491,7 @@ def test_specified_requirements(preloaded_config):
 
         with open('requirements_data_test1.txt', 'w+') as reqs:
             reqs.write('/req/arch1==1.0\n')
-            reqs.write('/req/arch2==0.0.1a2\n')
+            reqs.write('/req/arch2==0.0.1a2\n\n')
 
         # Download /req/arch1 with version from requirements file
 

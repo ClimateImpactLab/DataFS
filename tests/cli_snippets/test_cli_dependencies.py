@@ -5,7 +5,9 @@ import os
 
 @pytest.mark.examples
 @pytest.mark.cli_snippets
-def test_cli_dependencies_snippet_1(cli_validator):
+def test_cli_dependencies_snippet_1(cli_validator_and_api):
+
+    cli_validator, api = cli_validator_and_api
 
     with open('arch.txt', 'w+') as f:
         f.write('contents depend on archive 2 v1.1')
@@ -26,14 +28,19 @@ def test_cli_dependencies_snippet_1(cli_validator):
     uploaded data to <DataArchive local://my_archive>. new version 0.0.1
     created.
 
-    $ datafs get_dependencies my_archive
+    $ datafs get_dependencies my_archive # doctest: +SKIP
     archive3
     archive2==1.1
-    
 
 .. EXAMPLE-BLOCK-1-END
 
-''')
+
+'''
+
+    )
+
+    arch = api.get_archive('my_archive')
+    assert 'archive3','archive2==1.1' in arch.get_dependencies()
 
     os.remove('arch.txt')
 

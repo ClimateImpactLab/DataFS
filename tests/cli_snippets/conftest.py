@@ -103,6 +103,23 @@ def cli_validator(cli_setup, validator):
 
     del validator.call_engines['datafs']
 
+
+@pytest.yield_fixture(scope='function')
+def cli_validator_and_api(cli_setup, validator):
+
+    _, api, _, prefix = cli_setup
+
+    try:
+        api.delete_archive('my_archive')
+    except KeyError:
+        pass
+
+    validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
+
+    yield validator.teststring, api
+
+    del validator.call_engines['datafs']
+
 @pytest.yield_fixture(scope='function')
 def cli_validator_with_description(cli_setup, cli_validator):
 

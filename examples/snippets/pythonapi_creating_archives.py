@@ -19,6 +19,7 @@ Setup
 We test with the following setup:
 
 .. code-block:: python
+
     >>> api = datafs.get_api(
     ...     config_file='examples/snippets/resources/datafs_mongo.yml')
     ...
@@ -30,6 +31,7 @@ we're using in this example can be downloaded
 clean up any previous test failures
 
 .. code-block:: python
+
     >>> try:
     ...     api.delete_archive('my_archive_name')
     ... except (KeyError, OSError):
@@ -44,6 +46,7 @@ clean up any previous test failures
 Add a fresh manager table:
 
 .. code-block:: python
+
     >>> api.manager.create_archive_table('DataFiles')
 
 Example 1
@@ -53,6 +56,7 @@ Displayed example 1 code:
 .. EXAMPLE-BLOCK-1-START
 
 .. code-block:: python
+
     >>> archive = api.create('my_archive_name')
 
 .. EXAMPLE-BLOCK-1-END
@@ -102,6 +106,7 @@ Example 3
 Example 3 cleanup:
 
 .. code-block:: python
+
     >>> try:
     ...     api.delete_archive('my_archive_name')
     ... except KeyError:
@@ -114,6 +119,7 @@ Example 4
 .. EXAMPLE-BLOCK-4-START
 
 .. code-block:: python
+
     >>> api.DefaultAuthorityName = 'my_authority'
     >>> archive = api.create('my_archive_name')
 
@@ -122,6 +128,7 @@ Example 4
 Example 4 cleanup:
 
 .. code-block:: python
+
     >>> try:
     ...     api.delete_archive('my_archive_name')
     ... except KeyError:
@@ -134,6 +141,7 @@ Example 5
 .. EXAMPLE-BLOCK-5-START
 
 .. code-block:: python
+
     >>> archive = api.create(
     ...     'my_archive_name',
     ...     metadata={
@@ -147,6 +155,7 @@ Example 5
 Example 5 cleanup:
 
 .. code-block:: python
+
     >>> try:
     ...     api.delete_archive('my_archive_name')
     ... except KeyError:
@@ -159,6 +168,7 @@ Example 6
 Example 6 setup:
 
 .. code-block:: python
+
     >>> api.manager.set_required_archive_metadata(
     ...     {'description': 'Enter a description'})
     ...
@@ -168,6 +178,7 @@ Displayed example:
 .. EXAMPLE-BLOCK-6-START
 
 .. code-block:: python
+
     >>> archive = api.create(
     ...     'my_archive_name',
     ...     metadata = {
@@ -184,6 +195,7 @@ Displayed example:
 Example 6 cleanup:
 
 .. code-block:: python
+
     >>> try:
     ...     api.delete_archive('my_archive_name')
     ... except KeyError:
@@ -196,6 +208,7 @@ Example 7
 .. EXAMPLE-BLOCK-7-START
 
 .. code-block:: python
+
     >>> archive = api.create(
     ...     'my_archive_name',
     ...     metadata={

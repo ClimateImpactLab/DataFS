@@ -234,5 +234,5 @@ def cli_validator_manager_various(cli_setup,
     # Teardown
 
     for arch in map(api.get_archive, archive_names):
-        arch.delete() 
+        arch.delete()
 

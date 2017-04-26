@@ -39,7 +39,7 @@ def test_cli_dependencies_snippet_1(cli_validator_and_api):
 
     arch = api.get_archive('my_archive')
     assert 'archive3','archive2==1.1' in arch.get_dependencies()
-    
+
     os.remove('arch.txt')
 
     # Code snippet 2

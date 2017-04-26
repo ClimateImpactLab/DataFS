@@ -120,3 +120,41 @@ def cli_validator_dual_auth(cli_setup_dual_auth, validator):
     finally:
         api._authorities['my_authority'].fs.close()
         del validator.call_engines['datafs']
+
+
+
+
+@pytest.yield_fixture(scope='function')
+def cli_validator_listdir(cli_setup, validator):
+
+    _, api, _, prefix = cli_setup
+
+    with open('test.txt', 'w') as f:
+        f.write('test test')
+
+    tas_archive = api.create('impactlab/climate/tas/tas_daily_us.csv')
+    tas_archive.update('test.txt')
+    precip_archive = api.create('impactlab/climate/pr/pr_daily_us.csv')
+    precip_archive.update('test.txt')
+    socio = api.create('impactlab/mortality/global/mortality_global_daily.csv')
+    socio.update('test.txt')
+    socio1 = api.create('impactlab/conflict/global/conflict_global_daily.csv')
+    socio1.update('test.txt')
+    socio2 = api.create('impactlab/labor/global/labor_global_daily.csv')
+    socio2.update('test.txt')
+
+    validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
+    
+    yield validator.teststring
+
+    del validator.call_engines['datafs']
+
+    try:
+         tas_archive.delete()
+         precip_archive.delete()
+         socio.delete()
+         socio1.delete()
+         socio2.delete()
+         os.remove('test.txt')
+    except KeyError:
+         pass

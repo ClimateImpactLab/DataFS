@@ -3,6 +3,8 @@ from datafs import get_api
 from datafs.datafs import cli
 from contextlib import contextmanager
 import pytest
+import os
+import itertools
 
 from fs.tempfs import TempFS
 
@@ -10,7 +12,6 @@ from clatter import Runner
 from clatter.validators import (
     ClickValidator,
     SubprocessValidator)
-
 
 @pytest.yield_fixture(scope='session')
 def validator():
@@ -50,22 +51,40 @@ def setup_runner_resource(config_file, table_name):
     api.manager.delete_table(table_name)
 
 
-@pytest.yield_fixture(scope='session')
-def cli_setup(example_snippet_working_dirs):
-    config_file = 'examples/snippets/resources/datafs.yml'
+@pytest.yield_fixture(scope='session', params=['mongo', 'dynamo'])
+def cli_setup(request, example_snippet_working_dirs):
+    config_file = 'examples/snippets/resources/datafs_{}.yml'.format(
+                        request.param)
+
     table_name = 'DataFiles'
 
     with setup_runner_resource(config_file, table_name) as setup:
         yield setup
 
 
-@pytest.yield_fixture(scope='session')
-def cli_setup_dual_auth(example_snippet_working_dirs):
-    config_file = 'examples/snippets/resources/datafs_dual_auth.yml'
+@pytest.yield_fixture(scope='session', params=['mongo', 'dynamo'])
+def cli_setup_dual_auth(request, example_snippet_working_dirs):
+    config_file = 'examples/snippets/resources/datafs_dual_auth_{}.yml'.format(
+                        request.param)
     table_name = 'OtherFiles'
 
     with setup_runner_resource(config_file, table_name) as setup:
         yield setup
+
+# @pytest.yield_fixture(scope='session', params=['mongo', 'dynamo'])
+# def cli_setup_dual_manager(example_snippet_working_dirs, request):
+
+
+#     if request.param == 'mongo':
+#         config_file = 'examples/snippets/resources/datafs_mongo_dual.yml'
+#         table_name = 'MongoFilesDual'
+
+#     if request.param == 'dynamo':
+#         config_file = 'examples/snippets/resources/datafs_dynamo_dual.yml'
+#         table_name = 'DynamoFilesDual'
+
+#     with setup_runner_resource(config_file, table_name) as setup:
+#         yield setup
 
 
 @pytest.yield_fixture(scope='function')
@@ -83,7 +102,6 @@ def cli_validator(cli_setup, validator):
     yield validator.teststring
 
     del validator.call_engines['datafs']
-
 
 @pytest.yield_fixture(scope='function')
 def cli_validator_with_description(cli_setup, cli_validator):
@@ -120,3 +138,83 @@ def cli_validator_dual_auth(cli_setup_dual_auth, validator):
     finally:
         api._authorities['my_authority'].fs.close()
         del validator.call_engines['datafs']
+
+
+
+@pytest.yield_fixture(scope='function')
+def cli_validator_listdir(cli_setup, validator):
+
+    _, api, _, prefix = cli_setup
+
+    with open('test.txt', 'w') as f:
+        f.write('test test')
+
+    tas_archive = api.create('impactlab/climate/tas/tas_daily_us.csv')
+    tas_archive.update('test.txt')
+    precip_archive = api.create('impactlab/climate/pr/pr_daily_us.csv')
+    precip_archive.update('test.txt')
+    socio = api.create('impactlab/mortality/global/mortality_global_daily.csv')
+    socio.update('test.txt')
+    socio1 = api.create('impactlab/conflict/global/conflict_global_daily.csv')
+    socio1.update('test.txt')
+    socio2 = api.create('impactlab/labor/global/labor_global_daily.csv')
+    socio2.update('test.txt')
+
+    validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
+    
+    yield validator.teststring
+
+    del validator.call_engines['datafs']
+
+    try:
+         tas_archive.delete()
+         precip_archive.delete()
+         socio.delete()
+         socio1.delete()
+         socio2.delete()
+         os.remove('test.txt')
+    except KeyError:
+         pass
+
+
+@pytest.yield_fixture(scope='function')
+def cli_validator_manager_various(cli_setup, 
+                validator):
+
+    _, api, _, prefix = cli_setup
+
+    archive_names = []
+    for indices in itertools.product(*(range(1, 6) for _ in range(3))):
+         archive_name = (
+         'project{}_variable{}_scenario{}.nc'.format(*indices))
+         archive_names.append(archive_name)
+
+    for i, name in enumerate(archive_names):
+
+        if i % 3  == 0:
+            try:
+                api.create(name, tags=['team1'])
+            except KeyError:
+                pass
+
+        elif i % 2 == 0:
+            try:
+                api.create(name, tags=['team2'])
+            except KeyError:
+                pass
+        else:
+            try:
+                api.create(name, tags=['team3'])
+            except KeyError:
+                pass
+
+    validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
+    
+    yield validator.teststring
+
+    del validator.call_engines['datafs']
+
+    # Teardown
+
+    teardown = [arch.delete() for arch in map(api.get_archive, archive_names)]
+

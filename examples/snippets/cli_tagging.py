@@ -38,8 +38,7 @@ Example 2
     $ datafs search foo # doctest: +SKIP
     archive2
     archive1
-    
-    
+
 .. EXAMPLE-BLOCK-2-END
 
 Example 3

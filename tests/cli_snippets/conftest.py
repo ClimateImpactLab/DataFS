@@ -13,6 +13,7 @@ from clatter.validators import (
     ClickValidator,
     SubprocessValidator)
 
+
 @pytest.yield_fixture(scope='session')
 def validator():
 
@@ -120,6 +121,7 @@ def cli_validator_and_api(cli_setup, validator):
 
     del validator.call_engines['datafs']
 
+
 @pytest.yield_fixture(scope='function')
 def cli_validator_with_description(cli_setup, cli_validator):
 
@@ -157,7 +159,6 @@ def cli_validator_dual_auth(cli_setup_dual_auth, validator):
         del validator.call_engines['datafs']
 
 
-
 @pytest.yield_fixture(scope='function')
 def cli_validator_listdir(cli_setup, validator):
 
@@ -176,35 +177,34 @@ def cli_validator_listdir(cli_setup, validator):
     socio1.update('test.txt')
     socio2 = api.create('impactlab/labor/global/labor_global_daily.csv')
     socio2.update('test.txt')
-
     validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
-    
+
     yield validator.teststring
 
     del validator.call_engines['datafs']
 
     try:
-         tas_archive.delete()
-         precip_archive.delete()
-         socio.delete()
-         socio1.delete()
-         socio2.delete()
-         os.remove('test.txt')
+        tas_archive.delete()
+        precip_archive.delete()
+        socio.delete()
+        socio1.delete()
+        socio2.delete()
+        os.remove('test.txt')
     except KeyError:
-         pass
+        pass
 
 
 @pytest.yield_fixture(scope='function')
-def cli_validator_manager_various(cli_setup, 
+def cli_validator_manager_various(cli_setup,
                 validator):
 
     _, api, _, prefix = cli_setup
 
     archive_names = []
     for indices in itertools.product(*(range(1, 6) for _ in range(3))):
-         archive_name = (
-         'project{}_variable{}_scenario{}.nc'.format(*indices))
-         archive_names.append(archive_name)
+        archive_name = (
+        'project{}_variable{}_scenario{}.nc'.format(*indices))
+        archive_names.append(archive_name)
 
     for i, name in enumerate(archive_names):
 
@@ -226,12 +226,13 @@ def cli_validator_manager_various(cli_setup,
                 pass
 
     validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
-    
+
     yield validator.teststring
 
     del validator.call_engines['datafs']
 
     # Teardown
 
-    teardown = [arch.delete() for arch in map(api.get_archive, archive_names)]
+    for arch in map(api.get_archive, archive_names):
+        arch.delete() 
 

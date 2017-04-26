@@ -39,8 +39,15 @@ def test_cli_dependencies_snippet_1(cli_validator_and_api):
 
     arch = api.get_archive('my_archive')
     deps = arch.get_dependencies()
-    assert deps['archive2'] =='1.1'   
-    assert deps['archive3'] == None
+
+    if deps['archive2'] != '1.1':
+        raise ValueError
+
+    if deps['archive3'] is not None:
+        raise ValueError
+
+    if len(deps) > 2:
+        raise ValueError
 
     os.remove('arch.txt')
 

@@ -7,7 +7,8 @@ Python API: Dependencies
 
 This is the tested source code for the snippets used in
 :ref:`pythonapi-dependencies`. The config file we're using in this example can
-be downloaded :download:`here <../../examples/snippets/resources/datafs_mongo.yml>`.
+be downloaded
+:download:`here <../../examples/snippets/resources/datafs_mongo.yml>`.
 Later on in the script, we use a requirements file. That file can be downloaded
 :download:`here <../../examples/snippets/resources/requirements_data.txt>`.
 

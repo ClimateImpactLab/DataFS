@@ -27,8 +27,9 @@ def test_cli_dependencies_snippet_1(cli_validator):
     created.
 
     $ datafs get_dependencies my_archive
-    archive2==1.1
     archive3
+    archive2==1.1
+    
 
 .. EXAMPLE-BLOCK-1-END
 

@@ -25,6 +25,12 @@ class ConfigFile(object):
             self.config_file = os.path.join(
                 click.get_app_dir('datafs'), 'config.yml')
 
+            # Create default directory if it does not exist
+            # If using a user-supplied file, they are responsible for creating
+            # the directory.
+            if not os.path.isdir(os.path.dirname(self.config_file)):
+                os.makedirs(os.path.dirname(self.config_file))
+
     def parse_configfile_contents(self, config):
         if 'profiles' not in config:
             config = {'profiles': {'default': config}}

@@ -155,27 +155,24 @@ def get_api(
     return api
 
 
-def _interactive_config(to_populate, prompts):
+def check_requirements(to_populate, prompts, helper=False):
     '''
-    Interactively populates to_populate with user-entered values
+    Iterates through required values, checking to_populate for required values
+
+    If a key in prompts is missing in to_populate and ``helper==True``,
+    prompts the user using the values in to_populate. Otherwise, raises an
+    error.
 
     Parameters
     ----------
 
     to_populate : dict
-        Data dictionary to fill. Default values are taken from this dictionary.
+        Data dictionary to fill. Prompts given to the user are taken from this
+        dictionary.
 
     prompts : dict
         Keys and prompts to use when filling ``to_populate``
     '''
-
-    for kw, prompt in prompts.items():
-        to_populate[kw] = click.prompt(
-            prompt,
-            default=to_populate.get(kw))
-
-
-def check_requirements(to_populate, prompts, helper=False):
 
     for kw, prompt in prompts.items():
         if helper:

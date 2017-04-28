@@ -21,7 +21,7 @@ class APIConstructor(object):
     @classmethod
     def attach_manager_from_config(cls, api, config):
 
-        if 'manager' in config:
+        if len(config.get('manager', {})) > 0:
 
             manager = cls._generate_manager(config['manager'])
             api.attach_manager(manager)
@@ -38,7 +38,7 @@ class APIConstructor(object):
     @classmethod
     def attach_cache_from_config(cls, api, config):
 
-        if 'cache' in config:
+        if len(config.get('cache', {})) > 0:
 
             service = cls._generate_service(config['cache'])
             api.attach_cache(service)

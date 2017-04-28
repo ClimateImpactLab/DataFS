@@ -7,12 +7,10 @@ Python API: Creating Archives
 This is the tested source code for the snippets used in
 :ref:`pythonapi-creating-archives`. The config file we're using in this example
 can be downloaded
-:download:`here <../../examples/snippets/resources/datafs.yml>`.
-
+:download:`here <../../examples/snippets/resources/datafs_mongo.yml>`.
 
 Setup
 -----
-
 .. code-block:: python
 
     >>> import datafs
@@ -23,12 +21,12 @@ We test with the following setup:
 .. code-block:: python
 
     >>> api = datafs.get_api(
-    ...     config_file='examples/snippets/resources/datafs.yml')
+    ...     config_file='examples/snippets/resources/datafs_mongo.yml')
     ...
 
 This assumes that you have a config file at the above location. The config file
 we're using in this example can be downloaded
-:download:`here <../../examples/snippets/resources/datafs.yml>`.
+:download:`here <../../examples/snippets/resources/datafs_mongo.yml>`.
 
 clean up any previous test failures
 
@@ -51,10 +49,8 @@ Add a fresh manager table:
 
     >>> api.manager.create_archive_table('DataFiles')
 
-
 Example 1
 ---------
-
 Displayed example 1 code:
 
 .. EXAMPLE-BLOCK-1-START
@@ -71,7 +67,6 @@ Example 1 cleanup:
 
     >>> api.delete_archive('my_archive_name')
 
-
 Example 2
 ---------
 
@@ -80,7 +75,6 @@ Example 2 setup
 .. code-block:: python
 
     >>> api.attach_authority('my_authority', TempFS())
-
 
 Displayed example 2 code
 
@@ -94,7 +88,6 @@ Displayed example 2 code
     ValueError: Authority ambiguous. Set authority or DefaultAuthorityName.
 
 .. EXAMPLE-BLOCK-2-END
-
 
 Example 3
 ---------
@@ -120,7 +113,6 @@ Example 3 cleanup:
     ...     pass
     ...
 
-
 Example 4
 ---------
 
@@ -143,7 +135,6 @@ Example 4 cleanup:
     ...     pass
     ...
 
-
 Example 5
 ---------
 
@@ -161,7 +152,6 @@ Example 5
 
 .. EXAMPLE-BLOCK-5-END
 
-
 Example 5 cleanup:
 
 .. code-block:: python
@@ -171,7 +161,6 @@ Example 5 cleanup:
     ... except KeyError:
     ...     pass
     ...
-
 
 Example 6
 ---------
@@ -213,7 +202,6 @@ Example 6 cleanup:
     ...     pass
     ...
 
-
 Example 7
 ---------
 
@@ -228,10 +216,10 @@ Example 7
     ...         'doi': '10.1038/nature15725'},
     ...         helper=True) # doctest: +SKIP
     ...
+
     Enter a description:
 
 .. EXAMPLE-BLOCK-7-END
-
 
 Teardown
 --------
@@ -243,8 +231,5 @@ Teardown
     ... except KeyError:
     ...     pass
     ...
-
     >>> api.manager.delete_table('DataFiles')
-
-
 '''

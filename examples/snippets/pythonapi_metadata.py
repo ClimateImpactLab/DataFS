@@ -8,7 +8,7 @@ Python API: Managing Metadata
 This is the tested source code for the snippets used in
 :ref:`pythonapi-metadata`. The config file we're using in this example
 can be downloaded
-:download:`here <../../examples/snippets/resources/datafs.yml>`.
+:download:`here <../../examples/snippets/resources/datafs_mongo.yml>`.
 
 
 Setup
@@ -24,12 +24,12 @@ We test with the following setup:
 .. code-block:: python
 
     >>> api = datafs.get_api(
-    ...     config_file='examples/snippets/resources/datafs.yml')
+    ...     config_file='examples/snippets/resources/datafs_mongo.yml')
     ...
 
 This assumes that you have a config file at the above location. The config file
 we're using in this example can be downloaded
-:download:`here <../../examples/snippets/resources/datafs.yml>`.
+:download:`here <../../examples/snippets/resources/datafs_mongo.yml>`.
 
 clean up any previous test failures
 

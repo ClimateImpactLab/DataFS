@@ -71,14 +71,25 @@ Displayed example 1 code:
 
     >>> archive1 = api.create(
     ...      'archive1',
-    ...      tags=["foo", "bar"],
+    ...      tags=["foo", "Bar"],
     ...      metadata={'description': 'tag test 1 has bar'})
     ...
+    >>> archive1.get_tags()
+    [u'foo', u'bar']
+    >>>
     >>> archive2 = api.create(
     ...      'archive2',
-    ...      tags=["foo", "baz"],
+    ...      tags=["foo", "Baz"],
     ...      metadata={'description': 'tag test 1 has baz'})
     ...
+    >>> archive2.get_tags()
+    [u'foo', u'baz']
+    >>>
+    >>> archive2.add_tags(42)
+    >>> archive2.get_tags()
+    [u'foo', u'baz', u'42']
+
+
 
 .. EXAMPLE-BLOCK-1-END
 

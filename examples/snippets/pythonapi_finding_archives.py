@@ -25,7 +25,7 @@ We test with the following setup:
 .. code-block:: python
 
     >>> api = datafs.get_api(
-    ...     config_file='../../examples/snippets/resources/datafs_mongo.yml')
+    ...     config_file='examples/snippets/resources/datafs_mongo.yml')
     ...
 
 This assumes that you have a config file at the above location. The config file

@@ -798,11 +798,8 @@ class DataArchive(object):
         '''
         Set tags for a given archive
         '''
-
-        for tag in tags:
-            assert isinstance(tag, string_types), 'tags must be strings'
-
-        self.api.manager.add_tags(self.archive_name, tags)
+        normed_tags = self.api.manager._normalize_tags(tags)
+        self.api.manager.add_tags(self.archive_name, normed_tags)
 
     def delete_tags(self, *tags):
         '''
@@ -810,7 +807,6 @@ class DataArchive(object):
         Deletes tags for a given archive
 
         '''
-        for tag in tags:
-            assert isinstance(tag, string_types), 'tags must be strings'
+        normed_tags = self.api.manager._normalize_tags(tags)
 
-        self.api.manager.delete_tags(self.archive_name, tags)
+        self.api.manager.delete_tags(self.archive_name, normed_tags)

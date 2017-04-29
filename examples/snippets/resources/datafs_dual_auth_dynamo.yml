@@ -1,0 +1,16 @@
+default-profile: my-data
+profiles:
+    my-data:
+        manager:
+            class: DynamoDBManager
+            kwargs:
+                resource_args: {endpoint_url: 'http://localhost:8000/', region_name: us-east-1}
+                session_args: {aws_access_key_id: access-key-id-of-your-choice, aws_secret_access_key: secret-key-of-your-choice}
+                table_name: 'OtherFiles'
+        authorities:
+            local:
+                service: OSFS
+                args: [tests/test2]
+            my_authority:
+                service: OSFS
+                args: [tests/test3]

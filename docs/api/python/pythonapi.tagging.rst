@@ -11,7 +11,7 @@ View the source for the code samples on this page in :ref:`snippets-pythonapi-ta
 Tagging on archive creation
 ---------------------------
 
-When creating archives, you can specify tags using the ``tags`` argument. You can specify as many as you would like as elements in a list:
+When creating archives, you can specify tags using the ``tags`` argument. Tags must be strings and will be coerced to lowercase as a standard. You can specify as many as you would like as elements in a list:
 
 .. include:: ../../../examples/snippets/pythonapi_tagging.py
     :start-after: .. EXAMPLE-BLOCK-1-START

@@ -7,7 +7,7 @@ Python API: Tagging
 This is the tested source code for the snippets used in
 :ref:`pythonapi-tagging`. The config file we're using in this example
 can be downloaded
-:download:`here <../../examples/snippets/resources/datafs.yml>`.
+:download:`here <../../examples/snippets/resources/datafs_mongo.yml>`.
 
 Setup
 -----
@@ -27,7 +27,7 @@ We test with the following setup:
 
 This assumes that you have a config file at the above location. The config file
 we're using in this example can be downloaded
-:download:`here <../../examples/snippets/resources/datafs.yml>`.
+:download:`here <../../examples/snippets/resources/datafs_mongo.yml>`.
 
 clean up any previous test failures
 
@@ -71,14 +71,25 @@ Displayed example 1 code:
 
     >>> archive1 = api.create(
     ...      'archive1',
-    ...      tags=["foo", "bar"],
+    ...      tags=["foo", "Bar"],
     ...      metadata={'description': 'tag test 1 has bar'})
     ...
+    >>> archive1.get_tags()
+    [u'foo', u'bar']
+    >>>
     >>> archive2 = api.create(
     ...      'archive2',
-    ...      tags=["foo", "baz"],
+    ...      tags=["foo", "Baz"],
     ...      metadata={'description': 'tag test 1 has baz'})
     ...
+    >>> archive2.get_tags()
+    [u'foo', u'baz']
+    >>>
+    >>> archive2.add_tags(42)
+    >>> archive2.get_tags()
+    [u'foo', u'baz', u'42']
+
+
 
 .. EXAMPLE-BLOCK-1-END
 

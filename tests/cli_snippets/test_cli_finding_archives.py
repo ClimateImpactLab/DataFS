@@ -4,7 +4,7 @@ import pytest
 @pytest.mark.examples
 @pytest.mark.cli_snippets
 def test_cli_listdir(cli_validator_listdir):
-       cli_validator_listdir(r'''
+    cli_validator_listdir(r'''
 
 
 Snippet 1
@@ -51,7 +51,7 @@ Snippet 3
 @pytest.mark.examples
 @pytest.mark.cli_snippets
 def test_cli_filter(cli_validator_manager_various):
-       cli_validator_manager_various(r'''
+    cli_validator_manager_various(r'''
 
 
 Snippet 4
@@ -75,7 +75,8 @@ Snippet 5
 
 .. code-block:: bash
 
-    $ datafs filter --pattern *_variable4_scenario4.nc --engine path # doctest: +SKIP
+    $ datafs filter --pattern *_variable4_scenario4.nc --engine path \
+    # doctest: +SKIP
     project1_variable4_scenario4.nc
     project2_variable4_scenario4.nc
     project3_variable4_scenario4.nc
@@ -108,7 +109,7 @@ Snippet 6
 @pytest.mark.cli_snippets
 def test_cli_search(cli_validator_manager_various):
 
-       cli_validator_manager_various(r'''
+    cli_validator_manager_various(r'''
 
 
 Snippet 7

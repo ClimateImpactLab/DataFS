@@ -13,7 +13,7 @@ from examples.snippets import (
     pythonapi_dependencies,
     pythonapi_io,
     pythonapi_metadata,
-    pythonapi_versioning, 
+    pythonapi_versioning,
     pythonapi_finding_archives)
 from datafs.managers.manager_dynamo import DynamoDBManager
 from tests.resources import has_special_dependencies
@@ -136,9 +136,9 @@ def test_docs_pythonapi_versioning(example_snippet_working_dirs):
     failures, _ = doctest.testmod(pythonapi_versioning, report=True)
     assert failures == 0
 
+
 @pytest.mark.examples
 @pytest.mark.python_snippets
 def test_docs_pythonapi_finding_archives(example_snippet_working_dirs):
     failures, _ = doctest.testmod(pythonapi_finding_archives, report=True)
     assert failures == 0
-

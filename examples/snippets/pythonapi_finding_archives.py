@@ -1,13 +1,12 @@
 '''
-.. _snippets-pythonapi-finding-archives: 
-
+.. _snippets-pythonapi-finding-archives:
 
 Python API: Searching and Finding Archives
 ==========================================
 
 This is the tested source code for the snippets used in
 :ref:`pythonapi-finding-archives`. The config file we're using in this example
-can be downloaded 
+can be downloaded
 :download:`here <../../examples/snippets/resources/datafs_mongo.yml>`.
 
 
@@ -246,7 +245,7 @@ Displayed example 8 code
     >>> len(filtered_list3)
     25
     >>> filtered_list3[:4] # doctest: +NORMALIZE_WHITESPACE
-    [u'project1_variable2_scenario1.nc', u'project1_variable2_scenario2.nc', 
+    [u'project1_variable2_scenario1.nc', u'project1_variable2_scenario2.nc',
     u'project1_variable2_scenario3.nc', u'project1_variable2_scenario4.nc']
 
 .. EXAMPLE-BLOCK-8-END

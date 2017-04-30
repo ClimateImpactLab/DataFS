@@ -8,10 +8,9 @@ from fs.tempfs import TempFS
 from fs.errors import ResourceNotFoundError
 import pytest
 
-# test delete/noversion/delete after remove from local file system
+
 @pytest.mark.remove_dir
 def test_delete_handling(api, auth1):
-
 
     cache = TempFS()
     api.attach_authority('auth1', auth1)
@@ -25,7 +24,6 @@ def test_delete_handling(api, auth1):
 
     assert os.path.isfile(api.cache.fs.getsyspath('archive1'))
 
-    # try re-upload, with file deletion. Should be written to cache
     var.update('test_file.txt', remove=True)
     assert not os.path.isfile('test_file.txt')
 
@@ -33,17 +31,15 @@ def test_delete_handling(api, auth1):
     with pytest.raises(KeyError):
         api.get_archive('archive1')
 
-
     with pytest.raises(ResourceNotFoundError):
         f = api._authorities['auth1'].fs.open('archive1', 'r')
-    
+
     with pytest.raises(ResourceNotFoundError):
-        f = api.cache.fs.open('archive1' , 'r')
+        f = api.cache.fs.open('archive1', 'r')
 
 
 @pytest.mark.remove_dir
 def test_versioned_no_cache(api, auth1):
-
 
     api.attach_authority('auth1', auth1)
 
@@ -55,23 +51,20 @@ def test_versioned_no_cache(api, auth1):
     var2 = api.create('archive2', authority_name='auth1', versioned=True)
     var2.update('test_file1.txt')
 
-    #make sure the version is captured
     assert var2.get_version_path() == 'archive2/0.0.1'
 
     var2.delete()
-    #confirm it has been deleted from the manager
     with pytest.raises(KeyError):
         api.get_archive('archive2')
 
-    #confirm that it is not present in the fs
     with pytest.raises(ResourceNotFoundError):
-        api._authorities['auth1'].fs.open('archive2' 'r') 
+        api._authorities['auth1'].fs.open('archive2' 'r')
 
     assert api.listdir('', authority_name='auth1') == []
 
+
 @pytest.mark.remove_dir
 def test_remove_dir_multi_versions_remove(api, auth1):
-
 
     cache = TempFS()
     api.attach_authority('auth1', auth1)
@@ -85,7 +78,6 @@ def test_remove_dir_multi_versions_remove(api, auth1):
 
     with var.open('w') as f:
         f.write(u'update update')
-
 
     assert len(var.get_versions()) == 2
 
@@ -101,7 +93,6 @@ def test_remove_dir_multi_versions_remove(api, auth1):
         api.cache.fs.open('archive1', 'r')
 
     assert api.listdir('', authority_name='auth1') == []
-
 
 
 @pytest.mark.remove_dir
@@ -162,11 +153,8 @@ def test_multi_api(api1, api2, auth1, cache1, cache2, opener):
     with pytest.raises(ResourceNotFoundError):
         api1._authorities['auth1'].fs.open('myArchive', 'r')
 
-    
+    # using remove_from_cache because this archive is no longer in the manager
     archive1.remove_from_cache()
 
     with pytest.raises(ResourceNotFoundError):
         api1.cache.fs.open('myArchive', 'r')
-        
-     
-

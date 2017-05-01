@@ -84,11 +84,39 @@ The normalization process catches illegal archive names:
     ...
     fs.errors.InvalidCharsInPathError: Path contains invalid characters: !!!\\~
 
+
 This error checking is done by ``fs``, using the implementations of
 :py:meth:`~fs.base.BaseFS.validatepath` on the relevant authority. Currently, both
 :py:meth:`fs.osfs.OSFS.validatepath` and the method on whatever filesystem is used by the authority
 are both checked. This dual restriction is used because checking against OSFS restrictions is useful
 to prevent errors when using a cache.
+
+
+Delete
+~~~~~~
+
+Delete archives
+
+.. code-block:: python
+
+    >>> api.listdir('tas/global')
+    [u'0.0.1', u'0.0.2']
+    >>>
+    >>> api.listdir('tas')
+    [u'regional', u'global', u'adm1', u'adm2']
+    >>>
+    >>> tasg = api.get_archive('tas/global')
+    >>> tasg.delete()
+    >>> api.get_archive('tas/global')
+    ...
+    KeyError: 'Archive "tas/global" not found'
+    >>>
+    >>> api.listdir('tas')
+    [u'regional', u'adm1', u'adm2']
+
+
+Archive-level names space is removed using the :py:meth:`fs.osfs.OSFS.removedir` method
+
 
 Backwards incompatible API changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -115,6 +143,7 @@ Bug Fixes
   - Messages are now coerced to strings, and :py:meth:`~datafs.core.data_archive.log` and the CLI ``log`` command no longer fail when used on archives with non-string messages (:issue:`232`)
   - ``examples/ondisk.py`` updated to reflect `xarray 0.9.5 <https://pypi.python.org/pypi/xarray/0.9.5) display function changes>`_ (:issue:`249`)
   - Configuration now creates the datafs app directory if it did not previously exist (:issue:`265`)
+  - Delete will now remove the archive-level namespace in the filesystem as well as the version number namespace
 
 
 Under the hood

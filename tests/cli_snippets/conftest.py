@@ -162,6 +162,7 @@ def cli_validator_listdir(cli_setup, validator):
     socio1.update('test.txt')
     socio2 = api.create('impactlab/labor/global/labor_global_daily.csv')
     socio2.update('test.txt')
+
     validator.call_engines['datafs'] = ClickValidator(app=cli, prefix=prefix)
 
     yield validator.teststring

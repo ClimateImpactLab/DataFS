@@ -28,6 +28,9 @@ Attaching through the Python API
 
 .. example code
 
+.. include:: ../../examples/snippets/snippets.confiugre.cache.py
+    :start-after: .. EXAMPLE-BLOCK-1-START
+    :end-before: .. EXAMPLE-BLOCK-1-END
 
 
 Using a configuration file
@@ -35,6 +38,9 @@ Using a configuration file
 
 .. example code
 
+.. include:: ../../examples/snippets/snippets.confiugre.cache.py
+    :start-after: .. EXAMPLE-BLOCK-2-START
+    :end-before: .. EXAMPLE-BLOCK-2-END
 
 
 .. _configure.cache.policy:
@@ -96,9 +102,17 @@ Set the :py:attr:`~datafs.DataAPI.cache_policy` attribute on a :py:class:`~dataf
 
 .. example code
 
+
+.. include:: ../../examples/snippets/snippets.confiugre.cache.py
+    :start-after: .. EXAMPLE-BLOCK-3-START
+    :end-before: .. EXAMPLE-BLOCK-3-END
+
 Setting the cache policy in a configuration file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. example code
 
+.. include:: ../../examples/snippets/snippets.confiugre.cache.py
+    :start-after: .. EXAMPLE-BLOCK-4-START
+    :end-before: .. EXAMPLE-BLOCK-4-END
 

@@ -17,6 +17,7 @@ Backwards incompatible API changes
 Under the hood
 ~~~~~~~~~~~~~~
 
+  - Update ``ondisk`` example for pandas ``v0.20.0`` compatability (:issue:`281`)
   - upgrade pip before build on travis (:issue:`283`)
 
 See the issue tracker on GitHub for a complete list.

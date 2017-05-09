@@ -17,6 +17,6 @@ Backwards incompatible API changes
 Under the hood
 ~~~~~~~~~~~~~~
 
-  - 
+  - upgrade pip before build on travis (:issue:`283`)
 
 See the issue tracker on GitHub for a complete list.

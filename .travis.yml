@@ -17,6 +17,7 @@ matrix:
       env: DATAFS_TEST_ENV=xarray
 
 install:
+  - pip install --upgrade pip
   - if [[ "$DATAFS_TEST_ENV" == "xarray" ]]; then
       if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
           wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;

@@ -18,6 +18,7 @@ Under the hood
 ~~~~~~~~~~~~~~
 
   - Update ``ondisk`` example for pandas ``v0.20.0`` compatability (:issue:`281`)
-  - upgrade pip before build on travis (:issue:`283`)
+  - Upgrade pip before build on travis (:issue:`283`)
+  - Added a requirements file for the readthedocs build in ``docs/requirements.txt`` (:issue:`287`)
 
 See the issue tracker on GitHub for a complete list.

@@ -5,7 +5,7 @@ tox==2.7.0
 coverage==4.4.1
 pytest==3.1.0
 pytest-cov==2.5.1
-Sphinx==1.6.1
+Sphinx==1.6.2
 sphinx-rtd-theme==0.2.4
 moto==0.4.31
 pymongo==3.4.0

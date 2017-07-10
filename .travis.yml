@@ -13,7 +13,7 @@ env:
 
 matrix:
   exclude:
-    - python: pypy
+    - python: pypy-5.4.1
       env: DATAFS_TEST_ENV=xarray
 
 install:

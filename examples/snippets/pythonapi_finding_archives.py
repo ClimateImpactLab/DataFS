@@ -110,10 +110,21 @@ Displayed example 3 code
 
 .. code-block:: python
 
-    >>> api.listdir('impactlab')
-    [u'labor', u'climate', u'conflict', u'mortality']
+    >>> api.listdir('impactlab') # doctest: +SKIP
+    ['labor', 'climate', 'conflict', 'mortality']
 
 .. EXAMPLE-BLOCK-3-END
+
+And the actual test:
+
+.. code-block:: python
+
+    >>> (set(api.listdir('impactlab')) == set([
+    ...     'labor', 'climate', 'conflict', 'mortality']))
+    ...
+    True
+
+
 
 Example 4
 ---------

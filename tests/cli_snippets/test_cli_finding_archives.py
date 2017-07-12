@@ -9,11 +9,13 @@ def test_cli_listdir(cli_validator_listdir):
 
 Snippet 1
 
+This test can't currently be tested with clatter, due to unpredictable ordering
+
 .. EXAMPLE-BLOCK-1-START
 
 .. code-block:: bash
 
-    $ datafs listdir impactlab
+    $ datafs listdir impactlab # doctest: +SKIP
     labor
     climate
     conflict

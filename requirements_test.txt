@@ -7,7 +7,7 @@ pytest==3.2.2
 pytest-cov==2.5.1
 Sphinx==1.6.3
 sphinx-rtd-theme==0.2.4
-moto==0.4.31
+moto==1.1.10
 pymongo==3.5.1
 boto3==1.4.7
 bumpversion==0.5.3

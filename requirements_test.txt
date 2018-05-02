@@ -6,7 +6,7 @@ coverage==4.4.2
 pytest==3.2.3
 pytest-cov==2.5.1
 Sphinx==1.6.5
-sphinx-rtd-theme==0.2.4
+sphinx-rtd-theme==0.3.1
 moto==0.4.31
 pymongo==3.5.1
 boto3==1.4.7
